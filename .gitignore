@@ -1,0 +1,47 @@
+# Abhängigkeiten
+node_modules/
+.pnpm-store/
+
+# Build und Ausgaben
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Tests und Werkzeuge
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.eslintcache
+
+# Konfiguration mit Zugangsdaten — gehört nie ins Repository
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Lokale Claude-Code-Einstellungen (die Agenten unter .claude/agents/ bleiben versioniert)
+.claude/settings.local.json
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Echte Belege und Kundendokumente — nur synthetische Testdaten gehören ins Repository
+lokale-belege/
+scratch/
+
+# Betriebssystem und Office
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*
+
+# Editor
+.idea/
+.vscode/*
+!.vscode/extensions.json
