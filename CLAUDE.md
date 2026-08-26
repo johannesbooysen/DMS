@@ -11,12 +11,26 @@ Das Konzept verweist auf mitgeltende Dateien, die noch **nicht** existieren: `sc
 ## Befehle
 
 ```bash
-npm install     # Setup
-npm run dev     # Entwicklungsserver
-npm test        # Tests
+npm install                  # Setup
+npm run dev                  # Next.js und Worker parallel
+npm test                     # gesamte Testsuite
+npm test -- pfad/zur/datei   # einzelne Testdatei
+npm test -- -t "Mandant"     # einzelner Test nach Name
+npm run lint                 # ESLint
+npm run typecheck            # tsc --noEmit
+npm run build                # Produktionsbuild
 ```
 
-Node/npm ist der vorgesehene Toolchain. Eine `package.json` existiert noch nicht — wer sie anlegt, muss diese drei Skripte unter genau diesen Namen bereitstellen. Ein Befehl für einen einzelnen Test ist noch nicht festgelegt; er ergibt sich aus dem gewählten Testrunner und gehört dann hierher.
+Datenbank über die Supabase CLI, Migrationen sind handgeschriebenes DDL unter `supabase/migrations/`:
+
+```bash
+npm run db:start             # lokale Supabase-Instanz
+npm run db:new <name>        # neue Migrationsdatei anlegen
+npm run db:migrate           # Migrationen anwenden
+npm run db:reset             # Datenbank neu aufbauen und Seed einspielen
+```
+
+`npm run dev` startet zwei Prozesse: die Next.js-Anwendung und den Worker. Einzeln laufen sie über `npm run dev:web` und `npm run dev:worker` — nützlich, wenn nur an der Pipeline gearbeitet wird.
 
 ## Konventionen
 
@@ -42,7 +56,11 @@ Sechs Subagenten unter `.claude/agents/`:
 
 ## Zielplattform und Größenordnung
 
-PostgreSQL 16 / Supabase, S3-kompatibler Object Storage mit Object Lock. Zielgröße 500 Objekte, ~25.000 Belege/Jahr. Das Schema wurde gegen 1.000.000 synthetische Dokumente gemessen (Konzept §21) — die dort dokumentierten Messwerte sind die Begründung für mehrere Designentscheidungen und gehören laut §23 als Kommentare in die Migrationen.
+TypeScript durchgängig. Next.js (App Router) für Viewer, Postfächer und API, dazu ein eigener Worker-Prozess unter `src/worker/` für OCR, Extraktion und Rendering — die langlaufenden Aufgaben gehören nicht in einen Request. Queue ist **pg-boss** in derselben Postgres-Datenbank, keine zweite Infrastruktur. Tests mit **Vitest**.
+
+Datenhaltung: PostgreSQL 16 / Supabase, S3-kompatibler Object Storage mit Object Lock. Migrationen sind **handgeschriebenes DDL** unter `supabase/migrations/`, kein ORM-generiertes Schema — die RLS-Policies und die gemessenen Kommentare aus §21 stehen unverändert im Schema, weil sie die Sicherheitsgrenze bilden.
+
+Zielgröße 500 Objekte, ~25.000 Belege/Jahr. Das Schema wurde gegen 1.000.000 synthetische Dokumente gemessen (Konzept §21) — die dort dokumentierten Messwerte sind die Begründung für mehrere Designentscheidungen und gehören laut §23 als Kommentare in die Migrationen.
 
 ## Architektur-Invarianten
 
