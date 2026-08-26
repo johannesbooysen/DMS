@@ -32,6 +32,9 @@ npm run db:reset             # Datenbank neu aufbauen und Seed einspielen
 
 `npm run dev` startet zwei Prozesse: die Next.js-Anwendung und den Worker. Einzeln laufen sie über `npm run dev:web` und `npm run dev:worker` — nützlich, wenn nur an der Pipeline gearbeitet wird.
 
+Die Tests in `tests/` sprechen eine echte Postgres-Instanz an. Vorher `npm run db:start` und `npm run db:reset`; die Verbindung kommt aus `DATABASE_URL` und fällt sonst auf die lokale Supabase-Instanz zurück. Sie laufen als Rolle `dms_app`, nicht als Tabelleneigentümer — sonst würde die RLS umgangen und die Tests wären wertlos.
+
+
 ## Konventionen
 
 - **Deutsch** in Kommentaren und Commit-Messages — passend zu den durchgängig deutschen, klein geschriebenen Domänenbegriffen (`dokument_lauf`, `stempel_ereignis`, `zuordnungs_merkmal`). Neue Schemaobjekte in derselben Sprache und Schreibweise anlegen; nicht ins Englische übersetzen.

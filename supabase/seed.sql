@@ -1,0 +1,167 @@
+-- Seed-Daten. Ausschliesslich synthetisch: erfundene Namen, Adressen,
+-- Objektnummern und Bankverbindungen. Keine echten Personendaten, auch nicht
+-- abgewandelt (Projektregel, siehe CLAUDE.md).
+--
+-- Feste UUIDs, damit Tests darauf verweisen koennen. Die Konstellation ist so
+-- gewaehlt, dass die Sichtbarkeitsgrenzen pruefbar werden:
+--
+--   Anna  -- zustaendig nur fuer Objekt 42
+--   Bernd -- globaler Objektzugriff (Buchhaltung), sieht alle Objekte in Nord
+--   Clara -- Spezialgebiet Versicherung, mandantenweit; sieht den
+--            Versicherungsbeleg in Objekt 43, aber nicht dessen uebrige Belege
+--   Doris -- anderer Mandant, darf nichts aus Nord sehen
+
+begin;
+
+insert into mandant (id, name) values
+  ('10000000-0000-0000-0000-000000000001', 'Hausverwaltung Nord (Testdaten)'),
+  ('10000000-0000-0000-0000-000000000002', 'Hausverwaltung Sued (Testdaten)');
+
+insert into benutzer (id, mandant_id, name, email, globaler_objektzugriff) values
+  ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Anna Ahrens',   'anna@example.invalid',  false),
+  ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'Bernd Bruns',   'bernd@example.invalid', true),
+  ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   'Clara Cordes',  'clara@example.invalid', false),
+  ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002',
+   'Doris Dahl',    'doris@example.invalid', false);
+
+insert into spezialgebiet (id, mandant_id, name, farbe) values
+  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Versicherung', '#6B4E8C');
+
+-- Clara ist mandantenweit zustaendig (objekt_id NULL)
+insert into spezialgebiet_zustaendigkeit (spezialgebiet_id, benutzer_id) values
+  ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000003');
+
+insert into kontenrahmen (id, mandant_id, name) values
+  ('35000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Kontenrahmen WEG (Testdaten)');
+
+insert into umlageschluessel (id, mandant_id, name, kurzcode) values
+  ('36000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Miteigentumsanteile', 'MEA');
+
+insert into ordnungsgruppe (id, mandant_id, name, kurzcode, sortierung, farbe,
+                            spezialgebiet_id, ki_beschreibung) values
+  ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Betriebskosten', 'BK', 10, '#2F6F4E', null,
+   'Laufende Bewirtschaftungskosten: Reinigung, Gartenpflege, Winterdienst, '
+   'Hausmeister, Aufzugswartung.'),
+  ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'Versicherungsschaeden', 'VS', 20, '#B3271E',
+   '30000000-0000-0000-0000-000000000001',
+   'Schadensregulierung nach Leitungswasser, Sturm, Feuer; Gutachten und '
+   'Sanierungsrechnungen mit Schadensnummer. Keine laufenden Praemien.');
+
+insert into konto (id, kontenrahmen_id, kontonummer, bezeichnung,
+                   umlagefaehig_default, umlageschluessel_default_id,
+                   ordnungsgruppe_default_id) values
+  ('37000000-0000-0000-0000-000000000001', '35000000-0000-0000-0000-000000000001',
+   '4200', 'Hausreinigung', true, '36000000-0000-0000-0000-000000000001',
+   '40000000-0000-0000-0000-000000000001');
+
+insert into zahlungsweg (id, mandant_id, name, art, ziel, archiviert_sofort) values
+  ('45000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'scan2bank', 'mail', 'zahlungen@bank.example.invalid', false);
+
+insert into objekt (id, mandant_id, objektnummer, bezeichnung, adresse,
+                    verwaltungsart, kontenrahmen_id, standard_ordnungsgruppe_id,
+                    zahlungsweg_id, eskalationsgrenze_brutto) values
+  ('50000000-0000-0000-0000-000000000042', '10000000-0000-0000-0000-000000000001',
+   '42', 'WEG Lindenweg 3', 'Lindenweg 3, 00000 Musterstadt', 'weg',
+   '35000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001',
+   '45000000-0000-0000-0000-000000000001', 5000.00),
+  ('50000000-0000-0000-0000-000000000043', '10000000-0000-0000-0000-000000000001',
+   '43', 'WEG Amselgasse 12', 'Amselgasse 12, 00000 Musterstadt', 'weg',
+   '35000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001',
+   '45000000-0000-0000-0000-000000000001', 5000.00),
+  ('50000000-0000-0000-0000-000000000099', '10000000-0000-0000-0000-000000000002',
+   '99', 'MV Birkenallee 7', 'Birkenallee 7, 00000 Andersstadt', 'miet',
+   null, null, null, 2500.00);
+
+insert into objekt_zustaendigkeit (objekt_id, benutzer_id, art) values
+  ('50000000-0000-0000-0000-000000000042', '20000000-0000-0000-0000-000000000001',
+   'hauptverantwortlich'),
+  ('50000000-0000-0000-0000-000000000099', '20000000-0000-0000-0000-000000000004',
+   'hauptverantwortlich');
+
+insert into kreditor (id, mandant_id, name, ust_id) values
+  ('55000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Musterreinigung GmbH', 'DE000000000');
+
+insert into kreditor_bankverbindung (kreditor_id, iban, status) values
+  ('55000000-0000-0000-0000-000000000001', 'DE00000000000000000000', 'verifiziert');
+
+insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe) values
+  ('60000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Sachlich richtig', 'SACHL', 'freigabe', '#3B4A80'),
+  ('60000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'Zur Klaerung', 'KLAER', 'klaerung', '#B5741A');
+
+insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_ab) values
+  ('65000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'rechnung', 1, 'aktiv', now());
+
+insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
+                          zustaendigkeit_typ, sla_stunden) values
+  ('66000000-0000-0000-0000-000000000001', '65000000-0000-0000-0000-000000000001',
+   1, 'sachlich', 'Sachliche Pruefung', 'objektverantwortlich', 72),
+  ('66000000-0000-0000-0000-000000000002', '65000000-0000-0000-0000-000000000001',
+   2, 'rechnerisch', 'Rechnerische Pruefung', 'rolle', 48),
+  ('66000000-0000-0000-0000-000000000003', '65000000-0000-0000-0000-000000000001',
+   3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24);
+
+-- Drei Belege in Nord, einer in Sued.
+--   d1  Objekt 42, Betriebskosten          -> Anna sieht ihn
+--   d2  Objekt 43, Versicherungsschaeden   -> Clara sieht ihn, Anna nicht
+--   d3  Objekt 43, Betriebskosten          -> weder Anna noch Clara
+--   d9  Objekt 99, anderer Mandant         -> nur Doris
+insert into dokument (id, mandant_id, objekt_id, belegart, ordnungsgruppe_id,
+                      spezialgebiet_id, eingangskanal, inhalt_hash,
+                      storage_praefix, seitenzahl, ampel_gesamt, status) values
+  ('70000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000042', 'rechnung',
+   '40000000-0000-0000-0000-000000000001', null, 'mail',
+   'hash-d1', 'nord/42/2026/d1', 2, 'gruen', 'laufend'),
+  ('70000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000043', 'rechnung',
+   '40000000-0000-0000-0000-000000000002',
+   '30000000-0000-0000-0000-000000000001', 'scan',
+   'hash-d2', 'nord/43/2026/d2', 5, 'orange', 'laufend'),
+  ('70000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000043', 'rechnung',
+   '40000000-0000-0000-0000-000000000001', null, 'mail',
+   'hash-d3', 'nord/43/2026/d3', 1, 'gruen', 'laufend'),
+  ('70000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000002',
+   '50000000-0000-0000-0000-000000000099', 'rechnung', null, null, 'upload',
+   'hash-d9', 'sued/99/2026/d9', 1, 'gruen', 'laufend');
+
+insert into rechnung_fakten (dokument_id, kreditor_id, rechnungsnummer,
+                             rechnungsdatum, netto, steuer, brutto, wirtschaftsjahr) values
+  ('70000000-0000-0000-0000-000000000001', '55000000-0000-0000-0000-000000000001',
+   'RE-2026-0001', date '2026-03-14', 1042.02, 197.98, 1240.00, 2026);
+
+insert into dokument_seite (dokument_id, seite, text, breite, hoehe) values
+  ('70000000-0000-0000-0000-000000000001', 1,
+   'Musterreinigung GmbH Rechnung RE-2026-0001 Hausreinigung Lindenweg 3', 595, 842),
+  ('70000000-0000-0000-0000-000000000001', 2,
+   'Zahlbar innerhalb von 14 Tagen ohne Abzug.', 595, 842);
+
+insert into dokument_lauf (id, dokument_id, definition_id, definition_version,
+                           aktuelle_stufe_id) values
+  ('75000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001',
+   '65000000-0000-0000-0000-000000000001', 1,
+   '66000000-0000-0000-0000-000000000001'),
+  ('75000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002',
+   '65000000-0000-0000-0000-000000000001', 1,
+   '66000000-0000-0000-0000-000000000001');
+
+insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, faellig_am) values
+  ('75000000-0000-0000-0000-000000000001', '66000000-0000-0000-0000-000000000001',
+   '20000000-0000-0000-0000-000000000001', now() + interval '3 days'),
+  ('75000000-0000-0000-0000-000000000002', '66000000-0000-0000-0000-000000000001',
+   '20000000-0000-0000-0000-000000000003', now() + interval '3 days');
+
+commit;
