@@ -1,7 +1,7 @@
 -- Kernschema: Stammdaten, Dokumentenkern, Workflow-Engine
 --
 -- Grundlage: docs/konzept.md, Teile B und C.
--- Berechtigungen (RLS) stehen in der Folgemigration 0002_rls.sql.
+-- Berechtigungen (RLS) stehen in der Folgemigration 20260828100100_rls.sql.
 --
 -- Konventionen dieses Schemas:
 --   * Bezeichner deutsch und klein, wie im Konzept

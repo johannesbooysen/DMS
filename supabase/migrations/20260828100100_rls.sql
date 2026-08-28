@@ -343,7 +343,7 @@ create policy aufgabe_sicht on aufgabe for all
   with check (exists (select 1 from dokument_lauf l where l.id = lauf_id));
 
 -- Stempelereignisse sind append-only. Kein update, kein delete -- weder in
--- der Policy noch im Trigger (0001_kern.sql, Teil 8).
+-- der Policy noch im Trigger (20260828100000_kern.sql, Teil 8).
 create policy stempel_ereignis_lesen on stempel_ereignis for select
   using (exists (select 1 from dokument_lauf l where l.id = lauf_id));
 
