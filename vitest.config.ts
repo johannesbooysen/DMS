@@ -7,7 +7,7 @@ export default defineConfig({
     // Transaktionen, die zurueckgerollt werden. Parallele Prozesse wuerden
     // sich dabei gegenseitig die Sichtbarkeit verstellen.
     pool: 'forks',
-    poolOptions: { forks: { singleFork: true } },
+    fileParallelism: false,
     hookTimeout: 30_000,
   },
 })

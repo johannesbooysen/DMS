@@ -152,7 +152,50 @@ describe('Stempelereignisse', () => {
     expect(kette[1].vorheriger_hash).toBe(kette[0].eintrag_hash)
   })
 
-  it('laesst sich nicht nachtraeglich aendern', async () => {
+  // Der Schutz greift zweifach. Unter der Anwendungsrolle gibt die RLS keine
+  // Zeile fuer update oder delete frei -- es gibt fuer beides keine Policy --,
+  // die Anweisung trifft also nichts. Wer die RLS umgeht, faellt in den
+  // Trigger. Beide Ebenen werden einzeln geprueft, weil die eine die andere
+  // sonst verdeckt.
+  it('gibt unter der Anwendungsrolle keine Zeile zum Aendern frei', async () => {
+    const ergebnis = await alsBenutzer(ANNA, async (c) => {
+      await c.query(
+        `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
+         values ($1, $2, $3, 'freigabe')`,
+        [LAUF_D1, STUFE_SACHLICH, ANNA],
+      )
+      const geaendert = await c.query(
+        `update stempel_ereignis set kommentar = 'nachtraeglich' where lauf_id = $1`,
+        [LAUF_D1],
+      )
+      const { rows } = await c.query<{ kommentar: string | null }>(
+        'select kommentar from stempel_ereignis where lauf_id = $1',
+        [LAUF_D1],
+      )
+      return { betroffen: geaendert.rowCount, kommentare: rows.map((r) => r.kommentar) }
+    })
+    expect(ergebnis.betroffen).toBe(0)
+    expect(ergebnis.kommentare).toEqual([null])
+  })
+
+  it('gibt unter der Anwendungsrolle keine Zeile zum Loeschen frei', async () => {
+    const ergebnis = await alsBenutzer(ANNA, async (c) => {
+      await c.query(
+        `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
+         values ($1, $2, $3, 'freigabe')`,
+        [LAUF_D1, STUFE_SACHLICH, ANNA],
+      )
+      const geloescht = await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF_D1])
+      const { rowCount } = await c.query('select 1 from stempel_ereignis where lauf_id = $1', [
+        LAUF_D1,
+      ])
+      return { betroffen: geloescht.rowCount, verblieben: rowCount }
+    })
+    expect(ergebnis.betroffen).toBe(0)
+    expect(ergebnis.verblieben).toBe(1)
+  })
+
+  it('wehrt eine Aenderung auch am Rechtesystem vorbei ab', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
         await c.query(
@@ -160,13 +203,15 @@ describe('Stempelereignisse', () => {
            values ($1, $2, $3, 'freigabe')`,
           [LAUF_D1, STUFE_SACHLICH, ANNA],
         )
+        // Als Tabelleneigentuemer -- die RLS filtert hier nichts mehr weg.
+        await c.query('reset role')
         await c.query(`update stempel_ereignis set kommentar = 'nachtraeglich'
                         where lauf_id = $1`, [LAUF_D1])
       }),
     ).rejects.toThrow(/append-only/i)
   })
 
-  it('laesst sich nicht loeschen', async () => {
+  it('wehrt ein Loeschen auch am Rechtesystem vorbei ab', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
         await c.query(
@@ -174,6 +219,7 @@ describe('Stempelereignisse', () => {
            values ($1, $2, $3, 'freigabe')`,
           [LAUF_D1, STUFE_SACHLICH, ANNA],
         )
+        await c.query('reset role')
         await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF_D1])
       }),
     ).rejects.toThrow(/append-only/i)

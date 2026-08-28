@@ -126,6 +126,15 @@ begin
 end
 $$;
 
+-- Der verbindende Benutzer muss Mitglied der Rolle sein, sonst schlaegt
+-- "set role dms_app" fehl. In der lokalen Supabase-Instanz ist postgres
+-- kein Superuser und darf ohne diese Mitgliedschaft nicht wechseln.
+do $$
+begin
+  execute format('grant dms_app to %I with inherit false', current_user);
+end
+$$;
+
 grant usage on schema public, app to dms_app;
 grant select, insert, update, delete on all tables in schema public to dms_app;
 grant execute on all functions in schema app to dms_app;

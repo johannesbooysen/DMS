@@ -14,7 +14,10 @@
 create schema if not exists app;
 comment on schema app is 'Hilfsfunktionen fuer Berechtigungen und abgeleitete Werte';
 
-create extension if not exists pgcrypto;
+-- Bewusst ohne pgcrypto: sha256() und gen_random_uuid() sind seit
+-- PostgreSQL 13 im Kern. Die Erweiterung liegt auf Supabase im Schema
+-- "extensions", auf das die Anwendungsrolle kein Zugriffsrecht hat -- der
+-- Trigger fand digest() deshalb nicht.
 
 
 -- ---------------------------------------------------------------------------
@@ -686,7 +689,7 @@ comment on table zuweisung_ereignis is
 create or replace function app.stempel_kette()
 returns trigger
 language plpgsql
-set search_path = public, app, extensions
+set search_path = public, app
 as $$
 declare
   vorher text;
@@ -698,7 +701,7 @@ begin
    limit 1;
 
   new.vorheriger_hash := vorher;
-  new.eintrag_hash := encode(digest(
+  new.eintrag_hash := encode(sha256(convert_to(
       coalesce(vorher, '')
       || new.lauf_id::text
       || coalesce(new.stufe_id::text, '')
@@ -706,7 +709,7 @@ begin
       || new.entscheidung
       || coalesce(new.freigabe_hash, '')
       || new.zeitpunkt::text,
-    'sha256'), 'hex');
+    'UTF8')), 'hex');
 
   return new;
 end;
@@ -743,15 +746,15 @@ create or replace function app.freigabe_hash(p_dokument_id uuid)
 returns text
 language sql
 stable
-set search_path = public, app, extensions
+set search_path = public, app
 as $$
-  select encode(digest(
+  select encode(sha256(convert_to(
       coalesce(f.kreditor_id::text, '')
       || coalesce(f.rechnungsnummer, '')
       || coalesce(f.rechnungsdatum::text, '')
       || coalesce(f.brutto::text, '')
       || coalesce(d.objekt_id::text, ''),
-    'sha256'), 'hex')
+    'UTF8')), 'hex')
     from dokument d
     join rechnung_fakten f on f.dokument_id = d.id
    where d.id = p_dokument_id;
