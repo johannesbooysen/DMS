@@ -119,6 +119,8 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Konfiguration statt Code.** Stufenfolgen, Stempeltypen, Ordnungsgruppen, Zahlungswege, Betragsgrenzen und Objekt-Overrides sind Stammdaten. Ein neuer Zahlungsweg oder eine neue Ordnungsgruppe darf **keine** Codeänderung erfordern. `prozessdefinition` wird nie überschrieben, sondern versioniert; `dokument_lauf.definition_version` friert die Fassung für laufende Belege ein.
 
+**Rechte sind additiv, nie subtraktiv.** `app.darf()` bildet die Vereinigung über alle Rollen eines Benutzers; eine zweite Rolle kann ein Recht nur hinzufügen, nie entziehen. Verbotsregeln würden das Rechtemodell unprüfbar machen — „warum durfte er das nicht" wäre nicht mehr an einer Stelle zu beantworten. Sichtbarkeit auf ein Objekt entsteht aus zwei unabhängigen, datierten Quellen: `objekt_zustaendigkeit` und `benutzer_rolle_objekt` (mit `objekt_id is null` = mandantenweit).
+
 **Alles ab Rohablage läuft asynchron in einer Queue.** Der KI-Provider steckt hinter einem Interface (Bedrock Frankfurt als Standard, lokales Modell als Fallback). Fällt er aus, startet der Workflow trotzdem und die Erfassung erfolgt manuell.
 
 **Lernen ist strikt mandantenbezogen.** `zuordnungs_merkmal` und `kontierungs_muster` tragen immer `mandant_id`; kein Wissenstransfer über Mandantengrenzen. Deterministische Merkmale (Kundennummer, Zählernummer, IBAN) schlagen immer Embedding-Ähnlichkeit — letztere ergibt nie besser als orange.

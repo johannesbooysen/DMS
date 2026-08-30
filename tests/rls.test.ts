@@ -23,6 +23,9 @@ const BERND = '20000000-0000-0000-0000-000000000002'
 const CLARA = '20000000-0000-0000-0000-000000000003'
 const DORIS = '20000000-0000-0000-0000-000000000004'
 
+const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
+const OBJEKT_43 = '50000000-0000-0000-0000-000000000043'
+
 const D1_OBJEKT42 = '70000000-0000-0000-0000-000000000001'
 const D2_VERSICHERUNG_OBJEKT43 = '70000000-0000-0000-0000-000000000002'
 const D3_OBJEKT43 = '70000000-0000-0000-0000-000000000003'
@@ -96,7 +99,7 @@ describe('Objektzustaendigkeit', () => {
     expect(sichtbar).toEqual([D1_OBJEKT42, D4_OBJEKT42_MAI, D5_OBJEKT42_NICHT_UMLAGEFAEHIG])
   })
 
-  it('zeigt dem Benutzer mit globalem Objektzugriff alle Belege seines Mandanten', async () => {
+  it('zeigt dem Benutzer mit mandantenweiter Rolle alle Belege seines Mandanten', async () => {
     const sichtbar = await sichtbareDokumente(BERND)
     expect(sichtbar).toEqual([
       D1_OBJEKT42,
@@ -107,9 +110,11 @@ describe('Objektzustaendigkeit', () => {
     ])
   })
 
-  it('beendet die Sicht mit dem Ablauf der Zustaendigkeit', async () => {
+  // Sicht auf ein Objekt entsteht aus zwei unabhaengigen Quellen:
+  // Objektzustaendigkeit und Rollenzuweisung. Sie ergaenzen sich -- eine
+  // abgelaufene Quelle nimmt die Sicht nur, wenn die andere auch nicht traegt.
+  it('haelt die Sicht, solange die Rollenzuweisung gilt', async () => {
     const sichtbar = await alsBenutzer(ANNA, async (c) => {
-      // Als Eigentuemer setzen, damit die Aenderung nicht selbst an der RLS scheitert.
       await c.query('reset role')
       await c.query(
         `update objekt_zustaendigkeit set gueltig_bis = current_date - 1
@@ -120,7 +125,83 @@ describe('Objektzustaendigkeit', () => {
       const { rows } = await c.query<{ id: string }>('select id from dokument')
       return rows.map((r) => r.id)
     })
+    expect(sichtbar).toContain(D1_OBJEKT42)
+  })
+
+  it('beendet die Sicht, wenn beide Quellen abgelaufen sind', async () => {
+    const sichtbar = await alsBenutzer(ANNA, async (c) => {
+      // Als Eigentuemer setzen, damit die Aenderung nicht selbst an der RLS scheitert.
+      await c.query('reset role')
+      await c.query(
+        `update objekt_zustaendigkeit set gueltig_bis = current_date - 1
+          where benutzer_id = $1`,
+        [ANNA],
+      )
+      await c.query(
+        `update benutzer_rolle_objekt
+            set gueltig_von = current_date - 30, gueltig_bis = current_date - 1
+          where benutzer_id = $1`,
+        [ANNA],
+      )
+      await c.query('set local role dms_app')
+      const { rows } = await c.query<{ id: string }>('select id from dokument')
+      return rows.map((r) => r.id)
+    })
     expect(sichtbar).toEqual([])
+  })
+
+  it('beendet die Sicht des Buchhalters mit dem Ablauf seiner Rolle', async () => {
+    // Bernd traegt keine Objektzustaendigkeit -- bei ihm ist die Rolle die
+    // einzige Quelle.
+    const sichtbar = await alsBenutzer(BERND, async (c) => {
+      await c.query('reset role')
+      await c.query(
+        `update benutzer_rolle_objekt
+            set gueltig_von = current_date - 30, gueltig_bis = current_date - 1
+          where benutzer_id = $1`,
+        [BERND],
+      )
+      await c.query('set local role dms_app')
+      const { rows } = await c.query<{ id: string }>('select id from dokument')
+      return rows.map((r) => r.id)
+    })
+    expect(sichtbar).toEqual([])
+  })
+})
+
+describe('Rechte', () => {
+  async function darf(benutzerId: string, aktion: string, objektId?: string) {
+    return alsBenutzer(benutzerId, async (c) => {
+      const { rows } = await c.query<{ darf: boolean }>(
+        'select app.darf($1, $2) as darf',
+        [aktion, objektId ?? null],
+      )
+      return rows[0].darf
+    })
+  }
+
+  it('gibt dem Objektbearbeiter das Recht zu stempeln', async () => {
+    expect(await darf(ANNA, 'stempeln')).toBe(true)
+  })
+
+  it('verweigert ihm das Konfigurieren des Ablaufs', async () => {
+    // prozess_konfigurieren ist das Recht am Baukasten (ADR 0002).
+    expect(await darf(ANNA, 'prozess_konfigurieren')).toBe(false)
+  })
+
+  it('bindet ein objektbezogenes Recht an genau dieses Objekt', async () => {
+    expect(await darf(ANNA, 'stempeln', OBJEKT_42)).toBe(true)
+    expect(await darf(ANNA, 'stempeln', OBJEKT_43)).toBe(false)
+  })
+
+  it('laesst eine mandantenweite Rolle fuer jedes Objekt gelten', async () => {
+    expect(await darf(BERND, 'kontieren', OBJEKT_42)).toBe(true)
+    expect(await darf(BERND, 'kontieren', OBJEKT_43)).toBe(true)
+  })
+
+  it('gibt niemandem ein Recht, das keine seiner Rollen traegt', async () => {
+    expect(await darf(BERND, 'prozess_konfigurieren')).toBe(false)
+    expect(await darf(CLARA, 'ansehen')).toBe(false)
   })
 })
 

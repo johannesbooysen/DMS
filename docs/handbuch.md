@@ -112,6 +112,7 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 | **Klärung** | Beleg wird geparkt, mit Pflichtkommentar und Wiedervorlagedatum. Die Stempel bleiben gültig. |
 | **Kontierung** | Aufteilung des Betrags auf Konten, zeilenweise, mit Umlagefähigkeit je Zeile. |
 | **Ampel** | Zwei Werte: wie sicher wurde gelesen (Extraktion), und wie plausibel ist das Ergebnis. Der schlechtere gewinnt. |
+| **Rolle** | Bündel von Rechten, einem Benutzer je Objekt oder mandantenweit zugewiesen. Mehrere Rollen ergänzen sich; eine Rolle entzieht nie ein Recht. |
 | **Kreditor** | Lieferant, Dienstleister, Rechnungssteller. |
 | **Vorgang** | Klammer um mehrere Belege: ein Schadensfall, ein Rechtsstreit, ein Mieterwechsel. |
 
@@ -164,9 +165,11 @@ Wenn es `supabase_vector` ist: der Log-Sammler, unter Windows bekannt,
 unkritisch. Datenbank und Tests sind davon nicht betroffen.
 
 **Warum sehe ich als Bearbeiter ein Objekt nicht?**
-Zuständigkeit prüfen — sie ist datiert. Ein abgelaufenes `gueltig_bis` nimmt
-die Sicht sofort. Buchhaltung und Geschäftsleitung haben stattdessen globalen
-Objektzugriff.
+Die Sicht kommt aus zwei Quellen, die sich ergänzen: der Objektzuständigkeit
+und einer Rollenzuweisung. Beide sind datiert — ein abgelaufenes `gueltig_bis`
+nimmt die Sicht sofort, aber nur, wenn auch die andere Quelle nicht trägt.
+Buchhaltung und Geschäftsleitung tragen keine Zuständigkeit; sie haben eine
+Rolle ohne Objektbezug und sehen damit alle Objekte des Mandanten.
 
 **Ein Update auf `stempel_ereignis` läuft durch, ändert aber nichts.**
 Das ist beabsichtigt und doppelt abgesichert: Für die Tabelle gibt es keine

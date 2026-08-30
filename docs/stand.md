@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 40 Tabellen, 41 Policies,
-8 Module, 53 Testfaelle in 4 Dateien,
+Auf einen Blick: 43 Tabellen, 44 Policies,
+8 Module, 60 Testfaelle in 4 Dateien,
 2 Architekturentscheidungen, 1 markierte offene Stellen.
 
 ## Befehle
@@ -63,6 +63,16 @@ Funktionen: `app.kontierung_summe_stimmt`, `app.umlageflag_pflegen`, `app.belege
 
 Policies: 5
 
+### `supabase/migrations/20260830100000_rollen.sql`
+
+Rollenmodell
+
+Tabellen: `rolle`, `rolle_recht`, `benutzer_rolle_objekt`
+
+Funktionen: `app.meine_objekte`, `app.darf`
+
+Policies: 3
+
 ## Module
 
 | Datei | Aufgabe |
@@ -83,7 +93,7 @@ Policies: 5
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 16 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
-| [`tests/rls.test.ts`](../tests/rls.test.ts) | 16 | Mandantentrennung, Objektzustaendigkeit, Spezialgebiet, Stempelereignisse, Klaerung |
+| [`tests/rls.test.ts`](../tests/rls.test.ts) | 23 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 
 ## Architekturentscheidungen
 

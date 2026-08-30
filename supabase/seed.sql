@@ -6,7 +6,7 @@
 -- gewaehlt, dass die Sichtbarkeitsgrenzen pruefbar werden:
 --
 --   Anna  -- zustaendig nur fuer Objekt 42
---   Bernd -- globaler Objektzugriff (Buchhaltung), sieht alle Objekte in Nord
+--   Bernd -- Rolle Buchhaltung ohne Objektbezug, sieht alle Objekte in Nord
 --   Clara -- Spezialgebiet Versicherung, mandantenweit; sieht den
 --            Versicherungsbeleg in Objekt 43, aber nicht dessen uebrige Belege
 --   Doris -- anderer Mandant, darf nichts aus Nord sehen
@@ -17,15 +17,15 @@ insert into mandant (id, name) values
   ('10000000-0000-0000-0000-000000000001', 'Hausverwaltung Nord (Testdaten)'),
   ('10000000-0000-0000-0000-000000000002', 'Hausverwaltung Sued (Testdaten)');
 
-insert into benutzer (id, mandant_id, name, email, globaler_objektzugriff) values
+insert into benutzer (id, mandant_id, name, email) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
-   'Anna Ahrens',   'anna@example.invalid',  false),
+   'Anna Ahrens',   'anna@example.invalid'),
   ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
-   'Bernd Bruns',   'bernd@example.invalid', true),
+   'Bernd Bruns',   'bernd@example.invalid'),
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
-   'Clara Cordes',  'clara@example.invalid', false),
+   'Clara Cordes',  'clara@example.invalid'),
   ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002',
-   'Doris Dahl',    'doris@example.invalid', false);
+   'Doris Dahl',    'doris@example.invalid');
 
 insert into spezialgebiet (id, mandant_id, name, farbe) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
@@ -163,6 +163,45 @@ insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, faellig_am) values
    '20000000-0000-0000-0000-000000000001', now() + interval '3 days'),
   ('75000000-0000-0000-0000-000000000002', '66000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000003', now() + interval '3 days');
+
+-- ---------------------------------------------------------------------------
+-- Rollen
+--
+-- Anna traegt die Objektzustaendigkeit fuer Objekt 42 und braucht deshalb
+-- keine objektbezogene Rollenzuweisung -- die Sicht kommt aus der
+-- Zustaendigkeit. Bernd traegt keine Zustaendigkeit und sieht trotzdem
+-- alles: mandantenweite Rolle ohne Objektbezug.
+-- Clara bekommt bewusst keine Rollenzuweisung. Ihre Sicht entsteht
+-- ausschliesslich ueber die Spezialgebietszustaendigkeit -- eine
+-- objektbezogene Rolle wuerde ihr das ganze Objekt 43 oeffnen.
+-- ---------------------------------------------------------------------------
+
+insert into rolle (id, mandant_id, name, kurzcode, beschreibung) values
+  ('90000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Objektbearbeitung', 'OB', 'Sachliche Pruefung und Bearbeitung am eigenen Objekt.'),
+  ('90000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'Buchhaltung', 'BH', 'Mandantenweite Sicht, rechnerische Pruefung und Kontierung.'),
+  ('90000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   'Geschaeftsleitung', 'GL', 'Freigabe ueber der Eskalationsgrenze, Konfiguration.');
+
+insert into rolle_recht (rolle_id, aktion, belegart, ordnungsgruppe_id) values
+  ('90000000-0000-0000-0000-000000000001', 'ansehen',    null, null),
+  ('90000000-0000-0000-0000-000000000001', 'bearbeiten', null, null),
+  ('90000000-0000-0000-0000-000000000001', 'stempeln',   null, null),
+  ('90000000-0000-0000-0000-000000000002', 'ansehen',    null, null),
+  ('90000000-0000-0000-0000-000000000002', 'kontieren',  null, null),
+  ('90000000-0000-0000-0000-000000000002', 'stempeln',   null, null),
+  ('90000000-0000-0000-0000-000000000003', 'ansehen',    null, null),
+  ('90000000-0000-0000-0000-000000000003', 'stempeln',   null, null),
+  ('90000000-0000-0000-0000-000000000003', 'prozess_konfigurieren', null, null),
+  ('90000000-0000-0000-0000-000000000003', 'delegieren', null, null);
+
+insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
+  -- Anna: Objektbearbeitung, ausdruecklich nur Objekt 42
+  ('20000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000042'),
+  -- Bernd: Buchhaltung, mandantenweit
+  ('20000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', null);
 
 -- ---------------------------------------------------------------------------
 -- Einheit, Mieter und Kontierung
