@@ -18,6 +18,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "docs:stand": "node scripts/stand-erzeugen.mjs",
+    "docs:check": "node scripts/doku-pruefen.mjs",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:new": "supabase migration new",

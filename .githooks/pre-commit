@@ -1,0 +1,16 @@
+#!/bin/sh
+# Prueft vor jedem Commit, ob die Dokumentation zum Repository passt.
+#
+# Aktivieren mit:  git config core.hooksPath .githooks
+# Einmal umgehen:  git commit --no-verify
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node nicht gefunden, Dokumentationspruefung uebersprungen"
+  exit 0
+fi
+
+node scripts/doku-pruefen.mjs || {
+  echo ""
+  echo "pre-commit: Commit gestoppt. Dokumentation nachziehen oder mit --no-verify umgehen."
+  exit 1
+}

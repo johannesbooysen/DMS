@@ -13,21 +13,34 @@ Das Konzept verweist auf mitgeltende Dateien, die noch **nicht** existieren: `sc
 ```bash
 npm install                  # Setup
 npm run dev                  # Next.js und Worker parallel
+npm run dev:web              # nur Next.js
+npm run dev:worker           # nur Worker
 npm test                     # gesamte Testsuite
 npm test -- pfad/zur/datei   # einzelne Testdatei
 npm test -- -t "Mandant"     # einzelner Test nach Name
+npm run test:watch           # Tests im Beobachtungsmodus
 npm run lint                 # ESLint
 npm run typecheck            # tsc --noEmit
 npm run build                # Produktionsbuild
+npm run start                # Produktionsserver
+npm run worker               # Worker einmalig, ohne Beobachtung
 ```
 
 Datenbank über die Supabase CLI, Migrationen sind handgeschriebenes DDL unter `supabase/migrations/`:
 
 ```bash
 npm run db:start             # lokale Supabase-Instanz
+npm run db:stop              # Instanz anhalten
 npm run db:new <name>        # neue Migrationsdatei anlegen
 npm run db:migrate           # Migrationen anwenden
 npm run db:reset             # Datenbank neu aufbauen und Seed einspielen
+```
+
+Dokumentation:
+
+```bash
+npm run docs:stand           # docs/stand.md aus dem Repository neu erzeugen
+npm run docs:check           # prüfen, ob die Dokumentation zum Code passt
 ```
 
 `npm run dev` startet zwei Prozesse: die Next.js-Anwendung und den Worker. Einzeln laufen sie über `npm run dev:web` und `npm run dev:worker` — nützlich, wenn nur an der Pipeline gearbeitet wird.
@@ -44,9 +57,31 @@ Die Tests in `tests/` sprechen eine echte Postgres-Instanz an. Vorher `npm run d
 - **Keine personenbezogenen Daten in Logs und Fehlermeldungen** — kein Rohtext aus Dokumenten, keine Namen, Adressen oder Kontodaten.
 - **Vor jeder Performance-Optimierung messen, danach erneut.** Das Konzept macht es vor (§21); ohne Zahl keine Optimierung.
 
+## Dokumentation
+
+Vier Dokumente mit getrennten Aufgaben. Wer eines ändert, prüft, ob es ins andere gehört — doppelte Beschreibungen laufen auseinander.
+
+| Datei | Für wen | Pflege |
+|---|---|---|
+| [docs/konzept.md](docs/konzept.md) | beide | von Hand, selten. Verbindliche Referenz, beschreibt den **Soll**zustand. Abweichungen der Umsetzung gehören in ein ADR, nicht ins Konzept. |
+| [docs/stand.md](docs/stand.md) | Agenten | **erzeugt** aus dem Repository. Nie von Hand bearbeiten. |
+| [docs/handbuch.md](docs/handbuch.md) | Menschen | von Hand. Einrichtung, Begriffe, häufige Fragen. |
+| [docs/adr/](docs/adr/) | beide | von Hand, je Entscheidung eine Datei; Verzeichnis in `docs/adr/README.md`. |
+
+`docs/stand.md` ist der schnellste Einstieg in ein unbekanntes Repository: Befehle, Migrationen mit ihren Tabellen, Module, Tests, Entscheidungen und die im Quelltext markierten offenen Stellen — alles abgeleitet, nichts behauptet.
+
+**`npm run docs:check`** prüft, was sich sicher entscheiden lässt: ob `stand.md` aktuell ist, ob jedes npm-Skript hier erwähnt wird, ob jede Migration gelistet und jedes ADR im Verzeichnis steht. Ob eine Beschreibung noch *stimmt*, kann es nicht wissen — dafür gibt es den Agenten `doku-pflege`, der nach inhaltlichen Änderungen die geschriebenen Dokumente nachzieht.
+
+Der Hook unter `.githooks/pre-commit` führt die Prüfung vor jedem Commit aus. Einmalig zu aktivieren:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+
 ## Agenten
 
-Sechs Subagenten unter `.claude/agents/`:
+Sieben Subagenten unter `.claude/agents/`:
 
 | Agent | Wofür |
 |---|---|
@@ -56,6 +91,7 @@ Sechs Subagenten unter `.claude/agents/`:
 | `test-writer` | Tests für neue Logik |
 | `debugger` | Fehler und rote Tests |
 | `dsgvo-pruefer` | Datenschutzprüfung vor Modulen mit Personenbezug, nur lesend |
+| `doku-pflege` | Handbuch und CLAUDE.md nach inhaltlichen Änderungen nachziehen |
 
 ## Zielplattform und Größenordnung
 
