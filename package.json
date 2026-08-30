@@ -25,12 +25,15 @@
     "db:reset": "supabase db reset"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.8",
+    "pdfjs-dist": "^6.3.289",
     "pg": "^8.23.0",
     "pg-boss": "^12.28.1"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
     "@types/pg": "^8.23.1",
+    "pdf-lib": "^1.17.1",
     "supabase": "^2.116.0",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2",

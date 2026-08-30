@@ -3,21 +3,29 @@
  *
  * Reihenfolge nach Konzept 13:
  *   Formaterkennung (ZUGFeRD/XRechnung -> XML-Pfad, kein OCR)
- *   -> Textlayer vorhanden? pdfium : ocrmypdf
- *   -> dokument_seite (Text und Koordinaten)
- *   -> WebP-Derivate
+ *   -> Textlayer vorhanden? pdfjs : ocrmypdf
+ *   -> dokument_seite (Text)
+ *   -> WebP-Derivate (Trefferliste und Lesegroesse)
  *   -> Extraktion, Lernspeicher, Ampel
  *
- * Stand: der Rahmen steht, die Seitenverarbeitung noch nicht. Was fehlt,
- * ist unten einzeln als offener Schritt vermerkt, statt still zu tun, als
- * waere es erledigt.
+ * Die letzten drei Schritte folgen spaeter. Was noch nicht da ist, steht
+ * unten als benannter offener Punkt.
  */
 
 import type { PoolClient } from 'pg'
+import type { Ablage } from '../ablage.js'
+import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf.js'
+
+/** Breite der Vorschau in der Trefferliste. */
+export const BREITE_MINIATUR = 240
+/** Breite der Leseansicht. Das PDF selbst wird erst beim Zoomen geholt. */
+export const BREITE_LESEN = 1240
+
+export type Verarbeitungsweg = 'zugferd' | 'textlayer' | 'ocr_noetig' | 'kein_pdf'
 
 export interface Aufbereitungsergebnis {
   seiten: number
-  weg: 'zugferd' | 'textlayer' | 'ocr' | 'unbekannt'
+  weg: Verarbeitungsweg
 }
 
 /**
@@ -38,34 +46,93 @@ export function istStrukturierteRechnung(inhalt: Buffer): boolean {
 
 export async function aufbereiten(
   c: PoolClient,
+  ablage: Ablage,
   dokumentId: string,
 ): Promise<Aufbereitungsergebnis> {
-  const { rows } = await c.query<{ status: string }>(
-    'select status from dokument where id = $1',
+  const { rows } = await c.query<{ storage_praefix: string; storage_key: string | null }>(
+    `select d.storage_praefix,
+            (select f.storage_key from dokument_datei f
+              where f.dokument_id = d.id and f.variante = 'original'
+              limit 1) as storage_key
+       from dokument d
+      where d.id = $1`,
     [dokumentId],
   )
 
-  if (rows.length === 0) {
-    // Kein Fehler: das Dokument kann inzwischen storniert worden sein, oder
-    // der Auftrag gehoert zu einem anderen Mandanten und die RLS blendet es
-    // aus. Beides ist kein Grund, den Auftrag zu wiederholen.
-    return { seiten: 0, weg: 'unbekannt' }
+  if (rows.length === 0 || rows[0].storage_key === null) {
+    // Kein Fehler: das Dokument kann storniert worden sein, oder die RLS
+    // blendet es aus. Beides ist kein Grund, den Auftrag zu wiederholen.
+    return { seiten: 0, weg: 'kein_pdf' }
   }
 
-  // OFFEN -- naechster Schritt der Pipeline:
-  //   1. Original aus der Ablage lesen
-  //   2. istStrukturierteRechnung -> XML-Pfad
-  //   3. sonst Textlayer pruefen (pdfium), sonst ocrmypdf
-  //   4. dokument_seite je Seite schreiben (Text und Koordinaten)
-  //   5. WebP-Derivate: Thumbnail und Lesegroesse
-  // Dafuer fehlt die Entscheidung ueber die PDF-Bibliothek; siehe
-  // docs/adr/ -- ohne sie waere jede Zeile hier eine Vorfestlegung.
+  const praefix = rows[0].storage_praefix
+  const inhalt = await ablage.lesen(rows[0].storage_key)
 
-  await c.query(
-    `update dokument set status = 'laufend'
-      where id = $1 and status = 'in_aufbereitung'`,
-    [dokumentId],
-  )
+  if (inhalt.subarray(0, 4).toString('latin1') !== '%PDF') {
+    // XRechnung ohne PDF-Huelle: nichts zu rendern, das XML fuehrt.
+    const weg: Verarbeitungsweg = istStrukturierteRechnung(inhalt) ? 'zugferd' : 'kein_pdf'
+    await c.query(`update dokument set seitenzahl = 0, status = 'laufend' where id = $1`, [
+      dokumentId,
+    ])
+    return { seiten: 0, weg }
+  }
 
-  return { seiten: 0, weg: 'unbekannt' }
+  const seiten = await seitenLesen(inhalt)
+
+  // Die Fundstellen der einzelnen Textstuecke bleiben vorerst im Speicher.
+  // Persistiert werden sie erst, wenn die Stempelplatzierung sie braucht --
+  // sie sucht den groessten freien Block auf der Seite (Konzept 16). Bis
+  // dahin waere eine Spalte dafuer eine Vorfestlegung ohne Nutzer.
+  for (const seite of seiten) {
+    await c.query(
+      `insert into dokument_seite (dokument_id, seite, text, breite, hoehe)
+       values ($1, $2, $3, $4, $5)
+       on conflict (dokument_id, seite) do update
+          set text = excluded.text, breite = excluded.breite, hoehe = excluded.hoehe`,
+      [dokumentId, seite.seite, seite.text, seite.breite, seite.hoehe],
+    )
+  }
+
+  // Vorrendern beim Eingang, nicht bei der Anzeige -- das ist der Grund,
+  // warum der Viewer schnell ist (Konzept 1).
+  for (const seite of seiten) {
+    const bild = await seiteRendern(inhalt, seite.seite, BREITE_LESEN)
+    const schluessel = `${praefix}/ansicht/${seite.seite}-lesen.webp`
+    await ablage.schreiben(schluessel, bild)
+    await c.query(
+      `insert into dokument_datei (dokument_id, variante, storage_key, mime, groesse, seite)
+       values ($1, 'ansicht_webp', $2, 'image/webp', $3, $4)`,
+      [dokumentId, schluessel, bild.byteLength, seite.seite],
+    )
+  }
+
+  if (seiten.length > 0) {
+    const miniatur = await seiteRendern(inhalt, 1, BREITE_MINIATUR)
+    const schluessel = `${praefix}/ansicht/1-miniatur.webp`
+    await ablage.schreiben(schluessel, miniatur)
+    await c.query(
+      `insert into dokument_datei (dokument_id, variante, storage_key, mime, groesse, seite)
+       values ($1, 'ansicht_webp', $2, 'image/webp', $3, 1)`,
+      [dokumentId, schluessel, miniatur.byteLength],
+    )
+  }
+
+  const weg: Verarbeitungsweg = istStrukturierteRechnung(inhalt)
+    ? 'zugferd'
+    : hatTextlayer(seiten)
+      ? 'textlayer'
+      : 'ocr_noetig'
+
+  await c.query(`update dokument set seitenzahl = $2, status = 'laufend' where id = $1`, [
+    dokumentId,
+    seiten.length,
+  ])
+
+  // OFFEN, in dieser Reihenfolge:
+  //   * weg = 'ocr_noetig' -> ocrmypdf aufrufen und den Seitentext ersetzen.
+  //     Braucht Python, Tesseract mit deutschem Sprachpaket und Ghostscript.
+  //   * KI-Extraktion hinter dem Provider-Interface -> extraktion_feld
+  //   * Lernspeicher abfragen, Plausibilitaetspruefungen, Ampel setzen
+
+  return { seiten: seiten.length, weg }
 }

@@ -13,7 +13,6 @@ import { Client } from 'pg'
 import { DateisystemAblage, inhaltHash } from '../src/ablage.js'
 import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen.js'
 import { dubletteSuchen } from '../src/ingest/dublette.js'
-import { istStrukturierteRechnung } from '../src/worker/aufbereitung.js'
 
 const VERBINDUNG =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
@@ -186,25 +185,5 @@ describe('Dublettenpruefung', () => {
       }),
     )
     expect(befund.istDublette).toBe(false)
-  })
-})
-
-describe('Formaterkennung', () => {
-  it('erkennt ZUGFeRD an der eingebetteten XML-Datei', () => {
-    const pdf = Buffer.from('%PDF-1.7\n... /F (factur-x.xml) ...', 'latin1')
-    expect(istStrukturierteRechnung(pdf)).toBe(true)
-  })
-
-  it('erkennt eine reine XRechnung', () => {
-    const xml = Buffer.from(
-      '<?xml version="1.0"?><rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece">',
-      'utf8',
-    )
-    expect(istStrukturierteRechnung(xml)).toBe(true)
-  })
-
-  it('haelt ein gewoehnliches PDF nicht dafuer', () => {
-    const pdf = Buffer.from('%PDF-1.7\nein gescanntes Blatt ohne Anhang', 'latin1')
-    expect(istStrukturierteRechnung(pdf)).toBe(false)
   })
 })

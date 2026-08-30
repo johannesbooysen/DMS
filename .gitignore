@@ -45,3 +45,6 @@ desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Lokale Ablage der Originaldateien (in Produktion S3 mit Object Lock)
+.ablage/

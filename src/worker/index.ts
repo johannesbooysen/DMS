@@ -7,11 +7,15 @@
  */
 
 import type { Job } from 'pg-boss'
+import { DateisystemAblage } from '../ablage.js'
 import { alsSystem } from '../db.js'
 import { AUFBEREITUNG, queueBeenden, queueStarten, type AufbereitungsAuftrag } from '../queue.js'
 import { aufbereiten } from './aufbereitung.js'
 
+const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
+
 async function start(): Promise<void> {
+  const ablage = new DateisystemAblage(ABLAGE_WURZEL)
   const boss = await queueStarten()
 
   boss.on('error', (fehler: Error) => {
@@ -25,7 +29,7 @@ async function start(): Promise<void> {
     async (auftraege: Job<AufbereitungsAuftrag>[]) => {
       for (const auftrag of auftraege) {
         const { dokumentId, benutzerId } = auftrag.data
-        await alsSystem(benutzerId, (c) => aufbereiten(c, dokumentId))
+        await alsSystem(benutzerId, (c) => aufbereiten(c, ablage, dokumentId))
       }
     },
   )
