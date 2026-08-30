@@ -78,3 +78,30 @@ Die Fundstellen der Textstücke werden derzeit **nicht** gespeichert.
 ist zu entscheiden, ob sie als eigene Spalte, als eigene Tabelle oder bei
 Bedarf neu berechnet werden — für eine Vorfestlegung ohne Nutzer ist es zu
 früh.
+
+## Nachtrag: Schriften beim Rendern
+
+Beim ersten sichtbaren Beleg fiel ein Fehler auf, den kein Test gefunden
+hatte: Wörter erschienen auseinandergezogen — „M u s t e r r e i n i g u n g".
+Die Textextraktion war korrekt, nur das Bild war falsch.
+
+Ursache: pdfjs zeichnet Text über die Zeichenfläche. Bettet ein PDF seine
+Schrift ein, benutzt pdfjs diese Schrift und alles stimmt. Verlässt sich das
+PDF auf eine der 14 Standardschriften, sucht die Zeichenfläche eine Schrift
+dieses Namens — und nimmt bei Fehlanzeige eine Ersatzschrift mit anderen
+Vorschubbreiten.
+
+Nachgeprüft mit zwei erzeugten PDFs, gleicher Text: mit eingebetteter
+TrueType-Schrift einwandfrei, mit nicht eingebetteter Helvetica verzerrt. Der
+Fehler betrifft also nur die zweite Gruppe. Lieferantenrechnungen betten ihre
+Schriften fast immer ein — deshalb wäre das lange unbemerkt geblieben und
+irgendwann bei einem schlichten Beleg aufgetaucht.
+
+Behoben in [src/ingest/schriften.ts](../../src/ingest/schriften.ts): metrisch
+gleichwertige Schriften werden unter den erwarteten Namen angemeldet — Arial
+für Helvetica, Times New Roman für Times, Courier New für Courier, unter Linux
+die Liberation-Schriften. Fehlt eine Datei, wird sie übersprungen; das Rendern
+soll daran nicht scheitern.
+
+Offen bleibt: Im Container muss ein Schriftpaket installiert sein. Ohne
+Liberation-Schriften kehrt der Fehler zurück, und zwar leise.

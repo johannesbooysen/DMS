@@ -12,6 +12,7 @@
 
 import { createCanvas } from '@napi-rs/canvas'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { schriftenAnmelden } from './schriften.js'
 
 /** Fundstelle eines Textstuecks in Seitenkoordinaten (Ursprung oben links). */
 export interface Textstueck {
@@ -38,6 +39,19 @@ export interface Seiteninhalt {
 const TEXTLAYER_MINDESTZEICHEN = 40
 
 /**
+ * Die Metriken der 14 PDF-Standardschriften (Helvetica, Times, Courier …).
+ * Ohne sie rendert pdfjs mit geschätzten Zeichenbreiten -- das Ergebnis ist
+ * lesbar, aber die Abstände stimmen nicht, und genau dieses Bild bekommt der
+ * Anwender zu sehen. Die Dateien liegen im Paket.
+ */
+// Als file://-URL, nicht als Pfad: pdfjs verlangt einen Schraegstrich am
+// Ende, und unter Windows liefert ein Dateipfad einen Rueckwaertsschraegstrich.
+const STANDARDSCHRIFTEN = new URL(
+  '../../node_modules/pdfjs-dist/standard_fonts/',
+  import.meta.url,
+).href
+
+/**
  * Gibt den Ladeauftrag zurueck, nicht das Dokument: freigegeben wird ueber
  * `ladeauftrag.destroy()`. Ohne das bleibt je Aufruf ein Transport offen.
  */
@@ -46,6 +60,7 @@ function dokumentOeffnen(inhalt: Buffer) {
     data: new Uint8Array(inhalt),
     // Kein eigener Worker-Prozess: der Worker ist bereits einer.
     useSystemFonts: true,
+    standardFontDataUrl: STANDARDSCHRIFTEN,
   })
 }
 
@@ -113,6 +128,8 @@ export async function seiteRendern(
   zielbreite: number,
   qualitaet = 82,
 ): Promise<Buffer> {
+  schriftenAnmelden()
+
   const ladeauftrag = dokumentOeffnen(inhalt)
   const doc = await ladeauftrag.promise
   try {

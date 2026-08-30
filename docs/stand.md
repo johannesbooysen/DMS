@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 44 Tabellen, 45 Policies,
-15 Module, 100 Testfaelle in 7 Dateien,
+16 Module, 100 Testfaelle in 7 Dateien,
 2 Architekturentscheidungen, 2 markierte offene Stellen.
 
 ## Befehle
@@ -101,6 +101,7 @@ Policies: 1
 | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) | Eingang: eine Datei wird zum Dokument |
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
+| [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
