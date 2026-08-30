@@ -26,6 +26,8 @@ const DORIS = '20000000-0000-0000-0000-000000000004'
 const D1_OBJEKT42 = '70000000-0000-0000-0000-000000000001'
 const D2_VERSICHERUNG_OBJEKT43 = '70000000-0000-0000-0000-000000000002'
 const D3_OBJEKT43 = '70000000-0000-0000-0000-000000000003'
+const D4_OBJEKT42_MAI = '70000000-0000-0000-0000-000000000004'
+const D5_OBJEKT42_NICHT_UMLAGEFAEHIG = '70000000-0000-0000-0000-000000000005'
 const LAUF_D1 = '75000000-0000-0000-0000-000000000001'
 const STUFE_SACHLICH = '66000000-0000-0000-0000-000000000001'
 const STEMPEL_SACHLICH = '60000000-0000-0000-0000-000000000001'
@@ -91,12 +93,18 @@ describe('Mandantentrennung', () => {
 describe('Objektzustaendigkeit', () => {
   it('zeigt dem Objektbearbeiter nur Belege seiner Objekte', async () => {
     const sichtbar = await sichtbareDokumente(ANNA)
-    expect(sichtbar).toEqual([D1_OBJEKT42])
+    expect(sichtbar).toEqual([D1_OBJEKT42, D4_OBJEKT42_MAI, D5_OBJEKT42_NICHT_UMLAGEFAEHIG])
   })
 
   it('zeigt dem Benutzer mit globalem Objektzugriff alle Belege seines Mandanten', async () => {
     const sichtbar = await sichtbareDokumente(BERND)
-    expect(sichtbar).toEqual([D1_OBJEKT42, D2_VERSICHERUNG_OBJEKT43, D3_OBJEKT43])
+    expect(sichtbar).toEqual([
+      D1_OBJEKT42,
+      D2_VERSICHERUNG_OBJEKT43,
+      D3_OBJEKT43,
+      D4_OBJEKT42_MAI,
+      D5_OBJEKT42_NICHT_UMLAGEFAEHIG,
+    ])
   })
 
   it('beendet die Sicht mit dem Ablauf der Zustaendigkeit', async () => {

@@ -164,4 +164,77 @@ insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, faellig_am) values
   ('75000000-0000-0000-0000-000000000002', '66000000-0000-0000-0000-000000000001',
    '20000000-0000-0000-0000-000000000003', now() + interval '3 days');
 
+-- ---------------------------------------------------------------------------
+-- Einheit, Mieter und Kontierung
+--
+-- Die Konstellation prueft den Mieterwechsel: Meike mietet bis Ende Maerz
+-- 2026, Nico ab April. Jeder darf nur die Belege sehen, deren
+-- Leistungszeitraum in seine Mietzeit faellt -- und nur, wenn der Beleg
+-- ueberhaupt eine umlagefaehige Zeile hat.
+-- ---------------------------------------------------------------------------
+
+insert into konto (id, kontenrahmen_id, kontonummer, bezeichnung,
+                   umlagefaehig_default) values
+  ('37000000-0000-0000-0000-000000000002', '35000000-0000-0000-0000-000000000001',
+   '4000', 'Verwalterverguetung', false);
+
+insert into einheit (id, objekt_id, einheitsnummer, lage, typ, mea, wohnflaeche) values
+  ('80000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000042',
+   'WE 1', 'Erdgeschoss links', 'wohnung', 0.2500, 72.40);
+
+insert into person (id, mandant_id, art, name, email) values
+  ('85000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'mieter', 'Meike Meier', 'meike@example.invalid'),
+  ('85000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'mieter', 'Nico Neumann', 'nico@example.invalid');
+
+insert into person_bezug (person_id, objekt_id, einheit_id, art,
+                          gueltig_von, gueltig_bis) values
+  ('85000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000042',
+   '80000000-0000-0000-0000-000000000001', 'mieter',
+   date '2025-01-01', date '2026-03-31'),
+  ('85000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000042',
+   '80000000-0000-0000-0000-000000000001', 'mieter',
+   date '2026-04-01', null);
+
+-- d1 liegt in Meikes Mietzeit
+update dokument
+   set leistung_von = date '2026-01-01', leistung_bis = date '2026-03-31'
+ where id = '70000000-0000-0000-0000-000000000001';
+
+-- d4 liegt in Nicos Mietzeit, d5 ist nicht umlagefaehig
+insert into dokument (id, mandant_id, objekt_id, belegart, ordnungsgruppe_id,
+                      eingangskanal, inhalt_hash, storage_praefix, seitenzahl,
+                      leistung_von, leistung_bis, ampel_gesamt, status) values
+  ('70000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000042', 'rechnung',
+   '40000000-0000-0000-0000-000000000001', 'mail', 'hash-d4',
+   'nord/42/2026/d4', 1, date '2026-05-01', date '2026-05-31', 'gruen', 'laufend'),
+  ('70000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000042', 'rechnung',
+   '40000000-0000-0000-0000-000000000001', 'mail', 'hash-d5',
+   'nord/42/2026/d5', 1, date '2026-02-01', date '2026-02-28', 'gruen', 'laufend');
+
+insert into rechnung_fakten (dokument_id, kreditor_id, rechnungsnummer,
+                             rechnungsdatum, netto, steuer, brutto, wirtschaftsjahr) values
+  ('70000000-0000-0000-0000-000000000004', '55000000-0000-0000-0000-000000000001',
+   'RE-2026-0004', date '2026-06-02', 252.10, 47.90, 300.00, 2026),
+  ('70000000-0000-0000-0000-000000000005', '55000000-0000-0000-0000-000000000001',
+   'RE-2026-0005', date '2026-03-02', 420.17, 79.83, 500.00, 2026);
+
+-- d1: zwei umlagefaehige Zeilen, Summe genau 1.240,00 -- der Summenzwang
+-- muss dafuer erfuellt sein.
+insert into kontierung (dokument_id, zeile_nr, konto_id, betrag_netto,
+                        steuersatz, betrag_brutto, umlagefaehig,
+                        umlageschluessel_id, quelle) values
+  ('70000000-0000-0000-0000-000000000001', 1, '37000000-0000-0000-0000-000000000001',
+   672.27, 19.00, 800.00, true, '36000000-0000-0000-0000-000000000001', 'muster'),
+  ('70000000-0000-0000-0000-000000000001', 2, '37000000-0000-0000-0000-000000000001',
+   369.75, 19.00, 440.00, true, '36000000-0000-0000-0000-000000000001', 'mensch'),
+  ('70000000-0000-0000-0000-000000000004', 1, '37000000-0000-0000-0000-000000000001',
+   252.10, 19.00, 300.00, true, '36000000-0000-0000-0000-000000000001', 'muster'),
+  -- nicht umlagefaehig: Verwalterverguetung
+  ('70000000-0000-0000-0000-000000000005', 1, '37000000-0000-0000-0000-000000000002',
+   420.17, 19.00, 500.00, false, null, 'mensch');
+
 commit;
