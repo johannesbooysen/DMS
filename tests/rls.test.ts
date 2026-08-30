@@ -117,7 +117,8 @@ describe('Objektzustaendigkeit', () => {
     const sichtbar = await alsBenutzer(ANNA, async (c) => {
       await c.query('reset role')
       await c.query(
-        `update objekt_zustaendigkeit set gueltig_bis = current_date - 1
+        `update objekt_zustaendigkeit
+            set gueltig_von = current_date - 30, gueltig_bis = current_date - 1
           where benutzer_id = $1`,
         [ANNA],
       )
@@ -133,7 +134,8 @@ describe('Objektzustaendigkeit', () => {
       // Als Eigentuemer setzen, damit die Aenderung nicht selbst an der RLS scheitert.
       await c.query('reset role')
       await c.query(
-        `update objekt_zustaendigkeit set gueltig_bis = current_date - 1
+        `update objekt_zustaendigkeit
+            set gueltig_von = current_date - 30, gueltig_bis = current_date - 1
           where benutzer_id = $1`,
         [ANNA],
       )

@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 43 Tabellen, 44 Policies,
-8 Module, 60 Testfaelle in 4 Dateien,
+Auf einen Blick: 44 Tabellen, 45 Policies,
+9 Module, 80 Testfaelle in 5 Dateien,
 2 Architekturentscheidungen, 1 markierte offene Stellen.
 
 ## Befehle
@@ -73,6 +73,21 @@ Funktionen: `app.meine_objekte`, `app.darf`
 
 Policies: 3
 
+### `supabase/migrations/20260830110000_zeitraum_pruefregeln.sql`
+
+Nachgezogene Pruefregel auf datierten Zustaendigkeiten
+
+
+### `supabase/migrations/20260830120000_prozessknoten.sql`
+
+Workflow als Blockbaum
+
+Tabellen: `prozessknoten`
+
+Funktionen: `app.prozessbaum_pruefen`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -85,6 +100,7 @@ Policies: 3
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
+| [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
 
 ## Tests
 
@@ -94,6 +110,7 @@ Policies: 3
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 23 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
+| [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 
 ## Architekturentscheidungen
 

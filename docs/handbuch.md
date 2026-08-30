@@ -106,6 +106,8 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 | **Ordnungsgruppe** | Betriebskosten, Legal, Versicherungsschäden, Technik … Steuert nicht nur die Ablage, sondern auch die Zuständigkeit und den Ablauf. |
 | **Spezialgebiet** | Im Bestand „Fachgebiet". Lenkt einen Beleg an einen Spezialisten, ohne ihm das ganze Objekt zu öffnen. |
 | **Lauf** | Der Weg eines Belegs durch die Stufen. Kennt seine eingefrorene Prozessfassung. |
+| **Blockbaum** | Der Ablauf als geschachtelte Bausteine: nacheinander, gleichzeitig, Verzweigung, Stufe. Bausteine rasten ineinander, statt frei verbunden zu werden. |
+| **Bedingung** | Regel an einer Verzweigung, aufgebaut aus einer festen Feldliste. Kein Freitext, kein Skript. |
 | **Stufe** | Eine Station im Lauf: sachliche Prüfung, Kontierung, Freigabe … |
 | **Aufgabe** | Was in einem Postfach erscheint. Alle drei Postfächer sind nur Sichten darauf. |
 | **Stempel** | Eine getroffene Entscheidung, festgehalten als Ereignis. Sagt *nicht*, wohin der Beleg als Nächstes geht. |

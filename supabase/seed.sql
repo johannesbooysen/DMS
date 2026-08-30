@@ -113,6 +113,23 @@ insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung
   ('66000000-0000-0000-0000-000000000003', '65000000-0000-0000-0000-000000000001',
    3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24);
 
+-- Der Ablauf als Blockbaum (ADR 0002): eine Wurzel "nacheinander" mit den
+-- drei Stufen als Blaetter. Die Datenmigration in 20260830120000 erzeugt
+-- denselben Baum fuer Bestandsdefinitionen -- beim Neuaufbau laeuft sie vor
+-- dem Seed und findet nichts vor, deshalb steht er hier ausdruecklich.
+insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, stufe_id) values
+  ('67000000-0000-0000-0000-000000000001', '65000000-0000-0000-0000-000000000001',
+   null, 0, 'nacheinander', null),
+  ('67000000-0000-0000-0000-000000000002', '65000000-0000-0000-0000-000000000001',
+   '67000000-0000-0000-0000-000000000001', 0, 'stufe',
+   '66000000-0000-0000-0000-000000000001'),
+  ('67000000-0000-0000-0000-000000000003', '65000000-0000-0000-0000-000000000001',
+   '67000000-0000-0000-0000-000000000001', 1, 'stufe',
+   '66000000-0000-0000-0000-000000000002'),
+  ('67000000-0000-0000-0000-000000000004', '65000000-0000-0000-0000-000000000001',
+   '67000000-0000-0000-0000-000000000001', 2, 'stufe',
+   '66000000-0000-0000-0000-000000000003');
+
 -- Drei Belege in Nord, einer in Sued.
 --   d1  Objekt 42, Betriebskosten          -> Anna sieht ihn
 --   d2  Objekt 43, Versicherungsschaeden   -> Clara sieht ihn, Anna nicht
