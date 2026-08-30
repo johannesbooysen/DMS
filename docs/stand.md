@@ -10,7 +10,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 
 Auf einen Blick: 40 Tabellen, 41 Policies,
 8 Module, 53 Testfaelle in 4 Dateien,
-1 Architekturentscheidungen, 1 markierte offene Stellen.
+2 Architekturentscheidungen, 1 markierte offene Stellen.
 
 ## Befehle
 
@@ -90,6 +90,7 @@ Policies: 5
 | Entscheidung | Stand |
 |---|---|
 | [0001 · PDF-Bibliothek: pdfjs-dist statt pdfium](adr/0001-pdf-bibliothek.md) | angenommen |
+| [0002 · Workflow-Modell: Kette oder Graph, Bedingungen, Delegation](adr/0002-workflow-modell.md) | vorgeschlagen |
 
 ## Im Quelltext markierte offene Stellen
 

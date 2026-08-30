@@ -15,6 +15,7 @@ verweist auf den Nachfolger.
 | Nr. | Entscheidung | Stand |
 |---|---|---|
 | [0001](0001-pdf-bibliothek.md) | PDF-Bibliothek: pdfjs-dist statt pdfium | angenommen |
+| [0002](0002-workflow-modell.md) | Workflow-Modell: Kette oder Graph, Bedingungen, Delegation | **vorgeschlagen** |
 
 > Dieses Verzeichnis wird von `npm run docs:check` geprüft: Jedes ADR im
 > Ordner muss hier stehen.
