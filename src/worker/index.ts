@@ -1,0 +1,48 @@
+/**
+ * Worker-Prozess.
+ *
+ * Laeuft getrennt von der Next.js-Anwendung: OCR, Extraktion und Rendern
+ * dauern zu lange fuer einen Request. Gestartet ueber `npm run dev:worker`
+ * oder zusammen mit der Anwendung ueber `npm run dev`.
+ */
+
+import type { Job } from 'pg-boss'
+import { alsSystem } from '../db.js'
+import { AUFBEREITUNG, queueBeenden, queueStarten, type AufbereitungsAuftrag } from '../queue.js'
+import { aufbereiten } from './aufbereitung.js'
+
+async function start(): Promise<void> {
+  const boss = await queueStarten()
+
+  boss.on('error', (fehler: Error) => {
+    // Keine Auftragsdaten mitloggen -- sie enthalten Kennungen, die mit
+    // Dokumentinhalten verknuepfbar sind.
+    console.error('[worker] Queue-Fehler:', fehler.message)
+  })
+
+  await boss.work<AufbereitungsAuftrag>(
+    AUFBEREITUNG,
+    async (auftraege: Job<AufbereitungsAuftrag>[]) => {
+      for (const auftrag of auftraege) {
+        const { dokumentId, benutzerId } = auftrag.data
+        await alsSystem(benutzerId, (c) => aufbereiten(c, dokumentId))
+      }
+    },
+  )
+
+  console.log('[worker] bereit, Warteschlange:', AUFBEREITUNG)
+}
+
+async function beenden(signal: string): Promise<void> {
+  console.log(`[worker] ${signal} empfangen, fahre herunter`)
+  await queueBeenden()
+  process.exit(0)
+}
+
+process.on('SIGINT', () => void beenden('SIGINT'))
+process.on('SIGTERM', () => void beenden('SIGTERM'))
+
+start().catch((fehler: unknown) => {
+  console.error('[worker] Start fehlgeschlagen:', fehler)
+  process.exit(1)
+})

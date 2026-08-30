@@ -25,7 +25,8 @@
     "db:reset": "supabase db reset"
   },
   "dependencies": {
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "pg-boss": "^12.28.1"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
