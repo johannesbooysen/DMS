@@ -90,7 +90,7 @@ Policies: 5
 | Entscheidung | Stand |
 |---|---|
 | [0001 · PDF-Bibliothek: pdfjs-dist statt pdfium](adr/0001-pdf-bibliothek.md) | angenommen |
-| [0002 · Workflow-Modell: Kette oder Graph, Bedingungen, Delegation](adr/0002-workflow-modell.md) | vorgeschlagen |
+| [0002 · Workflow-Modell: Blockstruktur, Bedingungen, Delegation](adr/0002-workflow-modell.md) | angenommen |
 
 ## Im Quelltext markierte offene Stellen
 

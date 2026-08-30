@@ -150,4 +150,6 @@ Gemessen in §21 — beim Entwickeln mit Seed-Daten fällt beides nicht auf:
 
 Das Konzept (§23) schreibt einen dünnen Schnitt durch alles vor, nicht Schicht für Schicht: Migrationen + Seed + **RLS-Tests ab Tag eins** → Ingest (Hash, Dublette, Textlayer/OCR, Seitentext, WebP) → Viewer (erste Seite < 100 ms, PDF nur per Range-Request) → Workflow-Engine (eine Belegart, eine Kette, keine Bedingungen) → Postfächer (alle drei nur Sichten auf `aufgabe`) → dann in die Breite.
 
+**Der Workflow wird ein Blockbaum, keine Kette.** [ADR 0002](docs/adr/0002-workflow-modell.md) ist angenommen und ändert diese Reihenfolge: Vor der Engine kommen das Rollenmodell aus §17, die Tabelle `prozessknoten` (`nacheinander` / `gleichzeitig` / `verzweigung` / `stufe`) und Bedingungen als `jsonb` über einer Weißliste. Die Engine läuft dann einen Baum ab, statt `reihenfolge` hochzuzählen. Wer jetzt eine lineare Engine baut, baut sie zweimal. §8.8 („Kein Prozessdesigner") ist damit bewusst aufgehoben — die Auflage daraus bleibt: Simulation vor dem Aktivieren.
+
 §24 listet die offenen Punkte. Zwei davon sind nachträglich teuer und sollten vor größerem Ingest-Code bedacht werden: **Stapelscan mit Belegtrennung** (eine Scandatei enthält zwanzig Belege) und **Vorlagen für Ausgangspost** (die Systemaktionen sind vorgesehen, die Vorlagenverwaltung fehlt).
