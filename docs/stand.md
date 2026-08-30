@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 44 Tabellen, 45 Policies,
-11 Module, 95 Testfaelle in 6 Dateien,
+11 Module, 99 Testfaelle in 7 Dateien,
 2 Architekturentscheidungen, 2 markierte offene Stellen.
 
 ## Befehle
@@ -111,6 +111,7 @@ Policies: 1
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 16 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
+| [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 23 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |

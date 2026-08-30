@@ -11,6 +11,7 @@
 
 import type { PoolClient } from 'pg'
 import { inhaltHash, type Ablage } from '../ablage.js'
+import { aufbereitungEinreihen } from '../queue.js'
 import { laufStarten } from '../workflow/engine.js'
 import { dubletteSuchen, type Dublettenbefund } from './dublette.js'
 
@@ -98,5 +99,13 @@ export async function dokumentAufnehmen(
   // hier wuerde frueher oder spaeter vom ersten abweichen.
   const lauf = await laufStarten(c, dokumentId)
 
+  // Aufbereitung einreihen -- in derselben Transaktion, damit Dokument und
+  // Auftrag gemeinsam sichtbar werden.
+  await aufbereitungEinreihen(
+    { dokumentId, mandantId: eingang.mandantId, benutzerId: erfasstVon },
+    c,
+  )
+
   return { dokumentId, hash, dublette, laufGestartet: lauf !== null }
+
 }
