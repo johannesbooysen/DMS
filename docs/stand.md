@@ -9,8 +9,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 44 Tabellen, 45 Policies,
-9 Module, 80 Testfaelle in 5 Dateien,
-2 Architekturentscheidungen, 1 markierte offene Stellen.
+11 Module, 95 Testfaelle in 6 Dateien,
+2 Architekturentscheidungen, 2 markierte offene Stellen.
 
 ## Befehle
 
@@ -100,13 +100,16 @@ Policies: 1
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
+| [`src/workflow/baum.ts`](../src/workflow/baum.ts) | Der Blockbaum: laden, ablaufen, simulieren |
 | [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
+| [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
 
 ## Tests
 
 | Datei | Faelle | Gruppen |
 |---|---|---|
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 16 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
+| [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 23 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
@@ -124,3 +127,4 @@ Policies: 1
 | Fundstelle |
 |---|
 | [`src/worker/aufbereitung.ts:131`](../src/worker/aufbereitung.ts) |
+| [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
