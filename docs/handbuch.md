@@ -203,6 +203,7 @@ ausgenommen. Testdaten werden erzeugt, siehe `tests/hilfe/pdf-bauen.ts`.
 | `docs/handbuch.md` | Dieses Dokument. |
 | `docs/stand.md` | Erzeugte Übersicht des Ist-Zustands. |
 | `docs/adr/` | Einzelne Architekturentscheidungen mit Begründung. |
+| `docs/messungen.md` | Gemessene Zahlen mit Aufbau und Bedingungen. |
 | `supabase/migrations/` | Das Schema, als handgeschriebenes DDL. |
 | `supabase/seed.sql` | Synthetische Ausgangsdaten. |
 | `src/` | Anwendungscode. |

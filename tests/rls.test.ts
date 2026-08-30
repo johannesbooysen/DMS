@@ -31,6 +31,7 @@ const D2_VERSICHERUNG_OBJEKT43 = '70000000-0000-0000-0000-000000000002'
 const D3_OBJEKT43 = '70000000-0000-0000-0000-000000000003'
 const D4_OBJEKT42_MAI = '70000000-0000-0000-0000-000000000004'
 const D5_OBJEKT42_NICHT_UMLAGEFAEHIG = '70000000-0000-0000-0000-000000000005'
+const D9_FREMDER_MANDANT = '70000000-0000-0000-0000-000000000009'
 const LAUF_D1 = '75000000-0000-0000-0000-000000000001'
 const STUFE_SACHLICH = '66000000-0000-0000-0000-000000000001'
 const STEMPEL_SACHLICH = '60000000-0000-0000-0000-000000000001'
@@ -94,21 +95,37 @@ describe('Mandantentrennung', () => {
 })
 
 describe('Objektzustaendigkeit', () => {
-  it('zeigt dem Objektbearbeiter nur Belege seiner Objekte', async () => {
+  // Geprueft wird gegen die bekannten Seed-Belege, nicht gegen die
+  // vollstaendige Liste: Ein Test, der bricht, weil jemand lokal einen Beleg
+  // angelegt hat, prueft die falsche Aussage.
+  it('zeigt dem Objektbearbeiter die Belege seines Objekts', async () => {
     const sichtbar = await sichtbareDokumente(ANNA)
-    expect(sichtbar).toEqual([D1_OBJEKT42, D4_OBJEKT42_MAI, D5_OBJEKT42_NICHT_UMLAGEFAEHIG])
+    for (const id of [D1_OBJEKT42, D4_OBJEKT42_MAI, D5_OBJEKT42_NICHT_UMLAGEFAEHIG]) {
+      expect(sichtbar).toContain(id)
+    }
+  })
+
+  it('zeigt ihm keinen Beleg eines fremden Objekts', async () => {
+    const sichtbar = await sichtbareDokumente(ANNA)
+    for (const id of [D2_VERSICHERUNG_OBJEKT43, D3_OBJEKT43, D9_FREMDER_MANDANT]) {
+      expect(sichtbar).not.toContain(id)
+    }
   })
 
   it('zeigt dem Benutzer mit mandantenweiter Rolle alle Belege seines Mandanten', async () => {
     const sichtbar = await sichtbareDokumente(BERND)
-    expect(sichtbar).toEqual([
+    for (const id of [
       D1_OBJEKT42,
       D2_VERSICHERUNG_OBJEKT43,
       D3_OBJEKT43,
       D4_OBJEKT42_MAI,
       D5_OBJEKT42_NICHT_UMLAGEFAEHIG,
-    ])
+    ]) {
+      expect(sichtbar).toContain(id)
+    }
+    expect(sichtbar).not.toContain(D9_FREMDER_MANDANT)
   })
+
 
   // Sicht auf ein Objekt entsteht aus zwei unabhaengigen Quellen:
   // Objektzustaendigkeit und Rollenzuweisung. Sie ergaenzen sich -- eine

@@ -4,9 +4,10 @@
     "lib": [
       "ES2023"
     ],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "paths": { "@/*": ["./src/*"] },
     "types": [
       "node"
     ],

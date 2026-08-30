@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 44 Tabellen, 45 Policies,
-11 Module, 99 Testfaelle in 7 Dateien,
+15 Module, 100 Testfaelle in 7 Dateien,
 2 Architekturentscheidungen, 2 markierte offene Stellen.
 
 ## Befehle
@@ -93,6 +93,10 @@ Policies: 1
 | Datei | Aufgabe |
 |---|---|
 | [`src/ablage.ts`](../src/ablage.ts) | Ablage der Originaldateien |
+| [`src/app/api/beleg/[id]/pdf/route.ts`](../src/app/api/beleg/[id]/pdf/route.ts) | Das Original-PDF -- nur per Range-Request |
+| [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
+| [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
+| [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) | Eingang: eine Datei wird zum Dokument |
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
@@ -113,7 +117,7 @@ Policies: 1
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
-| [`tests/rls.test.ts`](../tests/rls.test.ts) | 23 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
+| [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 
 ## Architekturentscheidungen
