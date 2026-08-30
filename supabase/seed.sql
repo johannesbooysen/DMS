@@ -10,6 +10,7 @@
 --   Clara -- Spezialgebiet Versicherung, mandantenweit; sieht den
 --            Versicherungsbeleg in Objekt 43, aber nicht dessen uebrige Belege
 --   Doris -- anderer Mandant, darf nichts aus Nord sehen
+--   Eva   -- Geschaeftsleitung, mandantenweit; bekommt die Freigabestufe
 
 begin;
 
@@ -25,7 +26,9 @@ insert into benutzer (id, mandant_id, name, email) values
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
    'Clara Cordes',  'clara@example.invalid'),
   ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002',
-   'Doris Dahl',    'doris@example.invalid');
+   'Doris Dahl',    'doris@example.invalid'),
+  ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
+   'Eva Ebert',     'eva@example.invalid');
 
 insert into spezialgebiet (id, mandant_id, name, farbe) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
@@ -105,13 +108,13 @@ insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_
    'rechnung', 1, 'aktiv', now());
 
 insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
-                          zustaendigkeit_typ, sla_stunden) values
+                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref) values
   ('66000000-0000-0000-0000-000000000001', '65000000-0000-0000-0000-000000000001',
-   1, 'sachlich', 'Sachliche Pruefung', 'objektverantwortlich', 72),
+   1, 'sachlich', 'Sachliche Pruefung', 'objektverantwortlich', 72, null),
   ('66000000-0000-0000-0000-000000000002', '65000000-0000-0000-0000-000000000001',
-   2, 'rechnerisch', 'Rechnerische Pruefung', 'rolle', 48),
+   2, 'rechnerisch', 'Rechnerische Pruefung', 'rolle', 48, '90000000-0000-0000-0000-000000000002'),
   ('66000000-0000-0000-0000-000000000003', '65000000-0000-0000-0000-000000000001',
-   3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24);
+   3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24, '90000000-0000-0000-0000-000000000003');
 
 -- Der Ablauf als Blockbaum (ADR 0002): eine Wurzel "nacheinander" mit den
 -- drei Stufen als Blaetter. Die Datenmigration in 20260830120000 erzeugt
@@ -129,6 +132,33 @@ insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp,
   ('67000000-0000-0000-0000-000000000004', '65000000-0000-0000-0000-000000000001',
    '67000000-0000-0000-0000-000000000001', 2, 'stufe',
    '66000000-0000-0000-0000-000000000003');
+
+-- ---------------------------------------------------------------------------
+-- Stempel: welche Entscheidung an welcher Stufe, und wer darf sie treffen
+-- ---------------------------------------------------------------------------
+
+insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe,
+                        kommentar_pflicht) values
+  ('60000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   'Rechnerisch richtig', 'RECHN', 'freigabe', '#3B4A80', false),
+  ('60000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001',
+   'Freigegeben', 'FREI', 'freigabe', '#2F6F4E', false),
+  ('60000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
+   'Abgelehnt', 'ABL', 'ablehnung', '#B3271E', true);
+
+-- Welche Stempel an welcher Stufe moeglich sind
+insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
+  -- Sachliche Pruefung
+  ('66000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', 0),
+  ('66000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000005', 2),
+  -- Rechnerische Pruefung
+  ('66000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000003', 0),
+  ('66000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', 1),
+  -- Freigabe Geschaeftsleitung
+  ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000004', 0),
+  ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000005', 2);
 
 -- Drei Belege in Nord, einer in Sued.
 --   d1  Objekt 42, Betriebskosten          -> Anna sieht ihn
@@ -218,7 +248,24 @@ insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
   ('20000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001',
    '50000000-0000-0000-0000-000000000042'),
   -- Bernd: Buchhaltung, mandantenweit
-  ('20000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', null);
+  ('20000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', null),
+  -- Eva: Geschaeftsleitung, mandantenweit
+  ('20000000-0000-0000-0000-000000000005', '90000000-0000-0000-0000-000000000003', null);
+
+-- Wer darf welchen Stempel setzen. Als Matrix Stempeltyp x Rolle gedacht
+-- (Konzept 8.3), hier als Zeilen.
+insert into stempel_recht (stempeltyp_id, rolle_id) values
+  -- Objektbearbeitung: sachlich richtig, zur Klaerung, ablehnen
+  ('60000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001'),
+  ('60000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000001'),
+  ('60000000-0000-0000-0000-000000000005', '90000000-0000-0000-0000-000000000001'),
+  -- Buchhaltung: rechnerisch richtig, zur Klaerung
+  ('60000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002'),
+  -- Geschaeftsleitung: freigeben, ablehnen, zur Klaerung
+  ('60000000-0000-0000-0000-000000000004', '90000000-0000-0000-0000-000000000003'),
+  ('60000000-0000-0000-0000-000000000005', '90000000-0000-0000-0000-000000000003'),
+  ('60000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000003');
 
 -- ---------------------------------------------------------------------------
 -- Einheit, Mieter und Kontierung

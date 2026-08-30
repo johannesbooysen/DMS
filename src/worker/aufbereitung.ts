@@ -13,8 +13,8 @@
  */
 
 import type { PoolClient } from 'pg'
-import type { Ablage } from '../ablage.js'
-import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf.js'
+import type { Ablage } from '../ablage'
+import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf'
 
 /** Breite der Vorschau in der Trefferliste. */
 export const BREITE_MINIATUR = 240

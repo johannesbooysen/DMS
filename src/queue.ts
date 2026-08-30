@@ -12,7 +12,7 @@
 
 import { PgBoss } from 'pg-boss'
 import type { PoolClient } from 'pg'
-import { VERBINDUNG } from './db.js'
+import { VERBINDUNG } from './db'
 
 export const AUFBEREITUNG = 'dokument-aufbereiten'
 

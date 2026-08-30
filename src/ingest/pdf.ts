@@ -12,7 +12,7 @@
 
 import { createCanvas } from '@napi-rs/canvas'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
-import { schriftenAnmelden } from './schriften.js'
+import { schriftenAnmelden } from './schriften'
 
 /** Fundstelle eines Textstuecks in Seitenkoordinaten (Ursprung oben links). */
 export interface Textstueck {

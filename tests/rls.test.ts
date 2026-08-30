@@ -32,7 +32,6 @@ const D3_OBJEKT43 = '70000000-0000-0000-0000-000000000003'
 const D4_OBJEKT42_MAI = '70000000-0000-0000-0000-000000000004'
 const D5_OBJEKT42_NICHT_UMLAGEFAEHIG = '70000000-0000-0000-0000-000000000005'
 const D9_FREMDER_MANDANT = '70000000-0000-0000-0000-000000000009'
-const LAUF_D1 = '75000000-0000-0000-0000-000000000001'
 const STUFE_SACHLICH = '66000000-0000-0000-0000-000000000001'
 const STEMPEL_SACHLICH = '60000000-0000-0000-0000-000000000001'
 
@@ -237,19 +236,46 @@ describe('Spezialgebiet', () => {
   })
 })
 
+/**
+ * Legt innerhalb der laufenden Transaktion einen eigenen Lauf an.
+ *
+ * Die Stempeltests zaehlten frueher die Ereignisse des Seed-Laufs und brachen,
+ * sobald jemand daran gearbeitet hatte -- etwa bei einem Durchlauf von Hand.
+ * Ein eigener Lauf macht sie unabhaengig vom Zustand der Datenbank.
+ */
+async function eigenerLauf(c: Client): Promise<string> {
+  const { rows: dok } = await c.query<{ id: string }>(
+    `insert into dokument (mandant_id, objekt_id, belegart, eingangskanal,
+                           inhalt_hash, storage_praefix)
+     values ('10000000-0000-0000-0000-000000000001', $1, 'rechnung', 'mail',
+             md5(random()::text), 'test/' || gen_random_uuid())
+     returning id`,
+    [OBJEKT_42],
+  )
+  const { rows } = await c.query<{ id: string }>(
+    `insert into dokument_lauf (dokument_id, definition_id, definition_version,
+                                aktuelle_stufe_id)
+     values ($1, '65000000-0000-0000-0000-000000000001', 1, $2)
+     returning id`,
+    [dok[0].id, STUFE_SACHLICH],
+  )
+  return rows[0].id
+}
+
 describe('Stempelereignisse', () => {
   it('haengt jeden Eintrag an den vorherigen an', async () => {
     const kette = await alsBenutzer(ANNA, async (c) => {
+      const LAUF = await eigenerLauf(c)
       for (const entscheidung of ['freigabe', 'freigabe']) {
         await c.query(
           `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, stempeltyp_id, entscheidung)
            values ($1, $2, $3, $4, $5)`,
-          [LAUF_D1, STUFE_SACHLICH, ANNA, STEMPEL_SACHLICH, entscheidung],
+          [LAUF, STUFE_SACHLICH, ANNA, STEMPEL_SACHLICH, entscheidung],
         )
       }
       const { rows } = await c.query<{ vorheriger_hash: string | null; eintrag_hash: string }>(
         'select vorheriger_hash, eintrag_hash from stempel_ereignis where lauf_id = $1 order by folge',
-        [LAUF_D1],
+        [LAUF],
       )
       return rows
     })
@@ -267,18 +293,19 @@ describe('Stempelereignisse', () => {
   // sonst verdeckt.
   it('gibt unter der Anwendungsrolle keine Zeile zum Aendern frei', async () => {
     const ergebnis = await alsBenutzer(ANNA, async (c) => {
+      const LAUF = await eigenerLauf(c)
       await c.query(
         `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
          values ($1, $2, $3, 'freigabe')`,
-        [LAUF_D1, STUFE_SACHLICH, ANNA],
+        [LAUF, STUFE_SACHLICH, ANNA],
       )
       const geaendert = await c.query(
         `update stempel_ereignis set kommentar = 'nachtraeglich' where lauf_id = $1`,
-        [LAUF_D1],
+        [LAUF],
       )
       const { rows } = await c.query<{ kommentar: string | null }>(
         'select kommentar from stempel_ereignis where lauf_id = $1',
-        [LAUF_D1],
+        [LAUF],
       )
       return { betroffen: geaendert.rowCount, kommentare: rows.map((r) => r.kommentar) }
     })
@@ -288,14 +315,15 @@ describe('Stempelereignisse', () => {
 
   it('gibt unter der Anwendungsrolle keine Zeile zum Loeschen frei', async () => {
     const ergebnis = await alsBenutzer(ANNA, async (c) => {
+      const LAUF = await eigenerLauf(c)
       await c.query(
         `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
          values ($1, $2, $3, 'freigabe')`,
-        [LAUF_D1, STUFE_SACHLICH, ANNA],
+        [LAUF, STUFE_SACHLICH, ANNA],
       )
-      const geloescht = await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF_D1])
+      const geloescht = await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF])
       const { rowCount } = await c.query('select 1 from stempel_ereignis where lauf_id = $1', [
-        LAUF_D1,
+        LAUF,
       ])
       return { betroffen: geloescht.rowCount, verblieben: rowCount }
     })
@@ -306,15 +334,16 @@ describe('Stempelereignisse', () => {
   it('wehrt eine Aenderung auch am Rechtesystem vorbei ab', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
+        const LAUF = await eigenerLauf(c)
         await c.query(
           `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
            values ($1, $2, $3, 'freigabe')`,
-          [LAUF_D1, STUFE_SACHLICH, ANNA],
+          [LAUF, STUFE_SACHLICH, ANNA],
         )
         // Als Tabelleneigentuemer -- die RLS filtert hier nichts mehr weg.
         await c.query('reset role')
         await c.query(`update stempel_ereignis set kommentar = 'nachtraeglich'
-                        where lauf_id = $1`, [LAUF_D1])
+                        where lauf_id = $1`, [LAUF])
       }),
     ).rejects.toThrow(/append-only/i)
   })
@@ -322,13 +351,14 @@ describe('Stempelereignisse', () => {
   it('wehrt ein Loeschen auch am Rechtesystem vorbei ab', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
+        const LAUF = await eigenerLauf(c)
         await c.query(
           `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
            values ($1, $2, $3, 'freigabe')`,
-          [LAUF_D1, STUFE_SACHLICH, ANNA],
+          [LAUF, STUFE_SACHLICH, ANNA],
         )
         await c.query('reset role')
-        await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF_D1])
+        await c.query('delete from stempel_ereignis where lauf_id = $1', [LAUF])
       }),
     ).rejects.toThrow(/append-only/i)
   })
@@ -336,10 +366,11 @@ describe('Stempelereignisse', () => {
   it('verhindert das Stempeln im fremden Namen', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
+        const LAUF = await eigenerLauf(c)
         await c.query(
           `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, entscheidung)
            values ($1, $2, $3, 'freigabe')`,
-          [LAUF_D1, STUFE_SACHLICH, BERND],
+          [LAUF, STUFE_SACHLICH, BERND],
         )
       }),
     ).rejects.toThrow(/row-level security/i)
@@ -350,6 +381,7 @@ describe('Klaerung', () => {
   it('verlangt einen Kommentar', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
+        const LAUF = await eigenerLauf(c)
         await c.query(
           `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von,
                                  verantwortlich_benutzer, wiedervorlage_am)
@@ -363,6 +395,7 @@ describe('Klaerung', () => {
   it('verlangt ein Wiedervorlagedatum', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
+        const LAUF = await eigenerLauf(c)
         await c.query(
           `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von,
                                  verantwortlich_benutzer)

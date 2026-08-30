@@ -9,7 +9,7 @@
  */
 
 import type { PoolClient } from 'pg'
-import { bedingungAuswerten, type Bedingung, type Kontext } from './bedingung.js'
+import { bedingungAuswerten, type Bedingung, type Kontext } from './bedingung'
 
 export type Knotentyp = 'nacheinander' | 'gleichzeitig' | 'verzweigung' | 'stufe'
 

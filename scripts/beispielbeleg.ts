@@ -9,11 +9,11 @@
  */
 
 import { PDFDocument, StandardFonts } from 'pdf-lib'
-import { DateisystemAblage } from '../src/ablage.js'
-import { alsBenutzer, poolSchliessen } from '../src/db.js'
-import { dokumentAufnehmen } from '../src/ingest/aufnehmen.js'
-import { queueBeenden } from '../src/queue.js'
-import { aufbereiten } from '../src/worker/aufbereitung.js'
+import { DateisystemAblage } from '../src/ablage'
+import { alsBenutzer, poolSchliessen } from '../src/db'
+import { dokumentAufnehmen } from '../src/ingest/aufnehmen'
+import { queueBeenden } from '../src/queue'
+import { aufbereiten } from '../src/worker/aufbereitung'
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'

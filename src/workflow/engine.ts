@@ -13,7 +13,7 @@
  */
 
 import type { PoolClient } from 'pg'
-import type { Kontext } from './bedingung.js'
+import type { Kontext } from './bedingung'
 import {
   alleBlaetter,
   baumLaden,
@@ -21,7 +21,7 @@ import {
   naechsteBlaetter,
   stufeGiltFuer,
   type Knoten,
-} from './baum.js'
+} from './baum'
 
 export interface Stempelvorgang {
   laufId: string
@@ -89,13 +89,21 @@ export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<K
  * ohne Zuweisung -- die Aufgabe entsteht, hat aber niemanden. Für 'rolle'
  * fehlt die Auflösung Rolle -> Postfach, für 'system' die Systemaktionen.
  */
+interface Traeger {
+  benutzerId: string | null
+  gruppeId: string | null
+  rolleId: string | null
+}
+
+const LEER: Traeger = { benutzerId: null, gruppeId: null, rolleId: null }
+
 async function zustaendigkeitAufloesen(
   c: PoolClient,
   blatt: Knoten,
   dokumentId: string,
-): Promise<{ benutzerId: string | null; gruppeId: string | null }> {
+): Promise<Traeger> {
   const stufe = blatt.stufe
-  if (stufe === null) return { benutzerId: null, gruppeId: null }
+  if (stufe === null) return LEER
 
   if (stufe.zustaendigkeitTyp === 'objektverantwortlich') {
     const { rows } = await c.query<{ benutzer_id: string }>(
@@ -110,11 +118,11 @@ async function zustaendigkeitAufloesen(
         limit 1`,
       [dokumentId],
     )
-    return { benutzerId: rows[0]?.benutzer_id ?? null, gruppeId: null }
+    return { ...LEER, benutzerId: rows[0]?.benutzer_id ?? null }
   }
 
   if (stufe.zustaendigkeitTyp === 'gruppe') {
-    return { benutzerId: null, gruppeId: stufe.zustaendigkeitRef }
+    return { ...LEER, gruppeId: stufe.zustaendigkeitRef }
   }
 
   if (stufe.zustaendigkeitTyp === 'spezialgebiet') {
@@ -128,12 +136,19 @@ async function zustaendigkeitAufloesen(
       [dokumentId],
     )
     return {
+      ...LEER,
       benutzerId: rows[0]?.benutzer_id ?? null,
       gruppeId: rows[0]?.gruppe_id ?? null,
     }
   }
 
-  return { benutzerId: null, gruppeId: null }
+  if (stufe.zustaendigkeitTyp === 'rolle') {
+    return { ...LEER, rolleId: stufe.zustaendigkeitRef }
+  }
+
+  // OFFEN: 'extern' und 'system' bleiben ohne Traeger. Die Aufgabe
+  // entsteht sichtbar, hat aber niemanden -- besser als ein stiller Sprung.
+  return LEER
 }
 
 /**
@@ -156,20 +171,18 @@ async function aufgabenAnlegen(
     if (stufe === null) continue
 
     const gilt = stufeGiltFuer(stufe, kontext)
-    const { benutzerId, gruppeId } = gilt
-      ? await zustaendigkeitAufloesen(c, blatt, dokumentId)
-      : { benutzerId: null, gruppeId: null }
+    const traeger = gilt ? await zustaendigkeitAufloesen(c, blatt, dokumentId) : LEER
 
     const { rows } = await c.query<{ id: string }>(
       `insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, zugewiesen_gruppe,
-                            faellig_am, status, erledigt_am)
-       values ($1, $2, $3, $4,
-               case when $5::integer is null then null
-                    else now() + ($5::integer * interval '1 hour') end,
-               $6, case when $6 = 'entfallen' then now() else null end)
+                            zugewiesen_rolle, faellig_am, status, erledigt_am)
+       values ($1, $2, $3, $4, $5,
+               case when $6::integer is null then null
+                    else now() + ($6::integer * interval '1 hour') end,
+               $7, case when $7 = 'entfallen' then now() else null end)
        returning id`,
-      [laufId, stufe.id, benutzerId, gruppeId, gilt ? stufe.slaStunden : null,
-       gilt ? 'offen' : 'entfallen'],
+      [laufId, stufe.id, traeger.benutzerId, traeger.gruppeId, traeger.rolleId,
+       gilt ? stufe.slaStunden : null, gilt ? 'offen' : 'entfallen'],
     )
     const id = rows[0]?.id
     if (id !== undefined) angelegt.push(id)

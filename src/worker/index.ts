@@ -7,10 +7,10 @@
  */
 
 import type { Job } from 'pg-boss'
-import { DateisystemAblage } from '../ablage.js'
-import { alsSystem } from '../db.js'
-import { AUFBEREITUNG, queueBeenden, queueStarten, type AufbereitungsAuftrag } from '../queue.js'
-import { aufbereiten } from './aufbereitung.js'
+import { DateisystemAblage } from '../ablage'
+import { alsSystem } from '../db'
+import { AUFBEREITUNG, queueBeenden, queueStarten, type AufbereitungsAuftrag } from '../queue'
+import { aufbereiten } from './aufbereitung'
 
 const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 

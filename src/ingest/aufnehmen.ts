@@ -10,10 +10,10 @@
  */
 
 import type { PoolClient } from 'pg'
-import { inhaltHash, type Ablage } from '../ablage.js'
-import { aufbereitungEinreihen } from '../queue.js'
-import { laufStarten } from '../workflow/engine.js'
-import { dubletteSuchen, type Dublettenbefund } from './dublette.js'
+import { inhaltHash, type Ablage } from '../ablage'
+import { aufbereitungEinreihen } from '../queue'
+import { laufStarten } from '../workflow/engine'
+import { dubletteSuchen, type Dublettenbefund } from './dublette'
 
 export type Eingangskanal = 'mail' | 'scan' | 'upload' | 'ftp'
 

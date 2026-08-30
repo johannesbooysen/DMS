@@ -147,6 +147,33 @@ Rechte machen jede spätere Prüfung unbeantwortbar.
 
 ---
 
+## Die drei Postfächer
+
+Alle drei sind Sichten auf dieselben Daten, kein eigener Ablageort.
+
+**Persönlich** — was namentlich zugewiesen ist. Der Objektverantwortliche
+bekommt die sachliche Prüfung seiner Objekte hierhin.
+
+**Pool: Spezialgebiet und Rolle** — was einer Gruppe oder einer Rolle gehört,
+nicht einer Person. Die rechnerische Prüfung liegt bei der Buchhaltung, die
+Freigabe bei der Geschäftsleitung; alle, die die Rolle für dieses Objekt
+tragen, sehen die Aufgabe. Wer sie übernimmt, sperrt sie für eine Weile.
+
+**Klärung** — persönlich, mit Wiedervorlagedatum. Der Beleg ist geparkt, die
+bisherigen Stempel bleiben gültig.
+
+Ein Klick auf einen Beleg öffnet die Aufgabe: Vorschau, Kopfdaten und die
+Schaltflächen, die an dieser Stufe **und** mit diesen Rechten möglich sind —
+in der Regel zwei oder drei. Es gibt kein Zielfeld: Wohin der Beleg danach
+geht, leitet die Engine ab.
+
+Wer an einer Stufe keinen passenden Stempel hat, sieht das ausdrücklich und
+die Aufgabe bleibt offen. Das ist kein Fehler, sondern die Antwort auf eine
+Konfiguration, in der jemand zwar den Beleg sehen, aber nicht entscheiden darf.
+
+
+---
+
 ## Häufige Fragen
 
 **Die Tests schlagen alle gleichzeitig fehl. Was ist los?**

@@ -10,9 +10,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Client } from 'pg'
-import { DateisystemAblage, inhaltHash } from '../src/ablage.js'
-import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen.js'
-import { dubletteSuchen } from '../src/ingest/dublette.js'
+import { DateisystemAblage, inhaltHash } from '../src/ablage'
+import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
+import { dubletteSuchen } from '../src/ingest/dublette'
 
 const VERBINDUNG =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'

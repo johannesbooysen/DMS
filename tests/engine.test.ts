@@ -17,8 +17,8 @@ import {
   kontextLaden,
   laufStarten,
   stempeln,
-} from '../src/workflow/engine.js'
-import { baumLaden, simulieren } from '../src/workflow/baum.js'
+} from '../src/workflow/engine'
+import { baumLaden, simulieren } from '../src/workflow/baum'
 
 const VERBINDUNG =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
