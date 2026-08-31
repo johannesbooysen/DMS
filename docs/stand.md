@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 59 Tabellen, 119 Policies,
-56 Module, 423 Testfaelle in 20 Dateien,
+Auf einen Blick: 61 Tabellen, 121 Policies,
+58 Module, 448 Testfaelle in 21 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -210,6 +210,16 @@ Funktionen: `app.einsicht_aufloesen`, `app.einsicht_belege`, `app.einsicht_darf_
 
 Policies: 2
 
+### `supabase/migrations/20260831230000_nebenlauf.sql`
+
+Nebenlaeufe: Wartecontainer und Bauteile
+
+Tabellen: `wartecontainer`, `bauteil`
+
+Funktionen: `app.gewaehrleistung_offen`, `app.warten_beginnen`, `app.warten_beenden`, `app.wartecontainer_faellig`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -234,6 +244,7 @@ Policies: 2
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
+| [`src/app/lib/nebenlauf-aktionen.ts`](../src/app/lib/nebenlauf-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
@@ -257,6 +268,7 @@ Policies: 2
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
+| [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
 | [`src/pruefung/mahnung.ts`](../src/pruefung/mahnung.ts) | Mahnungen |
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
@@ -289,6 +301,7 @@ Policies: 2
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
+| [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |

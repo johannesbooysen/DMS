@@ -513,6 +513,59 @@ zur Sperre, nicht zu einer fehlgeschlagenen Übergabe.
 
 ---
 
+## Warten auf jemand anderen
+
+Manche Belege sind im Haus fertig und trotzdem nicht abgeschlossen: Es fehlt
+eine Erstattung der Versicherung, eine Zahlungsbestätigung, eine Antwort auf
+eine Gewährleistungsrüge. Für sie gibt es den **Wartecontainer** — den Zustand
+„wir haben alles getan und warten auf jemand anderen".
+
+Eröffnet wird er am Beleg, gesehen wird er unter *Warten*. Ohne ihn wäre ein
+solcher Beleg entweder eine offene Aufgabe, die niemand bearbeiten kann, oder
+gar nichts.
+
+**Die Wiedervorlage ist Pflicht und muss in der Zukunft liegen.** Das ist der
+ganze Zweck: Ein Wartecontainer ohne Frist wäre ein Ort, an dem Belege
+verschwinden. Die Liste ist nach Fälligkeit sortiert und hebt Überfälliges
+hervor.
+
+Geschlossen wird nur **mit Ergebnis** — „Erstattung eingegangen, 890,00 EUR".
+Ein Container, der ohne Ergebnis endet, hinterlässt die Frage, warum nicht
+mehr gewartet wird.
+
+Ein Beleg kann auf **mehreres gleichzeitig** warten. Der Ablauf läuft erst
+weiter, wenn der letzte Container geschlossen ist.
+
+### Bauteile und Gewährleistung
+
+Bei einer Erneuerung wird das neue Bauteil mit Einbaudatum und
+Gewährleistungsfrist erfasst; das alte wird stillgelegt und verkettet, nicht
+gelöscht. Ohne die Kette wäre nach der zweiten Erneuerung nicht mehr zu sagen,
+wie alt die Anlage ist.
+
+Kommt später eine Reparaturrechnung, **weist der Beleg darauf hin**, dass am
+Objekt noch Bauteile unter Gewährleistung stehen — mit Frist und Lieferant.
+Aus der bisherigen Mailmeldung wird damit eine auswertbare Historie: Das
+System schlägt vor, statt dass jemand nachsehen muss.
+
+Gefragt wird zu einem **Stichtag**, nicht zum heutigen Tag: Die Frage lautet
+„war zum Schadenszeitpunkt Gewährleistung offen", und zwischen Schaden und
+Rechnung vergehen Wochen.
+
+> **Was hier bewusst nicht steht:** die Versicherungs- und Technikabläufe
+> selbst. „Nebenläufe sind keine Sonderprogramme, sondern Prozessdefinitionen
+> mit eigenem Einstieg" — Selbstzahlung gegen Abtretung, Wartung gegen
+> Reparatur gegen Erneuerung sind Stufen und Bedingungen unter *Abläufe*. Wer
+> sie im Code sucht, sucht falsch.
+
+> Noch nicht da: die **Systemaktionen** aus den Diagrammen — die Mail mit der
+> Abtretungserklärung, die Erfassungsmeldung an die Technik-Datenbank. Ihnen
+> fehlt derselbe Postausgang wie scan2bank. Und die Fristüberschreitung führt
+> noch nicht selbsttätig ins Klärungspostfach; die Liste zeigt sie, den
+> Eintrag setzt ein Mensch.
+
+---
+
 ## Belegeinsicht nach außen geben
 
 Eigentümer, Beirat und Mieter bekommen **keinen Benutzer**, sondern einen

@@ -12,6 +12,8 @@ import { Befunde } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { archivstandLaden } from '@/archiv'
+import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
+import { Warten } from '@/app/lib/wartenmaske'
 
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
@@ -32,6 +34,13 @@ export default async function Belegansicht({
   const seiten = await seitentextLaden(benutzer, id)
   const befunde = await befundeLaden(benutzer, id)
   const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
+  const warten = await alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id))
+  // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
+  // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
+  const gewaehrleistung =
+    kopf.objektnummer === null || kopf.objektId === null
+      ? []
+      : await gewaehrleistungOffen(benutzer, kopf.objektId)
   const seitenzahl = kopf.seitenzahl ?? seiten.length
 
   return (
@@ -78,6 +87,29 @@ export default async function Belegansicht({
       )}
 
       <Befunde befunde={befunde} />
+
+      {gewaehrleistung.length > 0 && (
+        <section
+          style={{
+            background: '#FDF3E3',
+            borderLeft: '3px solid #B5741A',
+            color: '#6B4A15',
+            margin: '1rem 0',
+            padding: '0.6rem 0.9rem',
+          }}
+        >
+          <strong>Gewährleistung offen</strong> — an diesem Objekt stehen{' '}
+          {gewaehrleistung.length === 1 ? 'ein Bauteil' : `${gewaehrleistung.length} Bauteile`}{' '}
+          noch unter Gewährleistung:{' '}
+          {gewaehrleistung
+            .map((b) => `${b.bezeichnung} (bis ${b.gewaehrleistungBis})`)
+            .join(', ')}
+          . Bei einer Reparaturrechnung ist zu prüfen, ob sie zulasten des
+          Lieferanten geht.
+        </section>
+      )}
+
+      <Warten container={warten} dokumentId={id} />
 
       {seitenzahl === 0 ? (
         <p>Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.</p>

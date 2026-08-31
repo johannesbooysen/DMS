@@ -18,6 +18,7 @@ export interface Belegkopf {
   seitenzahl: number | null
   eingangAm: string
   ampel: string | null
+  objektId: string | null
   objektnummer: string | null
   ordnungsgruppe: string | null
   kreditor: string | null
@@ -32,7 +33,7 @@ export async function belegkopfLaden(
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, string | number | null>>(
       `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt,
-              o.objektnummer, og.name as ordnungsgruppe,
+              d.objekt_id, o.objektnummer, og.name as ordnungsgruppe,
               k.name as kreditor, f.brutto, f.rechnungsnummer
          from dokument d
          left join objekt o on o.id = d.objekt_id
@@ -47,6 +48,7 @@ export async function belegkopfLaden(
     return {
       id: String(z['id']),
       belegart: String(z['belegart']),
+      objektId: z['objekt_id'] == null ? null : String(z['objekt_id']),
       seitenzahl: z['seitenzahl'] === null ? null : Number(z['seitenzahl']),
       eingangAm: String(z['eingang_am']),
       ampel: z['ampel_gesamt'] === null ? null : String(z['ampel_gesamt']),
