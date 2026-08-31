@@ -16,6 +16,7 @@ import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktion'
 import { istXmlRechnung } from '../extraktion/zugferd'
+import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf'
 
@@ -31,6 +32,7 @@ export interface Aufbereitungsergebnis {
   weg: Verarbeitungsweg
   erkennung?: Extraktionsbericht
   pruefung?: Pruefergebnis
+  zuordnung?: Zuordnungsvorschlag
 }
 
 /*
@@ -150,6 +152,24 @@ export async function aufbereiten(
         ? 'textlayer'
         : 'ocr_noetig'
 
+  // Zuordnung aus gelernten Merkmalen -- nur, wenn der Beleg noch kein
+  // Objekt hat. Eine vorhandene Zuordnung wird nicht ueberschrieben: Wer
+  // den Beleg eingeliefert hat, wusste womoeglich mehr als der Lernspeicher.
+  const { rows: ohneObjekt } = await c.query<{ objekt_id: string | null }>(
+    'select objekt_id from dokument where id = $1',
+    [dokumentId],
+  )
+  let zuordnung: Zuordnungsvorschlag | undefined
+  if (ohneObjekt[0]?.objekt_id == null) {
+    zuordnung = await objektVorschlagen(c, dokumentId)
+    if (zuordnung.sicherheit === 'gruen' && zuordnung.objektId !== null) {
+      await c.query('select app.dokument_zuordnen($1, $2)', [
+        dokumentId,
+        zuordnung.objektId,
+      ])
+    }
+  }
+
   // Plausibilitaet: der zweite Vertrauenswert. Er beantwortet eine andere
   // Frage als die Extraktion -- nicht wie sicher gelesen wurde, sondern ob
   // das Gelesene fachlich Sinn ergibt (Konzept 14).
@@ -162,5 +182,5 @@ export async function aufbereiten(
   //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
-  return { seiten: seiten.length, weg, erkennung, pruefung }
+  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung }
 }

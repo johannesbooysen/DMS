@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 48 Tabellen, 52 Policies,
-29 Module, 207 Testfaelle in 13 Dateien,
+Auf einen Blick: 51 Tabellen, 61 Policies,
+30 Module, 222 Testfaelle in 14 Dateien,
 3 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -129,6 +129,40 @@ Tabellen: `plausibilitaet_befund`
 
 Policies: 1
 
+### `supabase/migrations/20260831130000_lernspeicher.sql`
+
+Lernspeicher
+
+Tabellen: `zuordnungs_merkmal`, `kontierungs_muster`, `korrektur_ereignis`
+
+Policies: 4
+
+### `supabase/migrations/20260831140000_zuordnungssicht.sql`
+
+Belege ohne Objektzuordnung sichtbar machen
+
+Policies: 1
+
+### `supabase/migrations/20260831150000_zuordnungstreffer.sql`
+
+Zuordnungstreffer unabhaengig von der Objektsichtbarkeit
+
+Funktionen: `app.zuordnungstreffer`
+
+
+### `supabase/migrations/20260831160000_dokument_policies_trennen.sql`
+
+Lesen und Schreiben am Dokument trennen
+
+Policies: 4
+
+### `supabase/migrations/20260831170000_dokument_zuordnen.sql`
+
+Zuordnen als eigene Handlung
+
+Funktionen: `app.dokument_zuordnen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -152,6 +186,7 @@ Policies: 1
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
+| [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/pruefung/mahnung.ts`](../src/pruefung/mahnung.ts) | Mahnungen |
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
@@ -173,6 +208,7 @@ Policies: 1
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
+| [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
@@ -193,6 +229,6 @@ Policies: 1
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:158`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:178`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:184`](../src/workflow/engine.ts) |

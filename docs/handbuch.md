@@ -159,6 +159,42 @@ Lieferantenname eindeutig war.
 
 ---
 
+## Wie Belege sich selbst zuordnen
+
+Im Bestand pflegt jemand die Zuordnungsregeln von Hand. Hier entstehen sie aus
+bestätigten Zuordnungen: Kundennummern, Zählernummern und Vertragsnummern muss
+niemand eintragen — das System merkt sie sich, wenn ein Mensch einmal bestätigt
+hat, wohin ein Beleg gehört.
+
+**Deterministische Merkmale schlagen alles.** Steht eine bekannte Kundennummer
+im Beleg, ist die Zuordnung eindeutig — auch wenn derselbe Lieferant für
+zwanzig Objekte tätig ist. Der Lieferant allein sagt nichts, die Kundennummer
+alles.
+
+**Mehrere Kandidaten sind schlechter als keiner.** Deuten die Merkmale eines
+Belegs auf zwei Objekte, wird das **rot**, nicht orange. Ein Beleg, der zu zwei
+Objekten passt, gehört angesehen.
+
+**Korrigieren heißt umlernen.** Ordnet jemand einen Beleg anders zu, wird die
+alte Regel deaktiviert und eine neue geschrieben — nicht überschrieben. Die
+alte erklärt später, warum ein Beleg damals anders zugeordnet wurde. Ein
+Nachlauf bewertet danach die noch offenen Belege neu; abgeschlossene bleiben
+unberührt.
+
+**Nichts wird über die Mandantengrenze gelernt.** Auch nicht „anonymisiert".
+
+Gesucht wird nach Nummern ab vier Zeichen und nach IBANs. Kürzere Folgen — eine
+Hausnummer, ein Steuersatz — würden zufällig treffen, und ein falsch
+zugeordneter Beleg kostet mehr Zeit, als die Zuordnung spart.
+
+> Noch nicht gebaut: die Ähnlichkeitssuche über Positionstexte, damit die
+> Hausmeisterrechnung wieder in Reinigung, Gartenpflege und Winterdienst
+> zerfällt. Die Tabelle dafür steht; sie arbeitet vorerst über den exakten
+> Text. Laut Konzept darf Ähnlichkeit ohnehin nie besser als orange ausfallen.
+
+
+---
+
 ## Die Ampel
 
 Zwei Werte, weil zwei verschiedene Fragen dahinterstehen.
