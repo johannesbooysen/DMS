@@ -113,3 +113,31 @@ export async function seitentextLaden(
     return rows.map((r) => ({ seite: r.seite, text: r.text ?? '' }))
   })
 }
+
+export interface Befundzeile {
+  pruefung: string
+  schwere: string
+  hinweis: string
+}
+
+/**
+ * Die Plausibilitätsbefunde eines Belegs.
+ *
+ * Eine rote Ampel ohne Begründung ist ein Rätsel, kein Hinweis — der
+ * Bearbeiter würde selbst suchen, was auffällig ist, und das kostet mehr
+ * Zeit, als die Prüfung spart.
+ */
+export async function befundeLaden(
+  benutzerId: string,
+  dokumentId: string,
+): Promise<Befundzeile[]> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<Befundzeile>(
+      `select pruefung, schwere, hinweis from plausibilitaet_befund
+        where dokument_id = $1
+        order by case schwere when 'hart' then 0 when 'orange' then 1 else 2 end, pruefung`,
+      [dokumentId],
+    )
+    return rows
+  })
+}

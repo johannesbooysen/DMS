@@ -7,7 +7,8 @@
  */
 
 import { notFound } from 'next/navigation'
-import { belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
+import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
+import { Befunde } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
@@ -27,6 +28,7 @@ export default async function Belegansicht({
   if (kopf === null) return notFound()
 
   const seiten = await seitentextLaden(benutzer, id)
+  const befunde = await befundeLaden(benutzer, id)
   const seitenzahl = kopf.seitenzahl ?? seiten.length
 
   return (
@@ -48,6 +50,8 @@ export default async function Belegansicht({
             .join(' · ')}
         </p>
       </header>
+
+      <Befunde befunde={befunde} />
 
       {seitenzahl === 0 ? (
         <p>Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.</p>

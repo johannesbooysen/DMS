@@ -16,6 +16,7 @@ import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktion'
 import { istXmlRechnung } from '../extraktion/zugferd'
+import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf'
 
 /** Breite der Vorschau in der Trefferliste. */
@@ -29,6 +30,7 @@ export interface Aufbereitungsergebnis {
   seiten: number
   weg: Verarbeitungsweg
   erkennung?: Extraktionsbericht
+  pruefung?: Pruefergebnis
 }
 
 /*
@@ -148,12 +150,17 @@ export async function aufbereiten(
         ? 'textlayer'
         : 'ocr_noetig'
 
+  // Plausibilitaet: der zweite Vertrauenswert. Er beantwortet eine andere
+  // Frage als die Extraktion -- nicht wie sicher gelesen wurde, sondern ob
+  // das Gelesene fachlich Sinn ergibt (Konzept 14).
+  const pruefung = await plausibilitaetPruefen(c, dokumentId)
+
   // OFFEN, in dieser Reihenfolge:
   //   * weg = 'ocr_noetig' -> ocrmypdf aufrufen und den Seitentext ersetzen.
   //     Braucht Python, Tesseract mit deutschem Sprachpaket und Ghostscript.
   //   * Lernspeicher: Objekt- und Kontierungsvorschlag (Konzept 15)
-  //   * Plausibilitaetspruefungen und ampel_gesamt (Konzept 14) -- darunter
-  //     die beiden harten Rot-Faelle IBAN und Dublette
+  //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
+  //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
-  return { seiten: seiten.length, weg, erkennung }
+  return { seiten: seiten.length, weg, erkennung, pruefung }
 }

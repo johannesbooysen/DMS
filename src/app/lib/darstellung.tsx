@@ -53,3 +53,41 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
     </main>
   )
 }
+
+/**
+ * Die Plausibilitaetsbefunde als Liste.
+ *
+ * Harte Befunde stehen oben und sind als Anhalten gekennzeichnet -- sie
+ * faerben nicht nur, sie stoppen die Bearbeitung (Konzept 14).
+ */
+export function Befunde({
+  befunde,
+}: {
+  befunde: Array<{ pruefung: string; schwere: string; hinweis: string }>
+}) {
+  if (befunde.length === 0) return null
+
+  return (
+    <section
+      style={{
+        background: '#FAFAF8',
+        border: '1px solid #ddd',
+        borderRadius: '0.25rem',
+        margin: '1rem 0',
+        padding: '0.75rem 1rem',
+      }}
+    >
+      <h2 style={{ fontSize: '0.95rem', marginTop: 0 }}>Prüfhinweise</h2>
+      <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+        {befunde.map((b) => (
+          <li key={b.pruefung} style={{ marginBottom: '0.4rem' }}>
+            <strong style={{ color: b.schwere === 'hart' ? '#B3271E' : '#B5741A' }}>
+              {b.schwere === 'hart' ? 'Bearbeitung angehalten' : 'Zu prüfen'}
+            </strong>{' '}
+            — {b.hinweis}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

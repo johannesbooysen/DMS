@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 47 Tabellen, 51 Policies,
-27 Module, 179 Testfaelle in 11 Dateien,
+Auf einen Blick: 48 Tabellen, 52 Policies,
+28 Module, 199 Testfaelle in 12 Dateien,
 3 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -121,6 +121,14 @@ Funktionen: `app.vertretung_fuer`
 
 Policies: 3
 
+### `supabase/migrations/20260831120000_plausibilitaet.sql`
+
+Plausibilitaet: Befunde festhalten
+
+Tabellen: `plausibilitaet_befund`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -144,6 +152,7 @@ Policies: 3
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
+| [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
@@ -164,6 +173,7 @@ Policies: 3
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
+| [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
@@ -181,6 +191,6 @@ Policies: 3
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:151`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:158`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:184`](../src/workflow/engine.ts) |

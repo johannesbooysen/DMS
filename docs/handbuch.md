@@ -159,6 +159,54 @@ Lieferantenname eindeutig war.
 
 ---
 
+## Die Ampel
+
+Zwei Werte, weil zwei verschiedene Fragen dahinterstehen.
+
+**Extraktion** — wie sicher wurde gelesen? Bei einer strukturierten Rechnung
+ist das per Definition sicher. Bei einem Modell ist es dessen eigene
+Einschätzung, gedeckelt.
+
+**Plausibilität** — ergibt das Gelesene fachlich Sinn? Ein Beleg kann perfekt
+gelesen und trotzdem falsch sein.
+
+**Die Gesamtampel ist der schlechtere der beiden.** Grün nur, wenn beide grün
+sind.
+
+### Was geprüft wird
+
+| Prüfung | Wirkung |
+|---|---|
+| Bankverbindung gehört zum Kreditor | **hält an** |
+| Dublette: Kreditor + Rechnungsnummer + Betrag | **hält an** |
+| Netto + Steuer ergibt den Rechnungsbetrag | orange |
+| Pflichtangaben nach § 14 UStG vollständig | orange |
+| Kreditor zugeordnet | orange |
+| Betrag innerhalb der Vertragstoleranz | orange |
+
+Die ersten beiden **färben nicht nur, sie halten an**: Der Lauf geht in
+Klärung, es sind keine Stempel mehr möglich, und der Beleg erscheint im
+Klärungspostfach. Bei beiden wäre der Schaden groß und die Korrektur teuer —
+eine gefälschte Bankverbindung sieht man dem Beleg nicht an, und eine doppelt
+gezahlte Rechnung holt man sich mühsam zurück.
+
+### Warum die Hinweise im Klartext stehen
+
+Jeder Befund trägt einen Satz, der sagt, was zu tun ist. Eine rote Ampel ohne
+Begründung wäre ein Rätsel: Der Bearbeiter würde selbst suchen, was auffällig
+ist, und das kostet mehr Zeit, als die Prüfung spart. Die Hinweise stehen am
+Beleg und an der Aufgabe.
+
+Wird ein Befund behoben — etwa der Kreditor zugeordnet — verschwindet er beim
+nächsten Prüflauf, und die Ampel färbt sich zurück.
+
+> Noch nicht geprüft: ob das Wirtschaftsjahr offen ist und ob die
+> Budgetgrenze eingehalten wird. Beides braucht Daten, die es noch nicht gibt
+> — einen Jahresabschluss und das verbrauchte Budget aus der Kontierung.
+
+
+---
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu
