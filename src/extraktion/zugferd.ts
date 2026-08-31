@@ -12,6 +12,7 @@
 
 import { XMLParser } from 'fast-xml-parser'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { betragLesen } from './zahlen'
 import type {
   ErkanntesFeld,
   Extraktionsanbieter,
@@ -107,11 +108,10 @@ function datumLesen(roh: string | null): string | null {
   return null
 }
 
-function zahlLesen(roh: string | null): number | null {
-  if (roh === null) return null
-  const zahl = Number(roh.replace(',', '.'))
-  return Number.isFinite(zahl) ? zahl : null
-}
+// Auch hier der gemeinsame Auswerter: ZUGFeRD schreibt zwar den Punkt vor,
+// aber ein Erzeuger, der sich nicht daran haelt, soll nicht den Betrag
+// verhundertfachen.
+const zahlLesen = betragLesen
 
 /**
  * Liest die Felder aus dem XML.

@@ -15,6 +15,7 @@
  * nötig und sonst nichts; die Fachlogik kennt nur `Extraktionsanbieter`.
  */
 
+import { betragLesen } from './zahlen'
 import type {
   ErkanntesFeld,
   Extraktionsanbieter,
@@ -111,8 +112,8 @@ export function antwortLesen(roh: string): ErkanntesFeld[] {
     )
 
     if (ZAHLENFELDER.has(feldname)) {
-      const zahl = Number(String(wert).replace(/\./g, '').replace(',', '.'))
-      if (Number.isFinite(zahl)) felder.push({ feldname, zahl, confidence })
+      const zahl = betragLesen(wert as string | number)
+      if (zahl !== null) felder.push({ feldname, zahl, confidence })
       continue
     }
     if (DATUMSFELDER.has(feldname)) {

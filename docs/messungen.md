@@ -45,6 +45,58 @@ letzten 512 Bytes. Ohne Range-Kopf kommt die vollständige Datei mit
 
 ---
 
+## Erkennung: lokales Modell auf dem Prozessor
+
+**Anforderung:** Keine. Das Konzept gibt für die Extraktion keine Zeit vor —
+sie läuft asynchron in der Warteschlange, niemand wartet davor. Die Messung
+beantwortet eine andere Frage: Ist die Trefferquote gut genug, und ist die
+Dauer im Hintergrund tragbar?
+
+**Aufbau:** `scripts/extraktion-messen.ts`, zwei erfundene Rechnungen mit
+bekannter Wahrheit, je drei Durchläufe. Ollama 0.33.2, Modell
+`qwen2.5:7b-instruct` (4,36 GB, 7,6 Mrd. Parameter). AMD Ryzen 7 PRO 6850H,
+8 Kerne, 31 GB RAM — **auf dem Prozessor gerechnet**, ohne Grafikkarte: Die
+verbaute Radeon RX 6500M wird von Ollama nicht unterstützt und hätte mit 4 GB
+ohnehin nicht gereicht.
+
+Der zweite Beleg ist absichtlich unbequemer gesetzt: „Beleg-Nr." statt
+„Rechnung Nr.", Datum im Fließtext, Beträge ohne Währungsangabe in der Zeile.
+
+**Gemessen am 31. August 2026:**
+
+| | Wert |
+|---|---|
+| Trefferquote | **30 von 30 Feldern** |
+| Ohne Antwort | 0 von 6 Läufen |
+| Streuung | alle Läufe identisch |
+| Dauer Median | **51,2 s** |
+| Dauer min/max | 36,5 s / 64,7 s |
+
+Bei rund 100 Belegen am Werktag ergibt das etwa anderthalb Stunden Rechenzeit
+im Hintergrund. Das ist tragbar, solange die Warteschlange nicht auch andere
+Arbeit tut.
+
+**Was die erste Messung wert war.** Sie lief vor dieser und ergab 21 von 30.
+Falsch waren nur die Beträge: 10234 statt 1023,40. Die Ursache lag nicht im
+Modell, sondern im Auswerter — er entfernte alle Punkte als deutsche
+Tausendertrennzeichen, während der Prompt um den Punkt als
+Dezimaltrennzeichen bittet. Deterministisch, in jedem Lauf gleich, **bei
+grüner Ampel**: Das Modell war sich seiner Sache zu Recht sicher, falsch war
+die Umwandlung danach.
+
+Ohne den Vergleich gegen die bekannte Wahrheit wäre das durchgerutscht. Ein
+Beleg über 1.023,40 € wäre mit 102.340 € in die Freigabe gegangen. Behoben in
+`src/extraktion/zahlen.ts`, abgesichert durch sechs Tests.
+
+**Was die Zahl nicht sagt:** Zwei Belege sind keine Stichprobe. Sie zeigen,
+dass die Strecke funktioniert — nicht, wie das Modell mit einer Rechnung
+umgeht, die niemand vorhergesehen hat. Belastbar wird das erst an echten
+Belegen, und die dürfen für eine Messung dieser Art das Haus nicht verlassen;
+mit dem lokalen Modell tun sie das auch nicht.
+
+
+---
+
 ## Aus dem Konzept übernommen
 
 Die Messungen aus §21 stammen aus der Konzeptionsphase, gegen 1.000.000

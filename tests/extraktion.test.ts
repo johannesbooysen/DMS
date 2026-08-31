@@ -18,6 +18,7 @@ import { Client } from 'pg'
 import { DateisystemAblage } from '../src/ablage'
 import { ampelAus, extrahierenUndUebernehmen, extraktionsvertrauen } from '../src/extraktion'
 import { antwortLesen } from '../src/extraktion/ollama'
+import { betragLesen } from '../src/extraktion/zahlen'
 import { felderAusXml, istXmlRechnung, xmlAusPdf } from '../src/extraktion/zugferd'
 import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
 import { aufbereiten } from '../src/worker/aufbereitung'
@@ -319,5 +320,46 @@ describe('Aufbereitung mit Erkennung', () => {
     expect(ergebnis.weg).toBe('zugferd')
     expect(ergebnis.erkennung?.quelle).toBe('zugferd')
     expect(ergebnis.erkennung?.ampel).toBe('gruen')
+  })
+})
+
+describe('Betraege lesen', () => {
+  // Diese Tests stammen aus einem Fehler, den erst die Messung gegen ein
+  // echtes Modell gefunden hat: Der frueher Auswerter entfernte alle Punkte
+  // als Tausendertrennzeichen und machte aus 1023.40 die Zahl 102340 -- in
+  // jedem Lauf gleich falsch, bei gruener Ampel.
+  it('liest das deutsche Format', () => {
+    expect(betragLesen('1.023,40')).toBe(1023.4)
+    expect(betragLesen('454,22')).toBe(454.22)
+    expect(betragLesen('1.234.567,89')).toBe(1234567.89)
+  })
+
+  it('liest das Format, um das der Prompt bittet', () => {
+    expect(betragLesen('1023.40')).toBe(1023.4)
+    expect(betragLesen('1023.4')).toBe(1023.4)
+    expect(betragLesen('454.22')).toBe(454.22)
+  })
+
+  it('erkennt eine Tausendergruppe an den drei Stellen dahinter', () => {
+    expect(betragLesen('1.023')).toBe(1023)
+    expect(betragLesen('1.234.567')).toBe(1234567)
+  })
+
+  it('kommt mit Waehrungszeichen und Leerraum zurecht', () => {
+    expect(betragLesen(' 1.023,40 EUR ')).toBe(1023.4)
+    expect(betragLesen('€1023.40')).toBe(1023.4)
+  })
+
+  it('liest Zahlen ohne Trennzeichen', () => {
+    expect(betragLesen('860')).toBe(860)
+    expect(betragLesen(-42)).toBe(-42)
+    expect(betragLesen('-1.023,40')).toBe(-1023.4)
+  })
+
+  it('gibt bei Unlesbarem nichts zurueck, statt zu raten', () => {
+    expect(betragLesen('viel')).toBeNull()
+    expect(betragLesen('')).toBeNull()
+    expect(betragLesen(null)).toBeNull()
+    expect(betragLesen('1.023,40 oder so')).toBeNull()
   })
 })
