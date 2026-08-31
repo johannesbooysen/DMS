@@ -14,6 +14,8 @@
 
 import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
+import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktion'
+import { istXmlRechnung } from '../extraktion/zugferd'
 import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf'
 
 /** Breite der Vorschau in der Trefferliste. */
@@ -26,23 +28,21 @@ export type Verarbeitungsweg = 'zugferd' | 'textlayer' | 'ocr_noetig' | 'kein_pd
 export interface Aufbereitungsergebnis {
   seiten: number
   weg: Verarbeitungsweg
+  erkennung?: Extraktionsbericht
 }
 
-/**
- * Erkennt ZUGFeRD/XRechnung an der eingebetteten XML-Datei. Fuer diese
- * Belege ist das XML der fuehrende Datensatz und das Extraktionsvertrauen
- * per Definition 1,0 -- sie laufen ohne Extraktionslauf durch (Konzept 14).
+/*
+ * Frueher stand hier `istStrukturierteRechnung`, das im PDF nach der
+ * Zeichenkette "factur-x.xml" suchte. Das war unzuverlaessig: Ein PDF legt
+ * Dateinamen komprimiert ab, die Zeichenkette steht dort gar nicht im
+ * Klartext. Ein Test hat es aufgedeckt -- eine echte ZUGFeRD-Rechnung galt
+ * als gewoehnliches PDF.
+ *
+ * Zustaendig ist jetzt der Anbieter selbst: `istXmlRechnung` fuer die reine
+ * XRechnung, und fuer PDFs liest die Erkennung die Anhaenge richtig aus.
+ * Der Verarbeitungsweg ergibt sich damit aus dem Ergebnis der Erkennung,
+ * nicht aus einer Vermutung ueber die Bytes.
  */
-export function istStrukturierteRechnung(inhalt: Buffer): boolean {
-  const kopf = inhalt.subarray(0, 4).toString('latin1')
-  if (kopf !== '%PDF') {
-    // Reine XRechnung kommt als XML ohne PDF-Huelle.
-    const anfang = inhalt.subarray(0, 512).toString('utf8')
-    return anfang.includes('CrossIndustryInvoice') || anfang.includes('ubl:Invoice')
-  }
-  const text = inhalt.toString('latin1')
-  return text.includes('factur-x.xml') || text.includes('zugferd-invoice.xml')
-}
 
 export async function aufbereiten(
   c: PoolClient,
@@ -70,7 +70,7 @@ export async function aufbereiten(
 
   if (inhalt.subarray(0, 4).toString('latin1') !== '%PDF') {
     // XRechnung ohne PDF-Huelle: nichts zu rendern, das XML fuehrt.
-    const weg: Verarbeitungsweg = istStrukturierteRechnung(inhalt) ? 'zugferd' : 'kein_pdf'
+    const weg: Verarbeitungsweg = istXmlRechnung(inhalt) ? 'zugferd' : 'kein_pdf'
     await c.query(`update dokument set seitenzahl = 0, status = 'laufend' where id = $1`, [
       dokumentId,
     ])
@@ -117,22 +117,43 @@ export async function aufbereiten(
     )
   }
 
-  const weg: Verarbeitungsweg = istStrukturierteRechnung(inhalt)
-    ? 'zugferd'
-    : hatTextlayer(seiten)
-      ? 'textlayer'
-      : 'ocr_noetig'
-
   await c.query(`update dokument set seitenzahl = $2, status = 'laufend' where id = $1`, [
     dokumentId,
     seiten.length,
   ])
 
+  // Erkennung. Der strukturierte Weg geht vor; ohne eingebettetes XML
+  // entscheidet die Einstellung, ob ein Modell befragt wird (Konzept 13).
+  const { rows: gruppen } = await c.query<{ ki_beschreibung: string | null }>(
+    `select og.ki_beschreibung from dokument d
+       left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
+      where d.id = $1`,
+    [dokumentId],
+  )
+
+  const erkennung = await extrahierenUndUebernehmen(c, {
+    dokumentId,
+    inhalt,
+    seiten: seiten.map((s) => ({ seite: s.seite, text: s.text })),
+    kiBeschreibung: gruppen[0]?.ki_beschreibung ?? null,
+  })
+
+  // Der Weg ergibt sich aus dem Ergebnis der Erkennung: Wer sein XML
+  // mitbringt, ist eine strukturierte Rechnung -- unabhaengig davon, wie das
+  // PDF innen aussieht.
+  const weg: Verarbeitungsweg =
+    erkennung.quelle === 'zugferd'
+      ? 'zugferd'
+      : hatTextlayer(seiten)
+        ? 'textlayer'
+        : 'ocr_noetig'
+
   // OFFEN, in dieser Reihenfolge:
   //   * weg = 'ocr_noetig' -> ocrmypdf aufrufen und den Seitentext ersetzen.
   //     Braucht Python, Tesseract mit deutschem Sprachpaket und Ghostscript.
-  //   * KI-Extraktion hinter dem Provider-Interface -> extraktion_feld
-  //   * Lernspeicher abfragen, Plausibilitaetspruefungen, Ampel setzen
+  //   * Lernspeicher: Objekt- und Kontierungsvorschlag (Konzept 15)
+  //   * Plausibilitaetspruefungen und ampel_gesamt (Konzept 14) -- darunter
+  //     die beiden harten Rot-Faelle IBAN und Dublette
 
-  return { seiten: seiten.length, weg }
+  return { seiten: seiten.length, weg, erkennung }
 }

@@ -9,8 +9,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 47 Tabellen, 51 Policies,
-22 Module, 153 Testfaelle in 10 Dateien,
-2 Architekturentscheidungen, 3 markierte offene Stellen.
+26 Module, 173 Testfaelle in 11 Dateien,
+3 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -135,6 +135,10 @@ Policies: 3
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
+| [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
+| [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
+| [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
+| [`src/extraktion/zugferd.ts`](../src/extraktion/zugferd.ts) | Strukturierte Rechnungen: ZUGFeRD und XRechnung |
 | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) | Eingang: eine Datei wird zum Dokument |
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
@@ -152,8 +156,9 @@ Policies: 3
 
 | Datei | Faelle | Gruppen |
 |---|---|---|
-| [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 16 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
+| [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
+| [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 21 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
@@ -169,11 +174,12 @@ Policies: 3
 |---|---|
 | [0001 · PDF-Bibliothek: pdfjs-dist statt pdfium](adr/0001-pdf-bibliothek.md) | angenommen |
 | [0002 · Workflow-Modell: Blockstruktur, Bedingungen, Delegation](adr/0002-workflow-modell.md) | angenommen |
+| [0003 · Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage](adr/0003-erkennung.md) | angenommen |
 
 ## Im Quelltext markierte offene Stellen
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:131`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:151`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:184`](../src/workflow/engine.ts) |

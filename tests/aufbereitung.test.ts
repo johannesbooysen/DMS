@@ -11,7 +11,8 @@ import { Client } from 'pg'
 import { DateisystemAblage } from '../src/ablage'
 import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
 import { hatTextlayer, seitenLesen, seiteRendern } from '../src/ingest/pdf'
-import { aufbereiten, BREITE_LESEN, istStrukturierteRechnung } from '../src/worker/aufbereitung'
+import { aufbereiten, BREITE_LESEN } from '../src/worker/aufbereitung'
+import { istXmlRechnung } from '../src/extraktion/zugferd'
 import { pdfBauen, rechnungsvorlage, scanvorlage } from './hilfe/pdf-bauen'
 
 const VERBINDUNG =
@@ -127,21 +128,19 @@ describe('Vorrendern', () => {
 })
 
 describe('Formaterkennung', () => {
-  it('erkennt ZUGFeRD an der eingebetteten XML-Datei', () => {
-    const pdf = Buffer.from('%PDF-1.7\n... /F (factur-x.xml) ...', 'latin1')
-    expect(istStrukturierteRechnung(pdf)).toBe(true)
-  })
-
+  // Ob ein PDF eine strukturierte Rechnung ist, entscheidet nicht mehr eine
+  // Suche in den Bytes, sondern das Auslesen der Anhaenge -- siehe den
+  // Hinweis in worker/aufbereitung.ts. Hier bleibt die reine XML-Rechnung.
   it('erkennt eine reine XRechnung', () => {
     const xml = Buffer.from(
       '<?xml version="1.0"?><rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece">',
       'utf8',
     )
-    expect(istStrukturierteRechnung(xml)).toBe(true)
+    expect(istXmlRechnung(xml)).toBe(true)
   })
 
-  it('haelt ein gewoehnliches PDF nicht dafuer', () => {
-    expect(istStrukturierteRechnung(rechnung)).toBe(false)
+  it('haelt ein PDF nicht dafuer', () => {
+    expect(istXmlRechnung(rechnung)).toBe(false)
   })
 })
 
@@ -167,7 +166,8 @@ describe('Aufbereitung', () => {
       return { bericht, seiten, derivate, dokument: dokument[0] }
     })
 
-    expect(ergebnis.bericht).toEqual({ seiten: 2, weg: 'textlayer' })
+    expect(ergebnis.bericht.seiten).toBe(2)
+    expect(ergebnis.bericht.weg).toBe('textlayer')
     expect(ergebnis.seiten).toHaveLength(2)
     expect(ergebnis.seiten[0].text).toContain('RE-2026-0001')
     // Zwei Leseansichten und eine Miniatur.

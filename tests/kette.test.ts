@@ -157,7 +157,11 @@ describe('Vom Eingang bis zur ersten Aufgabe', () => {
     })
 
     expect(ergebnis.laufGestartet).toBe(true)
-    expect(ergebnis.bericht).toEqual({ seiten: 2, weg: 'textlayer' })
+    expect(ergebnis.bericht.seiten).toBe(2)
+    expect(ergebnis.bericht.weg).toBe('textlayer')
+    // Ohne eingebettetes XML und ohne eingeschaltetes Modell wird nicht
+    // geraten -- der Beleg geht in die manuelle Erfassung.
+    expect(ergebnis.bericht.erkennung?.quelle).toBe('keine')
     expect(ergebnis.seiten).toBe(2)
     // Zwei Leseansichten und eine Miniatur.
     expect(ergebnis.derivate).toBe(3)

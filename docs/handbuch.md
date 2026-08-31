@@ -121,6 +121,44 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 
 ---
 
+## Wie die Rechnungsdaten ins System kommen
+
+Drei Wege, in dieser Reihenfolge.
+
+**Strukturierte Rechnung.** ZUGFeRD und XRechnung tragen ihre Daten als XML
+mit — im PDF eingebettet oder als reine XML-Datei. Daraus wird direkt gelesen:
+Kreditor, Rechnungsnummer, Datum, Beträge, IBAN, Leistungszeitraum. Hier gibt
+es nichts zu raten, die Ampel steht auf Grün. Kein Modell, keine Kosten, keine
+Daten außer Haus.
+
+**Lokales Modell.** Für gewöhnliche PDFs, wenn eingeschaltet. Es läuft auf
+eigener Hardware und bekommt nur den Text, den die Aufbereitung ohnehin schon
+gelesen hat. Einschalten über die Umgebungsvariable `DMS_EXTRAKTION=ollama`.
+
+**Gar nichts.** Die Voreinstellung. Ohne eingeschaltetes Modell und ohne
+eingebettetes XML wird nicht geraten: Der Beleg läuft weiter, die Ampel steht
+auf Rot, und die Felder werden von Hand erfasst.
+
+Zwei Regeln, die im Zweifel gelten:
+
+**Ein fehlendes Feld ist besser als ein geratenes.** Was nicht sicher erkannt
+wurde, bleibt leer und landet in der manuellen Erfassung — nicht in einer
+stillen Fehlbuchung.
+
+**Was ein Mensch bestätigt hat, wird nicht überschrieben.** Eine spätere
+Erkennung füllt nur, was leer ist.
+
+Die Ampel für die Extraktion ist das **Minimum** über die Pflichtfelder
+Kreditor, Rechnungsnummer, Datum und Bruttobetrag — nicht der Durchschnitt.
+Ein unsicher gelesener Betrag wird nicht dadurch besser, dass der
+Lieferantenname eindeutig war.
+
+> Noch nicht gebaut: die Plausibilitätsprüfungen und damit die Gesamtampel —
+> darunter die harten Fälle „IBAN passt nicht zum Kreditor" und „Dublette".
+
+
+---
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu
