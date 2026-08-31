@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 45 Tabellen, 46 Policies,
-18 Module, 118 Testfaelle in 8 Dateien,
+Auf einen Blick: 46 Tabellen, 48 Policies,
+20 Module, 138 Testfaelle in 9 Dateien,
 2 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -103,6 +103,14 @@ Policies: 1
 Aufgaben an eine Rolle
 
 
+### `supabase/migrations/20260831100000_prozess_entwurf.sql`
+
+Entwurf und Aktivierung einer Prozessfassung
+
+Tabellen: `prozessdefinition_ereignis`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -112,6 +120,7 @@ Aufgaben an eine Rolle
 | [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
+| [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
@@ -125,6 +134,7 @@ Aufgaben an eine Rolle
 | [`src/workflow/baum.ts`](../src/workflow/baum.ts) | Der Blockbaum: laden, ablaufen, simulieren |
 | [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
+| [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
 
 ## Tests
 
@@ -134,6 +144,7 @@ Aufgaben an eine Rolle
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
+| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |

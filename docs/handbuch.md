@@ -120,6 +120,49 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 
 ---
 
+## Abläufe ändern
+
+Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu
+die abgelösten in einem aufklappbaren Bereich. Abgelöst heißt nicht ungültig:
+Belege, die vor der Umstellung gestartet sind, laufen in ihrer Fassung zu Ende.
+Die Spalte *laufende Belege* zeigt, wie viele das sind.
+
+**Ändern geht nur über einen Entwurf.** Die aktive Fassung wird nie
+bearbeitet. Ein Entwurf ist eine vollständige Kopie mit eigenen Stufen — sonst
+würde eine Änderung rückwirkend die Belege betreffen, die gerade unterwegs
+sind. Es gibt höchstens einen Entwurf je Ablauf; wer ihn angelegt hat, steht
+dabei.
+
+Der Ablauf ist eine verschachtelte Liste aus vier Bausteinen:
+
+| Baustein | Bedeutung |
+|---|---|
+| **Stufe** | eine Station: sachliche Prüfung, Kontierung, Freigabe |
+| **Nacheinander** | was darin steht, läuft der Reihe nach |
+| **Gleichzeitig** | was darin steht, läuft parallel; endet, wenn alles fertig ist |
+| **Wenn / Sonst** | zwei Zweige, gewählt über eine Bedingung |
+
+Weil die Bausteine ineinander rasten, können die typischen Fehler nicht
+entstehen: Es gibt keine Aufspaltung ohne Zusammenführung, keine unerreichbare
+Stufe, keine Endlosschleife.
+
+Rechts stehen **Prüfung** und **Simulation**. Die Prüfung meldet, was die
+Bauart offen lässt — ein leerer Behälter etwa, oder eine Stufe, die nicht
+eingehängt ist. Die Simulation zeigt die Kette für einen gedachten Beleg;
+ändert man den Betrag, ändert sich die Kette entsprechend. Beides steht vor
+dem Knopf *Fassung aktivieren*, und das ist Absicht: Ein Entwurf mit Fehlern
+lässt sich nicht scharfschalten.
+
+Wer aktiviert, wird protokolliert. Eine Änderung am Ablauf ist eine
+Entscheidung — im Prüfungsfall ist sie die Erklärung dafür, warum ein Beleg
+seinen Weg genommen hat.
+
+> Das Recht dazu heißt `prozess_konfigurieren` und hat nicht jeder. Wer
+> stempeln darf, darf noch lange nicht den Ablauf ändern — das trifft alle.
+
+
+---
+
 ## Was das System bewusst nicht tut
 
 Diese Punkte wirken wie fehlende Funktionen und sind Entscheidungen.
