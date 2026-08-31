@@ -9,8 +9,16 @@
 import type { Job } from 'pg-boss'
 import { DateisystemAblage } from '../ablage'
 import { alsSystem } from '../db'
-import { AUFBEREITUNG, queueBeenden, queueStarten, type AufbereitungsAuftrag } from '../queue'
+import {
+  AUFBEREITUNG,
+  STAPELAUFBEREITUNG,
+  queueBeenden,
+  queueStarten,
+  type AufbereitungsAuftrag,
+  type StapelAuftrag,
+} from '../queue'
 import { aufbereiten } from './aufbereitung'
+import { stapelAufbereiten } from './stapelaufbereitung'
 
 const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 
@@ -34,7 +42,19 @@ async function start(): Promise<void> {
     },
   )
 
-  console.log('[worker] bereit, Warteschlange:', AUFBEREITUNG)
+  // Eigene Warteschlange: Ein Stapel mit dreissig Seiten darf nicht den
+  // Beleg aufhalten, der gerade eingegangen ist.
+  await boss.work<StapelAuftrag>(
+    STAPELAUFBEREITUNG,
+    async (auftraege: Job<StapelAuftrag>[]) => {
+      for (const auftrag of auftraege) {
+        const { stapelId, benutzerId } = auftrag.data
+        await alsSystem(benutzerId, (c) => stapelAufbereiten(c, ablage, stapelId))
+      }
+    },
+  )
+
+  console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG)
 }
 
 async function beenden(signal: string): Promise<void> {

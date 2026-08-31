@@ -55,6 +55,7 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
         }}
       >
         <span>
+          <a href="/posteingang">Posteingang</a>{' · '}
           <a href="/postfach">Postfächer</a>{' · '}
           <a href="/belege">Belege</a>{' · '}
           <a href="/konfiguration">Abläufe</a>{' · '}

@@ -154,15 +154,32 @@ export async function feed(
   const limit = optionen.limit ?? 50
   const jeObjekt = Math.max(optionen.jeObjekt ?? limit, limit)
 
+  /*
+   * Zwei Quellen, und die zweite ist beim Bedienen aufgefallen.
+   *
+   * Der LATERAL-Teil läuft über die eigenen Objekte — und findet deshalb
+   * **keinen Beleg ohne Objekt**. Genau die sind aber frisch eingegangen und
+   * warten auf ihre Zuordnung; sie ausgerechnet dann unsichtbar zu machen,
+   * wenn sie Aufmerksamkeit brauchen, wäre der falsche Zeitpunkt.
+   *
+   * Sie kommen deshalb als zweiter Zweig dazu. Er braucht kein Top-N je
+   * Objekt: Belege ohne Objekt sind wenige, und ihre Zahl ist eine
+   * Warnleuchte — bleiben sie liegen, sieht man es hier.
+   */
   const { rows } = await c.query<Record<string, unknown>>(
-    `select ${SPALTEN}, null::integer as treffer_seite, null::text as treffer_auszug
-       from unnest(app.meine_objekte()) as mein(objekt_id)
-       cross join lateral (
-         select dd.* from dokument dd
-          where dd.objekt_id = mein.objekt_id
-          order by dd.eingang_am desc
-          limit $2
-       ) d
+    `with sichtbar as (
+       select d.* from unnest(app.meine_objekte()) as mein(objekt_id)
+         cross join lateral (
+           select dd.* from dokument dd
+            where dd.objekt_id = mein.objekt_id
+            order by dd.eingang_am desc
+            limit $2
+         ) d
+       union all
+       select d.* from dokument d where d.objekt_id is null
+     )
+     select ${SPALTEN}, null::integer as treffer_seite, null::text as treffer_auszug
+       from sichtbar d
        ${VERBINDUNGEN}
       order by d.eingang_am desc
       limit $1`,

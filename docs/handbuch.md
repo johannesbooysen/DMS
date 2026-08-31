@@ -356,6 +356,61 @@ Namenswechsel kostet deshalb keinen Zugang.
 
 ---
 
+## Posteingang
+
+Unter *Posteingang* kommen Belege ins System. Zwei Wege, und welcher es ist,
+entscheidet ein Mensch — nicht eine Erkennung:
+
+**Einzelner Beleg.** Datei wählen, aufnehmen, fertig. Der Beleg geht sofort in
+den Ablauf.
+
+**Stapelscan.** Aus dem Scanner kommt eine Datei mit zwanzig Belegen. Sie wird
+zuerst gelesen, gerendert und getrennt — und erst nach Ihrer Bestätigung
+entstehen daraus Dokumente.
+
+### Warum der Umweg
+
+Bis zur Übernahme ist **nichts geschrieben**, was zurückgenommen werden
+müsste. Würde die Scandatei erst ein Beleg und danach zerlegt, hätte sie einen
+Prüfwert über zwanzig Belege, Seiten in der Belegtabelle und womöglich schon
+einen laufenden Ablauf. Beim Zerlegen müsste all das rückgängig gemacht
+werden — und der Prüfwert des ersten Belegs wäre nie der Prüfwert der Datei,
+die tatsächlich eingegangen ist.
+
+Deshalb ist ein Stapel **kein Beleg**. Erst beim Übernehmen bekommt jeder
+Beleg seine eigene PDF-Datei und seinen eigenen Prüfwert.
+
+### Trennung und Korrektur
+
+Erkannt wird ein **Trennblatt**: eine fast leere Seite, auf der „Trennblatt",
+„Trennseite" oder „Separator" steht. Das Wort mitten in einer langen Rechnung
+zählt nicht — eine Druckereirechnung kann Trennblätter als Position führen.
+
+Die Korrekturansicht zeigt alle Seiten als Miniaturen, nach Beleg gruppiert.
+An jeder Seite steht *hier trennen* beziehungsweise *Trennung aufheben*; jede
+Änderung nummeriert die Belege neu. **Diese Ansicht ist kein Zugeständnis an
+eine schwache Erkennung, sondern Teil des Entwurfs** — keine automatische
+Trennung ist fehlerfrei, und ein falsch getrennter Stapel erzeugt zwanzig
+falsche Belege auf einmal.
+
+Was von Hand geändert wurde, ist als solches vermerkt. Der Unterschied ist die
+Grundlage für die Frage, wie gut die Erkennung tatsächlich ist.
+
+### Zwischen Hochladen und Prüfen
+
+Ein Stapel steht kurz auf *Aufbereitung*: Seiten lesen und rendern übernimmt
+der Worker, nicht die Weboberfläche. Bei dreißig Seiten wäre das nichts für
+einen Klick, der auf eine Antwort wartet. Die Prüfansicht sagt es und bittet
+um erneutes Laden.
+
+> Noch nicht da: **Barcode-Trennblätter** werden über ihre Klarschriftzeile
+> erkannt, nicht über den Barcode selbst. Ein Blatt, das nur einen Barcode
+> trägt, muss von Hand getrennt werden. Ebenfalls offen sind die übrigen
+> Eingangskanäle — Mail-Postfach und überwachter Ordner. Beide brauchen
+> dieselbe Anbindung nach außen, die auch dem Postausgang fehlt.
+
+---
+
 ## Belege finden
 
 Unter *Belege* steht die Übersicht. Sie ist der Weg zu jedem Beleg, der

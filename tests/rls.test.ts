@@ -61,9 +61,19 @@ async function alsBenutzer<T>(
   }
 }
 
+/**
+ * Die sichtbaren Belege **mit Objekt**.
+ *
+ * Ein Beleg ohne Zuordnung ist mandantenweit sichtbar und soll es sein — er
+ * wartet auf seine Zuordnung (Migration 20260831140000). Geprüft wird hier
+ * die Objektsichtbarkeit; ein unzugeordneter Beleg, der zufällig herumliegt,
+ * darf diese Prüfungen nicht kippen.
+ */
 async function sichtbareDokumente(benutzerId: string): Promise<string[]> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ id: string }>('select id from dokument order by id')
+    const { rows } = await c.query<{ id: string }>(
+      'select id from dokument where objekt_id is not null order by id',
+    )
     return rows.map((r) => r.id)
   })
 }
@@ -162,7 +172,14 @@ describe('Objektzustaendigkeit', () => {
         [ANNA],
       )
       await c.query('set local role dms_app')
-      const { rows } = await c.query<{ id: string }>('select id from dokument')
+      // Nur Belege **mit** Objekt. Ein Beleg ohne Zuordnung ist mandantenweit
+      // sichtbar und soll es sein (Migration 20260831140000) -- er wartet auf
+      // seine Zuordnung. Geprüft wird hier die Objektsichtbarkeit; ein
+      // pauschales „sieht nichts" hinge daran, dass gerade kein Beleg
+      // unzugeordnet herumliegt.
+      const { rows } = await c.query<{ id: string }>(
+        'select id from dokument where objekt_id is not null',
+      )
       return rows.map((r) => r.id)
     })
     expect(sichtbar).toEqual([])
@@ -180,7 +197,14 @@ describe('Objektzustaendigkeit', () => {
         [BERND],
       )
       await c.query('set local role dms_app')
-      const { rows } = await c.query<{ id: string }>('select id from dokument')
+      // Nur Belege **mit** Objekt. Ein Beleg ohne Zuordnung ist mandantenweit
+      // sichtbar und soll es sein (Migration 20260831140000) -- er wartet auf
+      // seine Zuordnung. Geprüft wird hier die Objektsichtbarkeit; ein
+      // pauschales „sieht nichts" hinge daran, dass gerade kein Beleg
+      // unzugeordnet herumliegt.
+      const { rows } = await c.query<{ id: string }>(
+        'select id from dokument where objekt_id is not null',
+      )
       return rows.map((r) => r.id)
     })
     expect(sichtbar).toEqual([])

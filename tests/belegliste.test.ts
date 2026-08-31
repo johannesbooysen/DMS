@@ -148,6 +148,19 @@ describe('Feed', () => {
     expect(Number.isNaN(new Date(meiner!.eingangAm).getTime())).toBe(false)
   })
 
+  it('zeigt einen Beleg ohne Objekt -- gerade der braucht Aufmerksamkeit', async () => {
+    // Beim Bedienen gefunden: Der LATERAL-Teil laeuft ueber die eigenen
+    // Objekte und fand deshalb keinen frisch eingegangenen Beleg. Genau die
+    // warten aber auf ihre Zuordnung.
+    const ohneObjekt = await belegAnlegen({ objektId: null })
+    try {
+      const zeilen = await alsBenutzer(ANNA, (c) => feed(c))
+      expect(zeilen.map((z) => z.id)).toContain(ohneObjekt)
+    } finally {
+      await belegEntfernen(ohneObjekt)
+    }
+  })
+
   it('haelt das Limit ein', async () => {
     const zeilen = await alsBenutzer(ANNA, (c) => feed(c, { limit: 1 }))
     expect(zeilen).toHaveLength(1)

@@ -17,11 +17,26 @@ import { VERBINDUNG } from './db'
 export const AUFBEREITUNG = 'dokument-aufbereiten'
 
 /**
+ * Ein eingegangener Stapel wird gelesen, gerendert und getrennt.
+ *
+ * Eigene Warteschlange und nicht dieselbe wie die Dokumentaufbereitung: Ein
+ * Stapel mit dreissig Seiten haelt sonst den Beleg auf, der gerade
+ * eingegangen ist.
+ */
+export const STAPELAUFBEREITUNG = 'stapel-aufbereiten'
+
+/**
  * Fehlerkorb: Was passiert mit einem Dokument, dessen Aufbereitung dreimal
  * scheitert (Konzept 24, Punkt 8). Der Auftrag wandert hierher statt zu
  * verschwinden -- sichtbar, wiederholbar, nicht still verloren.
  */
 export const FEHLERKORB = 'dokument-aufbereiten-fehlerkorb'
+
+export interface StapelAuftrag {
+  stapelId: string
+  mandantId: string
+  benutzerId: string
+}
 
 export interface AufbereitungsAuftrag {
   dokumentId: string
@@ -39,6 +54,11 @@ export async function queueStarten(): Promise<PgBoss> {
   await neu.start()
 
   await neu.createQueue(FEHLERKORB)
+  await neu.createQueue(STAPELAUFBEREITUNG, {
+    retryLimit: 3,
+    retryBackoff: true,
+    deadLetter: FEHLERKORB,
+  })
   await neu.createQueue(AUFBEREITUNG, {
     retryLimit: 3,
     retryBackoff: true,
@@ -106,6 +126,14 @@ export async function aufbereitungEinreihen(
 ): Promise<string | null> {
   const b = await queueStarten()
   return b.send(AUFBEREITUNG, auftrag, c === undefined ? {} : { db: alsDatenbank(c) })
+}
+
+export async function stapelEinreihen(
+  auftrag: StapelAuftrag,
+  c?: PoolClient,
+): Promise<string | null> {
+  const b = await queueStarten()
+  return b.send(STAPELAUFBEREITUNG, auftrag, c === undefined ? {} : { db: alsDatenbank(c) })
 }
 
 /** Auftraege im Fehlerkorb -- Grundlage der Betriebsansicht. */
