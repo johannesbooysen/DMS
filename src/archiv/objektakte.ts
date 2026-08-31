@@ -56,7 +56,7 @@ async function dokumentSammeln(
      * einer Uebergabe an den Nachfolger ist das kein Schoenheitsfehler.
      */
     `select d.id, d.belegart, d.eingangskanal,
-            to_char(d.eingang_am, 'YYYY-MM-DD"T"HH24:MI:SSOF') as eingang_am,
+            to_json(d.eingang_am)#>>'{}' as eingang_am,
             d.status, d.inhalt_hash, d.seitenzahl,
             og.name as ordnungsgruppe, sg.name as spezialgebiet,
             f.rechnungsnummer,
@@ -93,7 +93,7 @@ async function dokumentSammeln(
 
   const { rows: stempel } = await c.query<Record<string, unknown>>(
     `select e.folge,
-            to_char(e.zeitpunkt, 'YYYY-MM-DD"T"HH24:MI:SSOF') as zeitpunkt,
+            to_json(e.zeitpunkt)#>>'{}' as zeitpunkt,
             e.entscheidung, e.kommentar,
             s.bezeichnung as stufe, st.name as stempel,
             b.name as benutzer, e.eintrag_hash
@@ -110,7 +110,7 @@ async function dokumentSammeln(
   const { rows: zahlungen } = await c.query<Record<string, unknown>>(
     `select art, betrag, status,
             to_char(faellig_am, 'YYYY-MM-DD') as faellig_am,
-            to_char(uebergeben_am, 'YYYY-MM-DD"T"HH24:MI:SSOF') as uebergeben_am,
+            to_json(uebergeben_am)#>>'{}' as uebergeben_am,
             protokoll
        from zahlung where dokument_id = $1 order by erstellt_am`,
     [dokumentId],

@@ -444,6 +444,22 @@ describe('Objektakte für den Verwalterwechsel', () => {
     expect(kopf['rechnungsdatum']).toBe('2026-03-14')
   })
 
+  it('schreibt Zeitstempel als gueltiges ISO-8601', async () => {
+    // Die Akte geht an einen Nachfolger, der sie mit irgendeiner Bibliothek
+    // liest. "2026-08-31T13:09:04+00" ist gueltiges Postgres und ungueltiges
+    // ISO-8601 -- in einer Uebergabe ist das kein Schoenheitsfehler.
+    const akte = await alsBenutzer(ANNA, (c) =>
+      objektakteZusammenstellen(c, new Merkablage(), OBJEKT_42, '2026-08-31'),
+    )
+    const meiner = akte?.dokumente.find((d) => d.dokumentId === beleg)
+    const kopf = (meiner?.metadaten as Record<string, unknown>)['beleg'] as Record<
+      string,
+      unknown
+    >
+    const eingang = String(kopf['eingang_am'])
+    expect(Number.isNaN(new Date(eingang).getTime())).toBe(false)
+  })
+
   it('schreibt ein Manifest, das "sha256sum -c" ohne Warnung liest', async () => {
     // Leere Zeilen quittiert sha256sum mit "improperly formatted" -- eine
     // Warnung beim Pruefen entwertet den Zweck des Manifests.

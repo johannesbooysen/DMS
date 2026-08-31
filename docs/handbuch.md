@@ -356,6 +356,56 @@ Namenswechsel kostet deshalb keinen Zugang.
 
 ---
 
+## Belege finden
+
+Unter *Belege* steht die Übersicht. Sie ist der Weg zu jedem Beleg, der
+**nicht** gerade als Aufgabe im Postfach liegt — also zu allen abgeschlossenen
+und archivierten.
+
+**Ohne Filter** zeigt sie das Neueste aus Ihren Objekten. **Sobald ein Filter
+gesetzt ist**, wird gesucht: nach Objekt, Ordnungsgruppe, Belegart, Ampel,
+Eingangszeitraum und Volltext. Der Unterschied ist nicht nur die Anzeige — es
+sind zwei verschiedene Abfragen, und die zweite ist die teurere. Wer nach
+„alle roten Ampeln" fragt, will alle, nicht die neuesten je Objekt.
+
+Ordnungsgruppe und Spezialgebiet erscheinen als farbige Marken. Die Farbe
+kommt aus den Stammdaten — eine neue Ordnungsgruppe bringt ihre Marke mit,
+ohne dass jemand die Oberfläche anfasst.
+
+### Volltext
+
+Gesucht wird im Seitentext, mit deutscher Stammformreduktion:
+*Dachrinnenreinigungen* findet *Dachrinnenreinigung*. Das Suchfeld versteht,
+was Menschen von Suchfeldern erwarten:
+
+| Eingabe | Bedeutung |
+|---|---|
+| `dachrinne hof` | beide Wörter |
+| `"Hof Nordseite"` | genau diese Wortfolge |
+| `dachrinne -hof` | *dachrinne*, aber nicht *hof* |
+
+Unsinnige Eingaben führen nicht zu einem Fehler, sondern zu keinem Treffer.
+
+Zu jedem Volltexttreffer steht die **Seite** und ein Auszug mit der Fundstelle.
+
+> Die Auszeichnung im Auszug wird als Text angezeigt, nicht als Formatierung:
+> Der Auszug stammt aus einem Belegtext, und der ist keine vertrauenswürdige
+> Quelle.
+
+### Was Sie sehen und was nicht
+
+Die Liste zeigt ausschließlich, was Sie ohnehin sehen dürfen — **auch die
+Trefferzahl**. Sonst verriete allein die Zahl, dass da etwas ist.
+
+- Belege Ihrer Objekte: über die Objektzuständigkeit oder eine Rolle mit dem
+  Recht *ansehen*.
+- Belege eines Spezialgebiets: über die Spezialgebietszuständigkeit. Diese
+  öffnen den einzelnen Beleg, **nicht** die Akte des Objekts — der Feed zeigt
+  sie deshalb nicht, die Suche schon.
+- Eingeschränkte Belege: in keiner Sicht, für niemanden.
+
+---
+
 ## Kontieren
 
 Steht ein Beleg an einer Kontierungsstufe, erscheint die Kontierung auf dem

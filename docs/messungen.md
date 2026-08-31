@@ -126,6 +126,95 @@ mit dem lokalen Modell tun sie das auch nicht.
 
 ---
 
+## Belegliste gegen eine Million Belege
+
+**Anforderung:** §21 nennt für den objektübergreifenden Feed 13,1 ms und für
+die Akte eines Objekts 0,7 ms — und leitet daraus drei Designentscheidungen
+ab. Diese Entscheidungen stehen jetzt im Code, also mussten sie nachgemessen
+werden.
+
+**Aufbau:** `npx tsx scripts/belegliste-messen.ts 1000000`. 1.000.000
+Dokumente auf 500 Objekten, der Messbenutzer ist für 50 davon zuständig —
+dieselbe Verteilung wie im Konzept. 100.000 Belege mit Seitentext. Lokale
+Supabase-Instanz (PostgreSQL 17) auf Windows 11 unter Docker Desktop,
+denselben Rechner wie die Anwendung. Sieben Läufe nach zwei Aufwärmläufen,
+gemessen als dms_app mit gesetztem `app.benutzer_id`.
+
+**Gemessen am 31. August 2026, nach der Policy-Umstellung:**
+
+| Abfrage | Median | Min | Max |
+|---|---|---|---|
+| Feed naiv (`= any(app.meine_objekte())` im WHERE) | 73.840,2 ms | 73.191,0 ms | 120.458,1 ms |
+| **Feed Top-N je Objekt (LATERAL)** | **159,6 ms** | 144,9 ms | 204,1 ms |
+| Akte eines Objekts | **8,7 ms** | 7,4 ms | 9,8 ms |
+| Gefilterte Liste (Ampel rot) | **35,6 ms** | 32,3 ms | 36,9 ms |
+| Zählung derselben Liste | 31,5 ms | 30,8 ms | 35,3 ms |
+| Volltext (ein Wort) | 403,7 ms | 331,4 ms | 501,0 ms |
+
+### Was die Messung gefunden hat
+
+**`stable` heißt nicht „einmal ausgewertet".** Das ist der eigentliche Fund,
+und er stand so nicht im Konzept.
+
+§21 warnt vor der falschen RLS-Strategie und schreibt vor, die
+Objektsichtbarkeit über eine `stable security definer`-Funktion aufzulösen
+statt über eine Unterabfrage je Zeile. Genau das stand auch im Schema. Der
+Feed brauchte trotzdem **92 Sekunden**.
+
+Der Ausführungsplan zeigte, warum:
+
+```
+Filter: (... AND (objekt_id = ANY (app.meine_objekte())) ...)
+```
+
+`stable` sichert nur zu, dass die Funktion innerhalb eines Statements
+dasselbe liefert. PostgreSQL *darf* das Ergebnis wiederverwenden — im
+Zeilenfilter einer Policy tut es das nicht. `app.meine_objekte()` braucht
+allein 10 ms; bei 100.000 gefilterten Zeilen sind das über tausend Sekunden
+Funktionsaufrufe für eine Trefferliste.
+
+Die Abhilfe ist eine Klammer: Als unkorrelierte Unterabfrage
+`(select app.meine_objekte())` wird daraus ein InitPlan, einmal je Statement
+berechnet. Der Cast `::uuid[]` gehört dazu — ohne ihn liest der Parser die
+Mengenform `ANY (subquery)` und der Index fällt weg.
+
+| Zustand | Feed (LATERAL) |
+|---|---|
+| Policy mit direktem Funktionsaufruf | 92.154 ms |
+| Policy mit InitPlan-Form | **140 ms** |
+
+Betroffen waren **49 von 65 Policies**. Alle wurden umgestellt
+([Migration 20260831210000](../supabase/migrations/20260831210000_policies_initplan.sql)).
+
+**LATERAL ist nicht nur schneller — es ist die Form ohne den Fehler.** Die
+naive Variante bleibt auch nach der Policy-Umstellung bei 74 Sekunden, weil
+sie `app.meine_objekte()` selbst im WHERE aufruft. Im LATERAL steht die
+Funktion im FROM und wird einmal ausgewertet. Das ist eine schärfere
+Begründung als „materialisiert erst alle Treffer".
+
+### Wie die Zahlen zum Konzept stehen
+
+Durchweg langsamer als §21 — Faktor 12 beim Feed, Faktor 12 bei der Akte.
+Zwei Gründe, beide bekannt und keiner beunruhigend:
+
+* Gemessen wurde auf einem Entwicklungsrechner mit Datenbank in Docker unter
+  Windows, nicht auf Serverhardware.
+* Die Policy ist seither gewachsen: Sie prüft zusätzlich `eingeschraenkt`
+  (Archivierung) und das Spezialgebiet. Das sind zwei Zweige mehr in einer
+  ODER-Verknüpfung, und die kostet auch als InitPlan.
+
+Für die Zielgröße — 500 Objekte, 25.000 Belege im Jahr — ist das Vierzigfache
+des Jahresvolumens mit 160 ms für den Feed und 9 ms für die Akte deutlich
+schnell genug.
+
+**Was die Zahlen nicht sagen:** Der Volltext liegt mit 404 ms an der Grenze
+des Angenehmen. Gemessen wurde ein Wort, das in **allen** 100.000 Belegen mit
+Text vorkommt — der ungünstigste Fall. Ein selektiver Begriff ist deutlich
+schneller. Bevor hier optimiert wird, gehört gemessen, wie echte Suchbegriffe
+sich verteilen.
+
+---
+
 ## Aus dem Konzept übernommen
 
 Die Messungen aus §21 stammen aus der Konzeptionsphase, gegen 1.000.000
@@ -142,6 +231,7 @@ Designentscheidungen und stehen als Kommentare in den Migrationen:
 | Mietersicht ohne `hat_umlagefaehige_zeile` | 48,6 ms |
 | Mietersicht mit Flag | 11,9 ms |
 
-Diese Werte sind **nicht** gegen die jetzige Umsetzung nachgemessen. Sobald
-genügend Daten vorliegen, gehört das nachgeholt — die Schemaentscheidungen
-hängen daran.
+Der Feed und die Akte sind inzwischen nachgemessen (siehe oben) — mit einem
+Fund, der im Konzept fehlte. Offen bleiben Postfach und Mietersicht unter
+Last; beide hängen an denselben Policies und sollten nach derselben Methode
+geprüft werden.
