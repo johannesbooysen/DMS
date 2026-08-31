@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 57 Tabellen, 117 Policies,
-50 Module, 383 Testfaelle in 19 Dateien,
+Auf einen Blick: 59 Tabellen, 119 Policies,
+56 Module, 423 Testfaelle in 20 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -200,6 +200,16 @@ Die Policies rufen ihre Funktionen je Zeile auf -- und das kostet Minuten
 
 Policies: 49
 
+### `supabase/migrations/20260831220000_einsicht.sql`
+
+Externe Belegeinsicht: Eigentuemer, Beirat, Mieter
+
+Tabellen: `einsicht_gewaehrung`, `zugriff_protokoll`
+
+Funktionen: `app.einsicht_aufloesen`, `app.einsicht_belege`, `app.einsicht_darf_beleg`, `app.einsicht_datei`, `app.einsicht_protokollieren`, `app.einsicht_gewaehren`, `app.einsicht_widerrufen`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -214,10 +224,13 @@ Policies: 49
 | [`src/app/api/anmeldung/rueckkehr/route.ts`](../src/app/api/anmeldung/rueckkehr/route.ts) | Der Rückweg vom Identitätsanbieter |
 | [`src/app/api/beleg/[id]/pdf/route.ts`](../src/app/api/beleg/[id]/pdf/route.ts) | Das Original-PDF -- nur per Range-Request |
 | [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
+| [`src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts`](../src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts) | Eine Belegseite für die externe Ansicht |
+| [`src/app/api/einsicht/[token]/[dokument]/pdf/route.ts`](../src/app/api/einsicht/[token]/[dokument]/pdf/route.ts) | Das Original als PDF — nur bei ausdrücklichem Download-Recht |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
 | [`src/app/lib/anmelde-aktionen.ts`](../src/app/lib/anmelde-aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
 | [`src/app/lib/belegliste.ts`](../src/app/lib/belegliste.ts) | Die Belegübersicht mit Daten versorgen |
+| [`src/app/lib/einsicht-aktionen.ts`](../src/app/lib/einsicht-aktionen.ts) | 'use server' |
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
@@ -229,7 +242,10 @@ Policies: 49
 | [`src/archiv/index.ts`](../src/archiv/index.ts) | Archivierung, Aufbewahrung, Einschränkung |
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
+| [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
+| [`src/einsicht/index.ts`](../src/einsicht/index.ts) | Externe Belegeinsicht |
+| [`src/einsicht/wasserzeichen.ts`](../src/einsicht/wasserzeichen.ts) | Wasserzeichen für die externe Ansicht |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
 | [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
@@ -263,6 +279,7 @@ Policies: 49
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 33 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 28 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
+| [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 40 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |

@@ -58,7 +58,8 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
           <a href="/postfach">Postfächer</a>{' · '}
           <a href="/belege">Belege</a>{' · '}
           <a href="/konfiguration">Abläufe</a>{' · '}
-          <a href="/vertretung">Vertretung</a>
+          <a href="/vertretung">Vertretung</a>{' · '}
+          <a href="/einsicht">Einsicht</a>
         </span>
         {/* Abmelden ist ein Formular, kein Link: Es ändert etwas auf dem
             Server. Ein Link dorthin könnte von fremder Seite ausgelöst

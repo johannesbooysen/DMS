@@ -513,6 +513,75 @@ zur Sperre, nicht zu einer fehlgeschlagenen Übergabe.
 
 ---
 
+## Belegeinsicht nach außen geben
+
+Eigentümer, Beirat und Mieter bekommen **keinen Benutzer**, sondern einen
+befristeten Link. Unter *Einsicht* wird er angelegt.
+
+**Der Link wird genau einmal angezeigt.** Danach steht in der Datenbank nur
+seine Prüfsumme. Wer ihn verliert, legt einen neuen Zugang an und widerruft
+den alten — das ist unbequem und genau der Grund, warum ein Datenbankauszug
+keinen Zugang öffnet.
+
+### Was der Empfänger sieht
+
+| Empfänger | Auswahl |
+|---|---|
+| **Mieter** | Belege mit umlagefähigen Kosten aus **seiner Mietzeit** — berechnet |
+| **Eigentümer / Beirat** | ein Wirtschaftsjahr oder ein Vorgang |
+
+Die Mieterauswahl ist der wichtige Fall: Sie wird **gerechnet, nicht
+freigegeben**. Es gibt keine Liste freigegebener Belege, die jemand pflegen
+müsste. Wird eine Kontierungszeile nicht mehr als umlagefähig geführt, ist der
+Beleg für den Mieter weg — ohne dass jemand den Zugang anfasst. Eine manuelle
+Freigabe würde den Mieterwechsel übersehen: Wer im März auszieht, darf die
+Aprilrechnung nicht sehen, auch wenn sie im Januar freigegeben wurde.
+
+Nie enthalten: eingeschränkte und stornierte Belege. Was im Haus niemand mehr
+sehen darf, darf erst recht nicht hinaus.
+
+### Der Ablauf ist hart
+
+Nach dem letzten Gültigkeitstag liefert der Link nichts mehr — auch dann
+nicht, wenn er weitergereicht wurde. **Benutzung verlängert nicht.** Der
+Widerruf wirkt sofort, nicht erst beim nächsten Aufräumlauf.
+
+Für Mieter sind sieben Tage der übliche Zuschnitt. Erlaubt sind 1 bis 365.
+
+### Wasserzeichen und Download
+
+Jede angezeigte Seite trägt Name und Datum des Empfängers, quer über die
+Fläche gekachelt. Das **verhindert nichts** — wer die Seite abfotografiert,
+hat sie. Es macht eine weitergereichte Aufnahme aber zuordenbar, und das
+ändert die Rechnung für den, der sie weitergibt. Der Beleg bleibt dabei
+lesbar; ein Wasserzeichen, das die Zahlen verdeckt, führt nur dazu, dass
+jemand stattdessen eine Kopie per Mail schickt.
+
+**Download ist eine eigene Entscheidung** und standardmäßig aus. Ein
+heruntergeladenes Original trägt kein Wasserzeichen und lässt sich nicht mehr
+widerrufen.
+
+### Das Protokoll
+
+Jeder Aufruf wird festgehalten — auch der abgelehnte Versuch, und der ist der
+interessantere Eintrag: Jemand hat eine Belegkennung ausprobiert, die nicht zu
+seinem Zugang gehört.
+
+Das Protokoll ist **nachträglich nicht änderbar**. Es ist zugleich der
+Nachweis, dass Belegeinsicht gewährt wurde — ein Nachweis, den man wegräumen
+kann, ist keiner.
+
+> Zur IP-Adresse: Sie wird gespeichert, obwohl sie personenbezogen ist. Bei
+> einem Zugang ohne Benutzerkonto ist sie das einzige Merkmal, an dem sich ein
+> weitergereichter Link erkennen lässt. Eine eigene Aufbewahrungsfrist dafür
+> ist noch offen.
+
+> Noch nicht da: der **Versand** des Links. Er wird derzeit angezeigt und von
+> Hand weitergegeben. Ebenfalls offen sind die Rechte *Kommentar* und
+> *Stempel* — sie stehen im Schema, aber es gibt noch keine Maske dafür.
+
+---
+
 ## Archiv und Aufbewahrung
 
 **Wenn der Ablauf durch ist, wird der Beleg archiviert** — sofort, nicht in
