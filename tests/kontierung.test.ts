@@ -16,6 +16,7 @@
  */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   KontierungAbgelehnt,
@@ -153,14 +154,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  const c = await verbindungspool().connect()
-  try {
-    await c.query('alter table stempel_ereignis disable trigger stempel_ereignis_unveraenderlich')
-    await c.query('delete from dokument where id = $1', [beleg])
-  } finally {
-    await c.query('alter table stempel_ereignis enable trigger stempel_ereignis_unveraenderlich')
-    c.release()
-  }
+  await belegEntfernen(beleg)
 })
 
 /** Kurzform: eine Zeile als Anna anlegen. */

@@ -43,6 +43,12 @@ npm run docs:stand           # docs/stand.md aus dem Repository neu erzeugen
 npm run docs:check           # prüfen, ob die Dokumentation zum Code passt
 ```
 
+Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung eines Benutzers und damit unter dessen Rechten:
+
+```bash
+DMS_BENUTZER_EXPORT=<kennung> npm run objektakte -- <objektnummer> [ziel]
+```
+
 `npm run dev` startet zwei Prozesse: die Next.js-Anwendung und den Worker. Einzeln laufen sie über `npm run dev:web` und `npm run dev:worker` — nützlich, wenn nur an der Pipeline gearbeitet wird.
 
 Die Tests in `tests/` sprechen eine echte Postgres-Instanz an. Vorher `npm run db:start` und `npm run db:reset`; die Verbindung kommt aus `DATABASE_URL` und fällt sonst auf die lokale Supabase-Instanz zurück. Sie laufen als Rolle `dms_app`, nicht als Tabelleneigentümer — sonst würde die RLS umgangen und die Tests wären wertlos.
@@ -147,7 +153,9 @@ Gemessen in §21 — beim Entwickeln mit Seed-Daten fällt beides nicht auf:
 - **Nie löschen:** Ordnungsgruppen nur deaktivieren; abgelehnte Belege bleiben im Status `abgelehnt` und werden archiviert, die Ersatzrechnung ist ein neues Dokument, verkettet über `ersetzt`. Nach Archivierung nur Storno + Neuerfassung.
 - **Klärung:** `kommentar` und `wiedervorlage_am` sind Pflicht, sonst kein Eintritt. Stempel bleiben gültig, Stufe wird gemerkt.
 - **Mietersicht wird gerechnet, nicht freigegeben:** umlagefähige Kontierungszeile **und** Überschneidung von Leistungszeitraum und `person_bezug`-Mietzeit. Keine manuelle Belegfreigabe einbauen — sie übersieht Mieterwechsel.
-- **DSGVO gegen GoBD:** Löschansprüche an aufbewahrungspflichtigen Belegen führen zur Einschränkung der Verarbeitung (Kennzeichnung, Entzug aller Leserechte), nicht zur Löschung.
+- **DSGVO gegen GoBD:** Löschansprüche an aufbewahrungspflichtigen Belegen führen zur Einschränkung der Verarbeitung (Kennzeichnung, Entzug aller Leserechte), nicht zur Löschung. `dokument.eingeschraenkt` steht in der SELECT-Policy — für **alle**, auch den Objektverantwortlichen; wer eine Ausnahme einbaut, hebt die Einschränkung auf. Der Eintrag in `einschraenkung` bleibt trotzdem sichtbar, sonst wäre der Vorgang spurlos. `app.loeschkandidaten` ist deshalb `security definer` mit handgeschriebenem Mandantenfilter — sonst wäre die Löschpflicht nach Fristablauf still unerfüllbar.
+- **Nach der Archivierung ist der Beleg fest.** Trigger auf `dokument`, `kontierung` und `rechnung_fakten`; Änderung nur über Storno + Neuerfassung, verkettet über `dokument_beziehung` (`ersetzt`). Abgelehnte Belege werden archiviert und behalten den Status `abgelehnt`. Die Aufbewahrungsfrist rechnet ab **Jahresende** (§147 AO) und steht als Stammdatum in `aufbewahrungsfrist`; ohne Eintrag zehn Jahre — nie kürzer.
+- **`date` aus pg wird zum `Date`-Objekt in Serverzeitzone.** Aus dem 31.12. wird der 30.12. Jedes Datum, das als Datum gemeint ist, per `to_char(..., 'YYYY-MM-DD')` abfragen. Hat schon dreimal zugeschlagen: Zahlungsziel, Aufbewahrungsfrist, Rechnungsdatum in der Objektakte.
 - **Vertretung überträgt keine Rechte** — die Aufgabe wandert über die Eskalation, die Rolle bleibt.
 
 ## Umsetzungsreihenfolge

@@ -10,6 +10,8 @@ import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
 import { Befunde } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { alsBenutzer } from '@/db'
+import { archivstandLaden } from '@/archiv'
 
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
@@ -29,6 +31,7 @@ export default async function Belegansicht({
 
   const seiten = await seitentextLaden(benutzer, id)
   const befunde = await befundeLaden(benutzer, id)
+  const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
   const seitenzahl = kopf.seitenzahl ?? seiten.length
 
   return (
@@ -50,6 +53,29 @@ export default async function Belegansicht({
             .join(' · ')}
         </p>
       </header>
+
+      {archiv !== null && (
+        <p
+          style={{
+            background: '#EEF1F6',
+            borderLeft: '3px solid #3B4A80',
+            color: '#33405C',
+            margin: '1rem 0',
+            padding: '0.6rem 0.9rem',
+          }}
+        >
+          <strong>Archiviert</strong>
+          {archiv.archiviertAm !== null &&
+            ` am ${datum.format(new Date(archiv.archiviertAm))}`}
+          . Aufbewahrung bis{' '}
+          {archiv.aufbewahrungBis === null
+            ? '—'
+            : datum.format(new Date(archiv.aufbewahrungBis))}
+          {archiv.aufbewahrungsgrund !== null && ` (${archiv.aufbewahrungsgrund})`}.
+          {' '}Änderungen laufen ab hier über Storno und Neuerfassung.
+          {archiv.loeschsperre && ' Eine Löschsperre steht.'}
+        </p>
+      )}
 
       <Befunde befunde={befunde} />
 

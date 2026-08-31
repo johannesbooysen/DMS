@@ -14,6 +14,7 @@
  */
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   aufgabeLaden,
@@ -69,14 +70,7 @@ afterEach(async () => {
   // ueber die Kaskade. Ein Beleg, an dem gestempelt wurde, laesst sich im
   // Betrieb nicht entfernen -- genau das verlangt das Konzept. Fuer den Test
   // wird der Trigger kurz ausgesetzt; im Betrieb tut das niemand.
-  const c = await verbindungspool().connect()
-  try {
-    await c.query('alter table stempel_ereignis disable trigger stempel_ereignis_unveraenderlich')
-    await c.query('delete from dokument where id = $1', [beleg])
-  } finally {
-    await c.query('alter table stempel_ereignis enable trigger stempel_ereignis_unveraenderlich')
-    c.release()
-  }
+  await belegEntfernen(beleg)
 })
 
 afterAll(poolSchliessen)

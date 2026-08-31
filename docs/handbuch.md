@@ -463,6 +463,82 @@ zur Sperre, nicht zu einer fehlgeschlagenen Übergabe.
 
 ---
 
+## Archiv und Aufbewahrung
+
+**Wenn der Ablauf durch ist, wird der Beleg archiviert** — sofort, nicht in
+einem Nachtlauf. Ein Beleg zwischen letzter Freigabe und Archivierung ist noch
+änderbar, und niemand weiß, wie lang dieses Fenster ist.
+
+Danach ist Schluss: Betrag, Kontierung und Objektzuordnung lassen sich nicht
+mehr ändern, der Beleg lässt sich nicht löschen. **Korrekturen laufen über
+Storno plus Neuerfassung** — die Ersatzrechnung ist ein neues Dokument und
+wird mit dem stornierten verkettet. So bleibt beantwortbar, warum es zwei
+Belege über dieselbe Leistung gibt.
+
+Abgelehnte Belege werden ebenfalls archiviert und **behalten ihren Status**
+`abgelehnt`. Der Archiveintrag sagt, dass archiviert wurde; der Status sagt,
+was aus dem Beleg geworden ist.
+
+### Wie lange aufbewahrt wird
+
+Die Frist steht als Stammdatum je Belegart — zehn Jahre für Buchungsbelege,
+sechs für Handelsbriefe. Ist nichts hinterlegt, gelten zehn Jahre; eine
+fehlende Konfiguration darf nicht zu einer kürzeren Frist führen.
+
+**Die Frist läuft ab dem Ende des Jahres**, nicht ab dem Belegdatum
+(§ 147 AO). Ein Beleg vom 2. Januar und einer vom 30. Dezember desselben
+Jahres verfallen am selben Tag.
+
+> Noch nicht da: der **Object Lock** im Objektspeicher. Er wird von S3
+> durchgesetzt, nicht von der Datenbank; die Dateisystem-Ablage der
+> Entwicklung kann ihn nicht und bekommt deshalb *kein* Datum eingetragen.
+> Ein Datum, das nichts bewirkt, sieht aus wie ein Schutz.
+
+### Löschantrag an einem aufbewahrungspflichtigen Beleg
+
+Ein Löschanspruch nach DSGVO trifft auf eine Aufbewahrungspflicht nach GoBD.
+**Beides zu ignorieren wäre ein Verstoß, beides auszuführen auch** — nur gegen
+verschiedene Gesetze.
+
+Der Beleg wird deshalb nicht gelöscht, sondern die Verarbeitung wird
+eingeschränkt: Er verschwindet **für alle** aus allen Sichten, auch für den
+Objektverantwortlichen. Was sichtbar bleibt, ist der Eintrag darüber, dass ein
+Antrag bearbeitet wurde — sonst wäre der Beleg unsichtbar und der Vorgang
+spurlos.
+
+Gelöscht werden darf er erst nach Ablauf der Aufbewahrung. Bis dahin steht er
+in der Liste der Löschkandidaten mit seinem Fälligkeitsdatum. Eine
+**Löschsperre** hält ihn darüber hinaus — laufendes Verfahren, Prüfung,
+Rechtsstreit; ohne Begründung ist sie nicht setzbar.
+
+> Noch nicht da: das eigentliche Löschen nach Fristablauf. Die Kandidatenliste
+> steht, die Ausführung ist bewusst eine eigene Handlung — eine Funktion, die
+> beides täte, würde irgendwann versehentlich aufgerufen.
+
+### Verwalterwechsel: die Objektakte
+
+```bash
+DMS_BENUTZER_EXPORT=<benutzerkennung> npm run objektakte -- 42 ./export/objekt-42
+```
+
+Erzeugt ein Verzeichnis mit den Originaldateien, je Dokument einer
+Metadatendatei (Beleg, Kontierung, Stempelhistorie samt Hashkette, Zahlungen)
+und einem Manifest. Der Nachfolger prüft die Akte **ohne unser System**:
+
+```bash
+sha256sum -c manifest.txt
+```
+
+Belege ohne Originaldatei werden benannt, nicht verschwiegen — eine Akte mit
+einer stillen Lücke ist schlimmer als eine mit einer bekannten. Eingeschränkte
+Belege sind nicht enthalten.
+
+Der Export läuft unter der Kennung eines Benutzers und damit unter dessen
+Rechten. Das ist kein Umweg: Ein Export, der die Rechte umgeht, wäre ein
+zweiter Zugang zu allen Daten.
+
+---
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu

@@ -363,8 +363,10 @@ export async function stempeln(
       [vorgang.laufId],
     )
     // Der abgelehnte Beleg bleibt bestehen und wird archiviert; die
-    // Ersatzrechnung ist ein neues Dokument (Konzept 5).
+    // Ersatzrechnung ist ein neues Dokument (Konzept 5). Der Status bleibt
+    // dabei `abgelehnt` -- der Archiveintrag sagt, dass archiviert wurde.
     await c.query(`update dokument set status = 'abgelehnt' where id = $1`, [lauf.dokument_id])
+    await c.query('select app.dokument_archivieren($1)', [lauf.dokument_id])
     return { laufAbgeschlossen: true, neueAufgaben: [] }
   }
 
@@ -407,6 +409,11 @@ export async function stempeln(
           where id = $1`,
         [vorgang.laufId],
       )
+      // Der Lauf ist durch, also ist der Beleg fertig: archivieren
+      // (Konzept 19). Hier und nicht in einem Nachtlauf -- ein Beleg, der
+      // zwischen "letzter Freigabe" und "Archivierung" liegt, ist noch
+      // aenderbar, und niemand weiss, wie lange dieses Fenster ist.
+      await c.query('select app.dokument_archivieren($1)', [lauf.dokument_id])
       return { laufAbgeschlossen: true, neueAufgaben: [] }
     }
     // Ein paralleler Block wartet noch auf seinen anderen Zweig.

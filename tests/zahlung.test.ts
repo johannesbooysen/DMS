@@ -14,6 +14,7 @@
  */
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   exportzeile,
@@ -166,14 +167,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  const c = await verbindungspool().connect()
-  try {
-    await c.query('alter table stempel_ereignis disable trigger stempel_ereignis_unveraenderlich')
-    await c.query('delete from dokument where id = $1', [beleg])
-  } finally {
-    await c.query('alter table stempel_ereignis enable trigger stempel_ereignis_unveraenderlich')
-    c.release()
-  }
+  await belegEntfernen(beleg)
   await direkt('update objekt set zahlungsweg_id = $2 where id = $1', [
     OBJEKT_42,
     WEG_SCAN2BANK,

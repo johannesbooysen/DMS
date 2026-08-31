@@ -24,7 +24,8 @@
     "db:stop": "supabase stop",
     "db:new": "supabase migration new",
     "db:migrate": "supabase migration up",
-    "db:reset": "supabase db reset"
+    "db:reset": "supabase db reset",
+    "objektakte": "tsx scripts/objektakte.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.8",

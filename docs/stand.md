@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 54 Tabellen, 64 Policies,
-46 Module, 322 Testfaelle in 17 Dateien,
+Auf einen Blick: 57 Tabellen, 68 Policies,
+48 Module, 354 Testfaelle in 18 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -33,6 +33,7 @@ Auf einen Blick: 54 Tabellen, 64 Policies,
 | `npm run db:new` | `supabase migration new` |
 | `npm run db:migrate` | `supabase migration up` |
 | `npm run db:reset` | `supabase db reset` |
+| `npm run objektakte` | `tsx scripts/objektakte.ts` |
 
 ## Migrationen
 
@@ -183,6 +184,16 @@ Funktionen: `app.stempel_hash_setzen`, `app.gueltige_freigaben`, `app.freigaben_
 
 Policies: 1
 
+### `supabase/migrations/20260831200000_archiv.sql`
+
+Archivierung, Aufbewahrung, Einschraenkung
+
+Tabellen: `aufbewahrungsfrist`, `archiv_eintrag`, `einschraenkung`
+
+Funktionen: `app.aufbewahrung_bis`, `app.archiv_eintrag_schutz`, `app.einschraenkung_spiegeln`, `app.archiv_unveraenderlich`, `app.archiv_satellit_schutz`, `app.dokument_archivieren`, `app.dokument_stornieren`, `app.verarbeitung_einschraenken`, `app.loeschkandidaten`
+
+Policies: 4
+
 ## Module
 
 | Datei | Aufgabe |
@@ -208,6 +219,8 @@ Policies: 1
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
 | [`src/app/lib/zahlung-daten.ts`](../src/app/lib/zahlung-daten.ts) | Die Zahlungsansicht mit Daten versorgen |
 | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
+| [`src/archiv/index.ts`](../src/archiv/index.ts) | Archivierung, Aufbewahrung, Einschränkung |
+| [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
@@ -239,6 +252,7 @@ Policies: 1
 | Datei | Faelle | Gruppen |
 |---|---|---|
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
+| [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 32 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
