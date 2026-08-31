@@ -190,6 +190,32 @@ Klärungspostfach. Bei beiden wäre der Schaden groß und die Korrektur teuer �
 eine gefälschte Bankverbindung sieht man dem Beleg nicht an, und eine doppelt
 gezahlte Rechnung holt man sich mühsam zurück.
 
+
+### Mahnungen
+
+Eine Mahnung läuft nicht wie ein gewöhnlicher Beleg durch. Sie ist keine
+Forderung, die man bezahlt, sondern eine Aussage über eine andere Forderung.
+Deshalb sucht das System die Ursprungsrechnung — über Kreditor und
+Rechnungsnummer, **nicht** über den Betrag, denn eine Mahnung trägt
+Mahngebühren — und wertet deren Zustand aus:
+
+| Zustand der Rechnung | Reaktion |
+|---|---|
+| abgeschlossen und archiviert | **hält an** — Doppelzahlungsgefahr |
+| noch im Lauf | orange, mit Stufe und Liegezeit |
+| in Klärung | orange, nennt den Verantwortlichen |
+| nicht auffindbar | orange — der Beleg fehlt im System |
+
+In allen Fällen, in denen eine Rechnung gefunden wird, werden beide
+verkettet — auch wenn der Befund harmlos ist. Sie gehören in dieselbe Akte.
+
+Der letzte Fall ist der übersehene: Eine Mahnung ohne auffindbare Rechnung ist
+oft der einzige Hinweis darauf, dass ein Beleg nie angekommen ist. Das fällt
+sonst erst auf, wenn die Frist längst abgelaufen ist.
+
+> Noch offen: Dass eine Mahnung **nie separat bezahlt** wird, ist bisher ein
+> Hinweistext und keine Sperre — das Zahlungsmodul gibt es noch nicht.
+
 ### Warum die Hinweise im Klartext stehen
 
 Jeder Befund trägt einen Satz, der sagt, was zu tun ist. Eine rote Ampel ohne

@@ -18,6 +18,7 @@
  */
 
 import type { PoolClient } from 'pg'
+import { mahnungPruefen } from './mahnung'
 
 export type Schwere = 'hart' | 'orange' | 'hinweis'
 export type Ampel = 'gruen' | 'orange' | 'rot'
@@ -30,6 +31,7 @@ export interface Befund {
 
 interface Belegdaten {
   dokument_id: string
+  belegart: string
   mandant_id: string
   objekt_id: string | null
   kreditor_id: string | null
@@ -290,7 +292,7 @@ export async function plausibilitaetPruefen(
   dokumentId: string,
 ): Promise<Pruefergebnis> {
   const { rows } = await c.query<Belegdaten>(
-    `select d.id as dokument_id, d.mandant_id, d.objekt_id, d.ampel_extraktion,
+    `select d.id as dokument_id, d.mandant_id, d.objekt_id, d.ampel_extraktion, d.belegart,
             f.kreditor_id, f.rechnungsnummer, f.rechnungsdatum,
             f.netto, f.steuer, f.brutto, f.iban_im_beleg,
             k.name as kreditor_name, k.ust_id as kreditor_ust_id
@@ -336,6 +338,12 @@ export async function plausibilitaetPruefen(
     pflichtangabenPruefen(beleg),
     betragsprobePruefen(beleg),
   ]
+
+  // Eine Mahnung laeuft nicht wie ein gewoehnlicher Beleg durch: Sie wird
+  // gegen die Ursprungsrechnung geprueft und mit ihr verkettet (Konzept 14).
+  if (beleg.belegart === 'mahnung') {
+    moegliche.push(...(await mahnungPruefen(c, dokumentId)))
+  }
   const befunde = moegliche.filter((b): b is Befund => b !== null)
 
   // Eigene Befunde ersetzen, nicht daneben legen: Was behoben ist, soll
