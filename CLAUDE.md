@@ -125,6 +125,8 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Lernen ist strikt mandantenbezogen.** `zuordnungs_merkmal` und `kontierungs_muster` tragen immer `mandant_id`; kein Wissenstransfer über Mandantengrenzen. Deterministische Merkmale (Kundennummer, Zählernummer, IBAN) schlagen immer Embedding-Ähnlichkeit — letztere ergibt nie besser als orange.
 
+**Die Anmeldung bestätigt nur, wer jemand ist — nicht, dass er hereindarf.** [ADR 0004](docs/adr/0004-anmeldung.md): Identität über Entra ID (OIDC), Sitzung serverseitig in Postgres, im Cookie nur ein Zufallswert. `app.identitaet_aufloesen` legt **keinen** Benutzer an; eine gültige Anmeldung ohne angelegten Benutzer endet mit einem Hinweis. Kein JWT im Cookie — eine Sitzung muss sofort widerrufbar sein, und `app.sitzung_aufloesen` prüft Ablauf, Untätigkeit und Sperrung bei jedem Auflösen. `angemeldeterBenutzer()` ist `async` und leitet ohne Sitzung zur Anmeldung um. Die Entwicklungsanmeldung verlangt `DMS_ANMELDUNG=entwicklung` **und** `NODE_ENV != production`; es gibt keinen stillen Rückfall auf sie.
+
 **Adapterschicht für Stammdaten und Fremdsysteme.** `externe_id`/`sync_quelle`/`sync_stand` an den Stammdatentabellen sind der Grund, warum dieselbe Codebasis eigenständig und als Modul in einer Verwaltungssoftware laufen kann. Fachlogik nie direkt gegen ein Fremdsystem schreiben.
 
 ## Fallen, die nur unter Last sichtbar werden

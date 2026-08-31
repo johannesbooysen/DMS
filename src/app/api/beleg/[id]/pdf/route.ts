@@ -8,7 +8,7 @@
  */
 
 import { ABLAGE, originalSchluessel } from '@/app/lib/belege'
-import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 
 /** Wertet einen Range-Kopf der Form "bytes=0-1023" aus. */
 function bereichLesen(kopf: string | null, groesse: number): { von: number; bis: number } | null {
@@ -36,7 +36,13 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   const { id } = await ctx.params
-  const datei = await originalSchluessel(angemeldeterBenutzer(), id)
+
+  // Ohne Sitzung 401 statt einer Umleitung -- der Viewer holt hier Bytes,
+  // keine Seite.
+  const benutzer = await angemeldeterBenutzerOderNichts()
+  if (benutzer === null) return new Response('Nicht angemeldet', { status: 401 })
+
+  const datei = await originalSchluessel(benutzer, id)
   if (datei === null) return new Response('Nicht gefunden', { status: 404 })
 
   const inhalt = await ABLAGE.lesen(datei.schluessel)

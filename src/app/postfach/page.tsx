@@ -60,7 +60,7 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
 }
 
 export default async function Postfaecher() {
-  const benutzer = angemeldeterBenutzer()
+  const benutzer = await angemeldeterBenutzer()
   const [persoenlich, spezial, klaerungen] = await Promise.all([
     persoenlichesPostfach(benutzer),
     poolPostfach(benutzer),

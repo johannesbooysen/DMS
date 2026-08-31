@@ -33,7 +33,7 @@ async function versuchen(aktion: () => Promise<void>): Promise<never> {
 
 export async function vertretungAnlegenAktion(formular: FormData): Promise<void> {
   await versuchen(async () => {
-    await vertretungAnlegen(angemeldeterBenutzer(), {
+    await vertretungAnlegen(await angemeldeterBenutzer(), {
       anBenutzer: String(formular.get('anBenutzer') ?? ''),
       stufentyp: leerZuNull(formular.get('stufentyp')),
       gueltigVon: leerZuNull(formular.get('gueltigVon')),
@@ -46,7 +46,7 @@ export async function vertretungAnlegenAktion(formular: FormData): Promise<void>
 export async function vertretungWiderrufenAktion(formular: FormData): Promise<void> {
   await versuchen(async () => {
     await vertretungWiderrufen(
-      angemeldeterBenutzer(),
+      await angemeldeterBenutzer(),
       String(formular.get('vertretungId') ?? ''),
     )
   })

@@ -38,7 +38,7 @@ export async function zeileHinzufuegenAktion(formular: FormData): Promise<void> 
   const umlageschluesselId = umlageschluesselRoh === '' ? null : umlageschluesselRoh
 
   try {
-    await alsBenutzer(angemeldeterBenutzer(), async (c) => {
+    await alsBenutzer(await angemeldeterBenutzer(), async (c) => {
       if (restNehmen) {
         await restVerteilen(c, dokumentId, kontoId, steuersatz, umlageschluesselId)
         return
@@ -69,7 +69,7 @@ export async function zeileEntfernenAktion(formular: FormData): Promise<void> {
   const dokumentId = String(formular.get('dokumentId') ?? '')
   const zeileId = String(formular.get('zeileId') ?? '')
 
-  await alsBenutzer(angemeldeterBenutzer(), (c) => zeileEntfernen(c, dokumentId, zeileId))
+  await alsBenutzer(await angemeldeterBenutzer(), (c) => zeileEntfernen(c, dokumentId, zeileId))
   zurueck(formular)
 }
 
@@ -78,7 +78,7 @@ export async function umlageUmschaltenAktion(formular: FormData): Promise<void> 
   const zeileId = String(formular.get('zeileId') ?? '')
   const neu = formular.get('umlagefaehig') === 'ja'
 
-  await alsBenutzer(angemeldeterBenutzer(), (c) =>
+  await alsBenutzer(await angemeldeterBenutzer(), (c) =>
     umlagefaehigkeitAendern(c, dokumentId, zeileId, neu),
   )
   zurueck(formular)

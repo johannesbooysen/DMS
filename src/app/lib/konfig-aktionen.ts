@@ -38,7 +38,7 @@ export async function entwurfAnlegenAktion(formular: FormData): Promise<void> {
   const vorlage = String(formular.get('vorlageId') ?? '')
   let neu = ''
   try {
-    neu = await entwurfAnlegen(angemeldeterBenutzer(), vorlage)
+    neu = await entwurfAnlegen(await angemeldeterBenutzer(), vorlage)
   } catch (fehler) {
     if (fehler instanceof NichtErlaubt || fehler instanceof NichtMoeglich) {
       redirect(`/konfiguration?fehler=${encodeURIComponent(fehler.message)}`)
@@ -60,7 +60,7 @@ export async function bausteinEinfuegenAktion(formular: FormData): Promise<void>
   const stufeId = String(formular.get('stufeId') ?? '')
 
   await versuchen(`/konfiguration/${definitionId}`, async () => {
-    await knotenEinfuegen(angemeldeterBenutzer(), definitionId, {
+    await knotenEinfuegen(await angemeldeterBenutzer(), definitionId, {
       elternId,
       knotentyp,
       stufeId: stufeId === '' ? null : stufeId,
@@ -74,7 +74,7 @@ export async function bausteinVerschiebenAktion(formular: FormData): Promise<voi
   const richtung = formular.get('richtung') === 'hoch' ? 'hoch' : 'runter'
 
   await versuchen(`/konfiguration/${definitionId}`, async () => {
-    await knotenVerschieben(angemeldeterBenutzer(), definitionId, knotenId, richtung)
+    await knotenVerschieben(await angemeldeterBenutzer(), definitionId, knotenId, richtung)
   })
 }
 
@@ -83,13 +83,13 @@ export async function bausteinEntfernenAktion(formular: FormData): Promise<void>
   const knotenId = String(formular.get('knotenId') ?? '')
 
   await versuchen(`/konfiguration/${definitionId}`, async () => {
-    await knotenEntfernen(angemeldeterBenutzer(), definitionId, knotenId)
+    await knotenEntfernen(await angemeldeterBenutzer(), definitionId, knotenId)
   })
 }
 
 export async function aktivierenAktion(formular: FormData): Promise<void> {
   const definitionId = String(formular.get('definitionId') ?? '')
   await versuchen(`/konfiguration/${definitionId}`, async () => {
-    await entwurfAktivieren(angemeldeterBenutzer(), definitionId)
+    await entwurfAktivieren(await angemeldeterBenutzer(), definitionId)
   })
 }

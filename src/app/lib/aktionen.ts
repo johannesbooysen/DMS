@@ -20,7 +20,7 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
   const wiedervorlageAm = String(formular.get('wiedervorlageAm') ?? '')
 
   try {
-    await stempelSetzen(angemeldeterBenutzer(), {
+    await stempelSetzen(await angemeldeterBenutzer(), {
       aufgabeId,
       stempeltypId,
       kommentar,

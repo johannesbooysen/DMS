@@ -8,9 +8,9 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 51 Tabellen, 61 Policies,
-33 Module, 252 Testfaelle in 15 Dateien,
-3 Architekturentscheidungen, 3 markierte offene Stellen.
+Auf einen Blick: 53 Tabellen, 63 Policies,
+41 Module, 289 Testfaelle in 16 Dateien,
+4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -163,14 +163,32 @@ Zuordnen als eigene Handlung
 Funktionen: `app.dokument_zuordnen`
 
 
+### `supabase/migrations/20260831180000_anmeldung.sql`
+
+Anmeldung: Identitaet, Sitzung, Protokoll
+
+Tabellen: `sitzung`, `anmelde_ereignis`
+
+Funktionen: `app.sitzung_aufloesen`, `app.identitaet_aufloesen`, `app.sitzung_anlegen`, `app.sitzung_beenden`, `app.sitzungen_widerrufen`, `app.anmeldung_protokollieren`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
 |---|---|
 | [`src/ablage.ts`](../src/ablage.ts) | Ablage der Originaldateien |
+| [`src/anmeldung/anbieter.ts`](../src/anmeldung/anbieter.ts) | Der Identitätsanbieter hinter einem Interface |
+| [`src/anmeldung/entra.ts`](../src/anmeldung/entra.ts) | Anmeldung über Microsoft Entra ID (OpenID Connect) |
+| [`src/anmeldung/entwicklung.ts`](../src/anmeldung/entwicklung.ts) | Anmeldung ohne Anbieter — ausschließlich für die Entwicklung |
+| [`src/anmeldung/index.ts`](../src/anmeldung/index.ts) | Welcher Identitätsanbieter gilt? |
+| [`src/anmeldung/sitzung.ts`](../src/anmeldung/sitzung.ts) | Sitzungen: anlegen, auflösen, beenden |
+| [`src/anmeldung/ziel.ts`](../src/anmeldung/ziel.ts) | Wohin nach der Anmeldung? |
+| [`src/app/api/anmeldung/rueckkehr/route.ts`](../src/app/api/anmeldung/rueckkehr/route.ts) | Der Rückweg vom Identitätsanbieter |
 | [`src/app/api/beleg/[id]/pdf/route.ts`](../src/app/api/beleg/[id]/pdf/route.ts) | Das Original-PDF -- nur per Range-Request |
 | [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
+| [`src/app/lib/anmelde-aktionen.ts`](../src/app/lib/anmelde-aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
@@ -205,6 +223,7 @@ Funktionen: `app.dokument_zuordnen`
 
 | Datei | Faelle | Gruppen |
 |---|---|---|
+| [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
@@ -228,6 +247,7 @@ Funktionen: `app.dokument_zuordnen`
 | [0001 · PDF-Bibliothek: pdfjs-dist statt pdfium](adr/0001-pdf-bibliothek.md) | angenommen |
 | [0002 · Workflow-Modell: Blockstruktur, Bedingungen, Delegation](adr/0002-workflow-modell.md) | angenommen |
 | [0003 · Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage](adr/0003-erkennung.md) | angenommen |
+| [ADR 0004 — Anmeldung über Entra ID, Sitzung in Postgres](adr/0004-anmeldung.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 

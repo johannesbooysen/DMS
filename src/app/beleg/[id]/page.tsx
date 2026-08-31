@@ -20,7 +20,7 @@ export default async function Belegansicht({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const benutzer = angemeldeterBenutzer()
+  const benutzer = await angemeldeterBenutzer()
 
   const kopf = await belegkopfLaden(benutzer, id)
   // return, damit der Typ danach eng ist: notFound() wird ueber

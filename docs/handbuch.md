@@ -67,6 +67,44 @@ npm test
 Muss grün sein, bevor irgendetwas anderes beurteilt wird. Die Tests sprechen
 eine echte Datenbank an, `db:start` muss also laufen.
 
+### Anmeldung einrichten
+
+Die Anwendung startet **nicht** ohne eingerichtete Anmeldung. Das ist Absicht
+— ein System, das im Zweifel jeden hereinlässt, wäre schlimmer als eines, das
+nicht startet.
+
+Für den Betrieb braucht es eine App-Registrierung in Microsoft Entra. Die
+kann nur jemand mit Adminrechten im Microsoft-Mandanten anlegen. Nötig sind
+dort: eine Umleitungs-URI vom Typ *Web* auf
+`https://ihre-adresse/api/anmeldung/rueckkehr` und ein Clientgeheimnis.
+
+```
+ENTRA_TENANT_ID=…            # Verzeichnis-ID (Mandant)
+ENTRA_CLIENT_ID=…            # Anwendungs-ID (Client)
+ENTRA_CLIENT_SECRET=…        # Clientgeheimnis
+DMS_BASIS_URL=https://…      # ohne Schrägstrich am Ende
+DMS_SITZUNGS_GEHEIMNIS=…     # mindestens 32 Zeichen
+```
+
+Das Sitzungsgeheimnis erzeugen:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+**Solange es keine App-Registrierung gibt**, läuft die Entwicklungsanmeldung:
+eine Liste der angelegten Benutzer, aus der man einen auswählt. Sie prüft
+nichts.
+
+```
+DMS_ANMELDUNG=entwicklung
+DMS_SITZUNGS_GEHEIMNIS=…
+```
+
+Sie greift nur, wenn **beide** Bedingungen erfüllt sind: die Variable ist
+gesetzt **und** `NODE_ENV` steht nicht auf `production`. Steht eine echte
+Anmeldung bereit, gewinnt immer diese — auch wenn die Variable gesetzt bleibt.
+
 ---
 
 ## Tägliche Arbeit
@@ -266,6 +304,55 @@ nächsten Prüflauf, und die Ampel färbt sich zurück.
 > Budgetgrenze eingehalten wird. Beides braucht Daten, die es noch nicht gibt
 > — einen Jahresabschluss und das verbrauchte Budget aus der Kontierung.
 
+
+---
+
+## Anmelden und abmelden
+
+Die Anmeldung läuft über das Geschäftskonto bei Microsoft. **Das DMS kennt
+kein eigenes Passwort** — es gibt nichts zurückzusetzen und nichts zu
+verwalten. Wer im Unternehmen gesperrt wird, ist damit auch im DMS gesperrt,
+ohne dass jemand daran denken muss.
+
+*Abmelden* steht oben rechts auf jeder Seite. Es beendet die Sitzung
+tatsächlich, nicht nur im Browser: Der Eintrag in der Datenbank wird
+geschlossen, ein mitgeschnittenes Cookie nützt danach nichts mehr.
+
+> Noch nicht da: Die Abmeldung beendet nur die DMS-Sitzung. Die
+> Microsoft-Sitzung im Browser bleibt bestehen — auf einem gemeinsam
+> genutzten Rechner ist das ein Unterschied.
+
+### Eine Sitzung endet auch von selbst
+
+| Grund | Wann |
+|---|---|
+| Untätigkeit | nach 8 Stunden ohne Aufruf |
+| Ablauf | 12 Stunden nach der Anmeldung, unabhängig von der Nutzung |
+| Sperrung | sofort, sobald der Benutzer auf inaktiv gesetzt wird |
+| Widerruf | wenn jemand alle Sitzungen eines Benutzers beendet |
+
+Der dritte Punkt ist der Grund für die ganze Bauart: Die Sitzung steht in der
+Datenbank und wird bei **jedem** Aufruf nachgeschlagen. Ein selbsttragendes
+Token im Cookie wäre schneller, würde aber bis zum Ablauf weitergelten — ein
+gesperrter Mitarbeiter arbeitete bis zu zwölf Stunden weiter.
+
+### „Zu diesem Konto gibt es keinen Zugang"
+
+Diese Meldung heißt: Die Anmeldung bei Microsoft hat geklappt, aber im DMS
+ist kein Benutzer angelegt.
+
+**Das ist kein Fehler, sondern die Regel.** Wer im DMS arbeiten darf,
+entscheidet die Verwaltung — nicht Microsoft. Andernfalls hätte jeder im
+Unternehmen mit dem ersten Anmeldeversuch Zugriff auf Rechnungen, und die
+Rechtevergabe liefe der Anmeldung hinterher.
+
+Ein neuer Kollege wird also erst angelegt, dann meldet er sich an. Beim ersten
+Mal wird sein Microsoft-Konto über die E-Mail-Adresse mit dem Benutzer
+verknüpft; danach gilt die Verknüpfung, nicht mehr die Adresse. Ein
+Namenswechsel kostet deshalb keinen Zugang.
+
+> Noch nicht da: eine Benutzerverwaltung in der Oberfläche. Benutzer werden
+> derzeit in der Datenbank angelegt.
 
 ---
 

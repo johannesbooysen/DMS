@@ -69,7 +69,7 @@ export default async function Konfiguration({
   searchParams: Promise<{ fehler?: string }>
 }) {
   const { fehler } = await searchParams
-  const fassungen = await definitionenLaden(angemeldeterBenutzer())
+  const fassungen = await definitionenLaden(await angemeldeterBenutzer())
   const laufend = fassungen.filter((f) => f.status !== 'abgeloest')
   const abgeloest = fassungen.filter((f) => f.status === 'abgeloest')
 

@@ -28,16 +28,16 @@ export default async function Aufgabenansicht({
   const { id } = await params
   const { fehler } = await searchParams
 
-  const geladen = await aufgabeLaden(angemeldeterBenutzer(), id)
+  const geladen = await aufgabeLaden(await angemeldeterBenutzer(), id)
   if (geladen === null) return notFound()
   const { zeile, stempel } = geladen
-  const befunde = await befundeLaden(angemeldeterBenutzer(), zeile.dokumentId)
+  const befunde = await befundeLaden(await angemeldeterBenutzer(), zeile.dokumentId)
 
   // Die Maske erscheint nur an der Kontierungsstufe. Anderswo waere sie kein
   // Angebot, sondern eine Ablenkung -- wer freigibt, kontiert nicht.
   const maske =
     zeile.stufentyp === 'kontierung'
-      ? await kontierungsmaskeLaden(angemeldeterBenutzer(), zeile.dokumentId)
+      ? await kontierungsmaskeLaden(await angemeldeterBenutzer(), zeile.dokumentId)
       : null
 
   const brauchtKlaerungsfelder = stempel.some((s) => s.entscheidung === 'klaerung')

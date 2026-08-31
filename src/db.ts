@@ -60,3 +60,29 @@ export async function alsSystem<T>(
 ): Promise<T> {
   return alsBenutzer(benutzerId, aktion)
 }
+
+/**
+ * Fuer die Anmeldung: der einzige Weg ohne gesetzten Benutzer.
+ *
+ * Ein Zirkelschluss macht ihn noetig -- wer fragt, steht erst fest, wenn die
+ * Sitzung aufgeloest ist. Die Verbindung laeuft trotzdem als `dms_app`, nicht
+ * als Eigentuemer: Ohne `app.benutzer_id` liefert jede Policy nichts, und
+ * genau das ist richtig. Erreichbar sind nur die `security definer`-Funktionen
+ * aus der Migration 20260831180000, die ihren Schutz aus dem Sitzungstoken
+ * beziehen statt aus der RLS.
+ */
+export async function alsAnmeldung<T>(aktion: (c: PoolClient) => Promise<T>): Promise<T> {
+  const client = await verbindungspool().connect()
+  try {
+    await client.query('begin')
+    await client.query('set local role dms_app')
+    const ergebnis = await aktion(client)
+    await client.query('commit')
+    return ergebnis
+  } catch (fehler) {
+    await client.query('rollback')
+    throw fehler
+  } finally {
+    client.release()
+  }
+}

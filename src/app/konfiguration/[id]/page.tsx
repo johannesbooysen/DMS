@@ -135,7 +135,7 @@ export default async function Fassung({
 }) {
   const { id } = await params
   const { fehler, brutto } = await searchParams
-  const benutzer = angemeldeterBenutzer()
+  const benutzer = await angemeldeterBenutzer()
 
   const fassungen = await definitionenLaden(benutzer)
   const fassung = fassungen.find((f) => f.id === id)

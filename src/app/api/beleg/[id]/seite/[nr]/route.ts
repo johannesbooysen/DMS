@@ -8,7 +8,7 @@
  */
 
 import { ABLAGE, seitenbildSchluessel } from '@/app/lib/belege'
-import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 
 export async function GET(
   anfrage: Request,
@@ -24,7 +24,12 @@ export async function GET(
     ? 'miniatur'
     : 'lesen'
 
-  const schluessel = await seitenbildSchluessel(angemeldeterBenutzer(), id, seite, groesse)
+  // Ohne Sitzung 401 statt einer Umleitung: Ein 302 auf die Anmeldeseite
+  // kaeme hier als kaputtes Bild an, nicht als Aufforderung anzumelden.
+  const benutzer = await angemeldeterBenutzerOderNichts()
+  if (benutzer === null) return new Response('Nicht angemeldet', { status: 401 })
+
+  const schluessel = await seitenbildSchluessel(benutzer, id, seite, groesse)
   // Kein Unterschied zwischen "gibt es nicht" und "darfst du nicht sehen":
   // Die zweite Auskunft verriete bereits, dass es den Beleg gibt.
   if (schluessel === null) return new Response('Nicht gefunden', { status: 404 })

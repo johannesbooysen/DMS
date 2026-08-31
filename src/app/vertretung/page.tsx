@@ -46,7 +46,7 @@ export default async function Vertretungen({
   searchParams: Promise<{ fehler?: string }>
 }) {
   const { fehler } = await searchParams
-  const benutzer = angemeldeterBenutzer()
+  const benutzer = await angemeldeterBenutzer()
   const [{ abgegeben, uebernommen }, kollegen] = await Promise.all([
     meineVertretungen(benutzer),
     benutzerListe(benutzer),

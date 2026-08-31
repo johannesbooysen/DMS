@@ -7,6 +7,8 @@
 
 import type { ReactNode } from 'react'
 
+import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
+
 export const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 export const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
 
@@ -43,10 +45,39 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
         padding: '1.5rem',
       }}
     >
-      <nav style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-        <a href="/postfach">Postfächer</a>{' · '}
-        <a href="/konfiguration">Abläufe</a>{' · '}
-        <a href="/vertretung">Vertretung</a>
+      <nav
+        style={{
+          alignItems: 'baseline',
+          display: 'flex',
+          fontSize: '0.875rem',
+          justifyContent: 'space-between',
+          marginBottom: '1rem',
+        }}
+      >
+        <span>
+          <a href="/postfach">Postfächer</a>{' · '}
+          <a href="/konfiguration">Abläufe</a>{' · '}
+          <a href="/vertretung">Vertretung</a>
+        </span>
+        {/* Abmelden ist ein Formular, kein Link: Es ändert etwas auf dem
+            Server. Ein Link dorthin könnte von fremder Seite ausgelöst
+            werden -- lästig, nicht gefährlich, aber unnötig. */}
+        <form action={abmeldenAktion}>
+          <button
+            type="submit"
+            style={{
+              background: 'none',
+              border: 0,
+              color: '#3B4A80',
+              cursor: 'pointer',
+              font: 'inherit',
+              padding: 0,
+              textDecoration: 'underline',
+            }}
+          >
+            Abmelden
+          </button>
+        </form>
       </nav>
       <h1 style={{ fontSize: '1.375rem', marginTop: 0 }}>{titel}</h1>
       {children}
