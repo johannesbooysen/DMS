@@ -22,6 +22,7 @@ import {
   type Recht,
   type Umfang,
 } from '@/einsicht'
+import { basisUrl } from '@/app/lib/adresse'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 export async function einsichtGewaehrenAktion(formular: FormData): Promise<void> {
@@ -35,6 +36,16 @@ export async function einsichtGewaehrenAktion(formular: FormData): Promise<void>
   const rechte: Recht[] = ['ansicht']
   if (formular.get('download') === 'ja') rechte.push('download')
 
+  /*
+   * Der Link geht nur hinaus, wenn eine Adresse eingetragen wurde. Ohne
+   * Eintrag bleibt es beim bisherigen Weg: einmal anzeigen, von Hand
+   * weitergeben. Die Wahl ist absichtlich bei der Person, die den Zugang
+   * anlegt — sie weiß, ob die Adresse stimmt.
+   */
+  const mailRoh = String(formular.get('mailAn') ?? '').trim()
+  const mailAn =
+    mailRoh === '' ? null : { adresse: mailRoh, basisUrl: await basisUrl() }
+
   let ergebnis
   try {
     ergebnis = await einsichtGewaehren(await angemeldeterBenutzer(), {
@@ -46,6 +57,7 @@ export async function einsichtGewaehrenAktion(formular: FormData): Promise<void>
       rechte,
       wirtschaftsjahr: wirtschaftsjahrRoh === '' ? null : Number(wirtschaftsjahrRoh),
       wasserzeichen: formular.get('wasserzeichen') !== 'nein',
+      mailAn,
     })
   } catch (fehler) {
     if (fehler instanceof EinsichtAbgelehnt) {

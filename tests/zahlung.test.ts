@@ -24,7 +24,7 @@ import {
   zahlungMoeglich,
   zahlungUebergeben,
   zahlungenLaden,
-  type Versand,
+  type Postablage,
 } from '../src/zahlung'
 import { freigabenNachpruefen } from '../src/zahlung/sperre'
 import type { Ablage } from '../src/ablage'
@@ -71,10 +71,12 @@ class Merkablage implements Ablage {
   }
 }
 
-class Merkversand implements Versand {
-  readonly gesendet: Array<{ an: string; betreff: string }> = []
-  async senden(nachricht: { an: string; betreff: string }): Promise<void> {
-    this.gesendet.push({ an: nachricht.an, betreff: nachricht.betreff })
+/** Sammelt Ausgangseintraege, statt sie in die Datenbank zu legen. */
+class Merkpost implements Postablage {
+  readonly eintraege: Array<{ empfaenger: string; schluessel: string }> = []
+  async anlegen(eingabe: { empfaenger: string; schluessel: string }): Promise<string> {
+    this.eintraege.push({ empfaenger: eingabe.empfaenger, schluessel: eingabe.schluessel })
+    return 'test'
   }
 }
 
@@ -168,6 +170,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await belegEntfernen(beleg)
+  await direkt('delete from ausgang')
   await direkt('update objekt set zahlungsweg_id = $2 where id = $1', [
     OBJEKT_42,
     WEG_SCAN2BANK,
@@ -364,36 +367,37 @@ describe('Uebergabe', () => {
 
   it('uebergibt per Mail an das Ziel des Weges', async () => {
     await pruefungAbschliessen()
-    const versand = new Merkversand()
+    const post = new Merkpost()
     const ergebnis = await alsBenutzer(ANNA, (c) =>
       zahlungUebergeben(
         c,
-        { ablage: new Merkablage(), versand },
+        { ablage: new Merkablage(), post },
         { dokumentId: beleg, benutzerId: ANNA },
       ),
     )
 
     expect(ergebnis.status).toBe('uebergeben')
-    expect(versand.gesendet[0].an).toBe('zahlungen@bank.example.invalid')
-    // Kein Betrag und kein Kreditor im Betreff -- er steht im Klartext auf
-    // jedem Mailserver dazwischen.
-    expect(versand.gesendet[0].betreff).not.toContain('1190')
-    expect(versand.gesendet[0].betreff).not.toContain('Musterreinigung')
+    // Der Mailweg sendet nicht selbst, er legt einen Ausgang an. Gesendet
+    // wird im Worker -- ein haengender Mailserver blockiert keinen Stempel.
+    expect(post.eintraege).toHaveLength(1)
+    expect(post.eintraege[0].empfaenger).toBe('zahlungen@bank.example.invalid')
+    expect(post.eintraege[0].schluessel).toBe('zahlungsauftrag')
+    expect(ergebnis.protokoll).toMatch(/Ausgangsbuch/)
   })
 
-  it('uebergibt nichts, wenn kein Versand eingerichtet ist', async () => {
+  it('uebergibt nichts, wenn kein Postausgang eingerichtet ist', async () => {
     await pruefungAbschliessen()
     await expect(
       alsBenutzer(ANNA, (c) =>
         zahlungUebergeben(
           c,
-          { ablage: new Merkablage(), versand: null },
+          { ablage: new Merkablage(), post: null },
           { dokumentId: beleg, benutzerId: ANNA },
         ),
       ),
     ).rejects.toBeInstanceOf(UebergabeNichtMoeglich)
 
-    // Der entscheidende Teil: keine Zahlung, die als uebergeben gilt.
+    // Der entscheidende Teil bleibt: keine Zahlung, die als uebergeben gilt.
     expect(await direkt('select 1 from zahlung where dokument_id = $1', [beleg])).toHaveLength(0)
   })
 
@@ -430,17 +434,17 @@ describe('Lastschrift', () => {
       beleg,
     ])
 
-    const versand = new Merkversand()
+    const post = new Merkpost()
     const ergebnis = await alsBenutzer(ANNA, (c) =>
       zahlungUebergeben(
         c,
-        { ablage: new Merkablage(), versand },
+        { ablage: new Merkablage(), post },
         { dokumentId: beleg, benutzerId: ANNA },
       ),
     )
 
     expect(ergebnis.status).toBe('lastschrift')
-    expect(versand.gesendet).toHaveLength(0)
+    expect(post.eintraege).toHaveLength(0)
 
     const [zahlung] = await direkt<{ status: string; faellig_am: string | null }>(
       'select status, faellig_am from zahlung where dokument_id = $1',
@@ -451,7 +455,7 @@ describe('Lastschrift', () => {
   })
 
   it('ist kein Zahlungsweg', () => {
-    expect(() => wegFuer('lastschrift', { ablage: new Merkablage(), versand: null })).toThrow(
+    expect(() => wegFuer('lastschrift', { ablage: new Merkablage(), post: null })).toThrow(
       UebergabeNichtMoeglich,
     )
   })
@@ -513,28 +517,44 @@ describe('Stempeln an der Zahlungsstufe', () => {
     expect(nachher.map((z) => z.aufgabeId)).toContain(aufgabe.aufgabeId)
   })
 
-  it('nennt den nicht eingerichteten Weg als Grund statt abzustuerzen', async () => {
-    // Beim Bedienen gefunden: scan2bank versendet per Mail, ein Versand ist
-    // nicht eingerichtet -- der Anwender bekam einen Serverfehler, nachdem er
-    // gestempelt hatte, und wusste nicht, ob gezahlt wurde.
+  it('legt den Auftrag ins Ausgangsbuch, statt am Mailversand zu haengen', async () => {
+    /*
+     * Das war vorher umgekehrt, und die Umkehrung ist Absicht.
+     *
+     * Vorher: kein Versand eingerichtet -> Stempel abgelehnt, damit keine
+     * Zahlung als uebergeben gilt, die nie jemanden erreicht. Das Argument
+     * war, dass der Beleg sonst aus allen Listen verschwindet.
+     *
+     * Mit dem Ausgangsbuch verschwindet er nicht: Der Eintrag steht dort
+     * offen und sichtbar. Dafuer blockiert ein haengender Mailserver keinen
+     * Stempel mehr.
+     */
     await pruefungAbschliessen()
     const aufgabe = await zahlungsaufgabe()
+    await stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG })
 
-    await expect(
-      stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG }),
-    ).rejects.toBeInstanceOf(StempelAbgelehnt)
-    await expect(
-      stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG }),
-    ).rejects.toThrow(/kein Versand eingerichtet/)
+    const [zahlung] = await direkt<{ status: string }>(
+      'select status from zahlung where dokument_id = $1',
+      [beleg],
+    )
+    expect(zahlung.status).toBe('uebergeben')
 
-    expect(await direkt('select 1 from zahlung where dokument_id = $1', [beleg])).toHaveLength(0)
+    const [ausgang] = await direkt<{ status: string; empfaenger: string; anlass: string }>(
+      'select status, empfaenger, anlass from ausgang where dokument_id = $1',
+      [beleg],
+    )
+    expect(ausgang.status).toBe('offen')
+    expect(ausgang.anlass).toBe('zahlung')
+    expect(ausgang.empfaenger).toBe('zahlungen@bank.example.invalid')
   })
 
-  it('sagt es schon in der Ansicht, vor dem Stempeln', async () => {
+  it('sagt in der Ansicht, dass die Mail liegen bleibt', async () => {
+    // Kein Hindernis mehr, aber auch nicht verschwiegen: Wer stempelt, soll
+    // wissen, dass noch nichts hinausgeht.
     await pruefungAbschliessen()
     const ansicht = await zahlungsansichtLaden(ANNA, beleg)
-    expect(ansicht.moeglich).toBe(false)
-    expect(ansicht.hindernis).toMatch(/kein Versand eingerichtet/)
+    expect(ansicht.moeglich).toBe(true)
+    expect(ansicht.versandfehlt).toMatch(/Ausgangsbuch/)
   })
 
   it('maskiert die IBAN in der Ansicht', () => {

@@ -8,9 +8,10 @@
  * ist keine Formularaktion.
  */
 
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { anbieter } from '@/anmeldung'
+import { basisUrl } from '@/app/lib/adresse'
 import { zielPruefen } from '@/anmeldung/ziel'
 import {
   sitzungBeenden,
@@ -21,24 +22,6 @@ import {
 
 /** Wie lange der halbfertige Anmeldeversuch gültig bleibt. */
 const ZUSTAND_DAUER_S = 600
-
-/**
- * Die eigene Adresse, wie der Browser sie sieht.
- *
- * Muss auf das Zeichen mit der in Entra hinterlegten Rückkehr-URL
- * übereinstimmen, sonst weist Microsoft die Anmeldung ab. `DMS_BASIS_URL`
- * hat deshalb Vorrang: Hinter einem Reverse Proxy ist der Host im Kopf der
- * Anfrage nicht unbedingt der, unter dem die Anwendung erreichbar ist.
- */
-async function basisUrl(): Promise<string> {
-  const eingestellt = process.env['DMS_BASIS_URL']
-  if (eingestellt !== undefined && eingestellt !== '') return eingestellt.replace(/\/$/, '')
-
-  const kopf = await headers()
-  const host = kopf.get('host') ?? 'localhost:3000'
-  const schema = kopf.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
-  return `${schema}://${host}`
-}
 
 export async function rueckkehrUrl(): Promise<string> {
   return `${await basisUrl()}/api/anmeldung/rueckkehr`

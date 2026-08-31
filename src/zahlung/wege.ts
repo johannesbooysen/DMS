@@ -103,29 +103,42 @@ export class ExternerWeg implements Zahlungsweg {
 /**
  * Versand per Mail (im Bestand: scan2bank).
  *
- * Der Versand selbst steckt hinter einem Interface, wie der KI-Anbieter. Ohne
- * eingerichteten Versand wird **nicht** übergeben und die Zahlung bleibt
- * offen — eine als übergeben vermerkte Zahlung, die nie jemanden erreicht
- * hat, wäre der schlimmere Ausgang: Der Beleg verschwindet aus allen Listen,
- * und das Geld fließt nie.
+ * **Der Weg sendet nicht selbst.** Er legt den Zahlungsauftrag ab und einen
+ * Eintrag ins Ausgangsbuch; gesendet wird später im Worker.
+ *
+ * Das kehrt eine frühere Entscheidung um, und zwar bewusst. Vorher stand
+ * hier: lieber gar nicht übergeben, als eine Zahlung als übergeben zu
+ * vermerken, die nie jemanden erreicht — sonst verschwindet der Beleg aus
+ * allen Listen. Der zweite Halbsatz war das eigentliche Argument, und er
+ * gilt nicht mehr: Mit dem Ausgangsbuch steht ein fehlgeschlagener Versand
+ * sichtbar da, mit Grund und Anzahl der Versuche.
+ *
+ * Dafür verschwindet ein anderes Problem: Ein hängender Mailserver blockiert
+ * keinen Stempel mehr.
  */
-export interface Versand {
-  senden(nachricht: {
-    an: string
-    betreff: string
-    text: string
-    anhang: { name: string; inhalt: Buffer; mime: string }
-  }): Promise<void>
+export interface Postablage {
+  /** Legt einen Ausgang an — in derselben Transaktion wie die Zahlung. */
+  anlegen(eingabe: {
+    schluessel: string
+    anlass: string
+    empfaenger: string
+    dokumentId: string
+    werte: Record<string, string | undefined>
+    anhang?: { schluessel: string; name: string } | null
+  }): Promise<string>
 }
 
 export class MailWeg implements Zahlungsweg {
-  constructor(private readonly versand: Versand | null) {}
+  constructor(
+    private readonly ablage: Ablage,
+    private readonly post: Postablage | null,
+  ) {}
 
   async uebergeben(auftrag: Zahlungsauftrag): Promise<string> {
-    if (this.versand === null) {
+    if (this.post === null) {
       throw new UebergabeNichtMoeglich(
         `Der Zahlungsweg "${auftrag.wegname}" versendet per Mail, aber es ist ` +
-          'kein Versand eingerichtet. Die Zahlung bleibt offen.',
+          'kein Postausgang eingerichtet. Die Zahlung bleibt offen.',
       )
     }
     if (auftrag.ziel === null || auftrag.ziel === '') {
@@ -134,16 +147,28 @@ export class MailWeg implements Zahlungsweg {
       )
     }
 
+    // Der Zahlungssatz liegt beim Beleg, nicht in der Mail: Was gesendet
+    // wurde, muss auch dann nachvollziehbar sein, wenn im Postfach der Bank
+    // niemand mehr nachsieht.
     const inhalt = Buffer.from(`${EXPORT_KOPF}\r\n${exportzeile(auftrag)}\r\n`, 'utf8')
-    await this.versand.senden({
-      an: auftrag.ziel,
-      // Betreff ohne Betrag und ohne Kreditor: Er steht im Klartext auf jedem
-      // Mailserver dazwischen.
-      betreff: `Zahlungsauftrag ${auftrag.dokumentId}`,
-      text: 'Zahlungsauftrag im Anhang.',
-      anhang: { name: `zahlung-${auftrag.dokumentId}.csv`, inhalt, mime: 'text/csv' },
+    const schluessel = `${auftrag.storagePraefix}/zahlung/${auftrag.dokumentId}.csv`
+    await this.ablage.schreiben(schluessel, inhalt)
+
+    await this.post.anlegen({
+      schluessel: 'zahlungsauftrag',
+      anlass: 'zahlung',
+      empfaenger: auftrag.ziel,
+      dokumentId: auftrag.dokumentId,
+      werte: {
+        kreditor: auftrag.empfaenger,
+        rechnungsnummer: auftrag.verwendungszweck,
+        betrag: `${euro.format(auftrag.betrag)} EUR`,
+        faellig: auftrag.faelligAm ?? undefined,
+      },
+      anhang: { schluessel, name: `zahlung-${auftrag.dokumentId}.csv` },
     })
-    return `Mail an ${auftrag.ziel}`
+
+    return `Mail an ${auftrag.ziel} (im Ausgangsbuch)`
   }
 }
 
@@ -166,12 +191,12 @@ export class MailWeg implements Zahlungsweg {
 export function wegHindernis(
   art: string,
   wegname: string,
-  mittel: { versand: Versand | null },
+  mittel: { post: Postablage | null },
 ): string | null {
-  if (art === 'mail' && mittel.versand === null) {
+  if (art === 'mail' && mittel.post === null) {
     return (
       `Der Zahlungsweg "${wegname}" versendet per Mail, aber es ist kein ` +
-      'Versand eingerichtet. Bis dahin lässt sich über diesen Weg nichts übergeben.'
+      'Postausgang eingerichtet. Bis dahin lässt sich über diesen Weg nichts übergeben.'
     )
   }
   if (art === 'lastschrift') {
@@ -182,7 +207,7 @@ export function wegHindernis(
 
 export function wegFuer(
   art: string,
-  mittel: { ablage: Ablage; versand: Versand | null },
+  mittel: { ablage: Ablage; post: Postablage | null },
 ): Zahlungsweg {
   switch (art) {
     case 'datei_export':
@@ -190,7 +215,7 @@ export function wegFuer(
     case 'extern':
       return new ExternerWeg()
     case 'mail':
-      return new MailWeg(mittel.versand)
+      return new MailWeg(mittel.ablage, mittel.post)
     case 'lastschrift':
       throw new UebergabeNichtMoeglich(
         'Lastschrift ist kein Zahlungsweg. Die Stufe wird übersprungen, ' +

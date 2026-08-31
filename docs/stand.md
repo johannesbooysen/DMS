@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 63 Tabellen, 123 Policies,
-63 Module, 477 Testfaelle in 22 Dateien,
+Auf einen Blick: 65 Tabellen, 127 Policies,
+68 Module, 513 Testfaelle in 23 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -230,6 +230,23 @@ Funktionen: `app.stapel_gruppieren`, `app.stapel_trennen`
 
 Policies: 2
 
+### `supabase/migrations/20260831250000_postausgang.sql`
+
+Postausgang: Vorlagen und Ausgangsbuch
+
+Tabellen: `vorlage`, `ausgang`
+
+Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`, `app.vorlagen_grundbestand`, `app.vorlagen_beim_mandanten`
+
+Policies: 4
+
+### `supabase/migrations/20260831260000_ausgang_fluechtig.sql`
+
+Fluechtige Ausgaenge: der Text verschwindet nach dem Senden
+
+Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -247,6 +264,7 @@ Policies: 2
 | [`src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts`](../src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts) | Eine Belegseite für die externe Ansicht |
 | [`src/app/api/einsicht/[token]/[dokument]/pdf/route.ts`](../src/app/api/einsicht/[token]/[dokument]/pdf/route.ts) | Das Original als PDF — nur bei ausdrücklichem Download-Recht |
 | [`src/app/api/stapel/[id]/seite/[nr]/route.ts`](../src/app/api/stapel/[id]/seite/[nr]/route.ts) | Eine Stapelseite als Miniatur |
+| [`src/app/lib/adresse.ts`](../src/app/lib/adresse.ts) | Wie die Anwendung von außen heißt |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
 | [`src/app/lib/anmelde-aktionen.ts`](../src/app/lib/anmelde-aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
@@ -256,6 +274,7 @@ Policies: 2
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
 | [`src/app/lib/nebenlauf-aktionen.ts`](../src/app/lib/nebenlauf-aktionen.ts) | 'use server' |
+| [`src/app/lib/postausgang-aktionen.ts`](../src/app/lib/postausgang-aktionen.ts) | 'use server' |
 | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
@@ -281,6 +300,9 @@ Policies: 2
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
+| [`src/postausgang/index.ts`](../src/postausgang/index.ts) | Postausgang: Vorlage füllen, in das Ausgangsbuch legen, senden |
+| [`src/postausgang/versand.ts`](../src/postausgang/versand.ts) | Der Versand |
+| [`src/postausgang/vorlagen.ts`](../src/postausgang/vorlagen.ts) | Vorlagen mit Platzhaltern |
 | [`src/pruefung/mahnung.ts`](../src/pruefung/mahnung.ts) | Mahnungen |
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
@@ -306,7 +328,7 @@ Policies: 2
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 33 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
-| [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 40 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte |
+| [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
@@ -318,6 +340,7 @@ Policies: 2
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
+| [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |

@@ -81,6 +81,12 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
         </dl>
       )}
 
+      {ansicht.versandfehlt !== null && (
+        <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.7rem 0.9rem' }}>
+          {ansicht.versandfehlt}
+        </p>
+      )}
+
       {!ansicht.moeglich && ansicht.hindernis !== null && (
         <p
           role="alert"

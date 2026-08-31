@@ -19,8 +19,12 @@ import {
 } from '../queue'
 import { aufbereiten } from './aufbereitung'
 import { stapelAufbereiten } from './stapelaufbereitung'
+import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
 
 const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
+
+/** Wie oft im Ausgangsbuch nachgesehen wird. */
+const POSTTAKT_MS = 30_000
 
 async function start(): Promise<void> {
   const ablage = new DateisystemAblage(ABLAGE_WURZEL)
@@ -53,6 +57,27 @@ async function start(): Promise<void> {
       }
     },
   )
+
+  /*
+   * Der Postausgang laeuft als Schleife, nicht als Warteschlange.
+   *
+   * Ein Ausgangseintrag entsteht in derselben Transaktion wie sein Anlass --
+   * einen Auftrag zusaetzlich einzureihen waere ein zweites Fehlerfenster
+   * fuer dieselbe Sache. Das Ausgangsbuch **ist** die Warteschlange; hier
+   * wird nur regelmaessig nachgesehen.
+   */
+  if (!versandEingerichtet()) {
+    console.log('[worker] kein Mailversand eingerichtet, Ausgangsbuch bleibt liegen')
+  }
+  const versand = versandAusUmgebung()
+  setInterval(() => {
+    void postSenden(ablage, versand).then(({ gesendet, gescheitert }) => {
+      // Keine Empfaenger im Log -- sie stehen im Ausgangsbuch (Projektregel).
+      if (gesendet + gescheitert > 0) {
+        console.log('[worker] Postausgang:', gesendet, 'gesendet,', gescheitert, 'gescheitert')
+      }
+    })
+  }, POSTTAKT_MS).unref()
 
   console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG)
 }

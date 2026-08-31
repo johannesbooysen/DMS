@@ -154,6 +154,16 @@ export default async function Einsichtsverwaltung({
           <input type="checkbox" name="download" value="ja" /> Download erlauben
         </label>
 
+        <label style={feld}>
+          Per Mail an (optional)
+          <input
+            name="mailAn"
+            type="email"
+            placeholder="leer = nur anzeigen"
+            style={{ ...eingabe, minWidth: '14rem' }}
+          />
+        </label>
+
         <button type="submit" style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}>
           Zugang anlegen
         </button>

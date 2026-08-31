@@ -10,7 +10,7 @@
 import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 import { zahlungMoeglich } from './sperre'
-import { UebergabeNichtMoeglich, wegFuer, type Versand } from './wege'
+import { UebergabeNichtMoeglich, wegFuer, type Postablage } from './wege'
 
 export * from './sperre'
 export * from './wege'
@@ -99,7 +99,7 @@ export function istLastschrift(beleg: {
  */
 export async function zahlungUebergeben(
   c: PoolClient,
-  mittel: { ablage: Ablage; versand?: Versand | null },
+  mittel: { ablage: Ablage; post?: Postablage | null },
   eingabe: {
     dokumentId: string
     benutzerId: string
@@ -165,7 +165,7 @@ export async function zahlungUebergeben(
 
   const weg = wegFuer(beleg.weg_art as string, {
     ablage: mittel.ablage,
-    versand: mittel.versand ?? null,
+    post: mittel.post ?? null,
   })
 
   const protokoll = await weg.uebergeben({

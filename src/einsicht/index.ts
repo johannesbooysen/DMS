@@ -17,6 +17,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import type { PoolClient } from 'pg'
 import { alsDatum, alsZeitpunkt } from '@/datum'
 import { alsAnmeldung, alsBenutzer } from '@/db'
+import { postAnlegen } from '@/postausgang'
 
 export type Empfaengertyp = 'eigentuemer' | 'beirat' | 'mieter'
 export type Umfang = 'vorgang' | 'wirtschaftsjahr' | 'belegliste'
@@ -190,9 +191,31 @@ export interface Gewaehrungswunsch {
   vorgangId?: string | null
   wirtschaftsjahr?: number | null
   wasserzeichen?: boolean
+  /**
+   * Den Link per Mail versenden statt ihn nur anzuzeigen.
+   *
+   * `basisUrl` ist Pflicht, wenn gesendet wird — der Link muss vollständig
+   * sein, und wie die Anwendung von außen heißt, weiß dieses Modul nicht.
+   */
+  mailAn?: { adresse: string; basisUrl: string } | null
 }
 
 export class EinsichtAbgelehnt extends Error {}
+
+/**
+ * „42 WEG Lindenweg 3" für die Mail.
+ *
+ * Läuft unter der RLS auf derselben Verbindung — wer das Objekt nicht sieht,
+ * bekommt einen leeren Namen und keine Zeile aus einem fremden Mandanten.
+ */
+async function objektbezeichnung(c: PoolClient, objektId: string): Promise<string> {
+  const { rows } = await c.query<{ objektnummer: string; bezeichnung: string }>(
+    'select objektnummer, bezeichnung from objekt where id = $1',
+    [objektId],
+  )
+  const o = rows[0]
+  return o === undefined ? '' : `${o.objektnummer} ${o.bezeichnung}`
+}
 
 /**
  * Gewährt Einsicht und liefert den Token — **einmal**.
@@ -229,7 +252,37 @@ export async function einsichtGewaehren(
         wunsch.wasserzeichen ?? true,
       ],
     )
-    return rows[0]?.einsicht_gewaehren ?? null
+    const id = rows[0]?.einsicht_gewaehren ?? null
+    if (id === null || wunsch.mailAn == null) return id
+
+    /*
+     * Der Ausgangseintrag liegt in derselben Transaktion wie die Gewährung.
+     * Andernfalls gäbe es zwei Fehlerfälle, die beide schlecht sind: eine
+     * Gewährung, deren Link nie hinausgeht, oder eine Mail mit einem Link
+     * auf eine Gewährung, die es nicht gibt.
+     *
+     * `fluechtig`: Der Token steht im Text. Nach erfolgreichem Versand
+     * ersetzt ihn die Datenbank durch einen Vermerk — sonst läge er im
+     * Klartext im Ausgangsbuch, so lange die Gewährung gilt.
+     */
+    const { rows: empfaenger } = await c.query<{ name: string }>(
+      'select name from person where id = $1',
+      [wunsch.personId],
+    )
+    const bis = new Date(Date.now() + wunsch.tage * 86_400_000)
+    await postAnlegen(c, {
+      schluessel: 'einsicht_link',
+      anlass: 'einsicht',
+      empfaenger: wunsch.mailAn.adresse,
+      fluechtig: true,
+      werte: {
+        empfaenger: empfaenger[0]?.name ?? '',
+        link: `${wunsch.mailAn.basisUrl.replace(/\/$/, '')}/einsicht/${token}`,
+        gueltig_bis: alsDatum(bis) ?? '',
+        objekt: await objektbezeichnung(c, wunsch.objektId),
+      },
+    })
+    return id
   })
 
   if (gewaehrungId === null) {

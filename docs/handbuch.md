@@ -684,9 +684,108 @@ kann, ist keiner.
 > weitergereichter Link erkennen lässt. Eine eigene Aufbewahrungsfrist dafür
 > ist noch offen.
 
-> Noch nicht da: der **Versand** des Links. Er wird derzeit angezeigt und von
-> Hand weitergegeben. Ebenfalls offen sind die Rechte *Kommentar* und
-> *Stempel* — sie stehen im Schema, aber es gibt noch keine Maske dafür.
+**Den Link verschicken lassen.** Wer beim Anlegen eine Mailadresse einträgt,
+bekommt den Link nicht nur angezeigt, sondern zusätzlich als Mail an den
+Empfänger — über den [Postausgang](#postausgang). Bleibt das Feld leer, ändert
+sich nichts am bisherigen Weg.
+
+Der Ausgangseintrag ist dabei **flüchtig**: Sein Text enthält den Token, und
+nach erfolgreichem Versand ersetzt ihn die Datenbank durch einen Vermerk. Sonst
+läge ein gültiger Zugangslink im Klartext im Ausgangsbuch, so lange die
+Gewährung läuft — und damit in jedem Datenbankauszug. Was der Zugang tat,
+bleibt trotzdem nachvollziehbar: Empfänger, Umfang, Gültigkeit und Widerruf
+stehen in der Gewährung, jeder Aufruf im Zugriffsprotokoll.
+
+> Noch nicht da: die Rechte *Kommentar* und *Stempel* — sie stehen im Schema,
+> aber es gibt noch keine Maske dafür.
+
+---
+
+## Postausgang
+
+Alles, was das DMS nach außen schickt, geht durch das **Ausgangsbuch**. Kein
+Modul versendet selbst.
+
+**Warum ein Buch und nicht direkt senden?** Weil ein Versand fehlschlagen
+kann, und zwar an einer Stelle, an der niemand hinsieht. Wenn der
+Zahlungsstempel selbst die Mail an die Bank verschickt, entscheidet der
+Mailserver darüber, ob der Stempel gilt: Ist er kurz nicht erreichbar,
+scheitert entweder die Mail still oder die Freigabe. Beides ist falsch. Also
+schreibt der Stempel einen Eintrag, und der Versand ist eine getrennte
+Aufgabe, die man ansehen kann.
+
+Ein Eintrag hat drei Zustände:
+
+| Stand | Bedeutung |
+|---|---|
+| `offen` | Liegt bereit. Der Worker nimmt ihn beim nächsten Durchgang. |
+| `gesendet` | Ist hinaus, mit Zeitpunkt. |
+| `fehlgeschlagen` | Ist nicht hinaus. Der Grund steht dabei. |
+
+Der Worker sieht alle halbe Minute nach. Was scheitert, bleibt **stehen** und
+wird nicht von selbst wiederholt — ein Mailserver, der jetzt ablehnt, lehnt in
+der nächsten Sekunde wieder ab, und ein Zähler, den niemand ansieht, ist keine
+Lösung. Auf der Seite *Postausgang* steht der Grund, daneben *erneut
+versuchen*. Die Zahl der bisherigen Versuche bleibt sichtbar, damit niemand den
+Eintrag für unberührt hält.
+
+**Ohne eingerichteten Mailversand geht nichts hinaus, aber auch nichts
+verloren.** Sind `SMTP_URL` und `DMS_ABSENDER` nicht gesetzt, sagt die Seite
+das oben ausdrücklich und alle Einträge bleiben `offen`. Das ist der Zustand
+einer frischen Installation und kein Fehler.
+
+### Flüchtige Einträge
+
+Ein Eintrag kann ein Geheimnis enthalten — heute nur einer: die Mail mit dem
+Link zur Belegeinsicht. Der Token steht darin im Klartext, denn anders käme
+der Empfänger nicht hinein.
+
+Solche Einträge sind **flüchtig**: Nach erfolgreichem Versand ersetzt die
+Datenbank den Text durch einen Vermerk. Damit steht ein gültiger Zugangslink
+höchstens die halbe Minute bis zum Versand im Ausgangsbuch und nicht die
+ganze Laufzeit der Gewährung.
+
+Scheitert der Versand, bleibt der Text stehen — sonst ginge die Wiederholung
+leer hinaus.
+
+Die Frage „was stand in dieser Mail" ist danach nur noch teilweise
+beantwortbar, und das ist der Preis. Wer den Zugang selbst prüfen will, findet
+in der Gewährung Empfänger, Umfang, Gültigkeit und Widerruf und im
+Zugriffsprotokoll jeden Aufruf.
+
+### Vorlagen
+
+Betreff und Text kommen aus einer **Vorlage**, nicht aus dem Code. Vier gibt es
+von Anfang an, in jedem neuen Mandanten:
+
+| Schlüssel | Wofür |
+|---|---|
+| `zahlungsauftrag` | Zahlungsauftrag an die Bank, mit der Datei im Anhang |
+| `einsicht_link` | Zugang zur Belegeinsicht für Eigentümer, Beirat, Mieter — der Eintrag ist **flüchtig**, siehe unten |
+| `abtretung` | Abtretungserklärung an die ausführende Firma |
+| `technikmeldung` | Meldung an eine Technik-Datenbank |
+
+Platzhalter stehen in doppelten geschweiften Klammern: `{{rechnungsnummer}}`,
+`{{kreditor}}`, `{{betrag}}`, `{{objekt}}`, `{{faellig}}`, `{{empfaenger}}`,
+`{{link}}`, `{{gueltig_bis}}`, `{{heute}}`.
+
+Zwei Regeln dazu, beide absichtlich:
+
+**Ein unbekannter Name wird nicht eingesetzt, sondern bleibt stehen.** Wer
+`{{rechnungsnr}}` schreibt, bekommt beim Speichern eine Meldung — und wenn er
+sie überginge, stünde die Klammer in der Mail. Ein leerer Text an der Stelle
+wäre schlimmer: Er fiele niemandem auf.
+
+**Ein bekannter Name ohne Wert wird zu `—`.** Das Feld gab es, es war nur
+nichts drin. Der Unterschied ist beim Lesen der Mail wichtig.
+
+Vorlagen ändert man auf der Seite *Postausgang*. Geprüft wird **vor** dem
+Speichern; schlägt die Prüfung an, bleibt das Formular offen und die Vorlage
+unverändert.
+
+> Noch nicht da: Vorlagen anlegen und löschen — es gibt die vier festen.
+> Ebenso fehlt der Versand als PDF-Brief; hinaus geht bisher nur E-Mail.
+
 
 ---
 

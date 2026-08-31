@@ -9,6 +9,7 @@
 
 import { alsBenutzer } from '@/db'
 import { wegHindernis, zahlungenLaden, zahlungMoeglich } from '@/zahlung'
+import { versandEingerichtet } from '@/postausgang'
 import { ZAHLUNGSMITTEL } from '@/app/lib/zahlungsmittel'
 
 export interface Zahlungsansicht {
@@ -23,6 +24,8 @@ export interface Zahlungsansicht {
   moeglich: boolean
   hindernis: string | null
   verfallen: number
+  /** Kein Hindernis, sondern ein Hinweis: Die Mail bleibt liegen. */
+  versandfehlt: string | null
   zahlungen: Awaited<ReturnType<typeof zahlungenLaden>>
 }
 
@@ -75,10 +78,27 @@ export async function zahlungsansichtLaden(
           }
 
     // Die Sperre in SQL kennt die Stammdaten, nicht die Einrichtung des
-    // Servers. Ob ein Versand steht, weiß nur die Anwendung -- und der
+    // Servers. Ob ein Weg überhaupt kann, weiß nur die Anwendung -- und der
     // Bearbeiter soll es vor dem Stempeln erfahren, nicht danach.
     const wegProblem =
       weg === null ? null : wegHindernis(weg.art, weg.name, ZAHLUNGSMITTEL)
+
+    /*
+     * Ein fehlender Mailversand ist **kein** Hindernis mehr.
+     *
+     * Der Auftrag geht ins Ausgangsbuch, ob gesendet werden kann oder nicht;
+     * ein nicht abgeholter Eintrag steht dort sichtbar. Das war vorher
+     * anders, und die Umkehrung ist Absicht — die Begründung steht in
+     * `src/zahlung/wege.ts`.
+     *
+     * Gesagt wird es trotzdem: Wer stempelt, soll wissen, dass die Mail noch
+     * liegen bleibt.
+     */
+    const versandfehlt =
+      weg?.art === 'mail' && !versandEingerichtet()
+        ? 'Der Auftrag geht ins Ausgangsbuch. Ein Mailversand ist noch nicht ' +
+          'eingerichtet — bis dahin bleibt er dort liegen.'
+        : null
 
     return {
       weg,
@@ -90,6 +110,7 @@ export async function zahlungsansichtLaden(
       moeglich: sperre.moeglich && wegProblem === null,
       hindernis: sperre.hindernis ?? wegProblem,
       verfallen: sperre.verfallen,
+      versandfehlt,
       zahlungen: await zahlungenLaden(c, dokumentId),
     }
   })

@@ -76,6 +76,7 @@ afterEach(async () => {
     await c.query('alter table zugriff_protokoll disable trigger zugriff_protokoll_unveraenderlich')
     await c.query('delete from zugriff_protokoll')
     await c.query('delete from einsicht_gewaehrung')
+    await c.query('delete from ausgang')
   } finally {
     await c.query('alter table zugriff_protokoll enable trigger zugriff_protokoll_unveraenderlich')
     c.release()
@@ -451,5 +452,59 @@ describe('Rechte', () => {
   it('setzt das Wasserzeichen als Vorgabe', async () => {
     const { token } = await gewaehren()
     expect((await einsichtAufloesen(token))?.wasserzeichen).toBe(true)
+  })
+})
+
+describe('Link per Mail', () => {
+  async function ausgang(): Promise<
+    Array<{ empfaenger: string; text: string; fluechtig: boolean; anlass: string }>
+  > {
+    const c = await verbindungspool().connect()
+    try {
+      const { rows } = await c.query(
+        'select empfaenger, text, fluechtig, anlass from ausgang',
+      )
+      return rows
+    } finally {
+      c.release()
+    }
+  }
+
+  it('legt ohne Adresse nichts ins Ausgangsbuch', async () => {
+    await gewaehren()
+    expect(await ausgang()).toEqual([])
+  })
+
+  it('legt mit Adresse einen fluechtigen Eintrag an, der den Link traegt', async () => {
+    const { token } = await gewaehren({
+      mailAn: { adresse: 'meike@example.invalid', basisUrl: 'https://dms.example.invalid/' },
+    })
+
+    const [eintrag] = await ausgang()
+    expect(eintrag.empfaenger).toBe('meike@example.invalid')
+    expect(eintrag.anlass).toBe('einsicht')
+    expect(eintrag.fluechtig).toBe(true)
+    // Ein Schraegstrich, nicht zwei -- die Basis-URL kommt aus der Umgebung
+    // und traegt dort gern einen am Ende.
+    expect(eintrag.text).toContain(`https://dms.example.invalid/einsicht/${token}`)
+    expect(eintrag.text).toContain('Meike Meier')
+    expect(eintrag.text).toContain('42')
+  })
+
+  it('legt keinen Eintrag an, wenn die Gewaehrung scheitert', async () => {
+    // Doris ist im anderen Mandanten -- sie sieht Objekt 42 nicht.
+    await expect(
+      einsichtGewaehren(DORIS, {
+        objektId: OBJEKT_42,
+        personId: MEIKE_BIS_MAERZ,
+        empfaengerTyp: 'mieter',
+        umfang: 'belegliste',
+        tage: 7,
+        mailAn: { adresse: 'doris@example.invalid', basisUrl: 'https://x.invalid' },
+      }),
+    ).rejects.toThrow(EinsichtAbgelehnt)
+
+    // Kein Ausgang ohne Gewaehrung -- beides liegt in einer Transaktion.
+    expect(await ausgang()).toEqual([])
   })
 })

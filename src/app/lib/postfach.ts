@@ -13,7 +13,8 @@
 import { alsBenutzer } from '@/db'
 import { kontierungPruefen } from '@/kontierung/kontierung'
 import { UebergabeNichtMoeglich, zahlungUebergeben } from '@/zahlung'
-import { ZAHLUNGSMITTEL } from '@/app/lib/zahlungsmittel'
+import { postablage } from '@/app/lib/zahlungsmittel'
+import { ABLAGE } from '@/app/lib/belege'
 import { stempeln } from '@/workflow/engine'
 
 export interface Postfachzeile {
@@ -244,7 +245,7 @@ export async function stempelSetzen(
       // bleibt offen (Konzept 12).
       if (stufen[0]?.stufentyp === 'zahlung') {
         try {
-          const ergebnis = await zahlungUebergeben(c, ZAHLUNGSMITTEL, {
+          const ergebnis = await zahlungUebergeben(c, { ablage: ABLAGE, post: postablage(c) }, {
             dokumentId: aufgabe.dokument_id,
             benutzerId,
           })
