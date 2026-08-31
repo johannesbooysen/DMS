@@ -11,6 +11,7 @@
  */
 
 import { alsBenutzer } from '@/db'
+import { kontierungPruefen } from '@/kontierung/kontierung'
 import { stempeln } from '@/workflow/engine'
 
 export interface Postfachzeile {
@@ -19,6 +20,7 @@ export interface Postfachzeile {
   laufId: string
   stufeId: string
   stufe: string
+  stufentyp: string
   kreditor: string | null
   rechnungsnummer: string | null
   brutto: number | null
@@ -31,7 +33,7 @@ export interface Postfachzeile {
 
 const ZEILEN_ABFRAGE = `
   select a.id as aufgabe_id, d.id as dokument_id, l.id as lauf_id,
-         s.id as stufe_id, s.bezeichnung as stufe,
+         s.id as stufe_id, s.bezeichnung as stufe, s.stufentyp,
          k.name as kreditor, f.rechnungsnummer, f.brutto,
          o.objektnummer, og.name as ordnungsgruppe, d.ampel_gesamt,
          a.faellig_am, a.uebernommen_von
@@ -54,6 +56,7 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
     laufId: String(z['lauf_id']),
     stufeId: String(z['stufe_id']),
     stufe: String(z['stufe']),
+    stufentyp: String(z['stufentyp']),
     kreditor: text(z['kreditor']),
     rechnungsnummer: text(z['rechnungsnummer']),
     brutto: z['brutto'] == null ? null : Number(z['brutto']),
@@ -219,6 +222,19 @@ export async function stempelSetzen(
     const gewaehlt = erlaubt.find((e) => e.stempeltyp_id === eingabe.stempeltypId)
     if (gewaehlt === undefined) {
       throw new StempelAbgelehnt('Dieser Stempel ist an dieser Stufe nicht möglich')
+    }
+
+    // Der Summenzwang blockiert die Kontierungsstufe -- nicht die Ampel, die
+    // Stufe (Konzept 6). Ein halb kontierter Beleg darf nicht weiter.
+    if (gewaehlt.entscheidung === 'freigabe') {
+      const { rows: stufen } = await c.query<{ stufentyp: string }>(
+        'select stufentyp from prozessstufe where id = $1',
+        [aufgabe.stufe_id],
+      )
+      if (stufen[0]?.stufentyp === 'kontierung') {
+        const hindernis = await kontierungPruefen(c, aufgabe.dokument_id)
+        if (hindernis !== null) throw new StempelAbgelehnt(hindernis)
+      }
     }
 
     const kommentar = eingabe.kommentar?.trim() ?? ''

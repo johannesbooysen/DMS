@@ -10,6 +10,8 @@
 import { notFound } from 'next/navigation'
 import { stempelnAktion } from '@/app/lib/aktionen'
 import { befundeLaden } from '@/app/lib/belege'
+import { kontierungsmaskeLaden } from '@/app/lib/kontierung-daten'
+import { Kontierung } from '@/app/lib/kontierungsmaske'
 import { aufgabeLaden } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Ampel, Befunde, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
@@ -30,6 +32,13 @@ export default async function Aufgabenansicht({
   if (geladen === null) return notFound()
   const { zeile, stempel } = geladen
   const befunde = await befundeLaden(angemeldeterBenutzer(), zeile.dokumentId)
+
+  // Die Maske erscheint nur an der Kontierungsstufe. Anderswo waere sie kein
+  // Angebot, sondern eine Ablenkung -- wer freigibt, kontiert nicht.
+  const maske =
+    zeile.stufentyp === 'kontierung'
+      ? await kontierungsmaskeLaden(angemeldeterBenutzer(), zeile.dokumentId)
+      : null
 
   const brauchtKlaerungsfelder = stempel.some((s) => s.entscheidung === 'klaerung')
   const brauchtKommentar = stempel.some((s) => s.kommentarPflicht)
@@ -57,6 +66,10 @@ export default async function Aufgabenansicht({
       </p>
 
       <Befunde befunde={befunde} />
+
+      {maske !== null && (
+        <Kontierung maske={maske} dokumentId={zeile.dokumentId} aufgabeId={zeile.aufgabeId} />
+      )}
 
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
         <a href={`/beleg/${zeile.dokumentId}`} style={{ flexShrink: 0 }}>

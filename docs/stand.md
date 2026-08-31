@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 51 Tabellen, 61 Policies,
-30 Module, 222 Testfaelle in 14 Dateien,
+33 Module, 252 Testfaelle in 15 Dateien,
 3 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -173,6 +173,8 @@ Funktionen: `app.dokument_zuordnen`
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
+| [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
+| [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
@@ -186,6 +188,7 @@ Funktionen: `app.dokument_zuordnen`
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
+| [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/pruefung/mahnung.ts`](../src/pruefung/mahnung.ts) | Mahnungen |
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
@@ -208,6 +211,7 @@ Funktionen: `app.dokument_zuordnen`
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
+| [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |

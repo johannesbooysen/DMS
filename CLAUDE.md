@@ -155,3 +155,13 @@ Das Konzept (§23) schreibt einen dünnen Schnitt durch alles vor, nicht Schicht
 **Der Workflow wird ein Blockbaum, keine Kette.** [ADR 0002](docs/adr/0002-workflow-modell.md) ist angenommen und ändert diese Reihenfolge: Vor der Engine kommen das Rollenmodell aus §17, die Tabelle `prozessknoten` (`nacheinander` / `gleichzeitig` / `verzweigung` / `stufe`) und Bedingungen als `jsonb` über einer Weißliste. Die Engine läuft dann einen Baum ab, statt `reihenfolge` hochzuzählen. Wer jetzt eine lineare Engine baut, baut sie zweimal. §8.8 („Kein Prozessdesigner") ist damit bewusst aufgehoben — die Auflage daraus bleibt: Simulation vor dem Aktivieren.
 
 §24 listet die offenen Punkte. Zwei davon sind nachträglich teuer und sollten vor größerem Ingest-Code bedacht werden: **Stapelscan mit Belegtrennung** (eine Scandatei enthält zwanzig Belege) und **Vorlagen für Ausgangspost** (die Systemaktionen sind vorgesehen, die Vorlagenverwaltung fehlt).
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

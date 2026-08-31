@@ -269,6 +269,51 @@ nächsten Prüflauf, und die Ampel färbt sich zurück.
 
 ---
 
+## Kontieren
+
+Steht ein Beleg an einer Kontierungsstufe, erscheint die Kontierung auf dem
+Aufgabenbildschirm — unter den Prüfhinweisen, über dem Beleg.
+
+Eine Rechnung zerfällt in Zeilen: **Konto, Steuersatz, Betrag**. Der Betrag
+ist der **Bruttobetrag**, so wie er auf dem Beleg steht; netto rechnet das
+System. Eine Rechnung, die auf ein einziges Konto geht, braucht kein
+Abtippen — die Schaltfläche **Rest übernehmen** legt eine Zeile über genau
+den noch offenen Betrag an. Das ist kein Komfort: Abtippen ist die Stelle,
+an der Zahlendreher entstehen.
+
+Zur Auswahl stehen nur die Konten des **Kontenrahmens, der am Objekt hängt**.
+Ein Konto eines anderen Rahmens lässt sich nicht wählen, auch nicht über den
+Umweg eines Formulars.
+
+**Umlagefähigkeit und Umlageschlüssel gehören zur Zeile, nicht zum Beleg.**
+Beide kommen als Vorschlag aus dem Konto und lassen sich überschreiben: der
+Umlageschlüssel beim Anlegen der Zeile, die Umlagefähigkeit danach durch
+Klick auf den Eintrag in der Spalte *Umlage*. Steht dort *ohne Schlüssel*,
+ist die Zeile zwar umlagefähig, aber noch nicht verteilbar — dann Zeile
+entfernen und mit Schlüssel neu anlegen.
+
+### Der Summenzwang
+
+**Die Summe der Zeilen muss den Rechnungsbetrag ergeben.** Solange sie das
+nicht tut, zeigt die Tabelle *Offen* in Rot, und die Stufe lässt sich nicht
+freigeben — der Stempel wird mit Begründung abgewiesen. Das ist eine harte
+Sperre, keine Ampelfarbe.
+
+Was weiterhin geht: **zur Klärung geben**. Wer nicht kontieren kann, weil
+etwas unklar ist, muss den Beleg abgeben können; bereits gesetzte Stempel
+bleiben gültig, die Stufe wird gemerkt.
+
+Geprüft wird über die Kontierung, **nicht** über die Zahlungszeilen. Sonst
+würde der Eigenanteil bei einer Selbstbeteiligung die Prüfung verletzen,
+obwohl die Kontierung stimmt.
+
+> Noch nicht da: ein Vorschlag aus dem Lernspeicher. Die Tabelle
+> `kontierungs_muster` steht, aber es gibt noch keine Rechnungspositionen,
+> aus denen sich ein Positionstext lesen ließe. Ebenso fehlen die Angaben
+> nach § 35a EStG in der Maske — das Schema trägt sie, die Erfassung nicht.
+
+---
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu
