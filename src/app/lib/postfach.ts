@@ -12,6 +12,8 @@
 
 import { alsBenutzer } from '@/db'
 import { kontierungPruefen } from '@/kontierung/kontierung'
+import { UebergabeNichtMoeglich, zahlungUebergeben } from '@/zahlung'
+import { ZAHLUNGSMITTEL } from '@/app/lib/zahlungsmittel'
 import { stempeln } from '@/workflow/engine'
 
 export interface Postfachzeile {
@@ -234,6 +236,31 @@ export async function stempelSetzen(
       if (stufen[0]?.stufentyp === 'kontierung') {
         const hindernis = await kontierungPruefen(c, aufgabe.dokument_id)
         if (hindernis !== null) throw new StempelAbgelehnt(hindernis)
+      }
+
+      // Die Zahlungsstufe ist keine Bestaetigung, sondern eine Handlung: Der
+      // Stempel uebergibt tatsaechlich. Deshalb steht die Uebergabe vor dem
+      // Stempel -- scheitert sie, wird auch nicht gestempelt, und die Aufgabe
+      // bleibt offen (Konzept 12).
+      if (stufen[0]?.stufentyp === 'zahlung') {
+        try {
+          const ergebnis = await zahlungUebergeben(c, ZAHLUNGSMITTEL, {
+            dokumentId: aufgabe.dokument_id,
+            benutzerId,
+          })
+          if (ergebnis.status === 'gesperrt') {
+            throw new StempelAbgelehnt(ergebnis.hindernis ?? 'Die Zahlung ist gesperrt.')
+          }
+        } catch (fehler) {
+          // Ein nicht eingerichteter Weg ist ein Hindernis, kein Absturz.
+          // Beim Bedienen kam hier ein Serverfehler heraus, nachdem der
+          // Anwender die Schaltflaeche gedrueckt hatte -- ohne Begruendung
+          // und ohne zu wissen, ob gezahlt wurde.
+          if (fehler instanceof UebergabeNichtMoeglich) {
+            throw new StempelAbgelehnt(fehler.message)
+          }
+          throw fehler
+        }
       }
     }
 

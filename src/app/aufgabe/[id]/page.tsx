@@ -13,6 +13,8 @@ import { befundeLaden } from '@/app/lib/belege'
 import { kontierungsmaskeLaden } from '@/app/lib/kontierung-daten'
 import { Kontierung } from '@/app/lib/kontierungsmaske'
 import { aufgabeLaden } from '@/app/lib/postfach'
+import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
+import { Zahlung } from '@/app/lib/zahlungsansicht'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Ampel, Befunde, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
@@ -38,6 +40,13 @@ export default async function Aufgabenansicht({
   const maske =
     zeile.stufentyp === 'kontierung'
       ? await kontierungsmaskeLaden(await angemeldeterBenutzer(), zeile.dokumentId)
+      : null
+
+  // Dasselbe fuer die Zahlungsstufe: Der Stempel dort weist Geld an, also
+  // steht vorher auf dem Bildschirm, was passieren wird.
+  const zahlung =
+    zeile.stufentyp === 'zahlung'
+      ? await zahlungsansichtLaden(await angemeldeterBenutzer(), zeile.dokumentId)
       : null
 
   const brauchtKlaerungsfelder = stempel.some((s) => s.entscheidung === 'klaerung')
@@ -70,6 +79,8 @@ export default async function Aufgabenansicht({
       {maske !== null && (
         <Kontierung maske={maske} dokumentId={zeile.dokumentId} aufgabeId={zeile.aufgabeId} />
       )}
+
+      {zahlung !== null && <Zahlung ansicht={zahlung} />}
 
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
         <a href={`/beleg/${zeile.dokumentId}`} style={{ flexShrink: 0 }}>

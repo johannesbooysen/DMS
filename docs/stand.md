@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 53 Tabellen, 63 Policies,
-41 Module, 289 Testfaelle in 16 Dateien,
+Auf einen Blick: 54 Tabellen, 64 Policies,
+46 Module, 322 Testfaelle in 17 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -173,6 +173,16 @@ Funktionen: `app.sitzung_aufloesen`, `app.identitaet_aufloesen`, `app.sitzung_an
 
 Policies: 2
 
+### `supabase/migrations/20260831190000_zahlung.sql`
+
+Zahlungsuebergabe und die harte Sperre davor
+
+Tabellen: `zahlung`
+
+Funktionen: `app.stempel_hash_setzen`, `app.gueltige_freigaben`, `app.freigaben_nachpruefen`, `app.zahlung_moeglich`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -196,6 +206,8 @@ Policies: 2
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
+| [`src/app/lib/zahlung-daten.ts`](../src/app/lib/zahlung-daten.ts) | Die Zahlungsansicht mit Daten versorgen |
+| [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
@@ -218,6 +230,9 @@ Policies: 2
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
 | [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
 | [`src/workflow/vertretung.ts`](../src/workflow/vertretung.ts) | Vertretung anlegen, ansehen, widerrufen |
+| [`src/zahlung/index.ts`](../src/zahlung/index.ts) | Zahlungsübergabe |
+| [`src/zahlung/sperre.ts`](../src/zahlung/sperre.ts) | Die harte Sperre vor der Zahlung |
+| [`src/zahlung/wege.ts`](../src/zahlung/wege.ts) | Die Zahlungswege |
 
 ## Tests
 
@@ -239,6 +254,7 @@ Policies: 2
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
+| [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 33 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
 
 ## Architekturentscheidungen
 
@@ -254,5 +270,5 @@ Policies: 2
 | Fundstelle |
 |---|
 | [`src/worker/aufbereitung.ts:178`](../src/worker/aufbereitung.ts) |
-| [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:184`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:188`](../src/workflow/engine.ts) |

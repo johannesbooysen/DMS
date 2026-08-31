@@ -50,13 +50,16 @@ export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<K
             sg.name            as spezialgebiet_name,
             o.objektnummer     as objekt_objektnummer,
             o.verwaltungsart   as objekt_verwaltungsart,
-            kr.name            as kreditor_name
+            kr.name            as kreditor_name,
+            coalesce(f.zahlungsart, v.zahlungsart) as zahlungsart
        from dokument d
        left join rechnung_fakten f on f.dokument_id = d.id
        left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
        left join spezialgebiet sg on sg.id = d.spezialgebiet_id
        left join objekt o on o.id = d.objekt_id
        left join kreditor kr on kr.id = f.kreditor_id
+       left join vertrag v on v.kreditor_id = f.kreditor_id
+                          and v.objekt_id = d.objekt_id and v.aktiv
       where d.id = $1`,
     [dokumentId],
   )
@@ -78,6 +81,7 @@ export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<K
     'objekt.objektnummer': z['objekt_objektnummer'],
     'objekt.verwaltungsart': z['objekt_verwaltungsart'],
     'kreditor.name': z['kreditor_name'],
+    zahlungsart: z['zahlungsart'],
   }
 }
 

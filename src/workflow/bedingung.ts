@@ -33,6 +33,7 @@ export const FELDER: Record<string, Feldbeschreibung> = {
   'objekt.objektnummer': { typ: 'text', anzeige: 'Objektnummer' },
   'objekt.verwaltungsart': { typ: 'text', anzeige: 'Verwaltungsart' },
   'kreditor.name': { typ: 'text', anzeige: 'Kreditor' },
+  zahlungsart: { typ: 'text', anzeige: 'Zahlungsart (ueberweisung|lastschrift)' },
   hat_umlagefaehige_zeile: { typ: 'wahrheitswert', anzeige: 'Umlagefähige Zeile vorhanden' },
 }
 

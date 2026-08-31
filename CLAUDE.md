@@ -142,7 +142,7 @@ Gemessen in §21 — beim Entwickeln mit Seed-Daten fällt beides nicht auf:
 ## Regeln, die nicht verletzt werden dürfen
 
 - **Summenzwang:** Σ `kontierung.betrag_brutto` = `rechnung_fakten.brutto`. Verletzung blockiert die Kontierungsstufe. Die Prüfung läuft über die Kontierung, **nicht** über die Zahlungszeilen — sonst verletzt der Eigenanteil bei Selbstbeteiligung sie.
-- **Harte Sperre vor der Zahlung:** jede Pflichtstufe braucht einen gültigen Stempel, Bankdaten müssen vollständig sein.
+- **Harte Sperre vor der Zahlung:** `app.zahlung_moeglich()` prüft in dieser Reihenfolge — gültige Freigaben, Pflichtstufen durch, Summenzwang, harte Befunde, aktiver Zahlungsweg, verifizierte Bankverbindung. **Gültig** ist das tragende Wort: Jeder Freigabestempel trägt den `freigabe_hash` seines Datenstands (Trigger, nicht Anwendung). Bricht er, schreibt `app.freigaben_nachpruefen()` je Stufe ein Ereignis `verfallen`, öffnet die Aufgabe und springt zurück. Eine gescheiterte Übergabe darf **keine** Zahlung als übergeben hinterlassen.
 - **Harte Rot-Fälle:** IBAN passt nicht zum bekannten Kreditor (Betrugsschutz) und Dublette (Kreditor + Rechnungsnummer + Betrag). Beide stoppen die Bearbeitung, sie färben nicht nur.
 - **Nie löschen:** Ordnungsgruppen nur deaktivieren; abgelehnte Belege bleiben im Status `abgelehnt` und werden archiviert, die Ersatzrechnung ist ein neues Dokument, verkettet über `ersetzt`. Nach Archivierung nur Storno + Neuerfassung.
 - **Klärung:** `kommentar` und `wiedervorlage_am` sind Pflicht, sonst kein Eintritt. Stempel bleiben gültig, Stufe wird gemerkt.

@@ -401,6 +401,68 @@ obwohl die Kontierung stimmt.
 
 ---
 
+## Zahlen
+
+**Der Zahlungsweg ist ein Stammdatum am Objekt, keine Entscheidung im Beleg.**
+Der Ablauf ist überall derselbe — geprüft, freigegeben, übergeben,
+archiviert —, nur das Ziel unterscheidet sich. Ein dritter Weg wird in den
+Einstellungen angelegt und am Objekt hinterlegt; im Code ändert sich nichts.
+
+Der Stempel an der Bankübergabe ist deshalb **keine Bestätigung, sondern eine
+Handlung**: Er weist Geld an. Vorher steht auf dem Bildschirm, was passieren
+wird — Weg, Empfänger, Betrag, Fälligkeit. Die IBAN wird auf die letzten vier
+Stellen gekürzt; zum Wiedererkennen genügt das.
+
+**Lastschrift ist kein Weg**, sondern eine Eigenschaft des Kreditors oder des
+Vertrags: Es wird nichts übergeben, nur die Fälligkeit vermerkt. Was auf dem
+Beleg steht, gilt vor dem Vertrag — eine einmalige Rechnung eines Lieferanten
+mit Lastschriftvertrag kann trotzdem zu überweisen sein.
+
+Bei **Selbstbeteiligung** bleibt der Beleg einer und die Zahlung wird zweimal
+ausgelöst: `voll` im regulären Durchlauf, `eigenanteil` nach Rückkehr aus dem
+Versicherungslauf. Deshalb prüft der Summenzwang gegen die Kontierung und
+nicht gegen die Zahlungszeilen — sonst würde genau dieser Fall ihn verletzen.
+
+### Die harte Sperre
+
+Vor der Übergabe wird geprüft, und zwar in dieser Reihenfolge. Die erste
+Antwort ist die, die auf dem Bildschirm steht:
+
+| Nr. | Geprüft wird |
+|---|---|
+| 1 | Sind alle Freigaben noch **gültig**? |
+| 2 | Ist jede Pflichtstufe durch? |
+| 3 | Ergibt die Kontierung den Rechnungsbetrag? |
+| 4 | Steht ein harter Prüfhinweis offen (IBAN, Dublette)? |
+| 5 | Ist am Objekt ein aktiver Zahlungsweg hinterlegt? |
+| 6 | Gibt es eine verifizierte Bankverbindung, wenn der Weg sie verlangt? |
+
+**Punkt 1 ist der wichtigste und der unauffälligste.** Ein gesetzter Stempel
+ist nicht dasselbe wie ein gültiger. Wird nach der Freigabe der Betrag
+korrigiert oder der Beleg einem anderen Objekt zugeordnet, galt die Freigabe
+einer anderen Rechnung. Solche Belege sehen in keiner Liste verdächtig aus.
+
+Das System lässt die betroffenen Freigaben dann **sichtbar verfallen**: Je
+Stufe wird ein Eintrag geschrieben, die Aufgabe geht wieder auf, und der Beleg
+springt auf die früheste betroffene Stufe zurück. Ein stiller Rücksprung wäre
+schlimmer als gar keiner — niemand könnte erklären, warum der Beleg wieder da
+ist.
+
+Die Bankdaten werden **vor** der Wegewahl geprüft: Unvollständige Daten führen
+zur Sperre, nicht zu einer fehlgeschlagenen Übergabe.
+
+> Noch nicht da: der **Mailversand**. Damit ist scan2bank — der Weg aus dem
+> Bestand — derzeit nicht benutzbar; der Bildschirm sagt es vor dem Stempeln.
+> Das ist Absicht: Eine als übergeben vermerkte Zahlung, die nie jemanden
+> erreicht hat, lässt den Beleg aus allen Listen verschwinden, und das Geld
+> fließt nie. Dateiexport und die Übergabe an ein Fremdsystem laufen.
+
+> Ebenfalls offen: das Feld *Rückmeldung* bleibt leer. Endet die Verantwortung
+> mit der Übergabe, ist es ungenutzt; kommt später ein Kontoauszugsabgleich,
+> ist der Platz da.
+
+---
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu
