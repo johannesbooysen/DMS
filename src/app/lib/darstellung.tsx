@@ -45,7 +45,8 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
     >
       <nav style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
         <a href="/postfach">Postfächer</a>{' · '}
-        <a href="/konfiguration">Abläufe</a>
+        <a href="/konfiguration">Abläufe</a>{' · '}
+        <a href="/vertretung">Vertretung</a>
       </nav>
       <h1 style={{ fontSize: '1.375rem', marginTop: 0 }}>{titel}</h1>
       {children}

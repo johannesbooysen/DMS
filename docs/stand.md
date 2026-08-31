@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 46 Tabellen, 48 Policies,
-20 Module, 138 Testfaelle in 9 Dateien,
+Auf einen Blick: 47 Tabellen, 51 Policies,
+22 Module, 153 Testfaelle in 10 Dateien,
 2 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -111,6 +111,16 @@ Tabellen: `prozessdefinition_ereignis`
 
 Policies: 2
 
+### `supabase/migrations/20260831110000_delegation.sql`
+
+Vertretung: Aufgaben weitergeben, Rechte nicht
+
+Tabellen: `delegation`
+
+Funktionen: `app.vertretung_fuer`
+
+Policies: 3
+
 ## Module
 
 | Datei | Aufgabe |
@@ -123,6 +133,7 @@ Policies: 2
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
+| [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) | Eingang: eine Datei wird zum Dokument |
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
@@ -135,6 +146,7 @@ Policies: 2
 | [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
 | [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
+| [`src/workflow/vertretung.ts`](../src/workflow/vertretung.ts) | Vertretung anlegen, ansehen, widerrufen |
 
 ## Tests
 
@@ -148,6 +160,7 @@ Policies: 2
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
+| [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 
 ## Architekturentscheidungen
@@ -163,4 +176,4 @@ Policies: 2
 |---|
 | [`src/worker/aufbereitung.ts:131`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:88`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:149`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:184`](../src/workflow/engine.ts) |

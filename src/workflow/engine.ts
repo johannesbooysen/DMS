@@ -93,9 +93,44 @@ interface Traeger {
   benutzerId: string | null
   gruppeId: string | null
   rolleId: string | null
+  /** Gesetzt, wenn eine Vertretung die Aufgabe umgelenkt hat. */
+  delegationId?: string | null
 }
 
-const LEER: Traeger = { benutzerId: null, gruppeId: null, rolleId: null }
+const LEER: Traeger = { benutzerId: null, gruppeId: null, rolleId: null, delegationId: null }
+
+/**
+ * Lenkt eine persönlich zugewiesene Aufgabe um, wenn für den Zuständigen eine
+ * Vertretung gilt.
+ *
+ * Wirkt ausschließlich hier — beim Zuweisen. Rechte wandern nicht mit: Wer
+ * vertritt, bekommt die Aufgabe, darf aber nur, was seine eigenen Rollen
+ * hergeben. Kann er die Stufe nicht abschließen, eskaliert sie regulär.
+ */
+async function vertretungAnwenden(
+  c: PoolClient,
+  traeger: Traeger,
+  dokumentId: string,
+  stufentyp: string,
+): Promise<Traeger> {
+  if (traeger.benutzerId === null) return traeger
+
+  const { rows } = await c.query<{ delegation_id: string; an_benutzer: string }>(
+    `select v.delegation_id, v.an_benutzer
+       from dokument d,
+            lateral app.vertretung_fuer($2, d.objekt_id, d.ordnungsgruppe_id, $3) v
+      where d.id = $1`,
+    [dokumentId, traeger.benutzerId, stufentyp],
+  )
+  const vertretung = rows[0]
+  if (vertretung === undefined) return traeger
+
+  return {
+    ...traeger,
+    benutzerId: vertretung.an_benutzer,
+    delegationId: vertretung.delegation_id,
+  }
+}
 
 async function zustaendigkeitAufloesen(
   c: PoolClient,
@@ -171,17 +206,22 @@ async function aufgabenAnlegen(
     if (stufe === null) continue
 
     const gilt = stufeGiltFuer(stufe, kontext)
-    const traeger = gilt ? await zustaendigkeitAufloesen(c, blatt, dokumentId) : LEER
+    const zustaendig = gilt ? await zustaendigkeitAufloesen(c, blatt, dokumentId) : LEER
+    const traeger = gilt
+      ? await vertretungAnwenden(c, zustaendig, dokumentId, stufe.stufentyp)
+      : zustaendig
 
     const { rows } = await c.query<{ id: string }>(
       `insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, zugewiesen_gruppe,
-                            zugewiesen_rolle, faellig_am, status, erledigt_am)
-       values ($1, $2, $3, $4, $5,
-               case when $6::integer is null then null
-                    else now() + ($6::integer * interval '1 hour') end,
-               $7, case when $7 = 'entfallen' then now() else null end)
+                            zugewiesen_rolle, wegen_delegation, faellig_am, status,
+                            erledigt_am)
+       values ($1, $2, $3, $4, $5, $6,
+               case when $7::integer is null then null
+                    else now() + ($7::integer * interval '1 hour') end,
+               $8, case when $8 = 'entfallen' then now() else null end)
        returning id`,
       [laufId, stufe.id, traeger.benutzerId, traeger.gruppeId, traeger.rolleId,
+       traeger.delegationId ?? null,
        gilt ? stufe.slaStunden : null, gilt ? 'offen' : 'entfallen'],
     )
     const id = rows[0]?.id
@@ -286,10 +326,16 @@ export async function stempeln(
   const lauf = laufZeilen[0]
   if (lauf === undefined) throw new Error('Lauf nicht gefunden')
 
+  // Die Vertretung wandert von der Aufgabe in das Ereignis: Sonst stünde
+  // später ein Name im Protokoll, dessen Zuständigkeit sich aus den
+  // Stammdaten nicht erklärt (ADR 0002).
   await c.query(
     `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, stempeltyp_id,
-                                   entscheidung, kommentar)
-     values ($1, $2, $3, $4, $5, $6)`,
+                                   entscheidung, kommentar, wegen_delegation)
+     values ($1, $2, $3, $4, $5, $6,
+             (select a.wegen_delegation from aufgabe a
+               where a.lauf_id = $1 and a.stufe_id = $2
+               order by a.erstellt_am desc limit 1))`,
     [
       vorgang.laufId,
       vorgang.stufeId,

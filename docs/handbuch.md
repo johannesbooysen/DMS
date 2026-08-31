@@ -116,6 +116,7 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 | **Ampel** | Zwei Werte: wie sicher wurde gelesen (Extraktion), und wie plausibel ist das Ergebnis. Der schlechtere gewinnt. |
 | **Rolle** | Bündel von Rechten, einem Benutzer je Objekt oder mandantenweit zugewiesen. Mehrere Rollen ergänzen sich; eine Rolle entzieht nie ein Recht. |
 | **Kreditor** | Lieferant, Dienstleister, Rechnungssteller. |
+| **Vertretung** | Zeitweises Umlenken neuer Aufgaben an eine andere Person. Überträgt keine Rechte. |
 | **Vorgang** | Klammer um mehrere Belege: ein Schadensfall, ein Rechtsstreit, ein Mieterwechsel. |
 
 ---
@@ -159,6 +160,37 @@ seinen Weg genommen hat.
 
 > Das Recht dazu heißt `prozess_konfigurieren` und hat nicht jeder. Wer
 > stempeln darf, darf noch lange nicht den Ablauf ändern — das trifft alle.
+
+
+---
+
+## Vertretung
+
+Unter *Vertretung* gibt man seine Aufgaben für eine Zeit an jemand anderen ab —
+Urlaub, Krankheit, Projektarbeit. Der Umfang lässt sich einschränken: nur ein
+Objekt, nur eine Ordnungsgruppe, nur eine Stufenart.
+
+Drei Punkte, die im Alltag zählen:
+
+**Es wandert die Aufgabe, nicht das Recht.** Wer vertritt, sieht die Belege im
+eigenen Postfach — entscheiden darf er nur, was seine eigenen Rollen hergeben.
+Vertritt die Buchhaltung die Objektbearbeitung, bekommt sie den Beleg, kann ihn
+aber nicht sachlich freigeben; die Aufgabe eskaliert dann regulär. Das wirkt
+zunächst unbequem und ist der Grund, warum im November noch feststellbar ist,
+wer im März was entscheiden durfte.
+
+**Es wirkt auf neue Aufgaben.** Was bereits zugewiesen ist, bleibt liegen, wo
+es liegt. Für den Einzelfall gibt es die Zuweisung von Hand.
+
+**Es gilt eine Stufe weit.** Vertritt A an B und B an C, geht die Aufgabe an B.
+Eine Kette wäre schwer zu durchschauen und könnte im Kreis laufen.
+
+Am Stempel bleibt vermerkt, dass eine Vertretung gewirkt hat — sonst stünde
+später ein Name im Protokoll, dessen Zuständigkeit sich aus den Stammdaten
+nicht erklärt.
+
+Für sich selbst darf jeder eine Vertretung einrichten. Für einen anderen —
+etwa bei unerwartetem Ausfall — braucht es das Recht `delegieren`.
 
 
 ---
