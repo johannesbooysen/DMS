@@ -88,6 +88,35 @@ Ohne den Vergleich gegen die bekannte Wahrheit wäre das durchgerutscht. Ein
 Beleg über 1.023,40 € wäre mit 102.340 € in die Freigabe gegangen. Behoben in
 `src/extraktion/zahlen.ts`, abgesichert durch sechs Tests.
 
+
+### Vergleich der Modellgrößen
+
+Dieselben Belege, dieselbe Wahrheit, nur das Modell getauscht:
+
+| Modell | Größe | Trefferquote | Dauer Median |
+|---|---|---|---|
+| `qwen2.5:7b-instruct` | 4,36 GB | **30 / 30** | 51,2 s |
+| `qwen2.5:3b-instruct` | 1,93 GB | **0 / 30** | 13,9 s |
+
+Die kleine Fassung ist viermal schneller und unbrauchbar. Bemerkenswert ist
+**wie** sie scheitert: Sie hält das geforderte Schema exakt ein und liefert
+`{"wert": …, "confidence": …}` — schreibt in `wert` aber Zahlen wie `0,8`,
+`0,19` und `0,95`, die wie Vertrauenswerte aussehen. Kein Parserfehler,
+sondern Überforderung. Das 7B-Modell liefert an denselben Stellen
+`"Elektro Blitz e.K."`, `381,70` und `454,22`.
+
+**Empfehlung: 7B.** Die Dauer ist im Hintergrund tragbar, eine Trefferquote
+von null ist es nicht.
+
+**Was dieser Fehlschlag über die nächste Baustelle sagt:** Die 3B-Antwort
+behauptete netto 0,80, Steuer 0,19 und brutto 0,95 — bei einem Beleg über
+454,22 €. Die Plausibilitätsprüfung aus §14 hätte das in einer Zeile
+erledigt, denn netto + Steuer ≠ brutto. Genau dafür sieht das Konzept zwei
+getrennte Vertrauenswerte vor: Das Extraktionsvertrauen war hoch, die
+Plausibilität wäre es nicht gewesen. Solange nur `ampel_extraktion` gesetzt
+wird, fehlt dem System dieser zweite Blick.
+
+
 **Was die Zahl nicht sagt:** Zwei Belege sind keine Stichprobe. Sie zeigen,
 dass die Strecke funktioniert — nicht, wie das Modell mit einer Rechnung
 umgeht, die niemand vorhergesehen hat. Belastbar wird das erst an echten
