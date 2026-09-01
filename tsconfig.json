@@ -36,8 +36,10 @@
   "include": [
     "src",
     "tests",
+    "e2e",
     "scripts",
     "eslint.config.mjs",
+    "playwright.config.ts",
     "vitest.config.ts",
     "next.config.ts",
     ".next/types/**/*.ts",

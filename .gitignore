@@ -49,3 +49,8 @@ desktop.ini
 # Lokale Ablage der Originaldateien (in Produktion S3 mit Object Lock)
 .ablage/
 .next/
+
+# Ablage der E2E-Laeufe, Berichte und Spuren
+.ablage-e2e/
+playwright-report/
+test-results/

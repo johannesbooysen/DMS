@@ -34,6 +34,8 @@ Auf einen Blick: 69 Tabellen, 136 Policies,
 | `npm run db:migrate` | `supabase migration up` |
 | `npm run db:reset` | `supabase db reset` |
 | `npm run objektakte` | `tsx scripts/objektakte.ts` |
+| `npm run e2e` | `playwright test` |
+| `npm run e2e:ui` | `playwright test --ui` |
 
 ## Migrationen
 
