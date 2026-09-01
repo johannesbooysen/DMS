@@ -55,6 +55,12 @@ DMS_BENUTZER_EXPORT=<kennung> npm run objektakte -- <objektnummer> [ziel]
 
 **Zwei Testarten mit verschiedenen Aufgaben.** `tests/` prüft **Regeln** — RLS, Summenzwang, Hash-Kette — gegen die Datenbank, im Rollback, schnell. `e2e/` prüft **die Kette**: dass Anmeldung, Sitzung, RLS, Engine, Server-Aktion und Umleitung zusammen tragen. Deshalb dort wenige Tests, und jeder geht einen ganzen Weg. Eine Zusicherung über eine Policy gehört **nie** in einen Browsertest — sie lässt sich an einer Oberfläche nicht beweisen.
 
+`npm run e2e` **setzt die Datenbank zurück** (`globalSetup`), hängt zwei Seed-Belegen echte PDFs an und startet den **Worker** — ohne ihn bliebe ein hochgeladener Beleg für immer in `in_aufbereitung`. Der Worker gehört *nicht* in `webServer`: Er hat keine Adresse, und mit dem Datenbankport als Kennzeichen hielt Playwright ihn für längst laufend und startete ihn nie.
+
+**Danach ist die Datenbank verändert.** Vor `npm test` gehört ein `npm run db:reset` — sonst scheitern die Tests, die Belege im Mandanten zählen (Mietersicht). Umgekehrt ist es egal: E2E setzt selbst zurück.
+
+**Jede E2E-Datei, die einen Beleg verändert, braucht ihren eigenen.** Alle teilen sich eine Datenbank, die nur einmal vor dem Lauf zurückgesetzt wird — wer denselben Beleg anfasst, hängt an der Dateireihenfolge. `stempeln.spec.ts` fährt `RE-2026-0001`, `zahlung.spec.ts` fährt `RE-2026-0004` (dessen Lauf das Fixture startet).
+
 `npm run e2e` **setzt die Datenbank zurück** (`globalSetup`), weil Stempeln unumkehrbar ist und es über HTTP keinen Rollback gibt. Eigener Port 3100, damit ein nebenher laufender Entwicklungsserver nicht mitgetestet wird; eigene Ablage `.ablage-e2e`. Bewusst **ohne** `DMS_OCR`, `SMTP_URL` und `DMS_EXTRAKTION` — der Test soll die Anwendung sehen, wie sie frisch installiert ist. Selektoren gehen über Rolle und deutschen Sichttext, nicht über `data-testid`: Das prüft die Beschriftung gleich mit.
 
 Die Tests in `tests/` sprechen eine echte Postgres-Instanz an. Vorher `npm run db:start` und `npm run db:reset`; die Verbindung kommt aus `DATABASE_URL` und fällt sonst auf die lokale Supabase-Instanz zurück. Sie laufen als Rolle `dms_app`, nicht als Tabelleneigentümer — sonst würde die RLS umgangen und die Tests wären wertlos.

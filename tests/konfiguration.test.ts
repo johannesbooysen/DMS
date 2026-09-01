@@ -111,8 +111,8 @@ describe('Entwurf', () => {
           where s.definition_id = $1`,
         [entwurf],
       )
-      // Drei Stufen mit drei, zwei und drei Stempeln.
-      expect(Number(rows[0].anzahl)).toBe(8)
+      // Fuenf Stufen mit drei, zwei, drei, zwei und zwei Stempeln.
+      expect(Number(rows[0].anzahl)).toBe(12)
     } finally {
       c.release()
     }
@@ -154,10 +154,11 @@ describe('Bausteine bearbeiten', () => {
     await knotenVerschieben(EVA, entwurf, wurzel!.kinder[1].id, 'hoch')
 
     const nachher = await baumFuerAnzeige(EVA, entwurf)
+    // Nur die ersten beiden tauschen; der Rest der Kette bleibt, wo er war.
     expect(nachher!.kinder.map((k) => k.stufe?.bezeichnung)).toEqual([
       namenVorher[1],
       namenVorher[0],
-      namenVorher[2],
+      ...namenVorher.slice(2),
     ])
   })
 
@@ -270,6 +271,8 @@ describe('Simulation', () => {
       'Sachliche Pruefung',
       'Rechnerische Pruefung',
       'Freigabe Geschaeftsleitung',
+      'Kontierung',
+      'Zahlungsuebergabe',
     ])
   })
 

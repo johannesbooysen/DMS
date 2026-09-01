@@ -12,13 +12,26 @@
 
 import { expect, type Page } from '@playwright/test'
 
+/**
+ * Wer im Seed wer ist.
+ *
+ * Die Rollen stehen hier, weil sie den Unterschied machen: Clara ist **nicht**
+ * die Geschäftsleitung, auch wenn der Name danach klingt — sie trägt das
+ * Spezialgebiet Versicherung. Ein Test, der sie freigeben lässt, scheitert an
+ * einer Aufgabe, die sie gar nicht sieht, und der Fehler sieht dann aus wie
+ * ein Fehler der Anwendung.
+ */
 export const BENUTZER = {
   /** Objektbearbeitung, ausdrücklich nur Objekt 42. */
   anna: 'Anna Ahrens',
-  /** Buchhaltung, mandantenweit. */
+  /** Buchhaltung, mandantenweit — auch Kontierung und Zahlungsübergabe. */
   bernd: 'Bernd Bruns',
-  /** Geschäftsleitung. */
+  /** Spezialgebiet Versicherung, mandantenweit. */
   clara: 'Clara Cordes',
+  /** Geschäftsleitung, mandantenweit — die Freigabestufe. */
+  eva: 'Eva Ebert',
+  /** Anderer Mandant. Darf aus Nord nichts sehen. */
+  doris: 'Doris Dahl',
 } as const
 
 export async function anmelden(seite: Page, name: string): Promise<void> {
@@ -36,4 +49,31 @@ export async function anmelden(seite: Page, name: string): Promise<void> {
 
   // Nach der Rückkehr steht die Navigation -- sie gibt es nur mit Sitzung.
   await expect(seite.getByRole('link', { name: 'Postfächer' })).toBeVisible()
+}
+
+/**
+ * Zu einer Seite über die Navigation.
+ *
+ * **Auf die Navigation eingegrenzt**, und das ist kein Feinschliff: „Belege"
+ * steht nach einer Stapelübernahme auch im Fließtext („Die Belege stehen
+ * unter Belege"), „Einsicht" auf der Einsichtsseite selbst. Ein Selektor über
+ * die ganze Seite trifft dann zwei Elemente und der Test bricht ab — an einer
+ * Stelle, die mit dem Geprüften nichts zu tun hat.
+ */
+export async function navigiere(seite: Page, name: string): Promise<void> {
+  await seite.getByRole('navigation').getByRole('link', { name }).click()
+}
+
+/**
+ * Abmelden — und warten, bis es wirklich geschehen ist.
+ *
+ * Die Wartezeile ist kein Schmuck. Ohne sie fragt der nächste `anmelden` die
+ * Anmeldeseite, während die Sitzung noch gilt; sie leitet dann folgerichtig
+ * ins Postfach um, und der Test sucht vergeblich nach einer Schaltfläche,
+ * die es dort nicht gibt. Beim Wechsel zwischen drei Menschen in einem Test
+ * geht das mal gut und mal nicht — die schlimmste Art von Fehlschlag.
+ */
+export async function abmelden(seite: Page): Promise<void> {
+  await seite.getByRole('button', { name: 'Abmelden' }).click()
+  await expect(seite.getByRole('button', { name: 'Anmelden' })).toBeVisible()
 }

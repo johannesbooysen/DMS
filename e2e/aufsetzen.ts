@@ -9,7 +9,7 @@
  * der gegen eine unbekannte Datenbank läuft, prüft nichts.
  */
 
-import { exec } from 'node:child_process'
+import { exec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { poolSchliessen } from '../src/db'
 import { belegeAnlegen } from './belege-anlegen'
@@ -24,7 +24,7 @@ import { belegeAnlegen } from './belege-anlegen'
  */
 const ausfuehren = promisify(exec)
 
-export default async function aufsetzen(): Promise<void> {
+export default async function aufsetzen(): Promise<() => Promise<void>> {
   process.stdout.write('  Datenbank zurücksetzen … ')
   const begonnen = Date.now()
 
@@ -62,4 +62,41 @@ export default async function aufsetzen(): Promise<void> {
     await poolSchliessen()
   }
   process.stdout.write(`${Math.round((Date.now() - zweiter) / 1000)} s\n`)
+
+  return workerStarten()
+}
+
+/**
+ * Den Worker starten — und Playwright sagen, wie er wieder wegkommt.
+ *
+ * **Nicht** über `webServer`: Der Worker hat keine Adresse, an der man ihn
+ * abfragen könnte. Als Port hatte ich den der Datenbank eingetragen; der ist
+ * immer belegt, also hielt Playwright ihn für bereits laufend und startete
+ * ihn nie. Die Tests warteten dann sechzig Sekunden auf eine Aufbereitung,
+ * die niemand machte.
+ *
+ * Der Rückgabewert einer `globalSetup`-Funktion ist ihr Gegenstück: Was hier
+ * zurückkommt, läuft nach dem letzten Test.
+ */
+function workerStarten(): () => Promise<void> {
+  // Ein Befehl als Zeichenkette, keine Argumentliste: Mit `shell: true`
+  // wuerden Argumente nur aneinandergehaengt und nicht maskiert -- Node warnt
+  // zu Recht davor.
+  const kind = spawn('npm run worker', {
+    env: { ...process.env, DMS_ABLAGE: '.ablage-e2e' },
+    shell: true,
+    stdio: 'ignore',
+    windowsHide: true,
+  })
+  process.stdout.write('  Worker gestartet\n')
+
+  return async () => {
+    kind.kill()
+    // Auf Windows überlebt der Kindprozess von `npm` das Töten der Hülle.
+    // Ohne diesen Griff bliebe nach jedem Lauf ein Worker stehen, der weiter
+    // an der Datenbank hängt.
+    if (process.platform === 'win32' && kind.pid !== undefined) {
+      await ausfuehren(`taskkill /pid ${kind.pid} /T /F`).catch(() => undefined)
+    }
+  }
 }

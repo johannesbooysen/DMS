@@ -114,7 +114,19 @@ insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung
   ('66000000-0000-0000-0000-000000000002', '65000000-0000-0000-0000-000000000001',
    2, 'rechnerisch', 'Rechnerische Pruefung', 'rolle', 48, '90000000-0000-0000-0000-000000000002'),
   ('66000000-0000-0000-0000-000000000003', '65000000-0000-0000-0000-000000000001',
-   3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24, '90000000-0000-0000-0000-000000000003');
+   3, 'freigabe', 'Freigabe Geschaeftsleitung', 'rolle', 24, '90000000-0000-0000-0000-000000000003'),
+  -- Kontierung und Zahlung schliessen die Kette (Konzept 9).
+  --
+  -- Sie fehlten hier, und das war keine Kleinigkeit: Eine frische
+  -- Installation haette einen Ablauf gehabt, der nie zu einer Zahlung fuehrt.
+  -- Die Kontierungsmaske und die Zahlungsansicht erscheinen ausschliesslich
+  -- an ihrer Stufe -- ohne sie waren beide Masken im Betrieb unerreichbar,
+  -- obwohl sie fertig sind. Gefunden von einem E2E-Test, der die Sperre vor
+  -- der Zahlung sehen wollte und die Ansicht gar nicht erst fand.
+  ('66000000-0000-0000-0000-000000000004', '65000000-0000-0000-0000-000000000001',
+   4, 'kontierung', 'Kontierung', 'rolle', 48, '90000000-0000-0000-0000-000000000002'),
+  ('66000000-0000-0000-0000-000000000005', '65000000-0000-0000-0000-000000000001',
+   5, 'zahlung', 'Zahlungsuebergabe', 'rolle', 24, '90000000-0000-0000-0000-000000000002');
 
 -- Der Ablauf als Blockbaum (ADR 0002): eine Wurzel "nacheinander" mit den
 -- drei Stufen als Blaetter. Die Datenmigration in 20260830120000 erzeugt
@@ -131,7 +143,13 @@ insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp,
    '66000000-0000-0000-0000-000000000002'),
   ('67000000-0000-0000-0000-000000000004', '65000000-0000-0000-0000-000000000001',
    '67000000-0000-0000-0000-000000000001', 2, 'stufe',
-   '66000000-0000-0000-0000-000000000003');
+   '66000000-0000-0000-0000-000000000003'),
+  ('67000000-0000-0000-0000-000000000005', '65000000-0000-0000-0000-000000000001',
+   '67000000-0000-0000-0000-000000000001', 3, 'stufe',
+   '66000000-0000-0000-0000-000000000004'),
+  ('67000000-0000-0000-0000-000000000006', '65000000-0000-0000-0000-000000000001',
+   '67000000-0000-0000-0000-000000000001', 4, 'stufe',
+   '66000000-0000-0000-0000-000000000005');
 
 -- ---------------------------------------------------------------------------
 -- Stempel: welche Entscheidung an welcher Stufe, und wer darf sie treffen
@@ -144,7 +162,18 @@ insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe,
   ('60000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001',
    'Freigegeben', 'FREI', 'freigabe', '#2F6F4E', false),
   ('60000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
-   'Abgelehnt', 'ABL', 'ablehnung', '#B3271E', true);
+   'Abgelehnt', 'ABL', 'ablehnung', '#B3271E', true),
+  -- Eigene Stempel fuer Kontierung und Zahlung.
+  --
+  -- Nicht "Freigegeben" wiederverwendet: Den darf nur die
+  -- Geschaeftsleitung setzen (`stempel_recht`), und die Zahlungsuebergabe
+  -- gehoert der Buchhaltung. Mit dem geliehenen Stempel waere die Stufe
+  -- eine, die niemand abschliessen kann -- genau der Fall, den Konzept 8.7
+  -- beschreibt.
+  ('60000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001',
+   'Kontiert', 'KONT', 'freigabe', '#3B4A80', false),
+  ('60000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000001',
+   'Zur Zahlung uebergeben', 'ZAHL', 'freigabe', '#2F6F4E', false);
 
 -- Welche Stempel an welcher Stufe moeglich sind
 insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
@@ -158,7 +187,14 @@ insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
   -- Freigabe Geschaeftsleitung
   ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000004', 0),
   ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000002', 1),
-  ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000005', 2);
+  ('66000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000005', 2),
+  -- Kontierung und Zahlung: je ein Weiter und der Weg in die Klaerung. Kein
+  -- Ablehnen mehr -- nach der Freigabe der Geschaeftsleitung ist das eine
+  -- Entscheidung, die zurueckgehen muss, keine, die man hier trifft.
+  ('66000000-0000-0000-0000-000000000004', '60000000-0000-0000-0000-000000000006', 0),
+  ('66000000-0000-0000-0000-000000000004', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000005', '60000000-0000-0000-0000-000000000007', 0),
+  ('66000000-0000-0000-0000-000000000005', '60000000-0000-0000-0000-000000000002', 1);
 
 -- Drei Belege in Nord, einer in Sued.
 --   d1  Objekt 42, Betriebskosten          -> Anna sieht ihn
@@ -265,7 +301,10 @@ insert into stempel_recht (stempeltyp_id, rolle_id) values
   -- Geschaeftsleitung: freigeben, ablehnen, zur Klaerung
   ('60000000-0000-0000-0000-000000000004', '90000000-0000-0000-0000-000000000003'),
   ('60000000-0000-0000-0000-000000000005', '90000000-0000-0000-0000-000000000003'),
-  ('60000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000003');
+  ('60000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000003'),
+  -- Buchhaltung: kontieren und uebergeben
+  ('60000000-0000-0000-0000-000000000006', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000007', '90000000-0000-0000-0000-000000000002');
 
 -- ---------------------------------------------------------------------------
 -- Einheit, Mieter und Kontierung

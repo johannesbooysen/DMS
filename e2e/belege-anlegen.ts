@@ -19,6 +19,7 @@
 import { rm } from 'node:fs/promises'
 import { DateisystemAblage, inhaltHash } from '../src/ablage'
 import { alsBenutzer } from '../src/db'
+import { laufStarten } from '../src/workflow/engine'
 import { aufbereiten } from '../src/worker/aufbereitung'
 import { pdfBauen, rechnungsvorlage, type Seitenvorlage } from '../tests/hilfe/pdf-bauen'
 
@@ -28,7 +29,13 @@ export const ABLAGE_WURZEL = '.ablage-e2e'
 const ANNA = '20000000-0000-0000-0000-000000000001'
 
 /** Die Belege, die eine Datei bekommen. */
-const MIT_DATEI: Array<{ id: string; praefix: string; seiten: Seitenvorlage[] }> = [
+const MIT_DATEI: Array<{
+  id: string
+  praefix: string
+  seiten: Seitenvorlage[]
+  /** Bekommt einen eigenen Lauf -- siehe unten. */
+  eigenerLauf?: boolean
+}> = [
   {
     id: '70000000-0000-0000-0000-000000000001',
     praefix: 'nord/42/2026/d1',
@@ -37,6 +44,7 @@ const MIT_DATEI: Array<{ id: string; praefix: string; seiten: Seitenvorlage[] }>
   {
     id: '70000000-0000-0000-0000-000000000004',
     praefix: 'nord/42/2026/d4',
+    eigenerLauf: true,
     seiten: [
       {
         zeilen: [
@@ -82,6 +90,21 @@ export async function belegeAnlegen(): Promise<void> {
       // Ohne Texterkennung -- der Beleg hat einen Textlayer, und der Test
       // soll die Anwendung sehen, wie sie frisch installiert ist.
       await aufbereiten(c, ablage, beleg.id, null)
+
+      /*
+       * Ein zweiter Beleg mit eigenem Lauf.
+       *
+       * Ohne ihn teilen sich alle Tests denselben — und dann hängt es an der
+       * Dateireihenfolge, ob ein Test seine Aufgabe noch offen vorfindet.
+       * Genau das ist passiert: Der Stempeltest führte D1 zwei Stufen weiter,
+       * und der Zahlungstest fand danach nichts mehr. Jede Testdatei, die
+       * einen Beleg **verändert**, braucht ihren eigenen.
+       *
+       * D4 hat im Seed Rechnungsdaten, aber keinen Lauf. Er ist dadurch
+       * zugleich der ehrlichere Fall für die Kontierung: noch keine einzige
+       * Zeile, also der volle Betrag offen.
+       */
+      if (beleg.eigenerLauf) await laufStarten(c, beleg.id)
     })
   }
 }

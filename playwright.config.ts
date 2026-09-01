@@ -18,6 +18,26 @@ import { fileURLToPath } from 'node:url'
 
 const BASIS = 'http://localhost:3100'
 
+/**
+ * Anwendung und Worker laufen mit derselben Umgebung.
+ *
+ * Vor allem mit derselben **Ablage**: Der eine schreibt das Original, der
+ * andere die Vorschaubilder. Zwei Verzeichnisse wären zwei Hälften eines
+ * Belegs.
+ */
+const UMGEBUNG = {
+  /*
+   * Die Entwicklungsanmeldung. Sie verlangt zusätzlich
+   * `NODE_ENV != production` — `next dev` setzt `development`, es gibt hier
+   * also keinen stillen Weg an Entra vorbei.
+   */
+  DMS_ANMELDUNG: 'entwicklung',
+  DMS_SITZUNGS_GEHEIMNIS: 'e2e-geheimnis-mindestens-zweiunddreissig-zeichen',
+  // Bewusst **ohne** DMS_OCR, SMTP_URL und DMS_EXTRAKTION: Der Test soll die
+  // Anwendung so sehen, wie sie frisch installiert ist.
+  DMS_ABLAGE: '.ablage-e2e',
+}
+
 export default defineConfig({
   testDir: './e2e',
   // `.spec.ts`, damit Vitest sie nicht aufsammelt: Dort gilt
@@ -62,27 +82,18 @@ export default defineConfig({
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
-  webServer: {
-    /*
-     * Eigener Port, damit ein nebenher laufender Entwicklungsserver auf 3000
-     * nicht mitgetestet wird -- und umgekehrt der Test nicht abbricht, weil
-     * jemand gerade 3000 belegt.
-     */
-    command: 'npm run dev:web -- --port 3100',
-    url: `${BASIS}/anmeldung`,
-    reuseExistingServer: false,
-    timeout: 120_000,
-    env: {
+  webServer: [
+    {
       /*
-       * Die Entwicklungsanmeldung. Sie verlangt zusaetzlich
-       * `NODE_ENV != production` -- `next dev` setzt `development`, es gibt
-       * hier also keinen stillen Weg an Entra vorbei.
+       * Eigener Port, damit ein nebenher laufender Entwicklungsserver auf
+       * 3000 nicht mitgetestet wird -- und umgekehrt der Test nicht
+       * abbricht, weil jemand gerade 3000 belegt.
        */
-      DMS_ANMELDUNG: 'entwicklung',
-      DMS_SITZUNGS_GEHEIMNIS: 'e2e-geheimnis-mindestens-zweiunddreissig-zeichen',
-      // Bewusst **ohne** DMS_OCR, SMTP_URL und DMS_EXTRAKTION: Der Test soll
-      // die Anwendung so sehen, wie sie frisch installiert ist.
-      DMS_ABLAGE: '.ablage-e2e',
+      command: 'npm run dev:web -- --port 3100',
+      url: `${BASIS}/anmeldung`,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      env: UMGEBUNG,
     },
-  },
+  ],
 })

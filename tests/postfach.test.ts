@@ -39,6 +39,8 @@ const SACHLICH_RICHTIG = '60000000-0000-0000-0000-000000000001'
 const ZUR_KLAERUNG = '60000000-0000-0000-0000-000000000002'
 const RECHNERISCH_RICHTIG = '60000000-0000-0000-0000-000000000003'
 const FREIGEGEBEN = '60000000-0000-0000-0000-000000000004'
+const KONTIERT = '60000000-0000-0000-0000-000000000006'
+const ZUR_ZAHLUNG = '60000000-0000-0000-0000-000000000007'
 
 let beleg = ''
 
@@ -118,7 +120,7 @@ describe('Uebergabe zwischen den Rollen', () => {
     expect((await poolPostfach(ANNA)).map((z) => z.dokumentId)).not.toContain(beleg)
   })
 
-  it('fuehrt den Beleg ueber drei Rollen bis zum Abschluss', async () => {
+  it('fuehrt den Beleg ueber die ganze Kette bis zum Abschluss', async () => {
     const anna = await meineAufgabe(ANNA)
     await stempelSetzen(ANNA, { aufgabeId: anna.aufgabeId, stempeltypId: SACHLICH_RICHTIG })
 
@@ -129,6 +131,46 @@ describe('Uebergabe zwischen den Rollen', () => {
     expect(eva.stufe).toBe('Freigabe Geschaeftsleitung')
     await stempelSetzen(EVA, { aufgabeId: eva.aufgabeId, stempeltypId: FREIGEGEBEN })
 
+    /*
+     * Kontierung und Zahlungsuebergabe schliessen die Kette (Konzept 9).
+     * Beide gehoeren der Buchhaltung -- der Beleg geht also noch zweimal zu
+     * Bernd.
+     */
+    const kontierung = (await poolPostfach(BERND)).find((z) => z.dokumentId === beleg)!
+    expect(kontierung.stufe).toBe('Kontierung')
+
+    /*
+     * **Der Summenzwang ist eine Sperre, kein Hinweis.** Ohne Kontierung
+     * laesst sich die Stufe nicht abschliessen -- und zwar serverseitig, mit
+     * einer Meldung, die sagt, was fehlt.
+     */
+    await expect(
+      stempelSetzen(BERND, {
+        aufgabeId: kontierung.aufgabeId,
+        stempeltypId: KONTIERT,
+      }),
+    ).rejects.toThrow(/nicht kontiert/)
+
+    // Eine Zeile ueber den vollen Bruttobetrag -- Summe Kontierung = Brutto.
+    await alsBenutzer(BERND, (c) =>
+      c.query(
+        `insert into kontierung (dokument_id, zeile_nr, konto_id, betrag_netto,
+                                 betrag_brutto, umlagefaehig, quelle)
+         select $1, 1, k.id, 1000, 1190, true, 'mensch'
+           from konto k where k.aktiv limit 1`,
+        [beleg],
+      ),
+    )
+
+    await stempelSetzen(BERND, {
+      aufgabeId: kontierung.aufgabeId,
+      stempeltypId: KONTIERT,
+    })
+
+    const zahlung = (await poolPostfach(BERND)).find((z) => z.dokumentId === beleg)!
+    expect(zahlung.stufe).toBe('Zahlungsuebergabe')
+    await stempelSetzen(BERND, { aufgabeId: zahlung.aufgabeId, stempeltypId: ZUR_ZAHLUNG })
+
     const c = await verbindungspool().connect()
     try {
       const { rows } = await c.query<{ status: string; stempel: string }>(
@@ -138,7 +180,7 @@ describe('Uebergabe zwischen den Rollen', () => {
         [beleg],
       )
       expect(rows[0].status).toBe('abgeschlossen')
-      expect(Number(rows[0].stempel)).toBe(3)
+      expect(Number(rows[0].stempel)).toBe(5)
     } finally {
       c.release()
     }

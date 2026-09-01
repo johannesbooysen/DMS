@@ -168,7 +168,8 @@ describe('Lauf', () => {
       const laufId = lauf!.laufId
       const schritte: string[][] = [await offeneAufgaben(c, laufId)]
 
-      for (let i = 0; i < 3; i++) {
+      // Fuenf Stufen: sachlich, rechnerisch, Freigabe, Kontierung, Zahlung.
+      for (let i = 0; i < 6; i++) {
         const offen = await c.query<{ stufe_id: string }>(
           `select stufe_id from aufgabe where lauf_id = $1 and status = 'offen' limit 1`,
           [laufId],
@@ -193,7 +194,9 @@ describe('Lauf', () => {
     expect(verlauf.schritte[0]).toEqual(['Sachliche Pruefung'])
     expect(verlauf.schritte[1]).toEqual(['Rechnerische Pruefung'])
     expect(verlauf.schritte[2]).toEqual(['Freigabe Geschaeftsleitung'])
-    expect(verlauf.schritte[3]).toEqual([])
+    expect(verlauf.schritte[3]).toEqual(['Kontierung'])
+    expect(verlauf.schritte[4]).toEqual(['Zahlungsuebergabe'])
+    expect(verlauf.schritte[5]).toEqual([])
     expect(verlauf.status).toBe('abgeschlossen')
   })
 
@@ -416,6 +419,8 @@ describe('Sperre vor der Zahlung', () => {
       'Sachliche Pruefung',
       'Rechnerische Pruefung',
       'Freigabe Geschaeftsleitung',
+      'Kontierung',
+      'Zahlungsuebergabe',
     ])
   })
 
@@ -423,7 +428,7 @@ describe('Sperre vor der Zahlung', () => {
     const fehlend = await alsAnna(async (c) => {
       const beleg = await belegAnlegen(c, 1000)
       const lauf = await laufStarten(c as never, beleg)
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 6; i++) {
         const offen = await c.query<{ stufe_id: string }>(
           `select stufe_id from aufgabe where lauf_id = $1 and status = 'offen' limit 1`,
           [lauf!.laufId],
@@ -452,6 +457,8 @@ describe('Simulation', () => {
       ['Sachliche Pruefung'],
       ['Rechnerische Pruefung'],
       ['Freigabe Geschaeftsleitung'],
+      ['Kontierung'],
+      ['Zahlungsuebergabe'],
     ])
   })
 
@@ -462,9 +469,13 @@ describe('Simulation', () => {
       const wurzel = await baumLaden(c as never, DEFINITION_SEED)
       return simulieren(wurzel!, { brutto: 1200 })
     })
+    // Die Freigabe faellt weg, Kontierung und Zahlung bleiben: Eine
+    // Betragsgrenze laesst genau ihre Stufe aus, nicht den Rest der Kette.
     expect(schritte.flatMap((s) => s.stufen.map((st) => st.bezeichnung))).toEqual([
       'Sachliche Pruefung',
       'Rechnerische Pruefung',
+      'Kontierung',
+      'Zahlungsuebergabe',
     ])
   })
 

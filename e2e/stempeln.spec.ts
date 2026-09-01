@@ -19,7 +19,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { anmelden, BENUTZER } from './anmeldung'
+import { anmelden, BENUTZER, navigiere } from './anmeldung'
 
 /** Der Beleg aus dem Seed, der am Anfang seiner Kette steht. */
 const BELEG = 'Musterreinigung GmbH · RE-2026-0001'
@@ -30,7 +30,7 @@ test('Anna stempelt sachlich richtig, der Beleg geht an die Buchhaltung', async 
   await anmelden(page, BENUTZER.anna)
 
   await test.step('Die Aufgabe liegt in Annas persönlichem Postfach', async () => {
-    await page.getByRole('link', { name: 'Postfächer' }).click()
+    await navigiere(page, 'Postfächer')
     await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
     await expect(page.getByRole('link', { name: BELEG })).toBeVisible()
   })
@@ -53,14 +53,19 @@ test('Anna stempelt sachlich richtig, der Beleg geht an die Buchhaltung', async 
     await page.getByRole('button', { name: 'Sachlich richtig' }).click()
 
     await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
+    /*
+     * Nur **dieser** Beleg ist weg -- nicht das ganze Postfach leer. Anna ist
+     * Objektverantwortliche fuer Objekt 42 und hat weitere Aufgaben; eine
+     * Zusicherung auf "Nichts zugewiesen." haengt daran, wie viele Belege
+     * der Seed gerade mitbringt.
+     */
     await expect(page.getByRole('link', { name: BELEG })).toHaveCount(0)
-    await expect(page.getByText('Nichts zugewiesen.')).toBeVisible()
   })
 })
 
 test('Bernd findet denselben Beleg zur rechnerischen Prüfung', async ({ page }) => {
   await anmelden(page, BENUTZER.bernd)
-  await page.getByRole('link', { name: 'Postfächer' }).click()
+  await navigiere(page, 'Postfächer')
 
   // Der Kern der Sache: Niemand hat den Beleg weitergereicht. Er steht hier,
   // weil die Prozessdefinition es so vorsieht.
@@ -72,7 +77,7 @@ test('Bernd findet denselben Beleg zur rechnerischen Prüfung', async ({ page })
 
 test('Am Beleg steht der Stempel, den Anna gesetzt hat', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await page.getByRole('link', { name: 'Belege' }).click()
+  await navigiere(page, 'Belege')
 
   await page.getByRole('link', { name: BELEG }).first().click()
 

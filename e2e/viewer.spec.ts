@@ -12,7 +12,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { anmelden, BENUTZER } from './anmeldung'
+import { anmelden, BENUTZER, navigiere } from './anmeldung'
 
 const BELEG = 'Musterreinigung GmbH · RE-2026-0001'
 
@@ -21,7 +21,7 @@ test('Die Seite kommt als Bild, das PDF bleibt liegen', async ({ page }) => {
   page.on('request', (a) => geholt.push(new URL(a.url()).pathname))
 
   await anmelden(page, BENUTZER.anna)
-  await page.getByRole('link', { name: 'Belege' }).click()
+  await navigiere(page, 'Belege')
   await page.getByRole('link', { name: BELEG }).first().click()
 
   await expect(page.getByRole('heading', { name: new RegExp(BELEG.split(' · ')[0]) })).toBeVisible()
@@ -44,7 +44,7 @@ test('Die Seite kommt als Bild, das PDF bleibt liegen', async ({ page }) => {
 
 test('Das PDF kommt erst, wenn jemand es anfordert', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await page.getByRole('link', { name: 'Belege' }).click()
+  await navigiere(page, 'Belege')
   await page.getByRole('link', { name: BELEG }).first().click()
 
   const ziel = await page.getByRole('link', { name: 'Original-PDF öffnen' }).getAttribute('href')
@@ -60,7 +60,7 @@ test('Das PDF kommt erst, wenn jemand es anfordert', async ({ page }) => {
 
 test('Ein Beleg ohne Datei verschluckt sich nicht', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await page.getByRole('link', { name: 'Belege' }).click()
+  await navigiere(page, 'Belege')
 
   // D3 hat bewusst keine Datei bekommen -- so etwas gibt es im Betrieb, etwa
   // aus einer Altübernahme. Die Liste muss trotzdem stehen.
@@ -71,7 +71,7 @@ test('Ein Beleg ohne Datei verschluckt sich nicht', async ({ page }) => {
 
 test('Der Seitentext ist durchsuchbar', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await page.getByRole('link', { name: 'Belege' }).click()
+  await navigiere(page, 'Belege')
 
   /*
    * „Umsatzsteuer" steht **nur** im PDF — nicht in den Stammdaten und nicht

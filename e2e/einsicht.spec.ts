@@ -11,7 +11,7 @@
  */
 
 import { expect, test, type Browser } from '@playwright/test'
-import { anmelden, BENUTZER } from './anmeldung'
+import { anmelden, BENUTZER, navigiere } from './anmeldung'
 
 /** Ein frischer Kontext ohne Sitzung — so wie ein Mieter das DMS sieht. */
 async function alsFremder(browser: Browser) {
@@ -27,7 +27,7 @@ test('Ein Mieter sieht seinen Beleg ohne Anmeldung — und nach dem Widerruf nic
 
   await test.step('Anna gewährt Einsicht und bekommt den Link einmal zu sehen', async () => {
     await anmelden(page, BENUTZER.anna)
-    await page.getByRole('link', { name: 'Einsicht' }).click()
+    await navigiere(page, 'Einsicht')
 
     // Der Beleg aus dem Seed gehoert in Meikes Mietzeit (Januar bis Maerz) --
     // die Mietersicht wird gerechnet, nicht freigegeben (Konzept 7).
@@ -51,7 +51,7 @@ test('Ein Mieter sieht seinen Beleg ohne Anmeldung — und nach dem Widerruf nic
     })
 
     await test.step('Widerrufen', async () => {
-      await page.getByRole('link', { name: 'Einsicht' }).click()
+      await navigiere(page, 'Einsicht')
       await page.getByRole('button', { name: 'widerrufen' }).click()
 
       /*

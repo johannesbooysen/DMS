@@ -652,6 +652,14 @@ Trefferzahl**. Sonst verriete allein die Zahl, dass da etwas ist.
 Steht ein Beleg an einer Kontierungsstufe, erscheint die Kontierung auf dem
 Aufgabenbildschirm — unter den Prüfhinweisen, über dem Beleg.
 
+> **Der mitgelieferte Ablauf** führt eine Rechnung über fünf Stufen:
+> sachliche Prüfung (Objektverantwortliche), rechnerische Prüfung
+> (Buchhaltung), Freigabe (Geschäftsleitung), Kontierung (Buchhaltung),
+> Zahlungsübergabe (Buchhaltung). Die letzten beiden fehlten anfangs — der
+> Ablauf endete vor der Kontierung, und damit waren *beide* Masken im
+> Betrieb unerreichbar, obwohl sie fertig sind. Aufgefallen ist es erst, als
+> ein Test die Zahlungsansicht öffnen wollte und sie nicht fand.
+
 Eine Rechnung zerfällt in Zeilen: **Konto, Steuersatz, Betrag**. Der Betrag
 ist der **Bruttobetrag**, so wie er auf dem Beleg steht; netto rechnet das
 System. Eine Rechnung, die auf ein einziges Konto geht, braucht kein
