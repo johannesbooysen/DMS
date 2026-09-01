@@ -20,6 +20,7 @@ import {
   type StapelAuftrag,
 } from '../queue'
 import { fehlerMelden } from '../fehlerkorb'
+import { texterkennung } from '../ocr'
 import { aufbereiten } from './aufbereitung'
 import { stapelAufbereiten } from './stapelaufbereitung'
 import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
@@ -58,6 +59,24 @@ async function start(): Promise<void> {
     // Dokumentinhalten verknuepfbar sind.
     console.error('[worker] Queue-Fehler:', fehler.message)
   })
+
+  /*
+   * Einmal beim Start sagen, ob Texterkennung da ist.
+   *
+   * Ohne sie landet jeder Scan ohne Textlayer im Fehlerkorb -- richtig so,
+   * aber wer den Worker startet, soll es vorher wissen und nicht erst an
+   * dreissig Eintraegen merken. Geprueft wird nicht nur die Einstellung,
+   * sondern der Aufruf: `DMS_OCR=ocrmypdf` auf einem Rechner ohne Tesseract
+   * ist dasselbe wie gar nichts.
+   */
+  const erkennung = texterkennung()
+  if (erkennung === null) {
+    console.log('[worker] keine Texterkennung eingerichtet, Scans gehen in den Fehlerkorb')
+  } else if (!(await erkennung.verfuegbar())) {
+    console.warn(`[worker] ${erkennung.name} ist eingestellt, aber nicht aufrufbar`)
+  } else {
+    console.log(`[worker] Texterkennung: ${erkennung.name}`)
+  }
 
   await boss.work<AufbereitungsAuftrag>(
     AUFBEREITUNG,

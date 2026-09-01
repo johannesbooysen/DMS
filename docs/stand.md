@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 66 Tabellen, 129 Policies,
-70 Module, 538 Testfaelle in 25 Dateien,
+73 Module, 549 Testfaelle in 26 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -312,6 +312,9 @@ Policies: 2
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
+| [`src/ocr/index.ts`](../src/ocr/index.ts) | Auswahl der Texterkennung |
+| [`src/ocr/ocrmypdf.ts`](../src/ocr/ocrmypdf.ts) | Texterkennung über ocrmypdf |
+| [`src/ocr/typen.ts`](../src/ocr/typen.ts) | Texterkennung hinter einer Schnittstelle |
 | [`src/postausgang/index.ts`](../src/postausgang/index.ts) | Postausgang: Vorlage füllen, in das Ausgangsbuch legen, senden |
 | [`src/postausgang/versand.ts`](../src/postausgang/versand.ts) | Der Versand |
 | [`src/postausgang/vorlagen.ts`](../src/postausgang/vorlagen.ts) | Vorlagen mit Platzhaltern |
@@ -353,6 +356,7 @@ Policies: 2
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
+| [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
@@ -375,6 +379,6 @@ Policies: 2
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:178`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:294`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:188`](../src/workflow/engine.ts) |

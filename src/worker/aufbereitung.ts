@@ -8,8 +8,12 @@
  *   -> WebP-Derivate (Trefferliste und Lesegroesse)
  *   -> Extraktion, Lernspeicher, Ampel
  *
- * Die letzten drei Schritte folgen spaeter. Was noch nicht da ist, steht
- * unten als benannter offener Punkt.
+ * Die Reihenfolge ist keine Formsache: Der Seitentext traegt Suche,
+ * Extraktion und Zuordnung. Deshalb faellt die OCR-Entscheidung ganz oben
+ * und nicht am Ende -- wer den Text nachtraeglich ersetzt, muss alles
+ * dahinter noch einmal rechnen.
+ *
+ * Was noch fehlt, steht unten als benannter offener Punkt.
  */
 
 import type { PoolClient } from 'pg'
@@ -18,14 +22,28 @@ import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktio
 import { istXmlRechnung } from '../extraktion/zugferd'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
-import { hatTextlayer, seitenLesen, seiteRendern } from '../ingest/pdf'
+import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
+import { texterkennung, type Texterkennung } from '../ocr'
+import { AUFBEREITUNG } from '../queue'
 
 /** Breite der Vorschau in der Trefferliste. */
 export const BREITE_MINIATUR = 240
 /** Breite der Leseansicht. Das PDF selbst wird erst beim Zoomen geholt. */
 export const BREITE_LESEN = 1240
 
-export type Verarbeitungsweg = 'zugferd' | 'textlayer' | 'ocr_noetig' | 'kein_pdf'
+/**
+ * Wie der Text gewonnen wurde.
+ *
+ * `ocr` und `ocr_noetig` sind der Unterschied zwischen getan und liegen
+ * geblieben -- vorher gab es nur den zweiten Wert, und er hiess in beiden
+ * Faellen dasselbe.
+ */
+export type Verarbeitungsweg =
+  | 'zugferd'
+  | 'textlayer'
+  | 'ocr'
+  | 'ocr_noetig'
+  | 'kein_pdf'
 
 export interface Aufbereitungsergebnis {
   seiten: number
@@ -48,10 +66,72 @@ export interface Aufbereitungsergebnis {
  * nicht aus einer Vermutung ueber die Bytes.
  */
 
+/**
+ * Texterkennung anwenden — oder den Beleg sichtbar liegen lassen.
+ *
+ * Drei Ausgänge, und die Unterscheidung ist der Kern der Sache:
+ *
+ *   * **Keine Erkennung eingerichtet.** Kein Fehler, den man wiederholen
+ *     könnte — Tesseract installiert sich nicht durch einen zweiten Versuch.
+ *     Deshalb wird hier *gemeldet* statt geworfen: Der Beleg steht im
+ *     Fehlerkorb, und ein Mensch entscheidet („von Hand" oder warten).
+ *   * **Eingerichtet, aber gescheitert.** Das kann vorübergehend sein
+ *     (Speicher, kaputte Seite). Also geworfen — die Warteschlange versucht
+ *     es dreimal und legt es danach selbst in den Korb, mit dem echten Grund.
+ *   * **Gelaufen.** Das Ergebnis wird als `pdfa_derivat` abgelegt. Das
+ *     Original bleibt unberührt (Projektregel); ocrmypdf schreibt PDF/A, das
+ *     Derivat aus Konzept 19 entsteht also im selben Durchlauf.
+ *
+ * Rückgabe `null` heißt: kein Text gewonnen, weiter mit dem, was da ist.
+ */
+async function texterkennungAnwenden(
+  c: PoolClient,
+  ablage: Ablage,
+  dokumentId: string,
+  praefix: string,
+  original: Buffer,
+  texterkenner: Texterkennung | null,
+): Promise<Seiteninhalt[] | null> {
+  if (texterkenner === null || !(await texterkenner.verfuegbar())) {
+    const grund =
+      texterkenner === null
+        ? 'Kein Textlayer, und es ist keine Texterkennung eingerichtet (DMS_OCR).'
+        : `Kein Textlayer, und ${texterkenner.name} ist auf diesem Rechner nicht aufrufbar.`
+
+    // Direkt auf der laufenden Verbindung, nicht ueber `fehlerMelden`: Der
+    // Eintrag soll mit der Aufbereitung zusammen festgeschrieben werden.
+    // Die Funktion ist `security definer` und braucht dafuer keine Rolle.
+    await c.query('select app.verarbeitungsfehler_melden($1, null, $2, $3, 0, null)', [
+      dokumentId,
+      AUFBEREITUNG,
+      grund,
+    ])
+    return null
+  }
+
+  const ergebnis = await texterkenner.erkennen(original)
+
+  const schluessel = `${praefix}/pdfa/original-ocr.pdf`
+  await ablage.schreiben(schluessel, ergebnis.pdf)
+  await c.query(
+    `insert into dokument_datei (dokument_id, variante, storage_key, mime, groesse)
+     values ($1, 'pdfa_derivat', $2, 'application/pdf', $3)`,
+    [dokumentId, schluessel, ergebnis.pdf.byteLength],
+  )
+
+  return seitenLesen(ergebnis.pdf)
+}
+
 export async function aufbereiten(
   c: PoolClient,
   ablage: Ablage,
   dokumentId: string,
+  /**
+   * Welche Texterkennung. Vorgabe ist die eingestellte -- der Parameter ist
+   * fuer Tests da, die keine Tesseract-Installation voraussetzen duerfen,
+   * und fuer den Fall, dass einmal je Mandant etwas anderes gilt.
+   */
+  texterkenner: Texterkennung | null = texterkennung(),
 ): Promise<Aufbereitungsergebnis> {
   const { rows } = await c.query<{ storage_praefix: string; storage_key: string | null }>(
     `select d.storage_praefix,
@@ -81,7 +161,45 @@ export async function aufbereiten(
     return { seiten: 0, weg }
   }
 
-  const seiten = await seitenLesen(inhalt)
+  /*
+   * Fruehere Derivate wegraeumen, bevor neue entstehen.
+   *
+   * Eine Aufbereitung kann ein zweites Mal laufen -- seit dem Fehlerkorb
+   * sogar auf Knopfdruck. Ohne diese Zeile bekaeme das Dokument bei jedem
+   * Durchlauf einen weiteren Satz `ansicht_webp`-Zeilen und ein weiteres
+   * `pdfa_derivat`; `dokument_datei` hat darauf nur einen Index, keine
+   * Eindeutigkeit. Der Viewer nimmt dann irgendeine der Zeilen.
+   *
+   * Die Dateien selbst bleiben unberuehrt: Ihre Schluessel sind aus Praefix
+   * und Seitennummer gebildet und damit bei jedem Lauf dieselben -- es wird
+   * ueberschrieben, nichts verwaist. Das Original steht nicht in dieser
+   * Liste und wird nie angefasst.
+   */
+  await c.query(
+    `delete from dokument_datei
+      where dokument_id = $1 and variante in ('ansicht_webp','pdfa_derivat')`,
+    [dokumentId],
+  )
+
+  /*
+   * Texterkennung, falls noetig -- und **vor** allem Weiteren.
+   *
+   * Der Seitentext ist die Grundlage von Suche, Extraktion und Zuordnung.
+   * Wer ihn nachtraeglich ersetzt, muss alles dahinter noch einmal rechnen.
+   * Deshalb steht die Entscheidung hier oben, nicht am Ende.
+   */
+  let seiten = await seitenLesen(inhalt)
+  let weg: Verarbeitungsweg = hatTextlayer(seiten) ? 'textlayer' : 'ocr_noetig'
+
+  if (weg === 'ocr_noetig') {
+    const erkannt = await texterkennungAnwenden(
+      c, ablage, dokumentId, praefix, inhalt, texterkenner,
+    )
+    if (erkannt !== null) {
+      seiten = erkannt
+      weg = 'ocr'
+    }
+  }
 
   // Die Fundstellen der einzelnen Textstuecke bleiben vorerst im Speicher.
   // Persistiert werden sie erst, wenn die Stempelplatzierung sie braucht --
@@ -142,15 +260,13 @@ export async function aufbereiten(
     kiBeschreibung: gruppen[0]?.ki_beschreibung ?? null,
   })
 
-  // Der Weg ergibt sich aus dem Ergebnis der Erkennung: Wer sein XML
-  // mitbringt, ist eine strukturierte Rechnung -- unabhaengig davon, wie das
-  // PDF innen aussieht.
-  const weg: Verarbeitungsweg =
-    erkennung.quelle === 'zugferd'
-      ? 'zugferd'
-      : hatTextlayer(seiten)
-        ? 'textlayer'
-        : 'ocr_noetig'
+  // Wer sein XML mitbringt, ist eine strukturierte Rechnung -- unabhaengig
+  // davon, wie das PDF innen aussieht. Das schlaegt jeden anderen Weg.
+  //
+  // Frueher wurde `weg` erst hier bestimmt, mit `hatTextlayer(seiten)`. Das
+  // geht nicht mehr: Nach einer erfolgreichen Erkennung haben die Seiten
+  // Text, und der Weg hiesse `textlayer` -- als waere nie ein OCR gelaufen.
+  if (erkennung.quelle === 'zugferd') weg = 'zugferd'
 
   // Zuordnung aus gelernten Merkmalen -- nur, wenn der Beleg noch kein
   // Objekt hat. Eine vorhandene Zuordnung wird nicht ueberschrieben: Wer
@@ -176,8 +292,9 @@ export async function aufbereiten(
   const pruefung = await plausibilitaetPruefen(c, dokumentId)
 
   // OFFEN, in dieser Reihenfolge:
-  //   * weg = 'ocr_noetig' -> ocrmypdf aufrufen und den Seitentext ersetzen.
-  //     Braucht Python, Tesseract mit deutschem Sprachpaket und Ghostscript.
+  //   * PDF/A fuer Belege, die *keinen* OCR-Lauf brauchen. Heute entsteht das
+  //     Derivat nur als Nebenprodukt der Erkennung -- ein Beleg mit Textlayer
+  //     bekommt keines (Konzept 19).
   //   * Lernspeicher: Objekt- und Kontierungsvorschlag (Konzept 15)
   //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)

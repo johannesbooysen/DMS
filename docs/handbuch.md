@@ -191,9 +191,52 @@ Kreditor, Rechnungsnummer, Datum und Bruttobetrag — nicht der Durchschnitt.
 Ein unsicher gelesener Betrag wird nicht dadurch besser, dass der
 Lieferantenname eindeutig war.
 
-> Noch nicht gebaut: die Plausibilitätsprüfungen und damit die Gesamtampel —
-> darunter die harten Fälle „IBAN passt nicht zum Kreditor" und „Dublette".
+---
 
+## Texterkennung
+
+Vor allem anderen muss Text da sein. Suche, Erkennung der Rechnungsdaten und
+die selbsttätige Zuordnung arbeiten alle auf dem Seitentext — ein Beleg ohne
+Text ist für das System ein Bild.
+
+Die meisten PDFs bringen ihren Text mit. Ein **Scan** nicht: Er besteht aus
+Pixeln. Das System stellt das selbst fest (im Schnitt weniger als 40 Zeichen
+je Seite) und schickt ihn dann durch die Texterkennung.
+
+**Eingeschaltet wird sie über `DMS_OCR=ocrmypdf`**, und zwar auf dem Rechner,
+auf dem der *Worker* läuft — nicht auf dem der Anwendung. Vorausgesetzt sind
+dort drei Dinge: Python mit ocrmypdf, Tesseract mit deutschem Sprachpaket und
+Ghostscript.
+
+| Variable | Vorgabe | Wofür |
+|---|---|---|
+| `DMS_OCR` | `keine` | `ocrmypdf` schaltet ein |
+| `DMS_OCR_SPRACHE` | `deu` | Mehrere mit `+`, etwa `deu+eng` |
+| `DMS_OCR_ZEITLIMIT_S` | `300` | Abbruch je Beleg |
+| `DMS_OCR_PROGRAMM` | `ocrmypdf` | Falls es nicht im Pfad liegt |
+
+**Ohne eingerichtete Erkennung geht kein Scan verloren — er wird sichtbar.**
+Der Beleg landet im [Fehlerkorb](#fehlerkorb) mit dem Grund, dass keine
+Erkennung eingerichtet ist. Von dort führen die üblichen Wege weiter, in der
+Regel *von Hand*.
+
+Das ist der eigentliche Gewinn. Vorher lief so ein Beleg einfach durch: Status
+*laufend*, Seiten ohne Text, keine Suche, keine erkannten Felder — und niemand
+erfuhr davon. Wer den Worker startet, sieht jetzt außerdem gleich in der ersten
+Zeile, ob Erkennung da ist.
+
+**Das Original wird nicht angetastet.** Die erkannte Fassung liegt als
+*PDF/A-Derivat* daneben; angezeigt und archiviert wird weiter die Datei, die
+hereinkam. Nebenbei entsteht damit das PDF/A aus der Aufbewahrung — allerdings
+nur für Belege, die durch die Erkennung gingen.
+
+**Begradigt und gedreht wird nicht**, so verlockend es bei schiefen Scans
+wäre: Beides änderte die Seitengeometrie, und die Vorschaubilder entstehen aus
+dem Original. Vorschau und PDF lägen dann nicht mehr übereinander.
+
+> Noch nicht da: Kommen viele Scans herein, während keine Erkennung
+> eingerichtet ist, füllt sich der Fehlerkorb mit einem Eintrag je Beleg. Sie
+> lassen sich danach nur einzeln wiederholen — eine Sammelaktion fehlt.
 
 ---
 
