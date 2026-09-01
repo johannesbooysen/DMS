@@ -11,6 +11,8 @@
 
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
+import { poolSchliessen } from '../src/db'
+import { belegeAnlegen } from './belege-anlegen'
 
 /**
  * `exec` und nicht `execFile` mit `shell: true`.
@@ -42,4 +44,22 @@ export default async function aufsetzen(): Promise<void> {
   }
 
   process.stdout.write(`${Math.round((Date.now() - begonnen) / 1000)} s\n`)
+
+  /*
+   * Und dann echte Dateien an zwei Belege hängen.
+   *
+   * Ohne sie zeigt der Viewer ein kaputtes Bild und der PDF-Download
+   * antwortet mit 404 — nicht wegen eines Fehlers, sondern weil nichts da
+   * ist. Ein Test darauf prüfte den Seed, nicht die Anwendung.
+   */
+  process.stdout.write('  Belege aufbereiten … ')
+  const zweiter = Date.now()
+  try {
+    await belegeAnlegen()
+  } finally {
+    // Die eigene Verbindung wieder schließen: Playwright wartet sonst am
+    // Ende des Laufs auf einen Pool, den niemand mehr braucht.
+    await poolSchliessen()
+  }
+  process.stdout.write(`${Math.round((Date.now() - zweiter) / 1000)} s\n`)
 }
