@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 65 Tabellen, 127 Policies,
-68 Module, 513 Testfaelle in 23 Dateien,
+Auf einen Blick: 66 Tabellen, 129 Policies,
+70 Module, 538 Testfaelle in 25 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -247,6 +247,16 @@ Fluechtige Ausgaenge: der Text verschwindet nach dem Senden
 Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`
 
 
+### `supabase/migrations/20260901100000_fehlerkorb.sql`
+
+Fehlerkorb der Verarbeitungsqueue
+
+Tabellen: `verarbeitungsfehler`
+
+Funktionen: `app.verarbeitungsfehler_melden`, `app.verarbeitungsfehler_erledigen`, `app.aufbereitung_haengt`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -270,6 +280,7 @@ Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
 | [`src/app/lib/belegliste.ts`](../src/app/lib/belegliste.ts) | Die Belegübersicht mit Daten versorgen |
 | [`src/app/lib/einsicht-aktionen.ts`](../src/app/lib/einsicht-aktionen.ts) | 'use server' |
+| [`src/app/lib/fehlerkorb-aktionen.ts`](../src/app/lib/fehlerkorb-aktionen.ts) | 'use server' |
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
@@ -293,6 +304,7 @@ Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`
 | [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
 | [`src/extraktion/zahlen.ts`](../src/extraktion/zahlen.ts) | Beträge aus Text lesen |
 | [`src/extraktion/zugferd.ts`](../src/extraktion/zugferd.ts) | Strukturierte Rechnungen: ZUGFeRD und XRechnung |
+| [`src/fehlerkorb/index.ts`](../src/fehlerkorb/index.ts) | Fehlerkorb: was die Aufbereitung aufgegeben hat |
 | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) | Eingang: eine Datei wird zum Dokument |
 | [`src/ingest/dublette.ts`](../src/ingest/dublette.ts) | Dublettenpruefung |
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
@@ -331,6 +343,8 @@ Funktionen: `app.ausgang_anlegen`, `app.ausgang_vermerken`, `app.ausgang_offen`
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
+| [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
+| [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |

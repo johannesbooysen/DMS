@@ -143,3 +143,15 @@ export async function fehlerkorbGroesse(): Promise<number> {
   const reihe = await b.getQueueStats(FEHLERKORB)
   return reihe.at(-1)?.queuedCount ?? 0
 }
+
+/**
+ * Was im Fehlerkorb ankommt.
+ *
+ * pg-boss reicht die Nutzlast des aufgegebenen Auftrags unveraendert weiter --
+ * je nach Herkunft die eines Dokuments oder die eines Stapels. Deshalb sind
+ * beide Kennungen optional und nur `benutzerId` sicher da: Sie steht in
+ * beiden Auftragsarten.
+ */
+export type FehlerkorbAuftrag = Partial<AufbereitungsAuftrag & StapelAuftrag> & {
+  benutzerId: string
+}

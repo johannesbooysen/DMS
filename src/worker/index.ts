@@ -6,17 +6,20 @@
  * oder zusammen mit der Anwendung ueber `npm run dev`.
  */
 
-import type { Job } from 'pg-boss'
+import type { Job, JobWithMetadata } from 'pg-boss'
 import { DateisystemAblage } from '../ablage'
 import { alsSystem } from '../db'
 import {
   AUFBEREITUNG,
+  FEHLERKORB,
   STAPELAUFBEREITUNG,
   queueBeenden,
   queueStarten,
   type AufbereitungsAuftrag,
+  type FehlerkorbAuftrag,
   type StapelAuftrag,
 } from '../queue'
+import { fehlerMelden } from '../fehlerkorb'
 import { aufbereiten } from './aufbereitung'
 import { stapelAufbereiten } from './stapelaufbereitung'
 import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
@@ -25,6 +28,26 @@ const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 
 /** Wie oft im Ausgangsbuch nachgesehen wird. */
 const POSTTAKT_MS = 30_000
+
+/**
+ * Zieht aus dem pg-boss-`output` eine lesbare Zeile.
+ *
+ * Was dort steht, haengt vom Fehler ab: mal `{ message }`, mal ein
+ * serialisierter Error, mal etwas anderes. Gekuerzt wird spaeter in der
+ * Datenbank -- hier geht es nur darum, nicht `[object Object]` in den Korb
+ * zu schreiben.
+ */
+function grundLesen(ausgabe: unknown): string {
+  if (ausgabe == null) return 'Ohne Angabe abgebrochen'
+  if (typeof ausgabe === 'string') return ausgabe
+
+  const o = ausgabe as Record<string, unknown>
+  for (const feld of ['message', 'value', 'error']) {
+    const wert = o[feld]
+    if (typeof wert === 'string' && wert !== '') return wert
+  }
+  return JSON.stringify(ausgabe).slice(0, 500)
+}
 
 async function start(): Promise<void> {
   const ablage = new DateisystemAblage(ABLAGE_WURZEL)
@@ -59,6 +82,36 @@ async function start(): Promise<void> {
   )
 
   /*
+   * Der Fehlerkorb.
+   *
+   * pg-boss legt einen aufgegebenen Auftrag nach drei Versuchen hier ab. Der
+   * Auftrag verschwaende dort still -- deshalb wird er hier abgeholt und als
+   * fachlicher Vorgang festgehalten: mit Grund, mit Mandant, mit Sichtbarkeit
+   * und mit einem Ausgang, den ein Mensch waehlt.
+   *
+   * `includeMetadata`, weil erst die Metadaten sagen, **warum** und **woher**:
+   * `output` traegt den Fehler, `sourceName` die urspruengliche
+   * Warteschlange. Ohne sie stuende im Korb nur, dass etwas schiefging.
+   */
+  await boss.work(
+    FEHLERKORB,
+    { includeMetadata: true },
+    async (auftraege: JobWithMetadata<FehlerkorbAuftrag>[]) => {
+      for (const auftrag of auftraege) {
+        const { dokumentId, stapelId, benutzerId } = auftrag.data
+        await fehlerMelden(benutzerId, {
+          dokumentId: dokumentId ?? null,
+          stapelId: stapelId ?? null,
+          warteschlange: auftrag.sourceName ?? auftrag.name,
+          grund: grundLesen(auftrag.output),
+          versuche: auftrag.sourceRetryCount ?? auftrag.retryCount,
+          auftragId: auftrag.sourceId ?? auftrag.id,
+        })
+      }
+    },
+  )
+
+  /*
    * Der Postausgang laeuft als Schleife, nicht als Warteschlange.
    *
    * Ein Ausgangseintrag entsteht in derselben Transaktion wie sein Anlass --
@@ -79,7 +132,7 @@ async function start(): Promise<void> {
     })
   }, POSTTAKT_MS).unref()
 
-  console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG)
+  console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG, FEHLERKORB)
 }
 
 async function beenden(signal: string): Promise<void> {

@@ -406,8 +406,62 @@ um erneutes Laden.
 > Noch nicht da: **Barcode-Trennblätter** werden über ihre Klarschriftzeile
 > erkannt, nicht über den Barcode selbst. Ein Blatt, das nur einen Barcode
 > trägt, muss von Hand getrennt werden. Ebenfalls offen sind die übrigen
-> Eingangskanäle — Mail-Postfach und überwachter Ordner. Beide brauchen
-> dieselbe Anbindung nach außen, die auch dem Postausgang fehlt.
+> Eingangskanäle — Mail-Postfach und überwachter Ordner.
+
+---
+
+## Fehlerkorb
+
+Die Aufbereitung — lesen, rendern, Text gewinnen, Felder erkennen — läuft im
+Hintergrund und kann scheitern. Dreimal versucht es das System von selbst,
+dann gibt es auf. Was dann?
+
+**Zuerst: Der Beleg ist nicht verloren.** Sein Ablauf startet beim *Eingang*,
+nicht nach der Aufbereitung. Die Aufgabe liegt also im Postfach, und jemand
+kann sie bearbeiten. Was fehlt, sind Vorschau, Seitentext und erkannte Felder.
+Der Beleg ist unvollständig, nicht weg.
+
+Genau deshalb gibt es die Seite *Fehlerkorb*: Ohne sie öffnete jemand einen
+leeren Beleg und wüsste nicht, warum er leer ist.
+
+### Zwei Listen
+
+**Aufgegeben** — die Warteschlange hat aufgehört und den Grund hinterlassen.
+Dort steht, was schiefging (`ocrmypdf: exit 2`), aus welcher Warteschlange es
+kam und wie oft versucht wurde.
+
+**Hängt** — seit mehr als einer halben Stunde in Aufbereitung, ohne dass
+überhaupt etwas gemeldet wurde. Der häufigste Grund ist ein Worker, der
+zwischendurch beendet wurde: Dann gibt es keinen Auftrag mehr, der scheitern
+könnte, und ohne diese zweite Liste bliebe der Beleg für immer liegen.
+
+Die zweite Liste fragt nicht die Warteschlange, sondern den Zustand. Sie ist
+deshalb auch dann richtig, wenn an der Warteschlange etwas kaputt ist.
+
+### Die drei Ausgänge
+
+| Ausgang | Wann | Was passiert |
+|---|---|---|
+| **wiederholen** | Die Ursache war vorübergehend — Platte voll, Dienst weg | Zurück in die Warteschlange |
+| **von Hand** | Die Aufbereitung wird nicht mehr versucht | Der Beleg wird `laufend`, die Felder werden von Hand erfasst |
+| **verwerfen** | Die Datei ist nicht zu gebrauchen | **Storno** mit Begründung — kein Löschen |
+
+„Von Hand" ist keine Notlösung, sondern die Regel des Konzepts: Fällt die
+Erkennung aus, läuft der Ablauf trotzdem und jemand tippt die Daten ein. Für
+einen **Stapel** gibt es diesen Ausgang nicht — vor der Übernahme ist er noch
+kein Beleg, an dem sich arbeiten ließe.
+
+**Verworfen heißt storniert, nicht gelöscht.** Der Beleg hat existiert, das
+bleibt sichtbar, und der Grund steht am Ablauf. Kommt die Datei später lesbar
+herein, ist das ein neues Dokument.
+
+Ein „erledigt"-Haken, der nur den Eintrag wegnimmt, ist bewusst nicht dabei:
+Er hätte den Korb geleert und das Problem stehen lassen.
+
+> Noch nicht da: eine **Benachrichtigung**, wenn etwas in den Korb fällt
+> (Konzept 24, Punkt 9 — Mail oder nur ein Zähler in der Oberfläche, das ist
+> noch nicht entschieden). Bis dahin sieht man in den Korb, indem man
+> hinschaut.
 
 ---
 

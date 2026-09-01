@@ -12,6 +12,39 @@ import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
 export const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 export const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
 
+/**
+ * „vor 3 Stunden" statt „01.09.2026".
+ *
+ * Im Betrieb ist die Frage nie, an welchem Tag etwas liegen blieb, sondern
+ * wie lange schon. Ein Datum beantwortet das erst nach Kopfrechnen, und zwei
+ * Einträge vom selben Tag sehen gleich aus, obwohl der eine seit fünf Minuten
+ * und der andere seit acht Stunden steht.
+ */
+const RELATIV = new Intl.RelativeTimeFormat('de-DE', { numeric: 'auto' })
+
+export function seit(zeitpunkt: string | Date): string {
+  const dann = zeitpunkt instanceof Date ? zeitpunkt : new Date(zeitpunkt)
+  const sekunden = Math.round((dann.getTime() - Date.now()) / 1000)
+
+  for (const [einheit, laenge] of [
+    ['second', 60],
+    ['minute', 60],
+    ['hour', 24],
+    ['day', 7],
+  ] as const) {
+    if (Math.abs(sekunden) < teiler(einheit) * laenge) {
+      return RELATIV.format(Math.round(sekunden / teiler(einheit)), einheit)
+    }
+  }
+  // Ab einer Woche ist das Datum wieder die bessere Auskunft: „vor 43 Tagen"
+  // muss man zurueckrechnen, ein Datum nicht.
+  return datum.format(dann)
+}
+
+function teiler(einheit: 'second' | 'minute' | 'hour' | 'day'): number {
+  return { second: 1, minute: 60, hour: 3600, day: 86400 }[einheit]
+}
+
 export const AMPELFARBEN: Record<string, string> = {
   gruen: '#2F6F4E',
   orange: '#B5741A',
@@ -62,7 +95,8 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
           <a href="/warten">Warten</a>{' · '}
           <a href="/vertretung">Vertretung</a>{' · '}
           <a href="/einsicht">Einsicht</a>{' · '}
-          <a href="/postausgang">Postausgang</a>
+          <a href="/postausgang">Postausgang</a>{' · '}
+          <a href="/fehlerkorb">Fehlerkorb</a>
         </span>
         {/* Abmelden ist ein Formular, kein Link: Es ändert etwas auf dem
             Server. Ein Link dorthin könnte von fremder Seite ausgelöst
