@@ -7,7 +7,11 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "types": [
       "node"
     ],
@@ -32,6 +36,8 @@
   "include": [
     "src",
     "tests",
+    "scripts",
+    "eslint.config.mjs",
     "vitest.config.ts",
     "next.config.ts",
     ".next/types/**/*.ts",

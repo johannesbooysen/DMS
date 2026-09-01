@@ -405,7 +405,7 @@ describe('Klaerung', () => {
   it('verlangt einen Kommentar', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
-        const LAUF = await eigenerLauf(c)
+        await eigenerLauf(c)
         await c.query(
           `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von,
                                  verantwortlich_benutzer, wiedervorlage_am)
@@ -419,7 +419,7 @@ describe('Klaerung', () => {
   it('verlangt ein Wiedervorlagedatum', async () => {
     await expect(
       alsBenutzer(ANNA, async (c) => {
-        const LAUF = await eigenerLauf(c)
+        await eigenerLauf(c)
         await c.query(
           `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von,
                                  verantwortlich_benutzer)

@@ -5,6 +5,7 @@
  * dass die Fachlogik traegt. Ein Entwurf gehoert danach, nicht davor.
  */
 
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
@@ -87,16 +88,29 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
           marginBottom: '1rem',
         }}
       >
+        {/* `Link` und nicht `<a>`: Die Navigation wechselt zwischen Seiten
+            derselben Anwendung. Ein gewöhnlicher Anker lädt jedes Mal alles
+            neu -- bei acht Einträgen, zwischen denen den ganzen Tag gewechselt
+            wird, ist das der Unterschied zwischen zügig und zäh. Nach außen
+            (Ablage, PDF, API) bleibt es beim `<a>`, dorthin führt kein
+            Router. */}
         <span>
-          <a href="/posteingang">Posteingang</a>{' · '}
-          <a href="/postfach">Postfächer</a>{' · '}
-          <a href="/belege">Belege</a>{' · '}
-          <a href="/konfiguration">Abläufe</a>{' · '}
-          <a href="/warten">Warten</a>{' · '}
-          <a href="/vertretung">Vertretung</a>{' · '}
-          <a href="/einsicht">Einsicht</a>{' · '}
-          <a href="/postausgang">Postausgang</a>{' · '}
-          <a href="/fehlerkorb">Fehlerkorb</a>
+          {[
+            ['/posteingang', 'Posteingang'],
+            ['/postfach', 'Postfächer'],
+            ['/belege', 'Belege'],
+            ['/konfiguration', 'Abläufe'],
+            ['/warten', 'Warten'],
+            ['/vertretung', 'Vertretung'],
+            ['/einsicht', 'Einsicht'],
+            ['/postausgang', 'Postausgang'],
+            ['/fehlerkorb', 'Fehlerkorb'],
+          ].map(([ziel, name], i) => (
+            <span key={ziel}>
+              {i > 0 && ' · '}
+              <Link href={String(ziel)}>{name}</Link>
+            </span>
+          ))}
         </span>
         {/* Abmelden ist ein Formular, kein Link: Es ändert etwas auf dem
             Server. Ein Link dorthin könnte von fremder Seite ausgelöst

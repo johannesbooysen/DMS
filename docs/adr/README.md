@@ -18,6 +18,7 @@ verweist auf den Nachfolger.
 | [0002](0002-workflow-modell.md) | Workflow-Modell: Blockstruktur, Bedingungen, Delegation | angenommen |
 | [0003](0003-erkennung.md) | Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage | angenommen |
 | [0004](0004-anmeldung.md) | Anmeldung über Entra ID, Sitzung in Postgres | angenommen |
+| [0005](0005-linter.md) | Linter mit Typwissen, dafür TypeScript 6 | angenommen |
 
 > Dieses Verzeichnis wird von `npm run docs:check` geprüft: Jedes ADR im
 > Ordner muss hier stehen.

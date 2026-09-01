@@ -10,7 +10,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 
 Auf einen Blick: 67 Tabellen, 132 Policies,
 77 Module, 588 Testfaelle in 28 Dateien,
-4 Architekturentscheidungen, 3 markierte offene Stellen.
+5 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -404,6 +404,7 @@ Funktionen: `app.einsicht_layer`
 | [0002 · Workflow-Modell: Blockstruktur, Bedingungen, Delegation](adr/0002-workflow-modell.md) | angenommen |
 | [0003 · Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage](adr/0003-erkennung.md) | angenommen |
 | [ADR 0004 — Anmeldung über Entra ID, Sitzung in Postgres](adr/0004-anmeldung.md) | unbekannt |
+| [ADR 0005 — Linter mit Typwissen, dafür TypeScript 6](adr/0005-linter.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 

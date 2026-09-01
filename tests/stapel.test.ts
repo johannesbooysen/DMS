@@ -15,7 +15,7 @@
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
 import { pdfBauen } from './hilfe/pdf-bauen'
-import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
+import { poolSchliessen, verbindungspool } from '../src/db'
 import type { Ablage } from '../src/ablage'
 import { inhaltHash } from '../src/ablage'
 import {

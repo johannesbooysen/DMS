@@ -20,7 +20,7 @@ import {
   knotenEntfernen,
   knotenVerschieben,
   NichtErlaubt,
-  NichtMoeglich,
+
 } from '../src/workflow/konfiguration'
 import { baumFuerAnzeige } from '../src/workflow/konfiguration'
 import { alleBlaetter } from '../src/workflow/baum'

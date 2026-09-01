@@ -16,7 +16,7 @@
  * prüfen, nicht unseren Code. Getestet wird alles, was danach kommt.
  */
 
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { alsAnmeldung, alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   anmeldungProtokollieren,

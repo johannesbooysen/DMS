@@ -17,7 +17,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
-import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
+import { alsBenutzer, poolSchliessen } from '../src/db'
 import {
   KontierungAbgelehnt,
   kontenFuerBeleg,

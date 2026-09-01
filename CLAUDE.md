@@ -19,7 +19,7 @@ npm test                     # gesamte Testsuite
 npm test -- pfad/zur/datei   # einzelne Testdatei
 npm test -- -t "Mandant"     # einzelner Test nach Name
 npm run test:watch           # Tests im Beobachtungsmodus
-npm run lint                 # ESLint
+npm run lint                 # ESLint (~30 s, typbezogene Regeln)
 npm run typecheck            # tsc --noEmit
 npm run build                # Produktionsbuild
 npm run start                # Produktionsserver
@@ -77,6 +77,8 @@ Vier Dokumente mit getrennten Aufgaben. Wer eines ändert, prüft, ob es ins and
 `docs/stand.md` ist der schnellste Einstieg in ein unbekanntes Repository: Befehle, Migrationen mit ihren Tabellen, Module, Tests, Entscheidungen und die im Quelltext markierten offenen Stellen — alles abgeleitet, nichts behauptet.
 
 **`npm run docs:check`** prüft, was sich sicher entscheiden lässt: ob `stand.md` aktuell ist, ob jedes npm-Skript hier erwähnt wird, ob jede Migration gelistet und jedes ADR im Verzeichnis steht. Ob eine Beschreibung noch *stimmt*, kann es nicht wissen — dafür gibt es den Agenten `doku-pflege`, der nach inhaltlichen Änderungen die geschriebenen Dokumente nachzieht.
+
+**`npm run lint`** ist eingerichtet und läuft sauber durch ([ADR 0005](docs/adr/0005-linter.md)). Der Ertrag sind drei Regeln mit Typwissen — `no-floating-promises`, `no-misused-promises`, `await-thenable`: In einer durchgängig `async`-Codebasis schreibt ein vergessenes `await` trotzdem, nur nicht in der Transaktion, in der es sollte. Dafür ist **TypeScript auf 6.x festgelegt**; `typescript-eslint` lehnt TS 7 rundheraus ab. Wer die Fassung anhebt, bricht den Linter — Bedingungen zum Zurücknehmen stehen im ADR. `require-await` und `no-img-element` sind mit Begründung aus. Der Linter steht **nicht** im Commit-Hook: 31 Sekunden gegen 2 der Dokumentationsprüfung, das erzieht zu `--no-verify`.
 
 Der Hook unter `.githooks/pre-commit` führt die Prüfung vor jedem Commit aus. Einmalig zu aktivieren:
 

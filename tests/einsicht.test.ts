@@ -14,7 +14,7 @@
  *     nicht abrufen können, indem er die Liste überspringt.
  */
 
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   EinsichtAbgelehnt,
