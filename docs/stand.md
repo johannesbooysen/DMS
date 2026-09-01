@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 67 Tabellen, 132 Policies,
-77 Module, 588 Testfaelle in 28 Dateien,
+Auf einen Blick: 69 Tabellen, 136 Policies,
+81 Module, 612 Testfaelle in 29 Dateien,
 5 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -281,6 +281,30 @@ Layer und Seitenmasse in **einem** Aufruf
 Funktionen: `app.einsicht_layer`
 
 
+### `supabase/migrations/20260901160000_eingangsquelle.sql`
+
+Eingangskanaele: ueberwachter Ordner und Mailpostfach
+
+Tabellen: `eingangsquelle`, `eingang_geholt`
+
+Funktionen: `app.eingangsquellen_faellig`, `app.eingangsquelle_vermerken`, `app.eingang_schon_geholt`, `app.eingang_vormerken`
+
+Policies: 4
+
+### `supabase/migrations/20260901170000_eingangsquelle_traeger.sql`
+
+Unter wessen Rechten eine Eingangsquelle arbeitet
+
+Funktionen: `app.eingangsquellen_faellig`
+
+
+### `supabase/migrations/20260901180000_eingang_geholt_praefix.sql`
+
+Eine Nachricht gilt als geholt, wenn eines ihrer Teile geholt wurde
+
+Funktionen: `app.eingang_schon_geholt`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -322,6 +346,10 @@ Funktionen: `app.einsicht_layer`
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
+| [`src/eingang/index.ts`](../src/eingang/index.ts) | Belege, die von selbst hereinkommen |
+| [`src/eingang/mail.ts`](../src/eingang/mail.ts) | Mailpostfach als Eingangskanal |
+| [`src/eingang/ordner.ts`](../src/eingang/ordner.ts) | Überwachter Ordner |
+| [`src/eingang/quelle.ts`](../src/eingang/quelle.ts) | Was eine Eingangsquelle ist |
 | [`src/einsicht/index.ts`](../src/einsicht/index.ts) | Externe Belegeinsicht |
 | [`src/einsicht/schwaerzung.ts`](../src/einsicht/schwaerzung.ts) | Layer in das ausgelieferte Bild einbrennen |
 | [`src/einsicht/wasserzeichen.ts`](../src/einsicht/wasserzeichen.ts) | Wasserzeichen für die externe Ansicht |
@@ -371,6 +399,7 @@ Funktionen: `app.einsicht_layer`
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 33 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
+| [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
@@ -410,6 +439,6 @@ Funktionen: `app.einsicht_layer`
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:309`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:341`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:188`](../src/workflow/engine.ts) |

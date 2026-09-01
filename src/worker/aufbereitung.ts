@@ -23,6 +23,7 @@ import { istXmlRechnung } from '../extraktion/zugferd'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
+import { mailtext } from '../eingang/mail'
 import { freieBloecke } from '../layer/platzierung'
 import { texterkennung, type Texterkennung } from '../ocr'
 import { AUFBEREITUNG } from '../queue'
@@ -44,6 +45,7 @@ export type Verarbeitungsweg =
   | 'textlayer'
   | 'ocr'
   | 'ocr_noetig'
+  | 'mail'
   | 'kein_pdf'
 
 export interface Aufbereitungsergebnis {
@@ -155,11 +157,41 @@ export async function aufbereiten(
 
   if (inhalt.subarray(0, 4).toString('latin1') !== '%PDF') {
     // XRechnung ohne PDF-Huelle: nichts zu rendern, das XML fuehrt.
-    const weg: Verarbeitungsweg = istXmlRechnung(inhalt) ? 'zugferd' : 'kein_pdf'
+    if (istXmlRechnung(inhalt)) {
+      await c.query(`update dokument set seitenzahl = 0, status = 'laufend' where id = $1`, [
+        dokumentId,
+      ])
+      return { seiten: 0, weg: 'zugferd' }
+    }
+
+    /*
+     * Eine Mail ohne verwertbaren Anhang.
+     *
+     * Es gibt nichts zu rendern, aber sehr wohl etwas zu lesen: Betreff,
+     * Absender und Text. Ohne diesen Zweig laege die Nachricht mit null
+     * Seiten und leerem Text im Posteingang -- unauffindbar, obwohl jemand
+     * geschrieben hat.
+     *
+     * Konzept 1: "Kein zweites Modul fuer Schriftverkehr; ein Posteingang."
+     */
+    if (istMail(inhalt)) {
+      const text = await mailtext(inhalt)
+      await c.query(
+        `insert into dokument_seite (dokument_id, seite, text)
+         values ($1, 1, $2)
+         on conflict (dokument_id, seite) do update set text = excluded.text`,
+        [dokumentId, text],
+      )
+      await c.query(`update dokument set seitenzahl = 1, status = 'laufend' where id = $1`, [
+        dokumentId,
+      ])
+      return { seiten: 1, weg: 'mail' }
+    }
+
     await c.query(`update dokument set seitenzahl = 0, status = 'laufend' where id = $1`, [
       dokumentId,
     ])
-    return { seiten: 0, weg }
+    return { seiten: 0, weg: 'kein_pdf' }
   }
 
   /*
@@ -315,4 +347,17 @@ export async function aufbereiten(
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
   return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung }
+}
+
+/**
+ * Sieht das nach einer Mail aus?
+ *
+ * Absichtlich grob: ein paar Kopfzeilen am Anfang. Eine strenge Prüfung wäre
+ * ein zweiter Parser, und der einzige Zweck hier ist, `mailparser` nicht auf
+ * beliebige Bytes loszulassen. Was durchrutscht, ergibt leeren Text — kein
+ * Schaden.
+ */
+function istMail(inhalt: Buffer): boolean {
+  const anfang = inhalt.subarray(0, 2048).toString('latin1')
+  return /^(from|received|message-id|subject|to|date|mime-version):/im.test(anfang)
 }

@@ -19,6 +19,7 @@ import {
   type FehlerkorbAuftrag,
   type StapelAuftrag,
 } from '../queue'
+import { eingangAbholen } from '../eingang'
 import { fehlerMelden } from '../fehlerkorb'
 import { texterkennung } from '../ocr'
 import { aufbereiten } from './aufbereitung'
@@ -29,6 +30,14 @@ const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 
 /** Wie oft im Ausgangsbuch nachgesehen wird. */
 const POSTTAKT_MS = 30_000
+
+/**
+ * Wie oft nach faelligen Eingangsquellen gesehen wird.
+ *
+ * Nicht, wie oft eine Quelle abgefragt wird -- das steht an der Quelle
+ * selbst (`takt_sekunden`). Hier wird nur nachgesehen, ob eine faellig ist.
+ */
+const EINGANGSTAKT_MS = 60_000
 
 /**
  * Zieht aus dem pg-boss-`output` eine lesbare Zeile.
@@ -129,6 +138,27 @@ async function start(): Promise<void> {
       }
     },
   )
+
+  /*
+   * Eingangsquellen -- ebenfalls eine Schleife, aus demselben Grund wie der
+   * Postausgang: Der Takt steht an der Quelle, nicht in einem Auftrag.
+   *
+   * Ein Durchgang holt nur, was faellig ist (`eingangsquellen_faellig`).
+   * Alles Weitere -- Hash, Dublettenpruefung, Aufbereitung -- macht der
+   * gewoehnliche Eingang; hier wird nichts abgekuerzt.
+   */
+  setInterval(() => {
+    void eingangAbholen(ablage).then(({ quellen, aufgenommen, gescheitert }) => {
+      // Keine Quellennamen und keine Pfade im Log -- ein Postfachname ist
+      // eine Adresse (Projektregel). Was schiefging, steht in der Quelle.
+      if (aufgenommen + gescheitert > 0) {
+        console.log(
+          `[worker] Eingang: ${quellen} Quellen, ${aufgenommen} aufgenommen,`,
+          `${gescheitert} gescheitert`,
+        )
+      }
+    })
+  }, EINGANGSTAKT_MS).unref()
 
   /*
    * Der Postausgang laeuft als Schleife, nicht als Warteschlange.

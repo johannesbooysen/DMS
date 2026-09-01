@@ -448,8 +448,97 @@ um erneutes Laden.
 
 > Noch nicht da: **Barcode-Trennblätter** werden über ihre Klarschriftzeile
 > erkannt, nicht über den Barcode selbst. Ein Blatt, das nur einen Barcode
-> trägt, muss von Hand getrennt werden. Ebenfalls offen sind die übrigen
-> Eingangskanäle — Mail-Postfach und überwachter Ordner.
+> trägt, muss von Hand getrennt werden.
+
+---
+
+## Belege, die von selbst hereinkommen
+
+Upload und Scan beginnen bei einem Menschen. Zwei weitere Wege laufen ohne
+Zutun, im Worker: ein **überwachter Ordner** und ein **Mailpostfach**. Was sie
+finden, geht durch denselben Eingang wie ein Upload — dieselbe
+Dublettenprüfung, dieselbe Aufbereitung, dieselbe Warteschlange. Eine Quelle
+liefert Dateien, sonst nichts.
+
+Unter *Eingangsquellen* steht, was eingerichtet ist und ob es läuft.
+
+### Was eine Quelle mitbringt
+
+Jede Quelle kann Objekt, Ordnungsgruppe und Belegart vorbelegen. Ein Ordner je
+Objekt oder ein Postfach nur für Handwerkerrechnungen erspart damit die
+Zuordnung von Hand.
+
+Der **Takt** steht an der Quelle: Ein Ordner darf häufiger abgefragt werden
+als ein Postfach — der eine kostet einen Verzeichniseintrag, das andere eine
+Anmeldung.
+
+### Überwachter Ordner
+
+Der Weg, über den in der Praxis ein Netzwerkscanner oder ein FTP-Server
+ablegt. Aufgenommen werden PDF, XML und `.eml`; alles andere bleibt liegen.
+
+**Eine Datei, die noch geschrieben wird, wird nicht angefasst.** Ein Scanner
+öffnet sie und füllt sie über Sekunden; wer sofort liest, bekommt ein halbes
+PDF — und das System meldete einen kaputten Beleg, der in Ordnung war. Erst
+nach zehn Sekunden ohne Änderung gilt eine Datei als fertig (einstellbar).
+
+**Verschoben wird nach dem Aufnehmen, nie davor** — sonst ist die Datei weg,
+wenn die Aufnahme scheitert. Ohne eingestellten Zielordner bleibt sie ganz
+liegen; ein Programm, das ungefragt in fremden Ordnern aufräumt, macht mehr
+kaputt als es hilft. Dass sie trotzdem nicht zweimal hereinkommt, trägt die
+Merkliste.
+
+### Mailpostfach
+
+Abgeholt wird über IMAP. **Jeder Rechnungsanhang wird ein eigener Beleg** —
+eine Mail mit drei Rechnungen ergibt drei. Signaturbilder und Briefköpfe
+werden übergangen, sonst entstünde aus jeder Kanzleimail ein Dutzend Belege
+aus Grafiken.
+
+**Eine Mail ohne verwertbaren Anhang wird selbst zum Beleg**, als
+Schriftverkehr. Sie zu überspringen wäre der schlechteste Ausgang: Der
+Absender hat geschrieben, im DMS stünde nichts, und niemand erführe davon.
+Betreff, Absender und Text sind durchsuchbar; eine Seitenvorschau gibt es
+nicht.
+
+**Nichts wird gelöscht und nichts verschoben.** Die Merkliste trägt, dass
+keine Nachricht zweimal hereinkommt. Wer möchte, lässt gelesene Nachrichten
+als gelesen markieren — mehr nicht.
+
+### Das Passwort steht nicht in der Datenbank
+
+In der Quelle steht der **Name** einer Umgebungsvariablen, nicht das Passwort.
+Das Geheimnis liegt auf dem Rechner, auf dem der Worker läuft. Ein
+Datenbankauszug gibt damit keinen Postfachzugang her, und wer eine Quelle
+einrichtet, sieht nie ein Passwort, das er weiterreichen könnte.
+
+### Wer die Quelle trägt
+
+Eine Quelle arbeitet unter den Rechten dessen, der sie eingerichtet hat. Das
+ist zurechenbar — am Beleg steht ein Name, den man fragen kann — und es
+begrenzt von selbst: Eine Quelle kann nichts anlegen, was ihr Einrichter nicht
+auch von Hand anlegen könnte.
+
+Scheidet die Person aus und wird ihr Zugang gesperrt, **steht die Quelle
+still**. Das ist gewollt: Sie steht dann sichtbar still, statt unter dem Namen
+eines Ausgeschiedenen weiterzulaufen.
+
+### Wenn etwas nicht mehr läuft
+
+Niemand sieht zu. Deshalb stehen unter *Eingangsquellen* zwei Zeitpunkte
+nebeneinander: *nachgesehen* und *zuletzt etwas bekommen*. Der Unterschied ist
+die Auskunft — eine Quelle, die läuft und nichts findet, ist etwas anderes als
+eine, die gar nicht mehr läuft.
+
+Ein Fehler steht an der Quelle, nicht im Log: Ein falscher Pfad, ein
+abgelaufenes Passwort. Und er hält die anderen Quellen nicht auf.
+
+> Noch nicht da: die **Maske zum Einrichten** — Quellen werden derzeit in der
+> Datenbank angelegt. Der IMAP-Teil ist außerdem **nicht gegen einen echten
+> Mailserver geprüft**; getestet ist alles danach: was aus einer Nachricht
+> wird, die Merkliste, der Durchgang, die Fehlerbehandlung.
+
+
 
 ---
 
