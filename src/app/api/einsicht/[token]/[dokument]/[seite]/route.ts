@@ -20,8 +20,10 @@ import {
   einsichtAufloesen,
   einsichtDarfBeleg,
   einsichtDatei,
+  einsichtLayer,
   einsichtProtokollieren,
 } from '@/einsicht'
+import { layerEinbrennen } from '@/einsicht/schwaerzung'
 import { wasserzeichenAuftragen } from '@/einsicht/wasserzeichen'
 
 /** Die Adresse des Anfragenden, so wie der Reverse Proxy sie meldet. */
@@ -66,12 +68,27 @@ export async function GET(
   )
 
   const bild = await ABLAGE.lesen(datei.storageKey)
+
+  /*
+   * Erst die Layer einbrennen, dann das Wasserzeichen.
+   *
+   * Die Reihenfolge ist nicht beliebig: Das Wasserzeichen ist blass und
+   * gehoert obenauf. Andersherum laege eine Schwaerzung darueber und
+   * verdeckte ausgerechnet den Hinweis, wem die Aufnahme zuzuordnen ist.
+   *
+   * Und beides geschieht **jetzt**, beim Ausliefern -- nicht einmal beim
+   * Rendern. Eine Schwaerzung kann nach dem Rendern dazukommen, und ein
+   * vorbereitetes Bild ohne sie waere ein Bild, das zu viel zeigt.
+   */
+  const { layer, seitenbreite } = await einsichtLayer(gewaehrung.gewaehrungId, dokument, nr)
+  const mitLayern = await layerEinbrennen(bild, layer, seitenbreite)
+
   const ausgabe = gewaehrung.wasserzeichen
-    ? await wasserzeichenAuftragen(bild, {
+    ? await wasserzeichenAuftragen(mitLayern, {
         empfaenger: gewaehrung.personName,
         datum: new Date().toISOString().slice(0, 10),
       })
-    : bild
+    : mitLayern
 
   return new Response(new Uint8Array(ausgabe), {
     headers: {

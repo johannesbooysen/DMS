@@ -23,6 +23,7 @@ import { istXmlRechnung } from '../extraktion/zugferd'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
+import { freieBloecke } from '../layer/platzierung'
 import { texterkennung, type Texterkennung } from '../ocr'
 import { AUFBEREITUNG } from '../queue'
 
@@ -201,17 +202,31 @@ export async function aufbereiten(
     }
   }
 
-  // Die Fundstellen der einzelnen Textstuecke bleiben vorerst im Speicher.
-  // Persistiert werden sie erst, wenn die Stempelplatzierung sie braucht --
-  // sie sucht den groessten freien Block auf der Seite (Konzept 16). Bis
-  // dahin waere eine Spalte dafuer eine Vorfestlegung ohne Nutzer.
+  /*
+   * Seitentext -- und fuer die erste Seite die freien Stempelplaetze.
+   *
+   * Die Fundstellen der einzelnen Textstuecke werden **nicht** gespeichert,
+   * sondern nur das, was aus ihnen folgt: eine Handvoll Rechtecke, in die
+   * ein Stempel passt, ohne Text zu ueberdecken (Konzept 16). Die
+   * Fundstellen selbst waeren bei einer Million Dokumenten zweistellige
+   * Gigabytes -- und sie werden nach dieser Rechnung nie wieder gebraucht.
+   *
+   * Nur Seite 1, weil der Stempel dorthin gehoert. Reicht der Platz nicht,
+   * haengt der Export eine Leerseite an.
+   */
   for (const seite of seiten) {
+    const bloecke =
+      seite.seite === 1
+        ? JSON.stringify(freieBloecke(seite.breite, seite.hoehe, seite.stuecke))
+        : null
+
     await c.query(
-      `insert into dokument_seite (dokument_id, seite, text, breite, hoehe)
-       values ($1, $2, $3, $4, $5)
+      `insert into dokument_seite (dokument_id, seite, text, breite, hoehe, freie_bloecke)
+       values ($1, $2, $3, $4, $5, $6::jsonb)
        on conflict (dokument_id, seite) do update
-          set text = excluded.text, breite = excluded.breite, hoehe = excluded.hoehe`,
-      [dokumentId, seite.seite, seite.text, seite.breite, seite.hoehe],
+          set text = excluded.text, breite = excluded.breite,
+              hoehe = excluded.hoehe, freie_bloecke = excluded.freie_bloecke`,
+      [dokumentId, seite.seite, seite.text, seite.breite, seite.hoehe, bloecke],
     )
   }
 

@@ -18,6 +18,7 @@ import type { PoolClient } from 'pg'
 import { alsDatum, alsZeitpunkt } from '@/datum'
 import { alsAnmeldung, alsBenutzer } from '@/db'
 import { postAnlegen } from '@/postausgang'
+import type { Einbrennlayer } from './schwaerzung'
 
 export type Empfaengertyp = 'eigentuemer' | 'beirat' | 'mieter'
 export type Umfang = 'vorgang' | 'wirtschaftsjahr' | 'belegliste'
@@ -201,6 +202,66 @@ export interface Gewaehrungswunsch {
 }
 
 export class EinsichtAbgelehnt extends Error {}
+
+/**
+ * Was von den Layern eines Belegs nach draußen darf — und die Seitenbreite,
+ * ohne die sich nichts platzieren lässt.
+ *
+ * Ohne Benutzer und ohne Sitzung; die Prüfung steckt in der SQL-Funktion,
+ * wie bei allem in der Einsicht.
+ */
+export async function einsichtLayer(
+  gewaehrungId: string,
+  dokumentId: string,
+  seite: number,
+): Promise<{ layer: Einbrennlayer[]; seitenbreite: number }> {
+  return alsAnmeldung(async (c) => {
+    /*
+     * Ein Aufruf, nicht zwei.
+     *
+     * Die Seitenbreite stand hier zuerst in einer eigenen Abfrage auf
+     * `dokument_seite`. Die lief unter der RLS ohne Benutzer — in der
+     * externen Einsicht gibt es keinen — und lieferte nichts. Die Breite war
+     * damit 0, und jede Schwärzung wäre an der falschen Stelle gelandet.
+     *
+     * Genau derselbe Fehler steckte schon einmal in `einsichtDatei`. Deshalb
+     * jetzt beides in `app.einsicht_layer`, mit der Prüfung darin.
+     */
+    const { rows } = await c.query<Record<string, unknown>>(
+      'select * from app.einsicht_layer($1, $2, $3)',
+      [gewaehrungId, dokumentId, seite],
+    )
+    return {
+      layer: rows.map((z) => ({
+        typ: String(z['typ']),
+        x: Number(z['x']),
+        y: Number(z['y']),
+        breite: Number(z['breite']),
+        hoehe: Number(z['hoehe']),
+        text: z['text'] == null ? null : String(z['text']),
+      })),
+      seitenbreite: Number(rows[0]?.['seitenbreite'] ?? 0),
+    }
+  })
+}
+
+/**
+ * Darf dieser Beleg als PDF hinaus?
+ *
+ * Nein, sobald er geschwärzt ist. Ein schwarzes Rechteck in einem PDF liegt
+ * nur darauf — der Text darunter bleibt markierbar. Geschwärzte Belege gehen
+ * deshalb nur als Bild hinaus; die Begründung steht in der Migration
+ * `20260901130000_einsicht_layer.sql`.
+ */
+export async function pdfDarfHinaus(dokumentId: string): Promise<boolean> {
+  return alsAnmeldung(async (c) => {
+    const { rows } = await c.query<{ hat_schwaerzung: boolean }>(
+      'select app.hat_schwaerzung($1)',
+      [dokumentId],
+    )
+    return rows[0]?.hat_schwaerzung !== true
+  })
+}
 
 /**
  * „42 WEG Lindenweg 3" für die Mail.

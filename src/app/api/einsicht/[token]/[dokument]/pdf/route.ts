@@ -12,6 +12,7 @@ import {
   einsichtAufloesen,
   einsichtDarfBeleg,
   einsichtDatei,
+  pdfDarfHinaus,
   einsichtProtokollieren,
 } from '@/einsicht'
 
@@ -48,6 +49,30 @@ export async function GET(
       absender(anfrage),
     )
     return new Response('Nicht gefunden', { status: 404 })
+  }
+
+  /*
+   * Geschwaerzte Belege gehen nicht als PDF hinaus.
+   *
+   * Ein schwarzes Rechteck in einem PDF liegt nur *darauf* -- der Text
+   * darunter bleibt im Dokument und laesst sich markieren, kopieren oder mit
+   * jedem Werkzeug auslesen. Genau so sind schon Behoerden und Kanzleien
+   * aufgefallen.
+   *
+   * Richtig schwaerzen hiesse, den Seiteninhalt neu zu schreiben. Das kann
+   * pdf-lib nicht, und eine halbe Loesung waere hier schlimmer als keine:
+   * Sie saehe aus wie eine Schwaerzung. Die Seitenbilder sind dagegen echt
+   * geschwaerzt -- ein WebP hat keinen Textlayer.
+   *
+   * 403 und nicht 404: Hier wird nichts verborgen. Der Beleg ist da, er geht
+   * nur nicht in dieser Form hinaus, und das gehoert gesagt.
+   */
+  if (!(await pdfDarfHinaus(dokument))) {
+    return new Response(
+      'Dieser Beleg enthält geschwärzte Stellen und steht deshalb nur als ' +
+        'Seitenansicht zur Verfügung, nicht als PDF.',
+      { status: 403, headers: { 'content-type': 'text/plain; charset=utf-8' } },
+    )
   }
 
   const datei = await einsichtDatei(gewaehrung.gewaehrungId, dokument, 'original')

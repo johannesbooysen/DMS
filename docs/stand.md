@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 66 Tabellen, 129 Policies,
-73 Module, 549 Testfaelle in 26 Dateien,
+Auf einen Blick: 67 Tabellen, 132 Policies,
+77 Module, 588 Testfaelle in 28 Dateien,
 4 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -257,6 +257,30 @@ Funktionen: `app.verarbeitungsfehler_melden`, `app.verarbeitungsfehler_erledigen
 
 Policies: 2
 
+### `supabase/migrations/20260901120000_layer.sql`
+
+Layer: Stempel, Notizen, Hervorhebungen, Schwaerzungen (Konzept 16)
+
+Tabellen: `dokument_layer`
+
+Funktionen: `app.layer_unveraenderlich`, `app.stempelplatz`, `app.stempel_layer_setzen`, `app.layer_anlegen`, `app.layer_ausblenden`
+
+Policies: 3
+
+### `supabase/migrations/20260901130000_einsicht_layer.sql`
+
+Layer in der externen Einsicht
+
+Funktionen: `app.einsicht_layer`, `app.hat_schwaerzung`
+
+
+### `supabase/migrations/20260901140000_einsicht_seite.sql`
+
+Layer und Seitenmasse in **einem** Aufruf
+
+Funktionen: `app.einsicht_layer`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -284,6 +308,7 @@ Policies: 2
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
+| [`src/app/lib/layer-aktionen.ts`](../src/app/lib/layer-aktionen.ts) | 'use server' |
 | [`src/app/lib/nebenlauf-aktionen.ts`](../src/app/lib/nebenlauf-aktionen.ts) | 'use server' |
 | [`src/app/lib/postausgang-aktionen.ts`](../src/app/lib/postausgang-aktionen.ts) | 'use server' |
 | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) | 'use server' |
@@ -298,6 +323,7 @@ Policies: 2
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/einsicht/index.ts`](../src/einsicht/index.ts) | Externe Belegeinsicht |
+| [`src/einsicht/schwaerzung.ts`](../src/einsicht/schwaerzung.ts) | Layer in das ausgelieferte Bild einbrennen |
 | [`src/einsicht/wasserzeichen.ts`](../src/einsicht/wasserzeichen.ts) | Wasserzeichen für die externe Ansicht |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
@@ -310,6 +336,8 @@ Policies: 2
 | [`src/ingest/pdf.ts`](../src/ingest/pdf.ts) | PDF: Seitentext mit Koordinaten und Vorrendern |
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
+| [`src/layer/index.ts`](../src/layer/index.ts) | Layer: was neben dem Beleg liegt |
+| [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
 | [`src/ocr/index.ts`](../src/ocr/index.ts) | Auswahl der Texterkennung |
@@ -352,11 +380,13 @@ Policies: 2
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
+| [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
+| [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
@@ -379,6 +409,6 @@ Policies: 2
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:294`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:309`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:188`](../src/workflow/engine.ts) |

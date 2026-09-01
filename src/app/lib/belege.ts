@@ -106,13 +106,26 @@ export async function originalSchluessel(
 export async function seitentextLaden(
   benutzerId: string,
   dokumentId: string,
-): Promise<Array<{ seite: number; text: string }>> {
+): Promise<Array<{ seite: number; text: string; breite: number; hoehe: number }>> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ seite: number; text: string | null }>(
-      'select seite, text from dokument_seite where dokument_id = $1 order by seite',
+    // Breite und Hoehe braucht die Layerschicht: Sie rechnet PDF-Punkte in
+    // Prozent um, damit die Kaesten beim Skalieren des Bildes mitwandern.
+    const { rows } = await c.query<{
+      seite: number
+      text: string | null
+      breite: number | null
+      hoehe: number | null
+    }>(
+      `select seite, text, breite, hoehe from dokument_seite
+        where dokument_id = $1 order by seite`,
       [dokumentId],
     )
-    return rows.map((r) => ({ seite: r.seite, text: r.text ?? '' }))
+    return rows.map((r) => ({
+      seite: r.seite,
+      text: r.text ?? '',
+      breite: Number(r.breite ?? 0),
+      hoehe: Number(r.hoehe ?? 0),
+    }))
   })
 }
 

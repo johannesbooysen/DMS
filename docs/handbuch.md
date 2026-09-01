@@ -711,10 +711,97 @@ Rechnung vergehen Wochen.
 > sie im Code sucht, sucht falsch.
 
 > Noch nicht da: die **Systemaktionen** aus den Diagrammen — die Mail mit der
-> Abtretungserklärung, die Erfassungsmeldung an die Technik-Datenbank. Ihnen
-> fehlt derselbe Postausgang wie scan2bank. Und die Fristüberschreitung führt
-> noch nicht selbsttätig ins Klärungspostfach; die Liste zeigt sie, den
-> Eintrag setzt ein Mensch.
+> Abtretungserklärung, die Erfassungsmeldung an die Technik-Datenbank. Der
+> Weg nach draußen steht inzwischen (Postausgang), und die Vorlagen
+> `abtretung` und `technikmeldung` liegen im Grundbestand; was fehlt, ist die
+> Stelle im Ablauf, die sie auslöst. Und die Fristüberschreitung führt noch
+> nicht selbsttätig ins Klärungspostfach; die Liste zeigt sie, den Eintrag
+> setzt ein Mensch.
+
+---
+
+## Stempel, Notizen und Schwärzungen
+
+Alles, was am Beleg angebracht wird, liegt **neben** dem PDF — nie darin. Vier
+Dinge folgen daraus, und alle vier sind der Grund für die Bauart:
+
+* Das **Original bleibt bitgenau**. Sein Hash im Archiv gilt weiter, auch
+  nachdem vier Menschen gestempelt und zwei kommentiert haben.
+* Anmerkungen sind **durchsuchbar** wie der Belegtext.
+* Die **Sichtbarkeit** ist je Eintrag steuerbar: Eine interne Notiz geht nie
+  nach außen.
+* Ein **Export** kann Layer wahlweise einbrennen oder weglassen.
+
+Der Preis dafür: Wer das PDF herunterlädt, sieht nichts davon. Deshalb liefert
+die externe Einsicht nie das Original, sondern Seitenbilder — mit allem, was
+draufgehört, fest eingebrannt.
+
+### Stempel
+
+**Ein Stempel entsteht aus seinem Ereignis, nicht von Hand.** Wer stempelt,
+löst beides zugleich aus: den Eintrag im Protokoll und das Bild auf dem Beleg.
+Es gibt keinen Weg, das eine ohne das andere zu bekommen — sonst gäbe es
+Stempel, die im Protokoll fehlen, oder Entscheidungen, die man am Beleg nicht
+sieht.
+
+**Wohin er kommt, rechnet das System beim Eingang aus.** Aus den Fundstellen
+des Textes ergeben sich die freien Flächen; der Stempel bekommt die erste
+davon, bevorzugt rechts oben, dann rechts unten. **Kein Stempel überdeckt
+Text.** Das ist keine Kosmetik: Ein Stempel über dem Rechnungsbetrag macht aus
+einer Prüfung eine Behauptung, und weil das Original unverändert bleibt, fiele
+es erst beim Export auf.
+
+Ist die Seite voll, wird der Stempel gemerkt und gehört auf eine angehängte
+Leerseite. Verloren geht er nie.
+
+**Verfällt eine Freigabe** (weil sich die Rechnungsdaten geändert haben),
+verschwindet ihr Stempel vom Beleg. Das Ereignis bleibt im Protokoll — der
+Beleg soll zeigen, was *gilt*, das Protokoll, was *geschehen ist*.
+
+### Notizen und Hervorhebungen
+
+Anzulegen in der Belegansicht. Angaben in PDF-Punkten, Ursprung oben links;
+eine A4-Seite ist 595 × 842. Das ist umständlich, und es ist ehrlich: Zum
+Aufziehen mit der Maus bräuchte es Bedienlogik im Browser, die es hier sonst
+nirgends gibt.
+
+**Vorgabe ist intern.** Eine Notiz geht nur nach draußen, wenn das ausdrücklich
+angehakt wird — die sichere Richtung, nicht die bequeme.
+
+**Gelöscht wird nichts, nur ausgeblendet.** Eine Notiz, die spurlos
+verschwindet, macht den Beleg unerklärbar. Und der Text lässt sich nachträglich
+nicht ändern: Wer das könnte, könnte eine fremde Einschätzung umschreiben.
+
+### Schwärzungen
+
+Eine Schwärzung ist **immer auch nach außen sichtbar**. Sie auf „intern" zu
+stellen hieße, dass sie draußen fehlt — und damit das Verdeckte erscheint.
+Deshalb lässt sich das nicht einstellen.
+
+**Ein geschwärzter Beleg geht extern nur noch als Seitenansicht hinaus, nicht
+mehr als PDF.** Der Grund gehört dazugesagt:
+
+> Ein schwarzes Rechteck in einem PDF liegt nur *darauf*. Der Text darunter
+> bleibt im Dokument und lässt sich markieren, kopieren oder mit jedem
+> Werkzeug auslesen. Genau so sind schon Behörden und Kanzleien aufgefallen.
+> Richtig zu schwärzen hieße, den Seiteninhalt neu zu schreiben — das leistet
+> die verwendete PDF-Bibliothek nicht, und eine halbe Lösung wäre hier
+> schlimmer als keine: Sie *sähe aus* wie eine Schwärzung.
+
+Im Seitenbild ist die Schwärzung dagegen echt — ein Bild hat keinen Text, was
+übermalt ist, ist weg. Wer den Download braucht, muss die Schwärzung
+ausblenden; dann steht der PDF-Download wieder zur Verfügung.
+
+Sind die Seitenmaße eines Belegs nicht erfasst — Altbestand, abgebrochene
+Aufbereitung —, lässt sich nichts umrechnen. Dann geht ein geschwärzter Beleg
+**gar nicht** hinaus; Notizen und Hervorhebungen entfallen still.
+
+> Noch nicht da: Der **Export mit eingebrannten Layern** in den vier Varianten
+> des Konzepts (Archivoriginal, Beleg mit Stempeln, externe Einsicht, interne
+> Akte). Heute gibt es die interne Ansicht mit Überlagerung und die externe
+> Seitenansicht mit eingebrannten Layern. Ebenfalls offen ist die angehängte
+> Leerseite für Stempel, die keinen Platz mehr fanden — sie stehen bisher nur
+> als Liste unter dem Beleg.
 
 ---
 

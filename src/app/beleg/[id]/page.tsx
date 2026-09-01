@@ -8,6 +8,8 @@
 
 import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
+import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
+import { layerLaden } from '@/layer'
 import { Befunde } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
@@ -32,6 +34,7 @@ export default async function Belegansicht({
   if (kopf === null) return notFound()
 
   const seiten = await seitentextLaden(benutzer, id)
+  const layer = await layerLaden(benutzer, id)
   const befunde = await befundeLaden(benutzer, id)
   const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
   const warten = await alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id))
@@ -124,20 +127,59 @@ export default async function Belegansicht({
           </nav>
 
           <div style={{ flex: 1 }}>
-            {Array.from({ length: seitenzahl }, (_, i) => i + 1).map((nr) => (
-              <figure key={nr} id={`seite-${nr}`} style={{ margin: '0 0 1.5rem' }}>
-                {/* Bewusst ein einfaches img: das Bild liegt fertig vor, es
-                    gibt nichts zu optimieren, was nicht schon optimiert waere. */}
-                <img
-                  src={`/api/beleg/${id}/seite/${nr}`}
-                  alt={`Seite ${nr}`}
-                  loading={nr === 1 ? 'eager' : 'lazy'}
-                  style={{ width: '100%', border: '1px solid #ddd' }}
-                />
-              </figure>
-            ))}
+            {Array.from({ length: seitenzahl }, (_, i) => i + 1).map((nr) => {
+              const masse = seiten.find((s) => s.seite === nr)
+              const aufSeite = layer.filter((l) => l.seite === nr)
+              return (
+                <figure key={nr} id={`seite-${nr}`} style={{ margin: '0 0 1.5rem' }}>
+                  {/* Bewusst ein einfaches img: das Bild liegt fertig vor, es
+                      gibt nichts zu optimieren, was nicht schon optimiert waere.
+                      Die Layer liegen als Überlagerung darüber -- nie im Bild,
+                      denn dann müssten sie beim Rendern schon feststehen. */}
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={`/api/beleg/${id}/seite/${nr}`}
+                      alt={`Seite ${nr}`}
+                      loading={nr === 1 ? 'eager' : 'lazy'}
+                      style={{ width: '100%', border: '1px solid #ddd', display: 'block' }}
+                    />
+                    <Layerschicht
+                      layer={aufSeite}
+                      breite={masse?.breite ?? 0}
+                      hoehe={masse?.hoehe ?? 0}
+                    />
+                  </div>
+                  <figcaption>
+                    <Notizliste layer={aufSeite} dokumentId={id} />
+                  </figcaption>
+                </figure>
+              )
+            })}
+
+            {/* Stempel, für die auf Seite 1 kein Platz mehr war. Sie gehören
+                auf eine angehängte Leerseite (Konzept 16); solange der Export
+                sie noch nicht anhängt, stehen sie wenigstens hier. */}
+            {layer.some((l) => l.seite === 0) && (
+              <aside style={{ border: '1px dashed #B5741A', padding: '0.75rem' }}>
+                <strong style={{ fontSize: '0.9rem' }}>Ohne Platz auf der Seite</strong>
+                <ul style={{ fontSize: '0.85rem', margin: '0.4rem 0 0', paddingLeft: '1.1rem' }}>
+                  {layer
+                    .filter((l) => l.seite === 0)
+                    .map((l) => (
+                      <li key={l.id}>{l.text}</li>
+                    ))}
+                </ul>
+              </aside>
+            )}
           </div>
         </div>
+      )}
+
+      {seitenzahl > 0 && (
+        <Layerformular
+          dokumentId={id}
+          seiten={Array.from({ length: seitenzahl }, (_, i) => i + 1)}
+        />
       )}
 
       <footer style={{ borderTop: '1px solid #ddd', marginTop: '1rem', paddingTop: '1rem' }}>
