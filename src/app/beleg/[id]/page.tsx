@@ -184,6 +184,31 @@ export default async function Belegansicht({
 
       <footer style={{ borderTop: '1px solid #ddd', marginTop: '1rem', paddingTop: '1rem' }}>
         <a href={`/api/beleg/${id}/pdf`}>Original-PDF öffnen</a>
+
+        {/* Die vier Varianten aus Konzept 16. Das Archivoriginal steht schon
+            oben als „Original-PDF" -- hier die drei, die Layer tragen. */}
+        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0.6rem 0 0' }}>
+          Ausgeben als{' '}
+          {(
+            [
+              ['stempel', 'Beleg mit Stempeln'],
+              ['extern', 'Belegeinsicht'],
+              ['intern', 'interne Akte'],
+            ] as const
+          ).map(([variante, name], i) => (
+            <span key={variante}>
+              {i > 0 && ' · '}
+              <a href={`/api/beleg/${id}/export?variante=${variante}`}>{name}</a>
+            </span>
+          ))}
+        </p>
+
+        <p style={{ color: '#666', fontSize: '0.78rem', margin: '0.3rem 0 0' }}>
+          Ist der Beleg geschwärzt, entstehen diese Ausgaben aus den
+          Seitenbildern — dann ist das Geschwärzte wirklich weg, dafür der Text
+          nicht mehr durchsuchbar. Das Archivoriginal bleibt in jedem Fall
+          unverändert.
+        </p>
       </footer>
     </main>
   )

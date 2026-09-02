@@ -410,6 +410,65 @@ describe('Objektakte für den Verwalterwechsel', () => {
     expect(manifest).toContain(`${beleg}.json`)
   })
 
+  it('legt neben das Original eine gestempelte Lesefassung', async () => {
+    const ablage = new Merkablage()
+
+    // Der Beleg braucht eine echte Datei -- die uebrigen Tests hier kommen
+    // ohne aus, weil sie die Metadaten pruefen.
+    const { pdfBauen, rechnungsvorlage } = await import('./hilfe/pdf-bauen')
+    const pdf = await pdfBauen(rechnungsvorlage())
+    await ablage.schreiben('test/akte/original.pdf', pdf)
+    await direkt(
+      `insert into dokument_datei (dokument_id, variante, storage_key, mime, groesse)
+       values ($1, 'original', 'test/akte/original.pdf', 'application/pdf', $2)`,
+      [beleg, pdf.byteLength],
+    )
+
+    const akte = await alsBenutzer(ANNA, (c) =>
+      objektakteZusammenstellen(c, ablage, OBJEKT_42, '2026-08-31'),
+    )
+    const geschrieben = await objektakteSchreiben(ablage, akte!, 'export/objekt-42')
+
+    /*
+     * **Der Grund, warum es das gibt.** Bis hierher bekam ein
+     * Nachfolgeverwalter das rohe Original -- ein Blatt ohne eine einzige
+     * Freigabe. Die Stempelhistorie lag daneben im JSON, aber wer die
+     * Rechnung oeffnet, sah nicht, dass sie jemals geprueft wurde.
+     */
+    expect(geschrieben).toContain(`export/objekt-42/${beleg}-gestempelt.pdf`)
+
+    // Und das Original bleibt: Nur es traegt den Hash aus dem Archiv.
+    expect(geschrieben).toContain(`export/objekt-42/${beleg}.pdf`)
+    expect(await ablage.lesen(`export/objekt-42/${beleg}.pdf`)).toEqual(pdf)
+
+    // Beide stehen im Manifest, also laesst sich beides ohne uns pruefen.
+    const { createHash } = await import('node:crypto')
+    const lesefassung = await ablage.lesen(`export/objekt-42/${beleg}-gestempelt.pdf`)
+    const hash = createHash('sha256').update(lesefassung).digest('hex')
+    expect(akte?.manifest).toContain(`${hash}  ${beleg}-gestempelt.pdf`)
+  })
+
+  it('benennt einen Beleg ohne Lesefassung, statt ihn zu uebergehen', async () => {
+    const ablage = new Merkablage()
+
+    // Eine Datei, die kein PDF ist: Der Export scheitert, die Akte nicht.
+    await ablage.schreiben('test/akte/kaputt.pdf', Buffer.from('kein PDF'))
+    await direkt(
+      `insert into dokument_datei (dokument_id, variante, storage_key, mime, groesse)
+       values ($1, 'original', 'test/akte/kaputt.pdf', 'application/pdf', 8)`,
+      [beleg],
+    )
+
+    const akte = await alsBenutzer(ANNA, (c) =>
+      objektakteZusammenstellen(c, ablage, OBJEKT_42, '2026-08-31'),
+    )
+
+    // Eine Akte mit einer stillen Luecke ist schlimmer als eine mit einer
+    // bekannten -- dieselbe Regel wie bei `ohneDatei`.
+    expect(akte?.ohneLesefassung).toContain(beleg)
+    expect(akte?.manifest).toContain('ohne gestempelte Lesefassung')
+  })
+
   it('stimmt: der Hash im Manifest passt zur geschriebenen Datei', async () => {
     const ablage = new Merkablage()
     const akte = await alsBenutzer(ANNA, (c) =>

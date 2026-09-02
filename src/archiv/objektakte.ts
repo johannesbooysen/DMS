@@ -15,6 +15,7 @@
  */
 
 import { createHash } from 'node:crypto'
+import { belegExportierenMit } from '@/export'
 import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 
@@ -23,6 +24,20 @@ export interface Aktendokument {
   dateiname: string
   metadaten: Record<string, unknown>
   inhalt: Buffer | null
+  /**
+   * Dieselbe Seite mit den Stempeln darauf (Konzept 16).
+   *
+   * **Der Grund, warum es das gibt:** Bis hierher bekam ein
+   * Nachfolgeverwalter das rohe Original — ein Blatt ohne eine einzige
+   * Freigabe. Die Stempelhistorie lag daneben im JSON, die Information war
+   * also nicht weg; aber wer die Rechnung öffnet, sah nicht, dass sie
+   * jemals geprüft wurde.
+   *
+   * Das Original bleibt trotzdem in der Akte: Nur es hat den Hash, der im
+   * Archiv steht. Die gestempelte Fassung ist zum Lesen, das Original zum
+   * Nachweisen.
+   */
+  gestempelt: Buffer | null
 }
 
 export interface Objektakte {
@@ -32,6 +47,15 @@ export interface Objektakte {
   dokumente: Aktendokument[]
   /** Belege, deren Originaldatei fehlt — benannt statt verschwiegen. */
   ohneDatei: string[]
+  /**
+   * Belege ohne gestempelte Lesefassung.
+   *
+   * Aus demselben Grund benannt wie `ohneDatei`: Eine Akte mit einer stillen
+   * Luecke ist schlimmer als eine mit einer bekannten. Vorkommen kann es bei
+   * einem geschwaerzten Beleg ohne Seitenbilder oder bei einer Datei, die
+   * sich nicht als PDF lesen laesst.
+   */
+  ohneLesefassung: string[]
   manifest: string
 }
 
@@ -160,6 +184,7 @@ export async function objektakteZusammenstellen(
 
   const dokumente: Aktendokument[] = []
   const ohneDatei: string[] = []
+  const ohneLesefassung: string[] = []
   const manifestzeilen: string[] = []
 
   for (const b of belege) {
@@ -181,16 +206,41 @@ export async function objektakteZusammenstellen(
     const dateiname = `${b.id}.pdf`
     const metadatenText = JSON.stringify(metadaten, null, 2)
 
+    /*
+     * Die gestempelte Fassung daneben.
+     *
+     * Scheitert sie, ist das kein Grund, die Akte abzubrechen -- etwa bei
+     * einem geschwaerzten Beleg ohne Seitenbilder. Dann fehlt eben die
+     * Lesefassung; das Original und die Stempelhistorie im JSON sind
+     * trotzdem da.
+     */
+    let gestempelt: Buffer | null = null
+    if (inhalt !== null) {
+      gestempelt = await belegExportierenMit(c, ablage, {
+        dokumentId: b.id,
+        variante: 'stempel',
+      })
+        .then((e) => e.pdf)
+        .catch(() => null)
+      if (gestempelt === null) ohneLesefassung.push(b.id)
+    }
+
     dokumente.push({
       dokumentId: b.id,
       dateiname,
       metadaten,
       inhalt,
+      gestempelt,
     })
 
     if (inhalt !== null) {
       manifestzeilen.push(
         `${createHash('sha256').update(inhalt).digest('hex')}  ${dateiname}`,
+      )
+    }
+    if (gestempelt !== null) {
+      manifestzeilen.push(
+        `${createHash('sha256').update(gestempelt).digest('hex')}  ${b.id}-gestempelt.pdf`,
       )
     }
     manifestzeilen.push(
@@ -201,7 +251,10 @@ export async function objektakteZusammenstellen(
   const kopf = [
     `# Objektakte ${objekt.objektnummer} — ${objekt.bezeichnung}`,
     `# erzeugt am ${jetzt}`,
-    `# ${dokumente.length} Dokumente, ${ohneDatei.length} ohne Originaldatei`,
+    `# ${dokumente.length} Dokumente, ${ohneDatei.length} ohne Originaldatei,` +
+      ` ${ohneLesefassung.length} ohne gestempelte Lesefassung`,
+    '# Zu jedem Beleg: <id>.pdf (das Original, mit dem Hash aus dem Archiv),',
+    '# <id>-gestempelt.pdf (dasselbe mit den Stempeln darauf) und <id>.json.',
     '#',
     // Keine Leerzeile danach: "sha256sum -c" warnt bei leeren Zeilen, und
     // eine Warnung beim Pruefen entwertet den Zweck des Manifests.
@@ -214,6 +267,7 @@ export async function objektakteZusammenstellen(
     erzeugtAm: jetzt,
     dokumente,
     ohneDatei,
+    ohneLesefassung,
     manifest: [...kopf, ...manifestzeilen, ''].join('\n'),
   }
 }
@@ -236,6 +290,12 @@ export async function objektakteSchreiben(
     if (d.inhalt !== null) {
       const schluessel = `${praefix}/${d.dateiname}`
       await ablage.schreiben(schluessel, d.inhalt)
+      geschrieben.push(schluessel)
+    }
+    if (d.gestempelt !== null) {
+      // Die Lesefassung neben dem Original -- gleicher Name, klarer Zusatz.
+      const schluessel = `${praefix}/${d.dokumentId}-gestempelt.pdf`
+      await ablage.schreiben(schluessel, d.gestempelt)
       geschrieben.push(schluessel)
     }
     const metaSchluessel = `${praefix}/${d.dokumentId}.json`

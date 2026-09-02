@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 69 Tabellen, 136 Policies,
-81 Module, 612 Testfaelle in 29 Dateien,
+85 Module, 640 Testfaelle in 31 Dateien,
 5 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -319,6 +319,7 @@ Funktionen: `app.eingang_schon_geholt`
 | [`src/anmeldung/sitzung.ts`](../src/anmeldung/sitzung.ts) | Sitzungen: anlegen, auflösen, beenden |
 | [`src/anmeldung/ziel.ts`](../src/anmeldung/ziel.ts) | Wohin nach der Anmeldung? |
 | [`src/app/api/anmeldung/rueckkehr/route.ts`](../src/app/api/anmeldung/rueckkehr/route.ts) | Der Rückweg vom Identitätsanbieter |
+| [`src/app/api/beleg/[id]/export/route.ts`](../src/app/api/beleg/[id]/export/route.ts) | Beleg als PDF, in einer der vier Varianten aus Konzept 16 |
 | [`src/app/api/beleg/[id]/pdf/route.ts`](../src/app/api/beleg/[id]/pdf/route.ts) | Das Original-PDF -- nur per Range-Request |
 | [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
 | [`src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts`](../src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts) | Eine Belegseite für die externe Ansicht |
@@ -355,6 +356,9 @@ Funktionen: `app.eingang_schon_geholt`
 | [`src/einsicht/index.ts`](../src/einsicht/index.ts) | Externe Belegeinsicht |
 | [`src/einsicht/schwaerzung.ts`](../src/einsicht/schwaerzung.ts) | Layer in das ausgelieferte Bild einbrennen |
 | [`src/einsicht/wasserzeichen.ts`](../src/einsicht/wasserzeichen.ts) | Wasserzeichen für die externe Ansicht |
+| [`src/export/index.ts`](../src/export/index.ts) | Belege ausgeben — mit den Layern, die zur Variante gehören |
+| [`src/export/pdf.ts`](../src/export/pdf.ts) | Layer in ein PDF einbrennen |
+| [`src/export/varianten.ts`](../src/export/varianten.ts) | Welche Layer in welchen Export gehören — und wie er gebaut wird |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
 | [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
@@ -398,12 +402,14 @@ Funktionen: `app.eingang_schon_geholt`
 | Datei | Faelle | Gruppen |
 |---|---|---|
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
-| [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 33 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
+| [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 35 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
+| [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
+| [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |

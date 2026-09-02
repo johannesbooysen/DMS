@@ -893,12 +893,64 @@ Sind die Seitenmaße eines Belegs nicht erfasst — Altbestand, abgebrochene
 Aufbereitung —, lässt sich nichts umrechnen. Dann geht ein geschwärzter Beleg
 **gar nicht** hinaus; Notizen und Hervorhebungen entfallen still.
 
-> Noch nicht da: Der **Export mit eingebrannten Layern** in den vier Varianten
-> des Konzepts (Archivoriginal, Beleg mit Stempeln, externe Einsicht, interne
-> Akte). Heute gibt es die interne Ansicht mit Überlagerung und die externe
-> Seitenansicht mit eingebrannten Layern. Ebenfalls offen ist die angehängte
-> Leerseite für Stempel, die keinen Platz mehr fanden — sie stehen bisher nur
-> als Liste unter dem Beleg.
+### Den Beleg ausgeben
+
+Unter der Belegansicht stehen vier Wege hinaus. Welchen man nimmt, hängt
+daran, wer den Beleg bekommt.
+
+| Ausgabe | Was drauf ist | Wofür |
+|---|---|---|
+| **Original-PDF** | nichts | Archiv, Prüfung, alles, wo der Hash zählen muss |
+| **Beleg mit Stempeln** | Stempel | die eigene Ablage, der Steuerberater |
+| **Belegeinsicht** | Stempel, Schwärzungen, freigegebene Hervorhebungen, Wasserzeichen | Eigentümer, Beirat, Mieter |
+| **Interne Akte** | alles, auch Notizen | der eigene Gebrauch |
+
+**Das Original bleibt Byte für Byte, was es war.** Es wird nicht neu
+geschrieben, bekommt kein Wasserzeichen und keine Stempel — sonst stimmte der
+Hash im Archiv nicht mehr, und dann ist das Archiv eine Behauptung.
+
+**Stempel, die auf der Seite keinen Platz fanden**, bekommen im Export eine
+angehängte Leerseite. Ein Stempel darf nicht verschwinden, nur weil das Blatt
+voll war.
+
+**Eine interne Notiz geht nie in die Belegeinsicht** — auch dann nicht, wenn
+jemand sie ausdrücklich freigegeben hat. Diese Variante zeigt überhaupt keine
+Notizen.
+
+#### Geschwärzte Belege
+
+Ist ein Beleg geschwärzt, entstehen **alle** Ausgaben außer dem Original aus
+den Seitenbildern statt aus dem PDF. Das ist der wichtige Teil, und der Grund
+gehört dazugesagt:
+
+> Ein schwarzes Rechteck in einem PDF liegt nur *darauf*. Der Text darunter
+> bleibt im Dokument und lässt sich markieren, kopieren oder mit jedem
+> Werkzeug auslesen. Genau so sind schon Behörden und Kanzleien aufgefallen.
+
+Ein Bild hat keinen Textlayer — was übermalt ist, ist weg. Der Preis: Das
+ausgegebene PDF ist nicht mehr durchsuchbar. Für etwas, das aus dem Haus geht,
+ist das der richtige Tausch; das durchsuchbare Original bleibt im Archiv.
+
+Die Regel gilt **auch für „Beleg mit Stempeln"**, obwohl diese Variante
+Schwärzungen gar nicht zeigt. Sonst gäbe es einen Weg zu einem PDF, in dem das
+Geschwärzte im Klartext steht — einen Klick entfernt.
+
+Fehlen die Seitenbilder (Altbestand, abgebrochene Aufbereitung), gibt es bei
+einem geschwärzten Beleg **gar keine** Ausgabe außer dem Original. Lieber
+keine als eine, die nur aussieht wie geschwärzt.
+
+#### In der Objektakte
+
+Die Akte für den Verwalterwechsel enthält zu jedem Beleg beides: `<id>.pdf`
+mit dem Original und `<id>-gestempelt.pdf` mit den Freigaben darauf. Vorher
+bekam ein Nachfolgeverwalter nur das rohe Original — ein Blatt, dem man nicht
+ansieht, dass es je geprüft wurde. Beide stehen im Manifest, beide lassen sich
+ohne uns prüfen.
+
+Fehlt zu einem Beleg die Lesefassung, steht er im Kopf des Manifests. Eine
+Akte mit einer stillen Lücke ist schlimmer als eine mit einer bekannten.
+
+
 
 ---
 

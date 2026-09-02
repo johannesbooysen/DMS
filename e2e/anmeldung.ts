@@ -61,7 +61,24 @@ export async function anmelden(seite: Page, name: string): Promise<void> {
  * Stelle, die mit dem Geprüften nichts zu tun hat.
  */
 export async function navigiere(seite: Page, name: string): Promise<void> {
-  await seite.getByRole('navigation').getByRole('link', { name }).click()
+  const verweis = seite.getByRole('navigation').getByRole('link', { name })
+  const ziel = await verweis.getAttribute('href')
+  await verweis.click()
+
+  /*
+   * Warten, bis die neue Seite wirklich steht.
+   *
+   * Die Navigation läuft über `next/link` und damit ohne vollen Seitenaufbau
+   * — der alte Inhalt bleibt einen Augenblick stehen. Wer sofort weiterklickt,
+   * trifft ihn noch.
+   *
+   * Das ging lange gut, weil die alte Seite meist keinen passenden Treffer
+   * hatte. Beim Export fiel es auf: Im Postfach **und** in der Belegliste
+   * heißt ein Verweis „Musterreinigung GmbH · RE-2026-0001" — der Klick
+   * landete auf der Aufgabe statt auf dem Beleg, und der Test suchte
+   * Exportlinks auf einer Seite, die keine hat.
+   */
+  if (ziel !== null) await seite.waitForURL(`**${ziel}`)
 }
 
 /**
