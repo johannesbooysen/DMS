@@ -1,15 +1,18 @@
 /**
- * Vorlaeufige Startseite.
+ * Die Wurzel führt ins Postfach.
  *
- * Die eigentlichen Oberflaechen -- Viewer und Postfaecher -- folgen als
- * naechster Schritt. Diese Seite belegt vorerst nur, dass die Anwendung
- * startet; sie behauptet nichts, was es noch nicht gibt.
+ * Hier stand eine Platzhalterseite mit dem Satz „Viewer und Postfächer sind
+ * noch nicht gebaut". Das war einmal richtig und ist es seit vielen Wochen
+ * nicht mehr — wer die Anwendung ohne Pfad aufruft, bekam eine Auskunft, die
+ * schlicht falsch war.
+ *
+ * Ein eigener Inhalt braucht die Wurzel nicht: Wer angemeldet ist, will in
+ * sein Postfach; wer es nicht ist, wird von dort zur Anmeldung geschickt.
+ * Eine Begrüßungsseite dazwischen wäre ein Klick ohne Aussage.
  */
-export default function Startseite() {
-  return (
-    <main>
-      <h1>DMS Immobilienverwaltung</h1>
-      <p>Die Anwendung läuft. Viewer und Postfächer sind noch nicht gebaut.</p>
-    </main>
-  )
+
+import { redirect } from 'next/navigation'
+
+export default function Startseite(): never {
+  redirect('/postfach')
 }

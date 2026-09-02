@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
 import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
 import { layerLaden } from '@/layer'
-import { Befunde } from '@/app/lib/darstellung'
+import { Befunde, Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { archivstandLaden } from '@/archiv'
@@ -46,13 +46,21 @@ export default async function Belegansicht({
       : await gewaehrleistungOffen(benutzer, kopf.objektId)
   const seitenzahl = kopf.seitenzahl ?? seiten.length
 
+  const titel =
+    (kopf.kreditor ?? 'Ohne Kreditor') +
+    (kopf.rechnungsnummer === null ? '' : ` · ${kopf.rechnungsnummer}`)
+
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', margin: '0 auto', maxWidth: '72rem', padding: '1.5rem' }}>
+    /*
+     * Mit Rahmen, also mit Navigation und Abmelden.
+     *
+     * Vorher stand hier ein eigenes `main` -- die Belegansicht war damit eine
+     * Sackgasse: Wer sie oeffnete, kam nur mit dem Zurueck-Knopf des Browsers
+     * wieder weg. Aufgefallen ist es, als ein Test sich von hier abmelden
+     * wollte und die Schaltflaeche nicht fand.
+     */
+    <Seitenrahmen titel={titel}>
       <header style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.25rem', margin: 0 }}>
-          {kopf.kreditor ?? 'Ohne Kreditor'}
-          {kopf.rechnungsnummer !== null && ` · ${kopf.rechnungsnummer}`}
-        </h1>
         <p style={{ color: '#555', margin: '0.25rem 0 0' }}>
           {[
             kopf.objektnummer !== null && `Objekt ${kopf.objektnummer}`,
@@ -156,9 +164,9 @@ export default async function Belegansicht({
               )
             })}
 
-            {/* Stempel, für die auf Seite 1 kein Platz mehr war. Sie gehören
-                auf eine angehängte Leerseite (Konzept 16); solange der Export
-                sie noch nicht anhängt, stehen sie wenigstens hier. */}
+            {/* Stempel, für die auf Seite 1 kein Platz mehr war. Im Export
+                stehen sie auf einer angehängten Leerseite (Konzept 16); in
+                der Ansicht hier als Liste, weil es keine solche Seite gibt. */}
             {layer.some((l) => l.seite === 0) && (
               <aside style={{ border: '1px dashed #B5741A', padding: '0.75rem' }}>
                 <strong style={{ fontSize: '0.9rem' }}>Ohne Platz auf der Seite</strong>
@@ -210,6 +218,6 @@ export default async function Belegansicht({
           unverändert.
         </p>
       </footer>
-    </main>
+    </Seitenrahmen>
   )
 }

@@ -61,7 +61,9 @@ export async function anmelden(seite: Page, name: string): Promise<void> {
  * Stelle, die mit dem Geprüften nichts zu tun hat.
  */
 export async function navigiere(seite: Page, name: string): Promise<void> {
-  const verweis = seite.getByRole('navigation').getByRole('link', { name })
+  const verweis = seite
+    .getByRole('navigation', { name: 'Hauptnavigation' })
+    .getByRole('link', { name })
   const ziel = await verweis.getAttribute('href')
   await verweis.click()
 

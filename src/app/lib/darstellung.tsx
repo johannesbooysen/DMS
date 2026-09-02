@@ -80,6 +80,10 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
       }}
     >
       <nav
+        // Ein Name, weil es auf einer Seite mehr als eine Navigation gibt:
+        // Die Belegansicht bringt ihre Seitenliste mit. Zwei namenlose
+        // `nav` sind fuer ein Vorleseprogramm nicht zu unterscheiden.
+        aria-label="Hauptnavigation"
         style={{
           alignItems: 'baseline',
           display: 'flex',

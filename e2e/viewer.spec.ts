@@ -58,6 +58,32 @@ test('Das PDF kommt erst, wenn jemand es anfordert', async ({ page }) => {
   expect((await antwort.body()).subarray(0, 4).toString()).toBe('%PDF')
 })
 
+test('Von der Belegansicht kommt man wieder weg', async ({ page }) => {
+  await anmelden(page, BENUTZER.anna)
+  await navigiere(page, 'Belege')
+  await page.getByRole('link', { name: BELEG }).first().click()
+
+  /*
+   * Die Belegansicht hatte lange keinen Rahmen und damit weder Navigation
+   * noch Abmelden — wer sie öffnete, kam nur mit dem Zurück-Knopf des
+   * Browsers wieder weg. Aufgefallen ist es, als ein Test sich von hier
+   * abmelden wollte und die Schaltfläche nicht fand.
+   */
+  await expect(page.getByRole('button', { name: 'Abmelden' })).toBeVisible()
+
+  await navigiere(page, 'Postfächer')
+  await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
+})
+
+test('Die Wurzel führt ins Postfach, nicht auf eine Platzhalterseite', async ({ page }) => {
+  await anmelden(page, BENUTZER.anna)
+  await page.goto('/')
+
+  // Hier stand der Satz „Viewer und Postfächer sind noch nicht gebaut" —
+  // einmal richtig, seit vielen Wochen falsch.
+  await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
+})
+
 test('Ein Beleg ohne Datei verschluckt sich nicht', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
   await navigiere(page, 'Belege')
