@@ -171,11 +171,20 @@ export async function objektakteZusammenstellen(
   const objekt = objekte[0]
   if (objekt === undefined) return null
 
-  const { rows: belege } = await c.query<{ id: string; storage_key: string | null }>(
+  const { rows: belege } = await c.query<{
+    id: string
+    storage_key: string | null
+    storage_fassung: string | null
+  }>(
     `select d.id,
             (select f.storage_key from dokument_datei f
               where f.dokument_id = d.id and f.variante = 'original' limit 1)
-              as storage_key
+              as storage_key,
+            -- Die archivierte Fassung. Hier faellt eine untergeschobene
+            -- Datei am laengsten nicht auf: Die Akte geht an den Nachfolger,
+            -- und der hat keinen Vergleich.
+            (select a.storage_fassung from archiv_eintrag a
+              where a.dokument_id = d.id) as storage_fassung
        from dokument d
       where d.objekt_id = $1
       order by d.eingang_am`,
@@ -193,7 +202,7 @@ export async function objektakteZusammenstellen(
     let inhalt: Buffer | null = null
     if (b.storage_key !== null) {
       try {
-        inhalt = await ablage.lesen(b.storage_key)
+        inhalt = await ablage.lesen(b.storage_key, b.storage_fassung)
       } catch {
         // Die Datei fehlt in der Ablage. Sie wird benannt, nicht verschwiegen
         // -- eine Akte mit einer stillen Luecke ist schlimmer als eine mit

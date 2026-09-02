@@ -25,11 +25,14 @@
     "db:new": "supabase migration new",
     "db:migrate": "supabase migration up",
     "db:reset": "supabase db reset",
+    "speicher:start": "docker run -d --name dms-minio -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=dmsminio -e MINIO_ROOT_PASSWORD=dmsminio123 quay.io/minio/minio:latest server /data --console-address \":9001\"",
+    "speicher:stop": "docker rm -f dms-minio",
     "objektakte": "tsx scripts/objektakte.ts",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1124.0",
     "@napi-rs/canvas": "^1.0.8",
     "fast-xml-parser": "^5.11.1",
     "imapflow": "^1.7.7",

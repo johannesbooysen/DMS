@@ -8,9 +8,19 @@
  */
 
 import { DateisystemAblage, type Ablage } from '@/ablage'
+import { s3AusUmgebung } from '@/ablage-s3'
 import { alsBenutzer } from '@/db'
 
-export const ABLAGE: Ablage = new DateisystemAblage(process.env['DMS_ABLAGE'] ?? '.ablage')
+/**
+ * Die Ablage der Anwendung.
+ *
+ * S3, sobald `DMS_S3_EIMER` gesetzt ist, sonst ein Verzeichnis. Kein
+ * stiller Rueckfall in die andere Richtung: Wer den Eimer setzt und die
+ * Zugangsdaten vergisst, bekommt einen Fehler statt einer Ablage, die
+ * klaglos ins Dateisystem schreibt.
+ */
+export const ABLAGE: Ablage =
+  s3AusUmgebung() ?? new DateisystemAblage(process.env['DMS_ABLAGE'] ?? '.ablage')
 
 export interface Belegkopf {
   id: string
@@ -89,16 +99,43 @@ export async function seitenbildSchluessel(
 export async function originalSchluessel(
   benutzerId: string,
   dokumentId: string,
-): Promise<{ schluessel: string; groesse: number; mime: string } | null> {
+): Promise<{
+  schluessel: string
+  groesse: number
+  mime: string
+  fassung: string | null
+} | null> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ storage_key: string; groesse: string; mime: string }>(
-      `select storage_key, groesse, mime from dokument_datei
-        where dokument_id = $1 and variante = 'original' limit 1`,
+    /*
+     * Die archivierte Fassung kommt gleich mit -- linker Join, damit ein
+     * nicht archivierter Beleg trotzdem seine Datei bekommt.
+     *
+     * Sie steht hier und nicht beim Aufrufer, weil sie sonst irgendwann
+     * jemand vergisst: Object Lock verhindert das Ueberschreiben nicht, es
+     * bewahrt nur die alte Fassung daneben auf. Ohne Kennung liefert der
+     * Speicher die aktuelle -- im Normalfall dieselbe, und genau im einen
+     * Fall, auf den es ankommt, die falsche.
+     */
+    const { rows } = await c.query<{
+      storage_key: string
+      groesse: string
+      mime: string
+      fassung: string | null
+    }>(
+      `select f.storage_key, f.groesse, f.mime, a.storage_fassung as fassung
+         from dokument_datei f
+         left join archiv_eintrag a on a.dokument_id = f.dokument_id
+        where f.dokument_id = $1 and f.variante = 'original' limit 1`,
       [dokumentId],
     )
     const z = rows[0]
     if (z === undefined) return null
-    return { schluessel: z.storage_key, groesse: Number(z.groesse), mime: z.mime }
+    return {
+      schluessel: z.storage_key,
+      groesse: Number(z.groesse),
+      mime: z.mime,
+      fassung: z.fassung,
+    }
   })
 }
 

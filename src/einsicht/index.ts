@@ -150,14 +150,22 @@ export async function einsichtDatei(
   dokumentId: string,
   variante: 'ansicht_webp' | 'original',
   seite: number | null = null,
-): Promise<{ storageKey: string; mime: string } | null> {
+): Promise<{ storageKey: string; mime: string; fassung: string | null } | null> {
   return alsAnmeldung(async (c) => {
-    const { rows } = await c.query<{ storage_key: string; mime: string }>(
-      'select * from app.einsicht_datei($1, $2, $3, $4)',
-      [gewaehrungId, dokumentId, variante, seite],
-    )
+    const { rows } = await c.query<{
+      storage_key: string
+      mime: string
+      storage_fassung: string | null
+    }>('select * from app.einsicht_datei($1, $2, $3, $4)', [
+      gewaehrungId,
+      dokumentId,
+      variante,
+      seite,
+    ])
     const d = rows[0]
-    return d === undefined ? null : { storageKey: d.storage_key, mime: d.mime }
+    return d === undefined
+      ? null
+      : { storageKey: d.storage_key, mime: d.mime, fassung: d.storage_fassung }
   })
 }
 

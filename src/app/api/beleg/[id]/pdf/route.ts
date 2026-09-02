@@ -45,7 +45,10 @@ export async function GET(
   const datei = await originalSchluessel(benutzer, id)
   if (datei === null) return new Response('Nicht gefunden', { status: 404 })
 
-  const inhalt = await ABLAGE.lesen(datei.schluessel)
+  // Mit der archivierten Fassung: Bei einem archivierten Beleg sollen die
+  // Bytes kommen, die archiviert wurden -- nicht die, die zuletzt jemand
+  // ueber den Schluessel gelegt hat.
+  const inhalt = await ABLAGE.lesen(datei.schluessel, datei.fassung)
   const bereich = bereichLesen(anfrage.headers.get('range'), inhalt.byteLength)
 
   if (bereich === null) {

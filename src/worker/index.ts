@@ -8,6 +8,8 @@
 
 import type { Job, JobWithMetadata } from 'pg-boss'
 import { DateisystemAblage } from '../ablage'
+import { kannSperren, s3AusUmgebung } from '../ablage-s3'
+import { objektsperrenSetzen } from '../archiv/objektsperre'
 import { alsSystem } from '../db'
 import {
   AUFBEREITUNG,
@@ -30,6 +32,17 @@ const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 
 /** Wie oft im Ausgangsbuch nachgesehen wird. */
 const POSTTAKT_MS = 30_000
+
+/**
+ * Wie oft nach unversiegelten Archiveintraegen gesehen wird.
+ *
+ * Selten, und das mit Absicht: Ein Beleg, der eine Viertelstunde spaeter
+ * gesperrt wird, ist kein Schaden -- er ist archiviert und festgeschrieben,
+ * die Datenbank laesst ihn schon nicht mehr aendern. Die Sperre schuetzt
+ * gegen den Zugriff *am Speicher vorbei*, und dafuer ist eine Viertelstunde
+ * kein Fenster, das jemand planvoll nutzt.
+ */
+const SPERRTAKT_MS = 900_000
 
 /**
  * Wie oft nach faelligen Eingangsquellen gesehen wird.
@@ -60,7 +73,15 @@ function grundLesen(ausgabe: unknown): string {
 }
 
 async function start(): Promise<void> {
-  const ablage = new DateisystemAblage(ABLAGE_WURZEL)
+  /*
+   * S3, sobald `DMS_S3_EIMER` gesetzt ist, sonst ein Verzeichnis.
+   *
+   * Der Unterschied ist nicht nur der Ort: Nur S3 kann Object Lock, und nur
+   * damit ist das Archiv mehr als eine Behauptung. Deshalb sagt der Worker
+   * beim Start, was er hat -- wer ohne Sperre laeuft, soll es wissen und
+   * nicht erst bei der ersten Pruefung erfahren.
+   */
+  const ablage = s3AusUmgebung() ?? new DateisystemAblage(ABLAGE_WURZEL)
   const boss = await queueStarten()
 
   boss.on('error', (fehler: Error) => {
@@ -85,6 +106,12 @@ async function start(): Promise<void> {
     console.warn(`[worker] ${erkennung.name} ist eingestellt, aber nicht aufrufbar`)
   } else {
     console.log(`[worker] Texterkennung: ${erkennung.name}`)
+  }
+
+  if (kannSperren(ablage)) {
+    console.log('[worker] Objektspeicher mit Object Lock, Archiv wird versiegelt')
+  } else {
+    console.log('[worker] Ablage im Dateisystem, keine Objektsperre -- nur die Hash-Kette')
   }
 
   await boss.work<AufbereitungsAuftrag>(
@@ -180,6 +207,29 @@ async function start(): Promise<void> {
       }
     })
   }, POSTTAKT_MS).unref()
+
+  /*
+   * Die Objektsperre laeuft als Durchgang, nicht als Warteschlange -- aus
+   * demselben Grund wie der Postausgang, nur mit schaerferer Folge: Ein
+   * Auftrag aus einer zurueckgerollten Archivierung wuerde eine Datei
+   * sperren, die gar nicht archiviert ist, und im Compliance-Modus nimmt das
+   * niemand mehr zurueck. Der Archiveintrag ist die Warteschlange; eine
+   * leere Spalte heisst offen.
+   *
+   * Ohne sperrfaehige Ablage tut der Durchgang nichts und sagt auch nichts --
+   * beim Start steht es schon.
+   */
+  if (kannSperren(ablage)) {
+    setInterval(() => {
+      void objektsperrenSetzen(ablage).then(({ gesperrt, gescheitert }) => {
+        // Keine Kennungen und keine Ablageschluessel im Log -- der Schluessel
+        // traegt Mandant und Objekt (Projektregel).
+        if (gesperrt + gescheitert > 0) {
+          console.log('[worker] Objektsperre:', gesperrt, 'gesetzt,', gescheitert, 'gescheitert')
+        }
+      })
+    }, SPERRTAKT_MS).unref()
+  }
 
   console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG, FEHLERKORB)
 }

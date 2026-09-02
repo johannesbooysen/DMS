@@ -85,7 +85,7 @@ export async function GET(
     absender(anfrage),
   )
 
-  const inhalt = await ABLAGE.lesen(datei.storageKey)
+  const inhalt = await ABLAGE.lesen(datei.storageKey, datei.fassung ?? null)
   return new Response(new Uint8Array(inhalt), {
     headers: {
       'content-type': datei.mime,

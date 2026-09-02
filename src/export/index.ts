@@ -77,7 +77,7 @@ export async function belegExportierenMit(
       )
     }
 
-    const original = await ablage.lesen(kopf.storageKey).catch(() => null)
+    const original = await ablage.lesen(kopf.storageKey, kopf.fassung).catch(() => null)
     if (original === null) {
       throw new ExportAbgelehnt(
         'Die Datei zu diesem Beleg fehlt in der Ablage. Der Eintrag verweist ' +
@@ -133,6 +133,7 @@ export async function belegExportierenMit(
 
 interface Belegkopf {
   storageKey: string | null
+  fassung: string | null
   hatSchwaerzung: boolean
   kreditor: string | null
   rechnungsnummer: string | null
@@ -142,6 +143,11 @@ async function kopfLesen(c: PoolClient, dokumentId: string): Promise<Belegkopf |
   const { rows } = await c.query<Record<string, unknown>>(
     `select (select f.storage_key from dokument_datei f
               where f.dokument_id = d.id and f.variante = 'original' limit 1) as storage_key,
+            -- Die archivierte Fassung. Object Lock verhindert das
+            -- Ueberschreiben nicht, es bewahrt nur die alte Fassung daneben
+            -- auf -- ohne die Kennung kaeme hier die neuere heraus.
+            (select a.storage_fassung from archiv_eintrag a
+              where a.dokument_id = d.id) as storage_fassung,
             app.hat_schwaerzung(d.id) as hat_schwaerzung,
             k.name as kreditor,
             rf.rechnungsnummer
@@ -156,6 +162,7 @@ async function kopfLesen(c: PoolClient, dokumentId: string): Promise<Belegkopf |
 
   return {
     storageKey: z['storage_key'] == null ? null : String(z['storage_key']),
+    fassung: z['storage_fassung'] == null ? null : String(z['storage_fassung']),
     hatSchwaerzung: z['hat_schwaerzung'] === true,
     kreditor: z['kreditor'] == null ? null : String(z['kreditor']),
     rechnungsnummer: z['rechnungsnummer'] == null ? null : String(z['rechnungsnummer']),

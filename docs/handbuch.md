@@ -1148,10 +1148,76 @@ fehlende Konfiguration darf nicht zu einer kürzeren Frist führen.
 (§ 147 AO). Ein Beleg vom 2. Januar und einer vom 30. Dezember desselben
 Jahres verfallen am selben Tag.
 
-> Noch nicht da: der **Object Lock** im Objektspeicher. Er wird von S3
-> durchgesetzt, nicht von der Datenbank; die Dateisystem-Ablage der
-> Entwicklung kann ihn nicht und bekommt deshalb *kein* Datum eingetragen.
-> Ein Datum, das nichts bewirkt, sieht aus wie ein Schutz.
+### Der Objektspeicher schützt die Datei selbst
+
+Die Aufbewahrung ruht auf zwei Säulen. Die eine ist die **Hash-Kette**: Zu
+jedem archivierten Beleg steht die Prüfsumme seiner Datei fest. Ändert jemand
+die Datei, stimmt die Summe nicht mehr — das *erkennt* eine Änderung.
+
+Die zweite ist der **Object Lock** des Objektspeichers. Er sorgt dafür, dass
+das Original dabei nicht verlorengeht.
+
+Wichtig ist, was er genau zusagt, denn es ist nicht das Naheliegende:
+
+> **Object Lock verhindert das Überschreiben nicht.** Er bewahrt die alte
+> Fassung daneben auf. Wer eine gesperrte Datei überschreibt, hat Erfolg — es
+> entsteht eine zweite Fassung, und ein gewöhnliches Lesen liefert ab dann
+> diese. Die gesperrte Fassung bleibt liegen und lässt sich **von niemandem**
+> löschen, auch nicht vom Administrator des Speichers.
+
+Deshalb hält das System zu jedem archivierten Beleg fest, *welche* Fassung
+gesperrt wurde, und fordert beim Anzeigen, beim Export und in der Objektakte
+genau diese an. Untergeschobenes fällt damit nicht nur auf — es kommt gar
+nicht erst heraus.
+
+Gesperrt wird **nach** dem Archivieren, in einem Durchgang alle fünfzehn
+Minuten. Das ist Absicht: Eine Sperre im Compliance-Modus nimmt niemand mehr
+zurück, auch der Administrator nicht. Wäre sie für eine abgebrochene
+Archivierung gesetzt worden, läge die Datei bis zum Ende der Frist da und
+niemand könnte etwas daran ändern. Eine *fehlende* Sperre ist dagegen
+harmlos: Sie bleibt sichtbar offen und wird beim nächsten Durchgang
+nachgeholt — auch für Belege, die archiviert wurden, bevor es den Speicher
+gab.
+
+**Ohne Objektspeicher läuft alles weiter, nur ungeschützt.** Die
+Dateisystem-Ablage der Entwicklung kann nicht sperren und bekommt deshalb
+*kein* Datum eingetragen — ein Datum, das nichts bewirkt, sieht aus wie ein
+Schutz. Der Worker sagt beim Start, was er hat:
+
+```
+[worker] Ablage im Dateisystem, keine Objektsperre -- nur die Hash-Kette
+```
+
+#### Einrichtung
+
+Vier Angaben in der Umgebung, dann nimmt die Anwendung den Speicher:
+
+```
+DMS_S3_EIMER=dms-belege
+DMS_S3_SCHLUESSEL=...
+DMS_S3_GEHEIMNIS=...
+DMS_S3_ENDPUNKT=https://s3.eu-central-1.amazonaws.com
+```
+
+Fehlt bei gesetztem Eimer eines der Zugangsdaten, bricht der Start ab. Es gibt
+keinen stillen Rückfall ins Dateisystem — eine Ablage, die klaglos woanders
+hinschreibt, wäre die schlechteste Antwort.
+
+> **Der Eimer muss mit Object Lock angelegt werden.** Nachträglich lässt sich
+> das nicht einschalten; ein Eimer ohne Sperre bleibt für immer einer ohne.
+> Das Sperren schlägt dann bei jedem Beleg fehl, und die Belege bleiben offen
+> stehen. Wer den Speicher einrichtet, prüft das **vorher**.
+
+Zum Ausprobieren genügt MinIO im Container:
+
+```bash
+npm run speicher:start
+```
+
+Es läuft dann unter `http://127.0.0.1:9000`, die Oberfläche unter Port 9001,
+Benutzer und Passwort `dmsminio` / `dmsminio123`. `npm run speicher:stop`
+räumt es wieder ab. Die Tests der Objektsperre nutzen es; fehlt es, prüfen sie
+nur die Datenbankhälfte und sagen das ausdrücklich.
 
 ### Löschantrag an einem aufbewahrungspflichtigen Beleg
 

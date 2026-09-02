@@ -9,8 +9,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 69 Tabellen, 136 Policies,
-85 Module, 640 Testfaelle in 31 Dateien,
-5 Architekturentscheidungen, 3 markierte offene Stellen.
+87 Module, 652 Testfaelle in 33 Dateien,
+6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -33,6 +33,8 @@ Auf einen Blick: 69 Tabellen, 136 Policies,
 | `npm run db:new` | `supabase migration new` |
 | `npm run db:migrate` | `supabase migration up` |
 | `npm run db:reset` | `supabase db reset` |
+| `npm run speicher:start` | `docker run -d --name dms-minio -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=dmsminio -e MINIO_ROOT_PASSWORD=dmsminio123 quay.io/minio/minio:latest server /data --console-address ":9001"` |
+| `npm run speicher:stop` | `docker rm -f dms-minio` |
 | `npm run objektakte` | `tsx scripts/objektakte.ts` |
 | `npm run e2e` | `playwright test` |
 | `npm run e2e:ui` | `playwright test --ui` |
@@ -307,10 +309,18 @@ Eine Nachricht gilt als geholt, wenn eines ihrer Teile geholt wurde
 Funktionen: `app.eingang_schon_geholt`
 
 
+### `supabase/migrations/20260902100000_objektsperre.sql`
+
+===========================================================================
+
+Funktionen: `app.archiv_eintrag_schutz`, `app.objektsperre_offen`, `app.objektsperre_vermerken`
+
+
 ## Module
 
 | Datei | Aufgabe |
 |---|---|
+| [`src/ablage-s3.ts`](../src/ablage-s3.ts) | Ablage auf S3 — mit Object Lock im Compliance-Modus |
 | [`src/ablage.ts`](../src/ablage.ts) | Ablage der Originaldateien |
 | [`src/anmeldung/anbieter.ts`](../src/anmeldung/anbieter.ts) | Der Identitätsanbieter hinter einem Interface |
 | [`src/anmeldung/entra.ts`](../src/anmeldung/entra.ts) | Anmeldung über Microsoft Entra ID (OpenID Connect) |
@@ -346,6 +356,7 @@ Funktionen: `app.eingang_schon_geholt`
 | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
 | [`src/archiv/index.ts`](../src/archiv/index.ts) | Archivierung, Aufbewahrung, Einschränkung |
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
+| [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
@@ -401,6 +412,7 @@ Funktionen: `app.eingang_schon_geholt`
 
 | Datei | Faelle | Gruppen |
 |---|---|---|
+| [`tests/ablage-s3.test.ts`](../tests/ablage-s3.test.ts) | 3 | Schreiben und Lesen, Object Lock, Wer sperren kann, Einrichtung |
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 35 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
@@ -422,6 +434,7 @@ Funktionen: `app.eingang_schon_geholt`
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
+| [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
 | [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
@@ -442,6 +455,7 @@ Funktionen: `app.eingang_schon_geholt`
 | [0003 · Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage](adr/0003-erkennung.md) | angenommen |
 | [ADR 0004 — Anmeldung über Entra ID, Sitzung in Postgres](adr/0004-anmeldung.md) | unbekannt |
 | [ADR 0005 — Linter mit Typwissen, dafür TypeScript 6](adr/0005-linter.md) | unbekannt |
+| [ADR 0006 — Object Lock schützt Fassungen, nicht Schlüssel](adr/0006-objektsperre.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 

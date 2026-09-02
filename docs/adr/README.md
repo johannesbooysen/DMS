@@ -19,6 +19,7 @@ verweist auf den Nachfolger.
 | [0003](0003-erkennung.md) | Erkennung: strukturierte Rechnung zuerst, Modell nur auf Ansage | angenommen |
 | [0004](0004-anmeldung.md) | Anmeldung über Entra ID, Sitzung in Postgres | angenommen |
 | [0005](0005-linter.md) | Linter mit Typwissen, dafür TypeScript 6 | angenommen |
+| [0006](0006-objektsperre.md) | Object Lock schützt Fassungen, nicht Schlüssel | angenommen |
 
 > Dieses Verzeichnis wird von `npm run docs:check` geprüft: Jedes ADR im
 > Ordner muss hier stehen.
