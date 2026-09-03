@@ -235,3 +235,59 @@ Der Feed und die Akte sind inzwischen nachgemessen (siehe oben) — mit einem
 Fund, der im Konzept fehlte. Offen bleiben Postfach und Mietersicht unter
 Last; beide hängen an denselben Policies und sollten nach derselben Methode
 geprüft werden.
+
+---
+
+## Auswertungen gegen 250.000 Stempelereignisse
+
+**Anforderung:** §24.11 nennt Durchlaufzeiten je Stufe, verlorene Skonti und
+die ältesten offenen Belege. Alle drei sind Aggregate — genau die Abfragen,
+die mit Seed-Daten schnell aussehen und im Betrieb stehenbleiben.
+
+**Aufbau:** Lokale Supabase-Instanz (PostgreSQL 17, Docker Desktop,
+Windows 11). Synthetisch erzeugt: 50.000 Belege über 400 Tage verteilt,
+50.000 Läufe, **250.000 Stempelereignisse** (fünf Stufen je Lauf), bei rund
+40 % der Belege eine Skontovereinbarung mit abgelaufener Frist. Drei Läufe je
+Abfrage nach einem Aufwärmlauf, gemessen von der Anwendungsseite aus
+einschließlich Verbindung.
+
+**Gemessen am 2. September 2026:**
+
+| Abfrage | Zeit | Zeilen |
+|---|---|---|
+| `app.durchlaufzeiten()` — Vorgabe 90 Tage | **185–234 ms** | 5 |
+| `app.durchlaufzeiten(null, null)` — gesamte Geschichte | 662–776 ms | 5 |
+| `app.skonto_summe()` | **49 ms** | 1 |
+| `app.skonto_verluste()` — 50 größte | **46 ms** | 50 |
+| `app.aelteste_offene()` | **41 ms** | 25 |
+
+### Was die Messung entschieden hat
+
+**Der Vorgabezeitraum ist 90 Tage, nicht „alles".** Der unbegrenzte Lauf ist
+dreimal so teuer und geht auf die Platte (`temp read=7640 written=3800` — der
+Sortierlauf der Fensterfunktion passt nicht in `work_mem`). Von einer
+Weboberfläche aus entstünde diese Abfrage aus einem leeren Eingabefeld, also
+gerade dann, wenn niemand sie gewollt hat. Deshalb kann `src/auswertung`
+sie gar nicht stellen: `null` fällt dort ebenfalls auf 90 Tage zurück. In SQL
+bleibt sie erreichbar — dort hat man sie entschieden statt vergessen.
+
+**Ein Index auf `stempel_ereignis (zeitpunkt)` wurde geprüft und verworfen.**
+
+| | ohne Index | mit Index |
+|---|---|---|
+| 90 Tage | 199 ms | 187 ms |
+| gesamte Geschichte | 665 ms | **742 ms** |
+
+Der Gewinn im Vorgabefall liegt im Rauschen, der unbegrenzte Fall wird
+schlechter. Derselbe Befund wie beim Index auf `eingang_am` in §21 — ein
+zusätzlicher Index kann schaden. Die teure Stelle ist nicht das Finden der
+Zeilen, sondern die Fensterfunktion: `lag()` braucht den Vorgänger jedes
+Ereignisses, gleich welcher Entscheidung, und muss deshalb über alle
+Ereignisse des Zeitraums sortieren.
+
+**Die Skonto-Auswertung wurde geteilt.** Über ein Jahr lieferte sie 7.918
+Zeilen in 86 ms. Das ist schnell und trotzdem falsch: Wer 7.918 Zeilen an
+eine Seite gibt, hat keine Auswertung gebaut, sondern einen Datenauszug — die
+Frage „was hat uns das gekostet" beantwortet er nicht. Seitdem liefert
+`app.skonto_summe` die Zahl (49 ms) und `app.skonto_verluste` die 50 größten
+Einzelfälle (46 ms), beide aus derselben Definition.

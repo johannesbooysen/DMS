@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 70 Tabellen, 138 Policies,
-88 Module, 667 Testfaelle in 34 Dateien,
+89 Module, 686 Testfaelle in 35 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -328,6 +328,13 @@ Funktionen: `app.verfahrensdoku_gueltig`, `app.verfahrensdoku_freigeben`, `app.a
 
 Policies: 2
 
+### `supabase/migrations/20260902160000_auswertungen.sql`
+
+===========================================================================
+
+Funktionen: `app.durchlaufzeiten`, `app.skonto_verluste`, `app.skonto_summe`, `app.aelteste_offene`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -369,6 +376,7 @@ Policies: 2
 | [`src/archiv/index.ts`](../src/archiv/index.ts) | Archivierung, Aufbewahrung, Einschränkung |
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
+| [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
@@ -429,6 +437,7 @@ Policies: 2
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 35 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
+| [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |

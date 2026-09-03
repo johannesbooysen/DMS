@@ -108,6 +108,7 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
             ['/vertretung', 'Vertretung'],
             ['/einsicht', 'Einsicht'],
             ['/postausgang', 'Postausgang'],
+            ['/auswertung', 'Auswertungen'],
             ['/fehlerkorb', 'Fehlerkorb'],
             ['/eingang', 'Eingangsquellen'],
           ].map(([ziel, name], i) => (

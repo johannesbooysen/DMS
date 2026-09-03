@@ -1122,6 +1122,55 @@ unverändert.
 
 ---
 
+## Auswertungen
+
+Drei Zahlen, die man sonst nirgends sieht — weil jeder nur sein eigenes
+Postfach kennt und dort alles erledigt aussieht.
+
+### Verfallene Skonti
+
+Die Zahl mit Geld daran, deshalb steht sie oben. Getrennt nach zwei Lagen,
+und die Trennung ist der Punkt:
+
+- **zu spät gezahlt** — der Beleg war freigegeben, die Zahlung ging nach
+  Ablauf der Frist hinaus. Das Haus zahlt zu langsam.
+- **noch nicht gezahlt** — die Frist ist vorbei und der Beleg liegt noch
+  irgendwo. Das Haus gibt zu langsam frei.
+
+Zusammengefasst wäre die Summe größer und die Auskunft kleiner: Man wüsste
+nicht mehr, wo abzuhelfen ist. Unter der Summe stehen die fünfzig größten
+Einzelfälle; jeder führt zum Beleg.
+
+### Durchlaufzeiten je Stufe
+
+Wie lange eine Stufe dauert, gemessen vom Eintritt bis zu dem Stempel, der
+sie beendet.
+
+**Der Median steht vor dem Mittel und ist die Zahl, auf die es ankommt.** Ein
+einzelner Beleg, der über den Jahreswechsel liegen blieb, zieht das Mittel so
+weit hoch, dass es nichts mehr aussagt. Daneben steht „9 von 10 unter" — das
+ist die Zahl für die Frage, ob man jemandem eine Zusage machen kann.
+
+Klärung und Rückgabe zählen **nicht** als Abschluss. Sie halten die Stufe an,
+statt sie zu beenden; die Wartezeit läuft weiter und erscheint beim nächsten
+Stempel. Wer sie mitzählte, bekäme kurze Durchlaufzeiten gerade für die
+Belege, die am meisten Mühe gemacht haben.
+
+Vorgabe sind die letzten **90 Tage**. Das ist kein willkürlicher Ausschnitt,
+sondern eine Messung: Über den gesamten Bestand ist die Abfrage dreimal so
+teuer und geht auf die Festplatte (siehe [messungen.md](messungen.md)).
+
+### Älteste offene Belege
+
+Der Einzelfall, nach dem der Lieferant anruft. Gerechnet **ab Eingang im
+Haus**, nicht ab Start des Ablaufs — danach wird gefragt. Belege in Klärung
+zählen als offen: Sie sind nicht erledigt, sie sind nur woanders. Wer sie
+ausblendet, verliert genau die Fälle, die am längsten liegen.
+
+> Die Auswertungen laufen unter **den Rechten des Fragenden**, nicht unter
+> denen des Systems. Wer ein Objekt nicht sehen darf, findet es auch in
+> keiner Summe wieder — aus einer Kennzahl lässt sich zurückrechnen.
+
 ## Archiv und Aufbewahrung
 
 **Wenn der Ablauf durch ist, wird der Beleg archiviert** — sofort, nicht in

@@ -488,6 +488,28 @@ belegt.
 - meldet bei einem Scan ohne Textlayer, dass OCR noetig ist
 - legt die Derivate in der Ablage ab
 
+### [`tests/auswertung.test.ts`](../tests/auswertung.test.ts)
+
+- misst vom Eintritt in die Stufe bis zum beendenden Stempel
+- rechnet den zweiten Stempel ab dem ersten, nicht ab dem Start
+- zaehlt Klaerung und Rueckgabe nicht als Abschluss
+- zaehlt verfallene Stempel nicht mit
+- laesst ohne Angabe alles aelter als 90 Tage weg
+- nimmt einen frischen Stempel in den Vorgabezeitraum
+- rechnet den Verlust aus Brutto und Prozentsatz
+- trennt zu spaet gezahlt von gar nicht gezahlt
+- zaehlt eine rechtzeitige Zahlung nicht als Verlust
+- zaehlt einen stornierten Beleg nicht
+- zaehlt einen Beleg ohne Skontovereinbarung nicht
+- haelt Summe und Einzelfaelle zusammen
+- rechnet ab Eingang im Haus
+- zaehlt einen Beleg in Klaerung als offen
+- zaehlt einen abgeschlossenen Lauf nicht
+- haelt sich an die Grenze
+- zeigt einem fremden Mandanten keinen Skontoverlust
+- zeigt einem fremden Mandanten keine Durchlaufzeit
+- zeigt einem fremden Mandanten keinen offenen Beleg
+
 ### [`tests/belegliste.test.ts`](../tests/belegliste.test.ts)
 
 - zeigt den eigenen Beleg
