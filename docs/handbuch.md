@@ -1406,6 +1406,67 @@ zweiter Zugang zu allen Daten.
 
 ---
 
+## Sicherung und Wiederherstellung
+
+**Ein Archiv ohne getesteten Restore ist kein Archiv.** Deshalb gibt es hier
+zwei Befehle und nicht einen.
+
+### Sichern
+
+```bash
+npm run sicherung
+```
+
+Legt unter `sicherung/<datum>/` zwei Dateien ab: das Abbild der Datenbank und
+ein **Manifest** mit den Zählwerten. Das Manifest ist der Teil, den man leicht
+weglässt und ohne den die Probe nichts wert ist — wenn beim Zurückholen die
+Hälfte der Belege fehlt, sieht die Datenbank in sich völlig stimmig aus. Erst
+der Vergleich mit den Zahlen von vorher deckt es auf.
+
+Die Belegdateien werden **nicht** mitgesichert. Sie liegen im Objektspeicher
+mit Object Lock; ein zweiter Satz Kopien wäre ein zweiter Ort, an dem sie
+altern. Wie der Objektspeicher gesichert wird, gehört in die
+Verfahrensdokumentation — es ist eine Entscheidung über Infrastruktur.
+
+> Ist `pg_dump` auf dem Rechner nicht installiert — in der Entwicklung ist das
+> der Normalfall —, hilft `DMS_PG_CONTAINER=supabase_db_DMS` davor: Dann läuft
+> es im Datenbankcontainer.
+
+### Die Probe
+
+```bash
+npm run sicherung:pruefen -- sicherung/2026-09-02
+```
+
+Holt die Sicherung in eine **eigene, danach verworfene** Datenbank zurück —
+nie in die laufende. Eine Probe, die den Betrieb überschreiben kann, wird aus
+gutem Grund nie ausgeführt.
+
+Geprüft wird, was ein erfolgreicher `pg_restore` gerade nicht beantwortet:
+
+| Frage | Warum sie zählt |
+|---|---|
+| Lief das Zurückholen fehlerfrei? | jede Fehlerzeile ist ein Befund, kein Hinweis |
+| Sind alle Zeilen da? | gegen das Manifest |
+| Trägt die Hash-Kette? | wurde ein Ereignis nachträglich verändert? |
+| Greifen RLS, Policies, Trigger? | **der eigentliche Grund** |
+| Stimmen die Dateien zu ihren Hashes? | liegt noch das Original da? |
+
+Die vierte Zeile ist die stillste Gefahr: `pg_restore` bringt Zeilen zurück
+und sagt nichts darüber, ob die Zugriffsregeln daran hängen. Ein System ohne
+RLS sieht im Betrieb völlig normal aus — es fällt erst auf, wenn jemand Daten
+sieht, die ihn nichts angehen.
+
+**Findet die Probe nichts vor, sagt sie das.** Enthält die Sicherung noch
+keine Stempelereignisse und keine Archiveinträge, dann haben Kettenprüfung und
+Dateiprüfung nichts angesehen — und die Probe belegt sie nicht. Eine Prüfung,
+die in diesem Fall Entwarnung gibt, erzieht dazu, ihr zu glauben.
+
+### Das Ergebnis gehört notiert
+
+Datum und Ausgang jeder Probe gehören in die Verfahrensdokumentation. Eine
+Probe, die niemand notiert, hat im Prüfungsfall nicht stattgefunden.
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu

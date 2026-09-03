@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 71 Tabellen, 139 Policies,
-90 Module, 703 Testfaelle in 36 Dateien,
+91 Module, 717 Testfaelle in 37 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -38,6 +38,8 @@ Auf einen Blick: 71 Tabellen, 139 Policies,
 | `npm run speicher:start` | `docker run -d --name dms-minio -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=dmsminio -e MINIO_ROOT_PASSWORD=dmsminio123 quay.io/minio/minio:latest server /data --console-address ":9001"` |
 | `npm run speicher:stop` | `docker rm -f dms-minio` |
 | `npm run objektakte` | `tsx scripts/objektakte.ts` |
+| `npm run sicherung` | `tsx scripts/sicherung.ts` |
+| `npm run sicherung:pruefen` | `tsx scripts/sicherung-pruefen.ts` |
 | `npm run e2e` | `playwright test` |
 | `npm run e2e:ui` | `playwright test --ui` |
 
@@ -345,6 +347,13 @@ Funktionen: `app.freigabe_hash`
 
 Policies: 1
 
+### `supabase/migrations/20260902200000_sicherung.sql`
+
+===========================================================================
+
+Funktionen: `app.stempel_kette`, `app.freigabe_hash`, `app.kette_pruefen`, `app.schutz_pruefen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -425,6 +434,7 @@ Policies: 1
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
+| [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
 | [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
@@ -475,6 +485,7 @@ Policies: 1
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
+| [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |

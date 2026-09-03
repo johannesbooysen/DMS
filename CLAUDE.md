@@ -63,6 +63,17 @@ DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben [gueltig-ab]
 
 Freigeben legt den heutigen Stand mit seinem Hash in der Ablage ab; ab dem Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer. Ein **veralteter** Stand wird abgewiesen — eine Fassung, die ein anderes Verfahren beschreibt als das laufende, ist schlimmer als gar keine. Der organisatorische Teil steht von Hand in `docs/verfahrensdoku-organisation.md`; fehlt er, weist das erzeugte Dokument die Lücke aus.
 
+Sicherung und Restore-Probe (GoBD, Konzept §24.7) — die Probe ist Teil des Verfahrens, nicht ein Zusatz:
+
+```bash
+DMS_PG_CONTAINER=supabase_db_DMS npm run sicherung [ziel]         # Abbild + Manifest
+DMS_PG_CONTAINER=supabase_db_DMS npm run sicherung:pruefen -- <ziel>
+```
+
+Gesichert werden nur die Schemata `public` und `app` — ohne diese Einschränkung kamen 119 folgenlose Fehler aus den internen Schemata der lokalen Supabase-Instanz, und in solchem Rauschen liest niemand mehr die eine Zeile, die etwas bedeutet. `DMS_PG_CONTAINER` braucht nur, wer kein `pg_dump` auf dem Rechner hat.
+
+Die Probe holt in eine eigene, danach verworfene Datenbank zurück und prüft, was ein erfolgreicher `pg_restore` **nicht** beantwortet: Zeilenzahlen gegen das Manifest, Hash-Kette, RLS und Trigger, Dateien gegen ihre Archivhashes. Findet sie nichts vor, sagt sie das — statt Entwarnung zu geben.
+
 Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung eines Benutzers und damit unter dessen Rechten:
 
 ```bash
@@ -159,9 +170,13 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Die dritte Säule ist die Verfahrensdokumentation.** Hash-Kette und Objektsperre belegen, dass ein Beleg seit dem Archivieren derselbe ist — nicht, **nach welchem Verfahren** er dorthin kam. Ohne diesen Nachweis wird die Archivierung im Prüfungsfall nicht anerkannt, egal wie gut die ersten beiden sind. Der Text wird erzeugt ([`scripts/verfahrensdoku-erzeugen.mjs`](scripts/verfahrensdoku-erzeugen.mjs)), weil eine handgepflegte Beschreibung eines sich wöchentlich ändernden Systems nach einem Monat eine Erzählung ist; belegt wird die Wirksamkeit durch die **Testnamen** — der Testname *ist* die Zusicherung. `archiv_eintrag.verfahrensdoku_version` wird beim Archivieren **abgeleitet**, nie vom Aufrufer entgegengenommen: Eine mitgegebene Fassung wäre eine Behauptung. Fehlt eine Fassung, bleibt die Spalte leer und der Beleg steht in `app.archiv_ohne_verfahrensdoku()` — das Archivieren daran scheitern zu lassen hielte den Betrieb wegen einer Dokumentationslücke an, die dadurch nicht kleiner wird.
 
+**Ein Hash über `::text` hängt an der Serverkonfiguration.** `app.stempel_kette` rechnet über `zeitpunkt::text`, und dessen Darstellung folgt `TimeZone` und `DateStyle` der Sitzung. Gemessen: Alle bestehenden Einträge stimmten unter `UTC` und **keiner** unter `Europe/Berlin` — ein Restore auf einen deutsch eingestellten Server hätte die gesamte Kette gebrochen aussehen lassen. Beide Einstellungen sind deshalb an `app.stempel_kette`, `app.freigabe_hash` und `app.kette_pruefen` **festgenagelt** (`set timezone`, `set datestyle`); für die bestehenden Hashes ändert sich dadurch nichts, weil sie unter genau diesen Werten entstanden sind. Wer eine neue Funktion schreibt, die etwas hasht, nagelt sie ebenso fest — sonst hängt ein Nachweis an einer Einstellung, die niemand mitsichert.
+
+**Eine Prüfung, die nichts vorfindet, gibt keine Entwarnung.** `sicherung:pruefen` sagt ausdrücklich, wenn es keine Stempelereignisse und keine Archiveinträge zu prüfen gab. Der erste Entwurf meldete „Die Sicherung trägt", nachdem er null Zeilen angesehen und 119 Restore-Fehler als „Hinweis" abgetan hatte. Dieselbe Regel gilt für die S3-Tests (`ablage-s3`, `objektsperre`): Fehlt MinIO, wird das gemeldet, nicht übersprungen.
+
 **Das Original wird nie verändert.** Stempel, Notizen, Highlights und Schwärzungen liegen als `dokument_layer` neben dem PDF, nie darin. PDF/A ist ein zusätzliches Derivat (`dokument_datei.variante`), ersetzt das Original nie.
 
-**Ein Stempel-Layer entsteht aus seinem Ereignis, nie aus der Anwendung.** Trigger `stempel_ereignis_layer`; `verfallen` blendet den zugehörigen Layer aus, statt einen neuen zu schreiben. Die Plätze rechnet der Worker **einmal** bei der Aufbereitung (`freieBloecke` → `dokument_seite.freie_bloecke`) — gespeichert wird das Ergebnis, nicht die Fundstellen, sonst wären es bei einer Million Dokumenten zweistellige Gigabytes. Kein Stempel überdeckt Text; ist die Seite voll, bekommt der Layer `seite = 0` (gehört auf eine Leerseite) statt zu verschwinden. Layer werden **ausgeblendet, nie geändert oder gelöscht** (Trigger `layer_unveraenderlich`).
+**Ein Stempel-Layer entsteht aus seinem Ereignis, nie aus der Anwendung.** Trigger `stempel_ereignis_layer`; `verfallen` blendet den zugehörigen Layer aus, statt einen neuen zu schreiben. Die Plätze rechnet der Worker **einmal** bei der Aufbereitung (`freieBloecke` → `dokument_seite.freie_bloecke`) — gespeichert wird das Ergebnis, nicht die Fundstellen, sonst wären es bei einer Million Dokumenten zweistellige Gigabytes. Kein Stempel überdeckt Text; ist die Seite voll, bekommt der Layer `seite = 0` (gehört auf eine Leerseite) statt zu verschwinden. Layer werden **ausgeblendet, nie geändert oder gelöscht** (Trigger `dokument_layer_unveraenderlich`).
 
 **Vier Exportvarianten, eine Regel** ([`src/export/varianten.ts`](src/export/varianten.ts)): `archiv` gibt das Original **Byte für Byte** heraus — kein Neuschreiben, kein Wasserzeichen, sonst stimmt der Archivhash nicht mehr. `stempel`, `extern` und `intern` zeichnen Layer ein. **Hat der Beleg Schwärzungen, wird jede Variante außer `archiv` aus den Seitenbildern gebaut** — auch `stempel`, das Schwärzungen gar nicht zeigt; sonst gäbe es einen Klick-Weg zu einem PDF mit dem Geschwärzten im Klartext. Fehlen die Seitenbilder, gibt es **keinen** Export statt eines unsicheren. Die Objektakte legt `<id>.pdf` (Original, mit dem Archivhash) und `<id>-gestempelt.pdf` (Lesefassung) nebeneinander; fehlt Letztere, steht der Beleg in `ohneLesefassung` und im Manifestkopf.
 

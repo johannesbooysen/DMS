@@ -45,11 +45,40 @@ Konkreter Anbieter, Region und Auftragsverarbeitungsvertrag: ⬜ offen.
 
 ### Datensicherung und Wiederherstellung
 
-⬜ offen — Sicherungsverfahren, Aufbewahrung der Sicherungen, **Zeitpunkt des
-letzten geprobten Restore**.
+**Verfahren.** `npm run sicherung` zieht ein Abbild der Datenbankschemata
+`public` und `app` (`pg_dump`, Format `custom`) und legt daneben ein
+**Manifest** mit den Zählwerten der tragenden Tabellen. Die Belegdateien
+selbst werden hier *nicht* mitgesichert: Sie liegen im Objektspeicher mit
+Object Lock im Compliance-Modus, und ein zweiter Satz Kopien wäre ein
+zweiter Ort, an dem sie altern.
 
-Dieser Punkt ist der wichtigste offene: Ein Archiv ohne getesteten Restore ist
-kein Archiv, sondern eine Hoffnung. Er steht auch im Konzept als §24.7.
+**Die Probe ist Teil des Verfahrens, nicht ein Zusatz.**
+`npm run sicherung:pruefen -- <verzeichnis>` holt die Sicherung in eine
+eigene, anschließend verworfene Datenbank zurück und prüft dort fünf Dinge:
+
+1. Lief das Zurückholen fehlerfrei?
+2. Sind alle Zeilen da? (gegen das Manifest)
+3. Trägt die Hash-Kette der Stempelereignisse?
+4. Greifen RLS, Policies und die append-only-Trigger noch?
+5. Liegen die archivierten Dateien noch, und stimmen ihre Hashes?
+
+Punkt 4 ist der Grund für das ganze Verfahren: `pg_restore` bringt Zeilen
+zurück und sagt nichts darüber, ob die Schutzmechanismen daran hängen. Ein
+System ohne RLS sieht im Betrieb völlig normal aus.
+
+Findet die Probe nichts vor — etwa weil die Sicherung noch keine
+Stempelereignisse enthält —, sagt sie das ausdrücklich, statt Entwarnung zu
+geben.
+
+**Turnus:** ⬜ offen — festzulegen. Empfohlen: tägliche Sicherung,
+Probe monatlich und nach jeder Änderung an Schema oder Ablage.
+
+**Aufbewahrung der Sicherungen:** ⬜ offen — Ort, Verschlüsselung,
+Aufbewahrungsdauer.
+
+**Letzte geprobte Wiederherstellung:** ⬜ offen — Datum und Ergebnis sind
+hier zu führen. Eine Probe, die niemand notiert, hat im Prüfungsfall nicht
+stattgefunden.
 
 ### Änderungen am Verfahren
 

@@ -54,3 +54,9 @@ desktop.ini
 .ablage-e2e/
 playwright-report/
 test-results/
+
+# Sicherungen. Sie enthalten den vollstaendigen Datenbestand -- Namen,
+# Adressen, Bankverbindungen. Nichts davon gehoert in ein Repository, und
+# ein einmal committetes Abbild bekommt man aus der Historie nicht mehr
+# heraus.
+/sicherung/
