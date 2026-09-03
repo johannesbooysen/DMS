@@ -181,3 +181,41 @@ export function Befunde({
     </section>
   )
 }
+
+/**
+ * Wie ein Beleg in einer Liste heißt.
+ *
+ * An einer Stelle, weil es vier Anzeigestellen gibt — Belegliste, Postfach
+ * (zweimal) und Belegansicht. Vorher stand in allen vieren
+ * `kreditor ?? 'Ohne Kreditor'`, und mit der zweiten Belegart hätte jedes
+ * Schriftstück dort „Ohne Kreditor" geheißen: formal richtig, im Betrieb
+ * unbrauchbar.
+ *
+ * Die Reihenfolge ist die Auskunft, nach der jemand sucht: erst wer, dann
+ * worum es geht. Bei einer Rechnung ist das Kreditor und Rechnungsnummer,
+ * bei einem Schriftstück Korrespondent und Betreff — dasselbe Muster,
+ * andere Felder.
+ */
+export function belegBezeichnung(z: {
+  kreditor?: string | null
+  rechnungsnummer?: string | null
+  korrespondent?: string | null
+  betreff?: string | null
+}): string {
+  const wer = z.kreditor ?? z.korrespondent
+  const was = z.rechnungsnummer ?? z.betreff
+
+  if (wer === null || wer === undefined) {
+    // Kein Absender: Der Betreff allein trägt die Zeile eher als ein
+    // Platzhalter. „Ohne Kreditor · Anhörung" liest sich schlechter als
+    // „Anhörung".
+    //
+    // Und wenn gar nichts da ist — ein frisch hochgeladener Beleg, bei dem
+    // die Extraktion noch läuft — heißt es „Ohne Bezeichnung" und nicht
+    // mehr „Ohne Kreditor". Der alte Text war eine Aussage über eine
+    // Rechnung; an einem Schriftstück hätte er etwas behauptet, das es dort
+    // gar nicht gibt.
+    return was ?? 'Ohne Bezeichnung'
+  }
+  return was === null || was === undefined ? wer : `${wer} · ${was}`
+}

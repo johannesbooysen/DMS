@@ -13,7 +13,7 @@ import {
   type Postfachzeile,
 } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { Ampel, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,8 +40,7 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
             </td>
             <td style={{ padding: '0.4rem 0.5rem' }}>
               <a href={`/aufgabe/${z.aufgabeId}`}>
-                {z.kreditor ?? 'Ohne Kreditor'}
-                {z.rechnungsnummer !== null && ` · ${z.rechnungsnummer}`}
+                {belegBezeichnung(z)}
               </a>
             </td>
             <td style={{ padding: '0.4rem 0.5rem' }}>{z.objektnummer ?? '—'}</td>
@@ -87,7 +86,7 @@ export default async function Postfaecher() {
           <ul>
             {klaerungen.map((k) => (
               <li key={k.klaerungId} style={{ marginBottom: '0.5rem' }}>
-                <a href={`/beleg/${k.dokumentId}`}>{k.kreditor ?? 'Ohne Kreditor'}</a>
+                <a href={`/beleg/${k.dokumentId}`}>{belegBezeichnung(k)}</a>
                 {k.brutto !== null && ` · ${euro.format(k.brutto)}`}
                 {` · Wiedervorlage ${datum.format(new Date(k.wiedervorlageAm))}`}
                 <div style={{ color: '#666' }}>{k.kommentar}</div>

@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
 import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
 import { layerLaden } from '@/layer'
-import { Befunde, Seitenrahmen } from '@/app/lib/darstellung'
+import { Befunde, belegBezeichnung, Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { archivstandLaden } from '@/archiv'
@@ -46,9 +46,9 @@ export default async function Belegansicht({
       : await gewaehrleistungOffen(benutzer, kopf.objektId)
   const seitenzahl = kopf.seitenzahl ?? seiten.length
 
-  const titel =
-    (kopf.kreditor ?? 'Ohne Kreditor') +
-    (kopf.rechnungsnummer === null ? '' : ` · ${kopf.rechnungsnummer}`)
+  // Ueber den gemeinsamen Helfer: Ein Schriftstueck hat keinen Kreditor und
+  // keine Rechnungsnummer, aber einen Korrespondenten und einen Betreff.
+  const titel = belegBezeichnung(kopf)
 
   return (
     /*

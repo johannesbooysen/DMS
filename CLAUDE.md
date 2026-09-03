@@ -145,6 +145,10 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Ein generischer Dokumentenkern.** `dokument` trägt alles Gemeinsame, fachliche Daten liegen in Satellitentabellen (`rechnung_fakten` 1:1, später weitere Belegarten). Kein zweites Modul für Schriftverkehr — ein Posteingang, ein Rechtemodell, ein Audit-Log.
 
+**Der generische Kern ist geprüft, nicht mehr behauptet.** Schriftverkehr ist seit §24.3 die zweite Belegart: eigene Faktentabelle (`schriftverkehr_fakten`), eigene Stufenfolge — und die steht als **Konfiguration** im Seed, kein Codepfad kennt sie. Getragen hat der Kern mehr als erwartet (`belegart` kannte den Wert schon, die Engine wählt über `p.belegart = d.belegart`, alle Joins auf `rechnung_fakten` sind `left join`). **Nicht getragen hat `app.freigabe_hash`:** ein *innerer* Verbund auf `rechnung_fakten`, also `null` für jede andere Belegart — ein Freigabestempel mit leerem Hash hängt an nichts, und der Beleg hätte das Objekt wechseln können, ohne dass eine Freigabe verfällt. Jetzt `left join`, und die neuen Felder sind **hinten angehängt**: Für eine Rechnung bleibt die Zeichenkette identisch, sonst hätte die Migration jede bestehende Freigabe im System entwertet. Ein Test nagelt das fest.
+
+**Wie ein Beleg heißt, steht an einer Stelle** ([`belegBezeichnung`](src/app/lib/darstellung.tsx)). Vorher bauten fünf Anzeigestellen den Titel aus Kreditor und Rechnungsnummer — mit der zweiten Belegart hätte jedes Schriftstück „Ohne Kreditor" geheißen. Wer eine sechste baut, nimmt den Helfer.
+
 **Stempel sind Ereignisse, Status ist abgeleitet.** `stempel_ereignis` ist append-only mit Hash-Kette (`vorheriger_hash`/`eintrag_hash`). `dokument_lauf.aktuelle_stufe` ist nur Cache. Nie einen Status direkt setzen, ohne das zugehörige Ereignis zu schreiben.
 
 **Der Stempel trägt die Entscheidung, nicht das Ziel.** Wohin ein Beleg nach dem Stempel geht, leitet die Engine aus `prozessdefinition`/`prozessstufe` ab. Kein Zielfeld am Stempeltyp — das war genau der Amagno-Fehler, den das Konzept behebt.

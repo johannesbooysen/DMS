@@ -16,7 +16,7 @@ import { aufgabeLaden } from '@/app/lib/postfach'
 import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
 import { Zahlung } from '@/app/lib/zahlungsansicht'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { Ampel, Befunde, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, Befunde, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,8 +63,10 @@ export default async function Aufgabenansicht({
       <p style={{ color: '#555' }}>
         <Ampel wert={zeile.ampel} />{' '}
         {[
-          zeile.kreditor ?? 'Ohne Kreditor',
-          zeile.rechnungsnummer,
+          // Ueber den gemeinsamen Helfer -- die fuenfte Anzeigestelle. Ein
+          // Schriftstueck hat weder Kreditor noch Rechnungsnummer, und
+          // "Ohne Kreditor" waere hier die letzte Auskunft vor dem Stempeln.
+          belegBezeichnung(zeile),
           zeile.objektnummer !== null && `Objekt ${zeile.objektnummer}`,
           zeile.ordnungsgruppe,
           zeile.brutto !== null && euro.format(zeile.brutto),

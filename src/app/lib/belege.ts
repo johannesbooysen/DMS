@@ -32,6 +32,8 @@ export interface Belegkopf {
   objektnummer: string | null
   ordnungsgruppe: string | null
   kreditor: string | null
+  korrespondent: string | null
+  betreff: string | null
   brutto: number | null
   rechnungsnummer: string | null
 }
@@ -44,12 +46,14 @@ export async function belegkopfLaden(
     const { rows } = await c.query<Record<string, string | number | null>>(
       `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt,
               d.objekt_id, o.objektnummer, og.name as ordnungsgruppe,
-              k.name as kreditor, f.brutto, f.rechnungsnummer
+              k.name as kreditor, f.brutto, f.rechnungsnummer,
+              sv.korrespondent, sv.betreff
          from dokument d
          left join objekt o on o.id = d.objekt_id
          left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
          left join rechnung_fakten f on f.dokument_id = d.id
          left join kreditor k on k.id = f.kreditor_id
+         left join schriftverkehr_fakten sv on sv.dokument_id = d.id
         where d.id = $1`,
       [dokumentId],
     )
@@ -65,6 +69,8 @@ export async function belegkopfLaden(
       objektnummer: z['objektnummer'] === null ? null : String(z['objektnummer']),
       ordnungsgruppe: z['ordnungsgruppe'] === null ? null : String(z['ordnungsgruppe']),
       kreditor: z['kreditor'] === null ? null : String(z['kreditor']),
+      korrespondent: z['korrespondent'] == null ? null : String(z['korrespondent']),
+      betreff: z['betreff'] == null ? null : String(z['betreff']),
       brutto: z['brutto'] === null ? null : Number(z['brutto']),
       rechnungsnummer: z['rechnungsnummer'] === null ? null : String(z['rechnungsnummer']),
     }

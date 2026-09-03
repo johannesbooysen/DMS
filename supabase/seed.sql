@@ -380,3 +380,95 @@ insert into kontierung (dokument_id, zeile_nr, konto_id, betrag_netto,
    420.17, 19.00, 500.00, false, null, 'mensch');
 
 commit;
+
+-- ---------------------------------------------------------------------------
+-- Schriftverkehr: die zweite Belegart -- rein als Konfiguration
+-- ---------------------------------------------------------------------------
+--
+-- Konzept 24.3 sagt: "Schriftverkehr als zweite Belegart mit eigener
+-- Faktentabelle; die Stufenfolge dafuer ist reine Konfiguration." Das steht
+-- hier auf dem Pruefstand: Wenn unten eine Codeaenderung noetig waere, waere
+-- der Dokumentenkern nicht generisch, sondern nur einfaeltig.
+--
+-- Zwei Stufen statt fuenf, und das ist der Punkt: Ein Schriftstueck wird
+-- gelesen und beantwortet, nicht geprueft, kontiert und gezahlt. Es gibt
+-- keine Zahlungsstufe -- deshalb kommt ein Schriftstueck nie in die Naehe
+-- von `app.zahlung_moeglich`, und die Frage nach dem Rechnungsbetrag stellt
+-- sich gar nicht erst.
+
+insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_ab) values
+  ('65000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'schriftverkehr', 1, 'aktiv', now());
+
+insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
+                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref) values
+  -- Zur Kenntnis: Wer fuer das Objekt zustaendig ist, muss es gesehen haben.
+  ('66000000-0000-0000-0000-000000000011', '65000000-0000-0000-0000-000000000002',
+   1, 'sachlich', 'Zur Kenntnis genommen', 'objektverantwortlich', 48, null),
+  -- Erledigt: beantwortet, abgelegt oder beides. Die Geschaeftsleitung
+  -- schliesst ab, weil ein Schriftstueck haeufig eine Zusage nach aussen
+  -- nach sich zieht.
+  ('66000000-0000-0000-0000-000000000012', '65000000-0000-0000-0000-000000000002',
+   2, 'freigabe', 'Erledigt', 'rolle', 120, '90000000-0000-0000-0000-000000000003');
+
+-- Eigene Stempel, aus demselben Grund wie bei Kontierung und Zahlung: Ein
+-- geliehener "Freigegeben" haette die Bedeutung "Rechnung freigegeben", und
+-- am Beleg staende spaeter ein Stempel, der etwas anderes sagt als das,
+-- was geschehen ist. Der Stempel traegt die Entscheidung.
+insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe,
+                        kommentar_pflicht) values
+  ('60000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000001',
+   'Zur Kenntnis', 'KENN', 'freigabe', '#3B4A80', false),
+  ('60000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000001',
+   'Erledigt', 'ERL', 'freigabe', '#2F6F4E', false);
+
+insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
+  ('66000000-0000-0000-0000-000000000011', '60000000-0000-0000-0000-000000000008', 0),
+  ('66000000-0000-0000-0000-000000000011', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000012', '60000000-0000-0000-0000-000000000009', 0),
+  ('66000000-0000-0000-0000-000000000012', '60000000-0000-0000-0000-000000000002', 1);
+
+insert into stempel_recht (stempeltyp_id, rolle_id) values
+  ('60000000-0000-0000-0000-000000000008', '90000000-0000-0000-0000-000000000001'),
+  ('60000000-0000-0000-0000-000000000009', '90000000-0000-0000-0000-000000000003');
+
+-- Aufbewahrung: Handelsbriefe sechs Jahre, nicht zehn (Paragraf 147 AO).
+--
+-- Der einzige Ort, an dem die Belegart im laufenden Betrieb wirklich einen
+-- Unterschied macht -- und auch das ist ein Stammdatum, kein Code.
+insert into aufbewahrungsfrist (mandant_id, belegart, jahre, grund, aktiv) values
+  ('10000000-0000-0000-0000-000000000001', 'schriftverkehr', 6,
+   'Handelsbrief, sechs Jahre (Paragraf 147 Absatz 3 AO)', true);
+
+-- Ein Schriftstueck, damit die zweite Belegart nicht nur als Tabelle
+-- existiert. Objekt 42, also in Annas Zustaendigkeit -- und ohne Kreditor:
+-- Ein Amt ist kein Lieferant, und genau deshalb steht der Absender als Text.
+insert into dokument (id, mandant_id, objekt_id, belegart, ordnungsgruppe_id,
+                      spezialgebiet_id, eingangskanal, inhalt_hash,
+                      storage_praefix, seitenzahl, ampel_gesamt, status) values
+  ('70000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000001',
+   '50000000-0000-0000-0000-000000000042', 'schriftverkehr',
+   '40000000-0000-0000-0000-000000000001', null, 'mail',
+   'hash-sv1', 'nord/42/2026/sv1', 1, 'gruen', 'laufend');
+
+insert into schriftverkehr_fakten (dokument_id, richtung, korrespondent,
+                                   betreff, schreiben_datum, frist_am,
+                                   aktenzeichen) values
+  ('70000000-0000-0000-0000-000000000011', 'eingehend',
+   'Bauordnungsamt Musterstadt', 'Anhoerung zur Nutzungsaenderung',
+   current_date - 7, current_date + 21, 'BA-2026-4711');
+
+-- Der Lauf dazu: dieselbe Engine, andere Definition. Kein Codepfad
+-- unterscheidet die beiden -- die Auswahl geschieht ueber die Belegart.
+insert into dokument_lauf (id, dokument_id, definition_id, definition_version,
+                           aktuelle_stufe_id, status) values
+  ('67000000-0000-0000-0000-000000000011', '70000000-0000-0000-0000-000000000011',
+   '65000000-0000-0000-0000-000000000002', 1,
+   '66000000-0000-0000-0000-000000000011', 'laufend');
+
+-- Mit Traeger, wie die uebrigen Aufgaben des Seeds: Ohne
+-- `zugewiesen_benutzer` landet die Aufgabe im Pool, und dort steht sie
+-- richtig, aber niemand sieht sie in seinem persoenlichen Postfach.
+insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, status, faellig_am) values
+  ('67000000-0000-0000-0000-000000000011', '66000000-0000-0000-0000-000000000011',
+   '20000000-0000-0000-0000-000000000001', 'offen', now() + interval '2 days');

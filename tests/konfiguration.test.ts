@@ -41,18 +41,39 @@ const DEFINITION_AKTIV = '65000000-0000-0000-0000-000000000001'
  * Die Testfassungen werden deshalb abgelöst statt entfernt. Das gibt auch
  * den Platz im Index für den nächsten Entwurf wieder frei.
  */
+/**
+ * Die Definitionen aus dem Seed -- Rechnung und Schriftverkehr.
+ *
+ * Was dieser Test anlegt, wird abgeraeumt; was der Seed mitbringt, bleibt.
+ */
+const SEED_DEFINITIONEN = [
+  DEFINITION_AKTIV,
+  '65000000-0000-0000-0000-000000000002',
+]
+
 afterEach(async () => {
   const c = await verbindungspool().connect()
   try {
+    /*
+     * Nur die Entwuerfe dieses Tests, nicht alles ausser der Rechnung.
+     *
+     * Vorher stand hier `id <> DEFINITION_AKTIV`. Das raeumte auch die
+     * Definitionen des Seeds weg, die dieser Test nie angelegt hat -- mit
+     * der zweiten Belegart fiel es auf: Die Stufenfolge fuer Schriftverkehr
+     * war nach diesem afterEach abgeloest, und ein Test in einer spaeteren
+     * Datei fand sie nicht mehr. Aufraeumen heisst den Seed wiederherstellen,
+     * nicht ihn zusammenstreichen.
+     */
     await c.query(
       `update prozessdefinition
           set status = 'abgeloest', entwurf_von = null, entwurf_seit = null, aktiv_bis = now()
-        where id <> $1 and status in ('entwurf', 'aktiv')`,
-      [DEFINITION_AKTIV],
+        where id <> all($1::uuid[]) and status in ('entwurf', 'aktiv')`,
+      [SEED_DEFINITIONEN],
     )
     await c.query(
-      `update prozessdefinition set status = 'aktiv', aktiv_bis = null where id = $1`,
-      [DEFINITION_AKTIV],
+      `update prozessdefinition set status = 'aktiv', aktiv_bis = null
+        where id = any($1::uuid[])`,
+      [SEED_DEFINITIONEN],
     )
   } finally {
     c.release()

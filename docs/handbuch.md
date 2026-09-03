@@ -1122,6 +1122,46 @@ unverändert.
 
 ---
 
+## Schriftverkehr
+
+Neben Rechnungen führt das System **Schriftstücke**: Behördenpost,
+Anwaltsschreiben, Nachbarbeschwerden, Antworten des Verwalters. Sie laufen
+durch denselben Posteingang, dasselbe Postfach und dieselbe Belegansicht —
+es gibt keinen zweiten Weg.
+
+Der Unterschied liegt in zwei Dingen:
+
+**Was am Beleg steht.** Kein Betrag, keine Kontierung, kein Zahlungsweg.
+Stattdessen: wer geschrieben hat, worum es geht, wann das Schreiben datiert
+ist und **bis wann geantwortet sein muss**.
+
+Der Absender ist Freitext. Ein Amt, ein Gericht oder ein Nachbar ist kein
+Lieferant, und für jeden Absender einen Kreditor anzulegen machte den
+Kreditorenstamm nach einem Jahr unbrauchbar. Wo es einen Stammsatz gibt, kann
+er zusätzlich verknüpft werden.
+
+**Welchen Weg er geht.** Schriftverkehr hat eine eigene Stufenfolge — im Seed
+zwei Stufen: *Zur Kenntnis genommen* beim Objektverantwortlichen, dann
+*Erledigt*. Keine Kontierung, keine Zahlung. Diese Folge ist **Konfiguration**
+wie jede andere; sie lässt sich unter *Abläufe* ändern, ohne dass am Programm
+etwas geschieht.
+
+### Antwortfristen
+
+Das fachlich wichtigste Feld. Eine versäumte Frist im Schriftverkehr kostet
+mehr als ein verfallenes Skonto — und sie fällt niemandem von selbst auf,
+weil kein Betrag daranhängt, den jemand vermisst.
+
+Erledigte und stornierte Schreiben zählen nicht mehr mit; eine bereits
+abgelaufene Frist wird mit negativer Zahl geführt und steht damit ganz oben.
+
+### Aufbewahrung
+
+**Sechs Jahre statt zehn** — ein Schriftstück ist ein Handelsbrief
+(§ 147 Absatz 3 AO), kein Buchungsbeleg. Die Frist steht als Stammdatum je
+Belegart; ist keine hinterlegt, gelten zehn Jahre, denn eine fehlende
+Konfiguration darf nie zu einer kürzeren Frist führen.
+
 ## Auswertungen
 
 Drei Zahlen, die man sonst nirgends sieht — weil jeder nur sein eigenes

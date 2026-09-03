@@ -72,7 +72,16 @@ test('Ein hochgeladener Beleg wird vom Worker aufbereitet', async ({ page }) => 
   })
 
   await test.step('Und die Seite hat eine Vorschau', async () => {
-    await page.getByRole('link', { name: /Ohne Kreditor/ }).first().click()
+    /*
+     * "Ohne Bezeichnung" und nicht mehr "Ohne Kreditor": Seit es eine
+     * zweite Belegart gibt, bauen alle Listen ihren Titel ueber
+     * `belegBezeichnung`. Ein Schriftstueck hat nie einen Kreditor -- der
+     * alte Platzhalter haette dort etwas Falsches behauptet.
+     *
+     * Frisch hochgeladen ist hier noch nichts extrahiert, also greift der
+     * Platzhalter.
+     */
+    await page.getByRole('link', { name: /Ohne Bezeichnung/ }).first().click()
 
     const bild = page.getByRole('img', { name: 'Seite 1' })
     await expect(bild).toBeVisible()

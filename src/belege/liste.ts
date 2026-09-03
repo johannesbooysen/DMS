@@ -39,6 +39,9 @@ export interface Belegzeile {
   kreditor: string | null
   rechnungsnummer: string | null
   brutto: number | null
+  /** Zweite Belegart: Wer geschrieben hat und worum es geht. */
+  korrespondent: string | null
+  betreff: string | null
   objektId: string | null
   objektnummer: string | null
   /** § 18: farbcodierte Marken, Farbe aus den Stammdaten. */
@@ -90,7 +93,8 @@ const SPALTEN = `
   o.objektnummer,
   og.name as og_name, og.farbe as og_farbe,
   sg.name as sg_name, sg.farbe as sg_farbe,
-  k.name as kreditor, f.rechnungsnummer, f.brutto
+  k.name as kreditor, f.rechnungsnummer, f.brutto,
+  sv.korrespondent, sv.betreff
 `
 
 const VERBINDUNGEN = `
@@ -99,6 +103,7 @@ const VERBINDUNGEN = `
   left join spezialgebiet sg on sg.id = d.spezialgebiet_id
   left join rechnung_fakten f on f.dokument_id = d.id
   left join kreditor k on k.id = f.kreditor_id
+  left join schriftverkehr_fakten sv on sv.dokument_id = d.id
 `
 
 function zeile(z: Record<string, unknown>): Belegzeile {
@@ -106,6 +111,8 @@ function zeile(z: Record<string, unknown>): Belegzeile {
   return {
     id: String(z['id']),
     belegart: String(z['belegart']),
+    korrespondent: text(z['korrespondent']),
+    betreff: text(z['betreff']),
     // Über toISOString, damit die Zeile unabhängig davon ist, wie pg den
     // Zeitstempel gerade darstellt.
     eingangAm:

@@ -25,6 +25,8 @@ export interface Postfachzeile {
   stufe: string
   stufentyp: string
   kreditor: string | null
+  korrespondent: string | null
+  betreff: string | null
   rechnungsnummer: string | null
   brutto: number | null
   objektnummer: string | null
@@ -38,6 +40,7 @@ const ZEILEN_ABFRAGE = `
   select a.id as aufgabe_id, d.id as dokument_id, l.id as lauf_id,
          s.id as stufe_id, s.bezeichnung as stufe, s.stufentyp,
          k.name as kreditor, f.rechnungsnummer, f.brutto,
+         sv.korrespondent, sv.betreff,
          o.objektnummer, og.name as ordnungsgruppe, d.ampel_gesamt,
          a.faellig_am, a.uebernommen_von
     from aufgabe a
@@ -46,6 +49,7 @@ const ZEILEN_ABFRAGE = `
     join prozessstufe s on s.id = a.stufe_id
     left join rechnung_fakten f on f.dokument_id = d.id
     left join kreditor k on k.id = f.kreditor_id
+    left join schriftverkehr_fakten sv on sv.dokument_id = d.id
     left join objekt o on o.id = d.objekt_id
     left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
    where a.status in ('offen','in_arbeit')
@@ -61,6 +65,8 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
     stufe: String(z['stufe']),
     stufentyp: String(z['stufentyp']),
     kreditor: text(z['kreditor']),
+    korrespondent: text(z['korrespondent']),
+    betreff: text(z['betreff']),
     rechnungsnummer: text(z['rechnungsnummer']),
     brutto: z['brutto'] == null ? null : Number(z['brutto']),
     objektnummer: text(z['objektnummer']),
@@ -121,6 +127,8 @@ export interface Klaerungszeile {
   kommentar: string
   wiedervorlageAm: string
   kreditor: string | null
+  korrespondent: string | null
+  betreff: string | null
   brutto: number | null
 }
 
@@ -129,11 +137,13 @@ export async function klaerungsPostfach(benutzerId: string): Promise<Klaerungsze
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
       `select kl.id, kl.dokument_id, kl.grund, kl.kommentar, kl.wiedervorlage_am,
-              k.name as kreditor, f.brutto
+              k.name as kreditor, f.brutto,
+              sv.korrespondent, sv.betreff
          from klaerung kl
          join dokument d on d.id = kl.dokument_id
          left join rechnung_fakten f on f.dokument_id = d.id
          left join kreditor k on k.id = f.kreditor_id
+         left join schriftverkehr_fakten sv on sv.dokument_id = d.id
         where kl.erledigt_am is null
           and kl.verantwortlich_benutzer = app.mein_benutzer()
         order by kl.wiedervorlage_am`,
@@ -145,6 +155,8 @@ export async function klaerungsPostfach(benutzerId: string): Promise<Klaerungsze
       kommentar: String(z['kommentar']),
       wiedervorlageAm: String(z['wiedervorlage_am']),
       kreditor: z['kreditor'] == null ? null : String(z['kreditor']),
+      korrespondent: z['korrespondent'] == null ? null : String(z['korrespondent']),
+      betreff: z['betreff'] == null ? null : String(z['betreff']),
       brutto: z['brutto'] == null ? null : Number(z['brutto']),
     }))
   })

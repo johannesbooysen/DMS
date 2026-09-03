@@ -111,7 +111,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-70 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+71 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -186,6 +186,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `eingangsquelle` | [`20260901160000_eingangsquelle.sql`](../supabase/migrations/20260901160000_eingangsquelle.sql) |
 | `eingang_geholt` | [`20260901160000_eingangsquelle.sql`](../supabase/migrations/20260901160000_eingangsquelle.sql) |
 | `verfahrensdokumentation` | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
+| `schriftverkehr_fakten` | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -212,6 +213,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `dokument_layer_unveraenderlich` | `dokument_layer` | before update | [`20260901120000_layer.sql`](../supabase/migrations/20260901120000_layer.sql) |
 | `stempel_ereignis_layer` | `stempel_ereignis` | after insert | [`20260901120000_layer.sql`](../supabase/migrations/20260901120000_layer.sql) |
 | `verfahrensdoku_unveraenderlich` | `verfahrensdokumentation` | before update or delete | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
+| `schriftverkehr_fakten_archiv_schutz` | `schriftverkehr_fakten` | before insert or update or delete | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -219,7 +221,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (66): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (67): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -352,6 +354,7 @@ Tabellen mit Policies (66): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `ausgang_wiederholen` | `ausgang` | update | [`20260831250000_postausgang.sql`](../supabase/migrations/20260831250000_postausgang.sql) |
 | `verfahrensdoku_lesen` | `verfahrensdokumentation` | select | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `verfahrensdoku_anlegen` | `verfahrensdokumentation` | insert | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
+| `schriftverkehr_fakten_sicht` | `schriftverkehr_fakten` | all | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1050,6 +1053,26 @@ belegt.
 - verhindert das Stempeln im fremden Namen
 - verlangt einen Kommentar
 - verlangt ein Wiedervorlagedatum
+
+### [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts)
+
+- speichert und liest ein Schriftstueck
+- kommt ohne Stammsatz fuer den Absender aus
+- zeigt einem fremden Mandanten nichts
+- bindet auch ein Schriftstueck an seinen Datenstand
+- verfaellt, wenn der Beleg das Objekt wechselt
+- verfaellt, wenn sich die Antwortfrist aendert
+- laesst den Hash einer Rechnung unveraendert
+- findet seine eigene Stufenfolge aus der Konfiguration
+- hat keine Zahlungsstufe
+- wird nicht zahlbar -- und das bleibt so
+- wird sechs Jahre aufbewahrt, nicht zehn
+- ist nach der Archivierung fest
+- meldet ein Schreiben, dessen Frist naht
+- meldet eine bereits abgelaufene Frist mit negativer Zahl
+- laesst ein Schreiben ohne Frist weg
+- laesst ein storniertes Schreiben weg
+- zeigt einem fremden Mandanten keine Frist
 
 ### [`tests/stapel.test.ts`](../tests/stapel.test.ts)
 

@@ -16,7 +16,7 @@
 
 import { uebersichtLaden } from '@/app/lib/belegliste'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { Ampel, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -196,8 +196,7 @@ export default async function Belegübersicht({
                 <td style={zelle}>
                   <Ampel wert={z.ampel} />{' '}
                   <a href={`/beleg/${z.id}`}>
-                    {z.kreditor ?? 'Ohne Kreditor'}
-                    {z.rechnungsnummer !== null && ` · ${z.rechnungsnummer}`}
+                    {belegBezeichnung(z)}
                   </a>
                   {z.fundstelle !== null && (
                     <div style={{ color: '#666', fontSize: '0.78rem' }}>
