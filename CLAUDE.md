@@ -54,6 +54,15 @@ npm run docs:stand           # docs/stand.md aus dem Repository neu erzeugen
 npm run docs:check           # prüfen, ob die Dokumentation zum Code passt
 ```
 
+Verfahrensdokumentation (GoBD, Konzept §24.4) — der Text wird aus dem Repository abgeleitet, die Freigabe ist eine eigene Handlung:
+
+```bash
+npm run verfahrensdoku                                    # docs/verfahrensdokumentation.md neu erzeugen
+DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben [gueltig-ab]
+```
+
+Freigeben legt den heutigen Stand mit seinem Hash in der Ablage ab; ab dem Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer. Ein **veralteter** Stand wird abgewiesen — eine Fassung, die ein anderes Verfahren beschreibt als das laufende, ist schlimmer als gar keine. Der organisatorische Teil steht von Hand in `docs/verfahrensdoku-organisation.md`; fehlt er, weist das erzeugte Dokument die Lücke aus.
+
 Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung eines Benutzers und damit unter dessen Rechten:
 
 ```bash
@@ -143,6 +152,8 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 **Object Lock schützt Fassungen, nicht Schlüssel.** [ADR 0006](docs/adr/0006-objektsperre.md), gegen MinIO gemessen und nicht angenommen: Eine gesperrte Datei lässt sich **überschreiben** — es entsteht eine zweite Fassung, und ein gewöhnliches Lesen liefert ab dann diese. Die gesperrte bleibt unzerstörbar daneben liegen. Die Zusage lautet also *Erhalt*, nicht *Abweisung*, und sie ist erst dann etwas wert, wenn `archiv_eintrag.storage_fassung` festgehalten und bei **jedem** Lesen des Originals mitgegeben wird (`Ablage.lesen(schluessel, fassung)`). Wer eine neue Lesestelle für das Original baut und die Fassung wegläßt, hebt den Schutz für diesen Weg auf — im Normalfall unbemerkt, und genau im einen Fall, auf den es ankommt, falsch. Deshalb liefern die Abfragen, die den Ablageschlüssel holen, die Fassung gleich mit.
 
 **Gesperrt wird nach dem Archivieren, nie in derselben Transaktion.** Compliance-Sperren nimmt niemand zurück, auch der Wurzelbenutzer nicht — eine Sperre für eine zurückgerollte Archivierung wäre ein Fehler, den nie jemand behebt. Eine fehlende Sperre bleibt dagegen als leere Spalte sichtbar. Der Archiveintrag **ist** die Warteschlange (`storage_object_lock_bis is null` = offen), kein pg-boss-Auftrag: dasselbe Muster wie das Ausgangsbuch, aus demselben Grund. Reihenfolge im Durchgang: erst sperren, dann `app.objektsperre_vermerken` — andersherum entstünde ein Vermerk über einen Schutz, den es nicht gibt. Beide Spalten sind **einmal setzbar**, nie änderbar (Trigger).
+
+**Die dritte Säule ist die Verfahrensdokumentation.** Hash-Kette und Objektsperre belegen, dass ein Beleg seit dem Archivieren derselbe ist — nicht, **nach welchem Verfahren** er dorthin kam. Ohne diesen Nachweis wird die Archivierung im Prüfungsfall nicht anerkannt, egal wie gut die ersten beiden sind. Der Text wird erzeugt ([`scripts/verfahrensdoku-erzeugen.mjs`](scripts/verfahrensdoku-erzeugen.mjs)), weil eine handgepflegte Beschreibung eines sich wöchentlich ändernden Systems nach einem Monat eine Erzählung ist; belegt wird die Wirksamkeit durch die **Testnamen** — der Testname *ist* die Zusicherung. `archiv_eintrag.verfahrensdoku_version` wird beim Archivieren **abgeleitet**, nie vom Aufrufer entgegengenommen: Eine mitgegebene Fassung wäre eine Behauptung. Fehlt eine Fassung, bleibt die Spalte leer und der Beleg steht in `app.archiv_ohne_verfahrensdoku()` — das Archivieren daran scheitern zu lassen hielte den Betrieb wegen einer Dokumentationslücke an, die dadurch nicht kleiner wird.
 
 **Das Original wird nie verändert.** Stempel, Notizen, Highlights und Schwärzungen liegen als `dokument_layer` neben dem PDF, nie darin. PDF/A ist ein zusätzliches Derivat (`dokument_datei.variante`), ersetzt das Original nie.
 

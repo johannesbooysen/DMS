@@ -20,6 +20,8 @@
     "typecheck": "tsc --noEmit",
     "docs:stand": "node scripts/stand-erzeugen.mjs",
     "docs:check": "node scripts/doku-pruefen.mjs",
+    "verfahrensdoku": "node scripts/verfahrensdoku-erzeugen.mjs",
+    "verfahrensdoku:freigeben": "tsx scripts/verfahrensdoku-freigeben.ts",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:new": "supabase migration new",

@@ -1219,6 +1219,59 @@ Benutzer und Passwort `dmsminio` / `dmsminio123`. `npm run speicher:stop`
 räumt es wieder ab. Die Tests der Objektsperre nutzen es; fehlt es, prüfen sie
 nur die Datenbankhälfte und sagen das ausdrücklich.
 
+### Verfahrensdokumentation
+
+Die dritte Säule. Hash-Kette und Objektsperre belegen, dass ein Beleg seit dem
+Archivieren derselbe ist. Sie belegen nicht, **nach welchem Verfahren** er
+dorthin kam — und ohne diesen Nachweis erkennt eine Betriebsprüfung die
+Archivierung nicht an, egal wie gut die ersten beiden sind.
+
+Der technische Teil wird **aus dem System erzeugt**: Tabellen, Trigger,
+Zugriffsregeln, Ein- und Ausgangswege und die geprüften Zusicherungen. Das ist
+kein Sparen an Sorgfalt, sondern das Gegenteil — eine von Hand gepflegte
+Beschreibung eines Systems, das sich laufend ändert, ist nach einem Monat eine
+Erzählung. Und eine falsche Verfahrensdokumentation ist schlimmer als gar
+keine: Sie behauptet Kontrollen, und wer eine davon nachprüft, zweifelt danach
+an allem anderen.
+
+```bash
+npm run verfahrensdoku
+```
+
+Der organisatorische Teil — Zuständigkeiten, Aufbewahrungsort, Sicherung,
+Notfall — lässt sich nicht ableiten und steht von Hand in
+`docs/verfahrensdoku-organisation.md`. Fehlt er, sagt das erzeugte Dokument
+das an seiner Stelle.
+
+#### Eine Fassung freigeben
+
+Nicht jeder erzeugte Stand ist eine Fassung. Freigegeben wird, wenn sich am
+Verfahren etwas geändert hat, das jemanden interessiert:
+
+```bash
+DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben
+```
+
+Damit wird der Text mit seinem Hash in der Ablage abgelegt, und **ab dem
+Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer**. Bei einem
+Beleg aus 2027 ist damit später beantwortbar, nach welchem Verfahren er
+*damals* verarbeitet wurde — nicht nach welchem heute.
+
+Zwei Dinge weist der Befehl ab:
+
+- **Einen veralteten Stand.** Passt das Dokument nicht mehr zum System, wird
+  nicht freigegeben. Erst `npm run verfahrensdoku`.
+- **Eine Fassung ohne Hash.** Ohne ihn wäre die Versionsnummer eine
+  Behauptung.
+
+Eine freigegebene Fassung lässt sich nicht mehr ändern und nicht löschen. Wer
+etwas anderes beschreiben will, gibt eine neue frei.
+
+> **Was vor der ersten Freigabe archiviert wurde, bleibt ohne Fassung.** Diese
+> Lücke lässt sich nicht nachträglich schließen — sie wäre eine Behauptung
+> über ein Verfahren, das damals nicht beschrieben war. Sie bleibt sichtbar
+> und wird nicht stillschweigend gefüllt.
+
 ### Löschantrag an einem aufbewahrungspflichtigen Beleg
 
 Ein Löschanspruch nach DSGVO trifft auf eine Aufbewahrungspflicht nach GoBD.

@@ -42,19 +42,33 @@ export function kannObjectLock(ablage: unknown): boolean {
  *
  * Danach ist er fest: Kontierung, Rechnungsdaten und Zuordnung lassen sich
  * nicht mehr ändern — das erzwingen Trigger, nicht diese Funktion.
+ *
+ * **Nimmt bewusst nichts entgegen außer dem Beleg.** Bis 20260902140000 gab
+ * es zwei weitere Parameter, und beide waren falsch:
+ *
+ *   * `objectLockBis` hätte die Objektsperre in derselben Transaktion
+ *     gesetzt — genau das, was [ADR 0006](../../docs/adr/0006-objektsperre.md)
+ *     ausschließt. Eine Compliance-Sperre für eine zurückgerollte
+ *     Archivierung nimmt niemand mehr zurück. Gesetzt wird sie im Durchgang
+ *     nach dem Commit.
+ *   * `verfahrensdoku` hätte die geltende Fassung vom Aufrufer entgegen-
+ *     genommen. Eine mitgegebene Fassung ist eine Behauptung — er könnte
+ *     jede Nummer eintragen. Abgeleitet ist sie ein Befund.
+ *
+ * Beide hat nie jemand benutzt. Ein ungenutzter Weg an einer Regel vorbei ist
+ * trotzdem einer.
  */
 export async function archivieren(
   c: PoolClient,
   dokumentId: string,
-  mittel: { objectLockBis?: string | null; verfahrensdoku?: string | null } = {},
 ): Promise<string | null> {
   // Über to_char und nicht als `date`: pg macht daraus ein Date-Objekt in der
   // Zeitzone des Servers, und aus dem 31.12. wird der 30.12. — bei einer
   // Aufbewahrungsfrist ist das ein Tag zu früh gelöscht. Ein Test hat es
   // gefunden, der Typ nicht.
   const { rows } = await c.query<{ bis: string | null }>(
-    `select to_char(app.dokument_archivieren($1, $2, $3), 'YYYY-MM-DD') as bis`,
-    [dokumentId, mittel.objectLockBis ?? null, mittel.verfahrensdoku ?? null],
+    `select to_char(app.dokument_archivieren($1), 'YYYY-MM-DD') as bis`,
+    [dokumentId],
   )
   return rows[0]?.bis ?? null
 }
@@ -165,3 +179,4 @@ export async function loeschkandidaten(
 }
 
 export * from './objektakte'
+export * from './objektsperre'

@@ -10,6 +10,7 @@
  *   3. jede Migration ist in docs/stand.md gelistet
  *   4. jedes ADR steht im Verzeichnis docs/adr/README.md
  *   5. das Handbuch erwaehnt jeden Befehl, den ein Mensch braucht
+ *   6. docs/verfahrensdokumentation.md ist auf dem aktuellen Stand
  *
  * Ob eine Beschreibung noch stimmt, kann das Skript nicht wissen. Dafuer
  * gibt es den Agenten `doku-pflege`.
@@ -19,6 +20,7 @@ import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { standErzeugen } from './stand-erzeugen.mjs'
+import { verfahrensdokuErzeugen } from './verfahrensdoku-erzeugen.mjs'
 
 const WURZEL = fileURLToPath(new URL('..', import.meta.url))
 const lies = (pfad) => readFile(join(WURZEL, pfad), 'utf8')
@@ -104,6 +106,33 @@ const meldung = (regel, text) => maengel.push({ regel, text })
         meldung('handbuch', `Befehl "${name}" fehlt im Handbuch`)
       }
     }
+  }
+}
+
+// 6 -- Verfahrensdokumentation aktuell?
+//
+// Dieselbe Pruefung wie fuer stand.md, aber mit schaerferer Folge: Eine
+// veraltete Verfahrensdokumentation beschreibt ein Verfahren, nach dem nicht
+// gearbeitet wird. Das ist schlimmer als gar keine -- sie behauptet
+// Kontrollen, und wer eine davon nachprueft, zieht danach alles andere in
+// Zweifel. Freigegeben werden kann sie in dem Zustand ohnehin nicht; das
+// Skript weist es ab.
+{
+  const erwartet = await verfahrensdokuErzeugen()
+  let vorhanden = ''
+  try {
+    vorhanden = await lies('docs/verfahrensdokumentation.md')
+  } catch {
+    meldung(
+      'verfahrensdoku',
+      'docs/verfahrensdokumentation.md fehlt. Anlegen mit: npm run verfahrensdoku',
+    )
+  }
+  if (vorhanden !== '' && vorhanden.replace(/\r\n/g, '\n') !== erwartet) {
+    meldung(
+      'verfahrensdoku',
+      'docs/verfahrensdokumentation.md ist veraltet. Neu schreiben mit: npm run verfahrensdoku',
+    )
   }
 }
 

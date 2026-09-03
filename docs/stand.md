@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 69 Tabellen, 136 Policies,
-87 Module, 652 Testfaelle in 33 Dateien,
+Auf einen Blick: 70 Tabellen, 138 Policies,
+88 Module, 667 Testfaelle in 34 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -28,6 +28,8 @@ Auf einen Blick: 69 Tabellen, 136 Policies,
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run docs:stand` | `node scripts/stand-erzeugen.mjs` |
 | `npm run docs:check` | `node scripts/doku-pruefen.mjs` |
+| `npm run verfahrensdoku` | `node scripts/verfahrensdoku-erzeugen.mjs` |
+| `npm run verfahrensdoku:freigeben` | `tsx scripts/verfahrensdoku-freigeben.ts` |
 | `npm run db:start` | `supabase start` |
 | `npm run db:stop` | `supabase stop` |
 | `npm run db:new` | `supabase migration new` |
@@ -316,6 +318,16 @@ Funktionen: `app.eingang_schon_geholt`
 Funktionen: `app.archiv_eintrag_schutz`, `app.objektsperre_offen`, `app.objektsperre_vermerken`
 
 
+### `supabase/migrations/20260902140000_verfahrensdoku.sql`
+
+===========================================================================
+
+Tabellen: `verfahrensdokumentation`
+
+Funktionen: `app.verfahrensdoku_gueltig`, `app.verfahrensdoku_freigeben`, `app.archiv_ohne_verfahrensdoku`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -396,6 +408,7 @@ Funktionen: `app.archiv_eintrag_schutz`, `app.objektsperre_offen`, `app.objektsp
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
+| [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
 | [`src/worker/stapelaufbereitung.ts`](../src/worker/stapelaufbereitung.ts) | Einen Stapel aufbereiten: Seiten lesen, rendern, Trennung vorschlagen |
@@ -442,6 +455,7 @@ Funktionen: `app.archiv_eintrag_schutz`, `app.objektsperre_offen`, `app.objektsp
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
+| [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 | [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 33 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
