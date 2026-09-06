@@ -48,6 +48,11 @@ class Merkablage implements Ablage {
     if (treffer === undefined) throw new Error('nicht gefunden')
     return treffer
   }
+  async entfernen(schluessel: string): Promise<void> {
+    // Eine fehlende Datei ist kein Fehler -- der Loeschdurchgang laeuft
+    // ihr wiederholt ueber den Weg.
+    this.dateien.delete(schluessel)
+  }
 }
 
 async function direkt<T>(frage: string, werte: unknown[] = []): Promise<T[]> {

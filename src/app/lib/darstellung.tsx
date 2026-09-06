@@ -111,6 +111,7 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
             ['/auswertung', 'Auswertungen'],
             ['/fehlerkorb', 'Fehlerkorb'],
             ['/eingang', 'Eingangsquellen'],
+            ['/archiv', 'Archiv'],
             ['/stammdaten', 'Stammdaten'],
           ].map(([ziel, name], i) => (
             <span key={ziel}>

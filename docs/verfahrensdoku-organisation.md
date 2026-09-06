@@ -118,6 +118,9 @@ sie ohnehin findet:
   Fassung. Diese Lücke lässt sich nicht nachträglich schließen — sie wäre eine
   Behauptung über ein Verfahren, das damals nicht beschrieben war. Sichtbar
   über `app.archiv_ohne_verfahrensdoku()`.
-- **Das Löschen nach Fristablauf ist nicht automatisiert.** Die
-  Kandidatenliste steht (`app.loeschkandidaten`), die Ausführung ist bewusst
-  eine eigene Handlung.
+- **Das Löschen nach Fristablauf geschieht nicht von selbst.** Fällige Belege
+  stehen unter *Archiv*; gelöscht wird je Beleg auf ausdrückliche Handlung.
+  Das ist Absicht — ein automatischer Lauf, der Belege entfernt, ist im
+  Schadensfall nicht zurückzunehmen. Wer die Liste nicht regelmäßig ansieht,
+  erfüllt die Löschpflicht trotzdem nicht: **Der Turnus gehört festgelegt**
+  (⬜ offen).

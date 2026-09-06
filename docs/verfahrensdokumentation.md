@@ -134,13 +134,16 @@ sie ohnehin findet:
   Fassung. Diese Lücke lässt sich nicht nachträglich schließen — sie wäre eine
   Behauptung über ein Verfahren, das damals nicht beschrieben war. Sichtbar
   über `app.archiv_ohne_verfahrensdoku()`.
-- **Das Löschen nach Fristablauf ist nicht automatisiert.** Die
-  Kandidatenliste steht (`app.loeschkandidaten`), die Ausführung ist bewusst
-  eine eigene Handlung.
+- **Das Löschen nach Fristablauf geschieht nicht von selbst.** Fällige Belege
+  stehen unter *Archiv*; gelöscht wird je Beleg auf ausdrückliche Handlung.
+  Das ist Absicht — ein automatischer Lauf, der Belege entfernt, ist im
+  Schadensfall nicht zurückzunehmen. Wer die Liste nicht regelmäßig ansieht,
+  erfüllt die Löschpflicht trotzdem nicht: **Der Turnus gehört festgelegt**
+  (⬜ offen).
 
 ## 2. Das Datenmodell
 
-71 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+72 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -216,6 +219,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `eingang_geholt` | [`20260901160000_eingangsquelle.sql`](../supabase/migrations/20260901160000_eingangsquelle.sql) |
 | `verfahrensdokumentation` | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `schriftverkehr_fakten` | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
+| `loeschung` | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -245,6 +249,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `schriftverkehr_fakten_archiv_schutz` | `schriftverkehr_fakten` | before insert or update or delete | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 | `kreditor_bankverbindung_bestaetigung` | `kreditor_bankverbindung` | before update | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 | `vorlage_aenderung` | `vorlage` | before insert or update | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
+| `loeschung_unveraenderlich` | `loeschung` | before update or delete | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -252,7 +257,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (67): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (68): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `loeschung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -414,6 +419,7 @@ Tabellen mit Policies (67): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `benutzer_rolle_objekt_schreiben` | `benutzer_rolle_objekt` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 | `vorlage_lesen` | `vorlage` | select | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 | `vorlage_schreiben` | `vorlage` | all | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
+| `loeschung_lesen` | `loeschung` | select | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -909,6 +915,30 @@ belegt.
 - ordnet den Beleg selbst gleich mit zu
 - ordnet offene Belege nach einer neuen Regel zu
 - laesst mehrdeutige Belege liegen, statt zu raten
+
+### [`tests/loeschen.test.ts`](../tests/loeschen.test.ts)
+
+- haelt einen Beleg auf, dessen Frist noch laeuft
+- nennt dabei das Datum, bis zu dem aufbewahrt wird
+- loescht einen Beleg, dessen Frist abgelaufen ist
+- nimmt den Archiveintrag mit
+- haelt einen Beleg mit Loeschsperre auf
+- laesst ein direktes delete am nicht faelligen Beleg nicht zu
+- laesst die Kontierung eines nicht faelligen Belegs nicht loeschen
+- laesst einen Archiveintrag ohne faelligen Beleg nicht loeschen
+- laesst eine Objektbearbeiterin nicht loeschen
+- laesst nicht ueber die Mandantengrenze loeschen
+- haelt fest, dass es den Beleg gab
+- unterscheidet Loeschanspruch von blossem Fristablauf
+- enthaelt keine personenbezogenen Daten
+- laesst sich nicht loeschen
+- laesst sich nicht umschreiben
+- entfernt die Datei erst im Durchgang, nicht beim Loeschen
+- greift dieselbe Datei kein zweites Mal auf
+- zeigt nur Belege mit abgelaufener Frist
+- zeigt auch Belege ohne Loeschanspruch
+- laesst eine Loeschsperre die Frist ueberdauern
+- zeigt einem fremden Mandanten nichts
 
 ### [`tests/mahnung.test.ts`](../tests/mahnung.test.ts)
 

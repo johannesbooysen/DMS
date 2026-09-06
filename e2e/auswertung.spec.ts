@@ -46,7 +46,17 @@ test('Die ältesten offenen Belege führen zum Beleg', async ({ page }) => {
    */
   const zeile = page.getByRole('link', { name: /RE-2026-/ }).first()
   await expect(zeile).toBeVisible()
+
+  /*
+   * Auf die Umleitung warten, nicht nur klicken. Die Navigation laeuft ueber
+   * `next/link` und damit ohne vollen Seitenaufbau -- der alte Inhalt bleibt
+   * einen Augenblick stehen, und die naechste Zusicherung trifft ihn noch.
+   * Derselbe Wettlauf wie in `navigiere()`; er faellt erst auf, wenn die
+   * Seite eine Kleinigkeit langsamer wird.
+   */
+  const ziel = await zeile.getAttribute('href')
   await zeile.click()
+  await page.waitForURL(`**${ziel}`)
 
   await expect(page.getByRole('link', { name: 'Original-PDF öffnen' })).toBeVisible()
 })

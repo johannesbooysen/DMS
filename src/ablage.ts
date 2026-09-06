@@ -8,7 +8,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
 export interface Ablage {
@@ -30,6 +30,21 @@ export interface Ablage {
    * niemand einloest. Gemessen gegen MinIO, siehe `tests/ablage-s3.test.ts`.
    */
   lesen(schluessel: string, fassung?: string | null): Promise<Buffer>
+
+  /**
+   * Entfernt eine Datei endgueltig.
+   *
+   * Nur fuer das Loeschen nach Fristablauf (Konzept 24.5) -- der einzige
+   * Fall, in dem eine archivierte Datei verschwinden darf. Bei S3 mit
+   * Object Lock gelingt es erst, wenn die Sperre abgelaufen ist; gemessen:
+   * waehrend der Sperre abgewiesen, danach geloescht. Das passt zusammen,
+   * weil die Sperre bis `aufbewahrung_bis` laeuft und geloescht erst danach
+   * wird.
+   *
+   * Eine fehlende Datei ist **kein** Fehler: Der Durchgang laeuft ihm
+   * wiederholt ueber den Weg, und beim zweiten Mal ist sie schon weg.
+   */
+  entfernen(schluessel: string, fassung?: string | null): Promise<void>
 }
 
 export class DateisystemAblage implements Ablage {
@@ -61,6 +76,12 @@ export class DateisystemAblage implements Ablage {
      * leer, so wie `storage_object_lock_bis` es schon tut.
      */
     return readFile(this.pfad(schluessel))
+  }
+
+  async entfernen(schluessel: string, _fassung?: string | null): Promise<void> {
+    // `force` -- eine Datei, die schon weg ist, ist das gewuenschte
+    // Ergebnis und kein Fehlschlag.
+    await rm(this.pfad(schluessel), { force: true })
   }
 }
 

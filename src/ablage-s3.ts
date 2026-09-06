@@ -40,6 +40,7 @@
 
 import {
   GetObjectCommand,
+  DeleteObjectCommand,
   GetObjectRetentionCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -140,6 +141,28 @@ export class S3Ablage implements SperrbareAblage {
       throw new Error(`Ablageobjekt ohne Inhalt: ${schluessel}`)
     }
     return Buffer.from(await antwort.Body.transformToByteArray())
+  }
+
+  /**
+   * Entfernt eine Fassung endgueltig.
+   *
+   * Mit `VersionId`, nicht ohne: Ein Loeschen ohne Fassung setzt bei
+   * versionierten Eimern nur eine Loeschmarke -- die Datei bliebe liegen,
+   * unsichtbar und ungeloescht. Genau das waere beim Loeschen nach
+   * Fristablauf das Gegenteil des Gewollten.
+   *
+   * Waehrend einer Compliance-Sperre weist S3 das Loeschen ab (gemessen).
+   * Das ist richtig so und faellt hier nicht an: Die Sperre laeuft bis
+   * `aufbewahrung_bis`, geloescht wird erst danach.
+   */
+  async entfernen(schluessel: string, fassung?: string | null): Promise<void> {
+    await this.klient.send(
+      new DeleteObjectCommand({
+        Bucket: this.eimer,
+        Key: schluessel,
+        ...(fassung != null && fassung !== '' ? { VersionId: fassung } : {}),
+      }),
+    )
   }
 
   /** Die Kennung der aktuellen Fassung, oder `null` ohne Versionierung. */

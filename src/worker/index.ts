@@ -10,6 +10,7 @@ import type { Job, JobWithMetadata } from 'pg-boss'
 import { DateisystemAblage } from '../ablage'
 import { kannSperren, s3AusUmgebung } from '../ablage-s3'
 import { objektsperrenSetzen } from '../archiv/objektsperre'
+import { loeschdateienAbraeumen } from '../archiv/loeschen'
 import { alsSystem } from '../db'
 import {
   AUFBEREITUNG,
@@ -43,6 +44,16 @@ const POSTTAKT_MS = 30_000
  * kein Fenster, das jemand planvoll nutzt.
  */
 const SPERRTAKT_MS = 900_000
+
+/**
+ * Wie oft die Dateien geloeschter Belege abgeraeumt werden.
+ *
+ * Selten, und aus demselben Grund wie bei der Objektsperre: Der Beleg ist
+ * mit dem Commit geloescht -- was hier folgt, ist die Vollstreckung. Eine
+ * Datei, die eine Stunde spaeter verschwindet, ist kein Verstoss; eine, die
+ * gar nicht verschwindet, schon. Deshalb regelmaessig, aber nicht haeufig.
+ */
+const RAEUMTAKT_MS = 3_600_000
 
 /**
  * Wie oft nach faelligen Eingangsquellen gesehen wird.
@@ -230,6 +241,19 @@ async function start(): Promise<void> {
       })
     }, SPERRTAKT_MS).unref()
   }
+
+  /*
+   * Dateien geloeschter Belege abraeumen -- das Loeschprotokoll ist die
+   * Warteschlange, wie das Ausgangsbuch und der Archiveintrag.
+   */
+  setInterval(() => {
+    void loeschdateienAbraeumen(ablage).then(({ entfernt, gescheitert }) => {
+      // Keine Kennungen und keine Ablageschluessel im Log (Projektregel).
+      if (entfernt + gescheitert > 0) {
+        console.log('[worker] Loeschdateien:', entfernt, 'entfernt,', gescheitert, 'gescheitert')
+      }
+    })
+  }, RAEUMTAKT_MS).unref()
 
   console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG, FEHLERKORB)
 }

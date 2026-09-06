@@ -1406,6 +1406,64 @@ zweiter Zugang zu allen Daten.
 
 ---
 
+## Löschen nach Fristablauf
+
+Unter **Archiv**. Die Seite zeigt Belege, deren Aufbewahrungsfrist abgelaufen
+ist — und was bereits gelöscht wurde.
+
+**Wer aufbewahren muss, muss danach löschen.** Das ist keine Kür: Die
+Aufbewahrungspflicht endet, und danach ist das Weiterspeichern selbst ein
+Verstoß. GoBD und DSGVO zeigen an dieser Stelle in dieselbe Richtung.
+
+### Zwei Gründe, und sie sind verschieden
+
+| Grund | Was er bedeutet |
+|---|---|
+| **Löschanspruch** | Jemand hat die Löschung verlangt, die Frist steht nicht mehr entgegen. Dort wartet eine Person auf eine Antwort. |
+| **Frist abgelaufen** | Niemand hat gefragt, aber die Aufbewahrung ist vorbei. Dieselbe Pflicht, nur ohne Dringlichkeit. |
+
+Der zweite Fall fehlte bis zu diesem Stand vollständig: Die Kandidatenliste
+kannte nur Belege mit Anspruch, und die Löschpflicht nach Fristablauf war
+damit unerfüllbar.
+
+### Was das Löschen aufhält
+
+- Eine **Löschsperre** — laufendes Verfahren, Prüfung, Rechtsstreit. Sie ist
+  stärker als der Fristablauf, sonst wäre sie wirkungslos. Solche Belege
+  stehen nicht in der Liste.
+- Eine **noch laufende Frist**. Der Versuch wird mit dem Datum abgewiesen, bis
+  zu dem aufbewahrt wird.
+
+### Es gibt keinen Knopf „alle löschen"
+
+Gelöscht wird je Beleg. Ein Sammelknopf wird irgendwann versehentlich
+gedrückt, und danach gibt es nichts, worauf man zurückgreifen könnte. Das ist
+unbequem — und das ist der Punkt.
+
+Auf der Liste steht **kein Belegtext**: Wer löschen darf, muss den Inhalt
+nicht noch einmal lesen. Eine Löschliste mit Kreditor und Betrag wäre ein
+zweiter Weg an den Beleg, vorbei an der Berechtigung dafür.
+
+### Was bleibt
+
+Ein Protokolleintrag: dass es den Beleg gab, wann seine Frist ablief, wer
+gelöscht hat — **ohne personenbezogene Daten**. Eines, das den Namen behielte,
+hätte nicht gelöscht.
+
+Ohne dieses Protokoll wäre eine Lücke im Archiv nicht von einem Verlust zu
+unterscheiden: Ein Prüfer, der einen Beleg sucht und nicht findet, könnte
+nicht wissen, ob er gelöscht wurde oder abhandenkam.
+
+### Die Datei folgt kurz danach
+
+Der Beleg ist mit dem Klick gelöscht. Die Datei im Objektspeicher räumt der
+Worker ab — stündlich. Bis dahin steht in der Liste „liegt noch".
+
+Das ist Absicht: Ob der Objektspeicher gerade erreichbar ist, darf nichts
+daran ändern, dass der Beleg gelöscht ist. Und es geht auf, weil die
+Objektsperre genau bis zum Ende der Aufbewahrungsfrist läuft — vorher gibt der
+Speicher die Datei nicht her, danach schon.
+
 ## Sicherung und Wiederherstellung
 
 **Ein Archiv ohne getesteten Restore ist kein Archiv.** Deshalb gibt es hier

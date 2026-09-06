@@ -39,6 +39,11 @@ const ablage = {
     if (schluessel === 'fehlt') throw new Error('nicht gefunden')
     return Buffer.from('Empfaenger;IBAN\r\n"Muster";"DE00"\r\n', 'utf8')
   },
+  // Der Postausgang entfernt nichts -- er liest Anhänge. Die Methode gehört
+  // trotzdem zum Interface, seit das Löschen nach Fristablauf dazukam.
+  async entfernen(): Promise<void> {
+    throw new Error('Der Postausgang entfernt keine Dateien.')
+  },
 }
 
 async function direkt<T>(frage: string, werte: unknown[] = []): Promise<T[]> {

@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 71 Tabellen, 167 Policies,
-94 Module, 754 Testfaelle in 39 Dateien,
+Auf einen Blick: 72 Tabellen, 168 Policies,
+96 Module, 775 Testfaelle in 40 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -370,6 +370,16 @@ Funktionen: `app.vorlage_aenderung`
 
 Policies: 2
 
+### `supabase/migrations/20260903140000_loeschen.sql`
+
+===========================================================================
+
+Tabellen: `loeschung`
+
+Funktionen: `app.loeschung_faellig`, `app.loeschung_schutz`, `app.archiv_unveraenderlich`, `app.archiv_satellit_schutz`, `app.archiv_eintrag_schutz`, `app.loeschfaellig`, `app.dokument_endgueltig_loeschen`, `app.loeschung_dateien_offen`, `app.loeschung_datei_vermerken`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -400,6 +410,7 @@ Policies: 2
 | [`src/app/lib/kontierung-aktionen.ts`](../src/app/lib/kontierung-aktionen.ts) | 'use server' |
 | [`src/app/lib/kontierung-daten.ts`](../src/app/lib/kontierung-daten.ts) | Die Kontierungsmaske mit Daten versorgen |
 | [`src/app/lib/layer-aktionen.ts`](../src/app/lib/layer-aktionen.ts) | 'use server' |
+| [`src/app/lib/loeschen-aktionen.ts`](../src/app/lib/loeschen-aktionen.ts) | 'use server' |
 | [`src/app/lib/nebenlauf-aktionen.ts`](../src/app/lib/nebenlauf-aktionen.ts) | 'use server' |
 | [`src/app/lib/postausgang-aktionen.ts`](../src/app/lib/postausgang-aktionen.ts) | 'use server' |
 | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) | 'use server' |
@@ -410,6 +421,7 @@ Policies: 2
 | [`src/app/lib/zahlung-daten.ts`](../src/app/lib/zahlung-daten.ts) | Die Zahlungsansicht mit Daten versorgen |
 | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
 | [`src/archiv/index.ts`](../src/archiv/index.ts) | Archivierung, Aufbewahrung, Einschränkung |
+| [`src/archiv/loeschen.ts`](../src/archiv/loeschen.ts) | Löschen nach Fristablauf (Konzept §24.5) |
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
@@ -493,6 +505,7 @@ Policies: 2
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
+| [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |

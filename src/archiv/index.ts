@@ -180,3 +180,4 @@ export async function loeschkandidaten(
 
 export * from './objektakte'
 export * from './objektsperre'
+export * from './loeschen'
