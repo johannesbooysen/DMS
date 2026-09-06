@@ -15,6 +15,7 @@
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
+import { VERWALTER } from './hilfe/kennungen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   exportzeile,
@@ -91,7 +92,9 @@ async function direkt<T>(frage: string, werte: unknown[] = []): Promise<T[]> {
 }
 
 beforeEach(async () => {
-  await alsBenutzer(ANNA, async (c) => {
+  // Stammdaten unter jemandem, der sie pflegen darf -- seit 20260903100000
+  // ist das ein eigenes Recht, und Anna hat es zu Recht nicht.
+  await alsBenutzer(VERWALTER, async (c) => {
     await c.query(
       `insert into ordnungsgruppe (id, mandant_id, name, kurzcode, sortierung)
        values ($1, $2, 'Zahlungstest', 'ZTT', 920)

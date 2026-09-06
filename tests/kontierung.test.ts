@@ -17,6 +17,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
+import { VERWALTER } from './hilfe/kennungen'
 import { alsBenutzer, poolSchliessen } from '../src/db'
 import {
   KontierungAbgelehnt,
@@ -65,7 +66,8 @@ const BRUTTO = 1190
 let beleg = ''
 
 beforeAll(async () => {
-  await alsBenutzer(ANNA, async (c) => {
+  // Stammdaten unter jemandem, der sie pflegen darf (20260903100000).
+  await alsBenutzer(VERWALTER, async (c) => {
     await c.query(
       `insert into ordnungsgruppe (id, mandant_id, name, kurzcode, sortierung)
        values ($1, $2, 'Kontierungstest', 'KTT', 900)

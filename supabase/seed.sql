@@ -277,7 +277,16 @@ insert into rolle_recht (rolle_id, aktion, belegart, ordnungsgruppe_id) values
   ('90000000-0000-0000-0000-000000000003', 'ansehen',    null, null),
   ('90000000-0000-0000-0000-000000000003', 'stempeln',   null, null),
   ('90000000-0000-0000-0000-000000000003', 'prozess_konfigurieren', null, null),
-  ('90000000-0000-0000-0000-000000000003', 'delegieren', null, null);
+  ('90000000-0000-0000-0000-000000000003', 'delegieren', null, null),
+  -- Stammdaten und Benutzerverwaltung.
+  --
+  -- Die Buchhaltung pflegt Kreditoren, Konten und Zahlungswege -- das ist
+  -- ihr Tagesgeschaeft. Rollen vergeben darf sie nicht: Daraus folgt jedes
+  -- andere Recht, und wer es hat, kann sich selbst zur Geschaeftsleitung
+  -- machen. Genau das war bis 20260903100000 fuer *jeden* Benutzer moeglich.
+  ('90000000-0000-0000-0000-000000000002', 'stammdaten_pflegen', null, null),
+  ('90000000-0000-0000-0000-000000000003', 'stammdaten_pflegen', null, null),
+  ('90000000-0000-0000-0000-000000000003', 'benutzer_verwalten', null, null);
 
 insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
   -- Anna: Objektbearbeitung, ausdruecklich nur Objekt 42

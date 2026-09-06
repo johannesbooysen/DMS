@@ -243,6 +243,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `stempel_ereignis_layer` | `stempel_ereignis` | after insert | [`20260901120000_layer.sql`](../supabase/migrations/20260901120000_layer.sql) |
 | `verfahrensdoku_unveraenderlich` | `verfahrensdokumentation` | before update or delete | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `schriftverkehr_fakten_archiv_schutz` | `schriftverkehr_fakten` | before insert or update or delete | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
+| `kreditor_bankverbindung_bestaetigung` | `kreditor_bankverbindung` | before update | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -384,6 +385,32 @@ Tabellen mit Policies (67): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `verfahrensdoku_lesen` | `verfahrensdokumentation` | select | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `verfahrensdoku_anlegen` | `verfahrensdokumentation` | insert | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `schriftverkehr_fakten_sicht` | `schriftverkehr_fakten` | all | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
+| `objekt_lesen` | `objekt` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `objekt_schreiben` | `objekt` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `kreditor_lesen` | `kreditor` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `kreditor_schreiben` | `kreditor` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `bankverbindung_lesen` | `kreditor_bankverbindung` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `bankverbindung_schreiben` | `kreditor_bankverbindung` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `konto_lesen` | `konto` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `konto_schreiben` | `konto` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `kontenrahmen_lesen` | `kontenrahmen` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `kontenrahmen_schreiben` | `kontenrahmen` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `ordnungsgruppe_lesen` | `ordnungsgruppe` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `ordnungsgruppe_schreiben` | `ordnungsgruppe` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `spezialgebiet_lesen` | `spezialgebiet` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `spezialgebiet_schreiben` | `spezialgebiet` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `zahlungsweg_lesen` | `zahlungsweg` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `zahlungsweg_schreiben` | `zahlungsweg` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `aufbewahrungsfrist_lesen` | `aufbewahrungsfrist` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `aufbewahrungsfrist_schreiben` | `aufbewahrungsfrist` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `benutzer_lesen` | `benutzer` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `benutzer_schreiben` | `benutzer` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `rolle_lesen` | `rolle` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `rolle_schreiben` | `rolle` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `rolle_recht_lesen` | `rolle_recht` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `rolle_recht_schreiben` | `rolle_recht` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `benutzer_rolle_objekt_lesen` | `benutzer_rolle_objekt` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `benutzer_rolle_objekt_schreiben` | `benutzer_rolle_objekt` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1119,6 +1146,30 @@ belegt.
 - zaehlt den Bestand, nicht die Sicht eines Benutzers
 - meldet fehlende Zeilen nach dem Zurueckholen
 - meldet zusaetzliche Zeilen nicht
+
+### [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts)
+
+- laesst eine Objektbearbeiterin sich keine Rolle zuweisen
+- laesst auch die Buchhaltung keine Rollen vergeben
+- laesst die Geschaeftsleitung Rollen vergeben
+- laesst eine Objektbearbeiterin keinen Kreditor anlegen
+- laesst die Buchhaltung einen Kreditor anlegen
+- laesst eine Objektbearbeiterin keine Bankverbindung bestaetigen
+- haelt fest, wer bestaetigt hat
+- haelt es auch fest, wenn jemand die Funktion umgeht
+- legt ein Objekt an
+- weist ein leeres Pflichtfeld mit klarem Grund ab
+- weist eine unsinnige IBAN ab, ohne sie zu rechnen
+- weist dieselbe Ordnungsgruppe kein zweites Mal an
+- legt einen Zahlungsweg an
+- meldet fuer die Objektbearbeitung beides als nein
+- meldet fuer die Buchhaltung nur die Stammdaten
+- meldet fuer die Geschaeftsleitung beides
+- zeigt einem fremden Mandanten keine Objekte
+- zeigt einem fremden Mandanten keine Kreditoren
+- zeigt einem fremden Mandanten keine Benutzer aus Nord
+- laesst keine Zustaendigkeit ueber die Mandantengrenze setzen
+- zeigt einem fremden Mandanten keine Konten
 
 ### [`tests/stapel.test.ts`](../tests/stapel.test.ts)
 

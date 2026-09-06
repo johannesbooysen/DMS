@@ -1467,6 +1467,67 @@ die in diesem Fall Entwarnung gibt, erzieht dazu, ihr zu glauben.
 Datum und Ausgang jeder Probe gehören in die Verfahrensdokumentation. Eine
 Probe, die niemand notiert, hat im Prüfungsfall nicht stattgefunden.
 
+## Stammdaten
+
+Alles, was da sein muss, bevor der erste Beleg hereinkommt: Objekte,
+Kreditoren, Konten, Zahlungswege, Ordnungsgruppen und Aufbewahrungsfristen.
+Bis zu diesem Stand ließen sie sich nur über die Datenbank anlegen — damit
+konnte niemand außer einem Entwickler das System einrichten.
+
+Sie stehen auf **einer** Seite und nicht auf sechs: Wer ein Objekt einrichtet,
+braucht im selben Zug einen Zahlungsweg und eine Ordnungsgruppe. Die
+Abschnitte stehen in der Reihenfolge, in der man sie bei der Ersteinrichtung
+braucht.
+
+### Zwei Rechte, nicht eines
+
+| Recht | Wofür | Wer im Auslieferungsstand |
+|---|---|---|
+| Stammdaten pflegen | Objekte, Kreditoren, Konten, Zahlungswege, Gruppen, Fristen | Buchhaltung, Geschäftsleitung |
+| Benutzer verwalten | Benutzer, Rollen, Rollenzuweisungen, Zuständigkeiten | nur Geschäftsleitung |
+
+Die Trennung ist kein Feinschliff. Einen Kreditor anzulegen ist
+Tagesgeschäft. **Rollen zu vergeben ist es nicht:** Wer das darf, kann sich
+jedes andere Recht selbst geben — es ist das Recht, aus dem alle anderen
+folgen. Beides zusammenzufassen hieße, der Buchhaltung nebenbei die
+Benutzerverwaltung zu geben.
+
+Wer ein Recht nicht hat, sieht die Listen trotzdem — nur ohne Formulare. Das
+ist Absicht: Auch wer nicht ändern darf, hat Grund nachzusehen, welches Konto
+es gibt.
+
+### Was nicht gelöscht wird
+
+Objekte, Konten und Ordnungsgruppen lassen sich **deaktivieren, nicht
+löschen**. An ihnen hängen Kontierungszeilen und Archiveinträge; gelöscht
+wäre die Frage „worauf wurde das gebucht" für immer unbeantwortbar.
+
+Dasselbe bei Rollen und Zuständigkeiten: Sie werden **beendet**, nicht
+entfernt. Wer wann welche Rolle trug, ist die Antwort auf „wer durfte das
+damals" — und die wird gestellt, wenn ein alter Beleg geprüft wird.
+
+### Bankverbindungen
+
+Eine Bankverbindung zu bestätigen heißt zu erklären: *Ich habe geprüft, dass
+dieses Konto zu diesem Kreditor gehört.* Das ist der Betrugsschutz — ohne
+verifizierte Bankverbindung geht keine Zahlung hinaus.
+
+Deshalb ist es ein eigener Knopf und kein Feld in einem Formular, und deshalb
+hält die Datenbank fest, **wer** bestätigt hat. Sie tut das auf jedem Weg;
+auch wer die Maske umgeht, hinterlässt seinen Namen.
+
+Neue IBANs entstehen von selbst, sobald sie auf einem Beleg auftauchen — sie
+stehen dann als *neu* da und warten auf jemanden, der hinsieht.
+
+### Benutzer anlegen heißt nicht: Zugang geben
+
+Angelegt wird die **Kennung**. Ob jemand hereinkommt, entscheidet die
+Anmeldung über Entra ID; die Verknüpfung entsteht bei der ersten Anmeldung.
+
+Ein Benutzer ohne Rolle sieht nichts. Das ist die richtige Vorgabe — aber es
+fällt sonst erst auf, wenn er sich das erste Mal anmeldet. Deshalb steht in
+der Liste rot, wer keine Rolle hat.
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu

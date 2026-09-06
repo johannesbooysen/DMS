@@ -16,6 +16,7 @@ import {
   plausibilitaetPruefen,
 } from '../src/pruefung/plausibilitaet'
 import { laufStarten } from '../src/workflow/engine'
+import { VERWALTER } from './hilfe/kennungen'
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
@@ -147,7 +148,9 @@ describe('IBAN gegen den bekannten Kreditor', () => {
   })
 
   it('greift nicht bei einem Kreditor ohne hinterlegte Bankverbindung', async () => {
-    const beleg = await alsBenutzer(ANNA, async (c) => {
+    // Einen Kreditor anzulegen ist Stammdatenpflege und braucht seit
+    // 20260903100000 das Recht dazu -- Anna hat es nicht.
+    const beleg = await alsBenutzer(VERWALTER, async (c) => {
       const { rows } = await c.query<{ id: string }>(
         `insert into kreditor (mandant_id, name) values ($1, 'Neu GmbH') returning id`,
         [MANDANT],

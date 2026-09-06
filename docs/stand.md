@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 71 Tabellen, 139 Policies,
-91 Module, 717 Testfaelle in 37 Dateien,
+Auf einen Blick: 71 Tabellen, 165 Policies,
+93 Module, 738 Testfaelle in 38 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -354,6 +354,14 @@ Policies: 1
 Funktionen: `app.stempel_kette`, `app.freigabe_hash`, `app.kette_pruefen`, `app.schutz_pruefen`
 
 
+### `supabase/migrations/20260903100000_stammdaten_rechte.sql`
+
+===========================================================================
+
+Funktionen: `app.darf_stammdaten`, `app.darf_benutzer`, `app.bankverbindung_verifizieren`, `app.rechtetraeger`, `app.bankverbindung_bestaetigung`
+
+Policies: 26
+
 ## Module
 
 | Datei | Aufgabe |
@@ -389,6 +397,7 @@ Funktionen: `app.stempel_kette`, `app.freigabe_hash`, `app.kette_pruefen`, `app.
 | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
+| [`src/app/lib/stammdaten-aktionen.ts`](../src/app/lib/stammdaten-aktionen.ts) | 'use server' |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
 | [`src/app/lib/zahlung-daten.ts`](../src/app/lib/zahlung-daten.ts) | Die Zahlungsansicht mit Daten versorgen |
 | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
@@ -435,6 +444,7 @@ Funktionen: `app.stempel_kette`, `app.freigabe_hash`, `app.kette_pruefen`, `app.
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
+| [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
 | [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
@@ -486,6 +496,7 @@ Funktionen: `app.stempel_kette`, `app.freigabe_hash`, `app.kette_pruefen`, `app.
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
+| [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
