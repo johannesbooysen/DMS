@@ -244,6 +244,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `verfahrensdoku_unveraenderlich` | `verfahrensdokumentation` | before update or delete | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `schriftverkehr_fakten_archiv_schutz` | `schriftverkehr_fakten` | before insert or update or delete | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 | `kreditor_bankverbindung_bestaetigung` | `kreditor_bankverbindung` | before update | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `vorlage_aenderung` | `vorlage` | before insert or update | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -411,6 +412,8 @@ Tabellen mit Policies (67): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `rolle_recht_schreiben` | `rolle_recht` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 | `benutzer_rolle_objekt_lesen` | `benutzer_rolle_objekt` | select | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
 | `benutzer_rolle_objekt_schreiben` | `benutzer_rolle_objekt` | all | [`20260903100000_stammdaten_rechte.sql`](../supabase/migrations/20260903100000_stammdaten_rechte.sql) |
+| `vorlage_lesen` | `vorlage` | select | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
+| `vorlage_schreiben` | `vorlage` | all | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1146,6 +1149,25 @@ belegt.
 - zaehlt den Bestand, nicht die Sicht eines Benutzers
 - meldet fehlende Zeilen nach dem Zurueckholen
 - meldet zusaetzliche Zeilen nicht
+
+### [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts)
+
+- speichert den Namen der Umgebungsvariablen, nicht das Passwort
+- meldet, ob die Variable auf diesem Server gesetzt ist
+- gibt den Wert der Variablen nirgends heraus
+- haelt fest, wer die Quelle traegt
+- laesst eine Objektbearbeiterin keine Quelle einrichten
+- weist einen zu kurzen Takt ab
+- loescht beim Einschalten den alten Fehler
+- zeigt einem fremden Mandanten keine Quelle
+- weist einen unbekannten Platzhalter ab
+- nimmt eine Vorlage mit erlaubten Platzhaltern an
+- zeigt die Vorschau mit erfundenen Beispielwerten
+- haelt fest, wer zuletzt geaendert hat
+- laesst eine Objektbearbeiterin keine Vorlage aendern
+- laesst sie die Vorlagen aber lesen
+- zeigt einem fremden Mandanten keine Vorlage aus Nord
+- nennt die Weissliste vollstaendig
 
 ### [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts)
 

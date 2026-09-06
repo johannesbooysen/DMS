@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 71 Tabellen, 165 Policies,
-93 Module, 738 Testfaelle in 38 Dateien,
+Auf einen Blick: 71 Tabellen, 167 Policies,
+94 Module, 754 Testfaelle in 39 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -362,6 +362,14 @@ Funktionen: `app.darf_stammdaten`, `app.darf_benutzer`, `app.bankverbindung_veri
 
 Policies: 26
 
+### `supabase/migrations/20260903120000_vorlagen_rechte.sql`
+
+===========================================================================
+
+Funktionen: `app.vorlage_aenderung`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -445,6 +453,7 @@ Policies: 26
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
+| [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
 | [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
@@ -496,6 +505,7 @@ Policies: 26
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
+| [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |

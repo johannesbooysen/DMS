@@ -39,6 +39,7 @@ import {
   zustaendigkeitSetzen,
   type Eingaben,
 } from '@/stammdaten'
+import { quelleAnlegen, quelleUmschalten, vorlageSpeichern } from '@/stammdaten/quellen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 /** `FormData` in die einfache Abbildung, die die Fachschicht erwartet. */
@@ -130,4 +131,18 @@ export async function zustaendigkeitSetzenAktion(f: FormData): Promise<void> {
 }
 export async function zustaendigkeitBeendenAktion(f: FormData): Promise<void> {
   await versuchen(f, zustaendigkeitBeenden)
+}
+
+// ---------------------------------------------------------------------------
+// Eingangsquellen und Vorlagen
+// ---------------------------------------------------------------------------
+
+export async function quelleAnlegenAktion(f: FormData): Promise<void> {
+  await versuchen(f, quelleAnlegen)
+}
+export async function quelleUmschaltenAktion(f: FormData): Promise<void> {
+  await versuchen(f, quelleUmschalten)
+}
+export async function vorlageSpeichernAktion(f: FormData): Promise<void> {
+  await versuchen(f, vorlageSpeichern)
 }

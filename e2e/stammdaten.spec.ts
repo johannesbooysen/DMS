@@ -100,3 +100,54 @@ test('Die Grenze hält auch ohne Formular', async ({ page }) => {
   await page.goto('/stammdaten')
   await expect(page.getByText('Untergeschoben GmbH')).toHaveCount(0)
 })
+
+test('Die Vorlagenmaske zeigt, was ankommt — nicht nur, was getippt wurde', async ({
+  page,
+}) => {
+  await anmelden(page, BENUTZER.eva)
+  await page.goto('/stammdaten/vorlagen')
+
+  await expect(page.getByRole('heading', { name: /Vorlagen/ })).toBeVisible()
+
+  /*
+   * Die Weißliste steht auf der Seite. Wer nicht weiß, welche Platzhalter es
+   * gibt, probiert — und ein Tippfehler geht im Klartext an einen Dritten.
+   */
+  await expect(page.getByRole('cell', { name: '{{kreditor}}' })).toBeVisible()
+
+  // Und die Vorschau mit erfundenen Beispielwerten: der eigentliche Punkt
+  // der Seite.
+  await expect(page.getByText('Musterreinigung GmbH').first()).toBeVisible()
+})
+
+test('Ein unbekannter Platzhalter wird beim Speichern abgewiesen', async ({ page }) => {
+  await anmelden(page, BENUTZER.eva)
+  await page.goto('/stammdaten/vorlagen')
+
+  const betreff = page.getByLabel('Betreff').first()
+  await betreff.fill('Zahlung {{rechnungsbetrag}}')
+  await page.getByRole('button', { name: 'Speichern' }).first().click()
+
+  /*
+   * Abgewiesen, nicht stillschweigend gespeichert. Die spätere Gelegenheit,
+   * den Tippfehler zu bemerken, wäre eine Mail, die schon draußen ist.
+   */
+  await expect(page.getByRole('alert').filter({ hasText: 'rechnungsbetrag' })).toBeVisible()
+})
+
+test('Die Eingangsquellenmaske hat kein Passwortfeld', async ({ page }) => {
+  await anmelden(page, BENUTZER.eva)
+  await navigiere(page, 'Eingangsquellen')
+
+  await page.getByRole('link', { name: 'Mailpostfach' }).click()
+  await expect(page.getByLabel('Umgebungsvariable')).toBeVisible()
+
+  /*
+   * **Die Zusicherung dieser Seite.** Eingetragen wird der Name einer
+   * Umgebungsvariablen; das Geheimnis liegt auf dem Rechner, auf dem der
+   * Worker läuft. Was sich nicht eingeben lässt, kann auch nicht
+   * versehentlich in der Datenbank landen.
+   */
+  await expect(page.locator('input[type="password"]')).toHaveCount(0)
+  await expect(page.getByText(/kein Passwortfeld, und das ist Absicht/)).toBeVisible()
+})

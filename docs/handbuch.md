@@ -1528,6 +1528,62 @@ Ein Benutzer ohne Rolle sieht nichts. Das ist die richtige Vorgabe — aber es
 fällt sonst erst auf, wenn er sich das erste Mal anmeldet. Deshalb steht in
 der Liste rot, wer keine Rolle hat.
 
+### Eingangsquellen einrichten
+
+Unter **Eingangsquellen**: ein überwachter Ordner oder ein Mailpostfach. Was
+von dort hereinkommt, geht durch denselben Eingang wie ein Upload — dieselbe
+Dublettenprüfung, dieselbe Aufbereitung.
+
+> **Die Maske hat kein Passwortfeld, und das ist Absicht.** Eingetragen wird
+> der *Name* einer Umgebungsvariablen; das Geheimnis selbst liegt auf dem
+> Rechner, auf dem der Worker läuft. Ein Datenbankauszug gibt damit keinen
+> Postfachzugang her — und was sich nicht eingeben lässt, kann auch nicht
+> versehentlich gespeichert werden.
+
+Neben dem Variablennamen steht, ob sie auf diesem Server **gesetzt** ist. Das
+ist die Auskunft, die sonst fehlt: Eine Quelle mit fehlendem Passwort
+scheitert beim nächsten Lauf, und der Fehler fällt erst auf, wenn jemand eine
+Rechnung vermisst.
+
+Ebenso sichtbar: **wer die Quelle trägt.** Sie arbeitet unter den Rechten
+ihres Einrichters, nicht unter einem technischen Konto — am Beleg steht
+dadurch ein Name, den man fragen kann. Ist diese Person gesperrt, steht die
+Quelle still, und die Liste sagt es.
+
+Einrichten darf, wer Abläufe konfigurieren darf. Eine Eingangsquelle
+bestimmt, welche Belege überhaupt entstehen — das ist keine Sachbearbeitung.
+
+### Vorlagen für die Ausgangspost
+
+Unter **Stammdaten → Vorlagen**: Betreff und Text der Mails, die das Haus
+verlassen — Zahlungsauftrag, Einsichtslink, Abtretungserklärung.
+
+**Die Vorschau ist der Punkt der Seite.** Unter jedem Textfeld steht, wie die
+Mail mit Beispielwerten aussieht. Wer eine Formulierung ändert, die an eine
+Bank oder einen Versicherer geht, will sehen, was ankommt — ein Eingabefeld
+allein zeigt nur, was jemand getippt hat.
+
+Die Beispielwerte sind **erfunden**. Die Vorschau mit dem zuletzt versandten
+Beleg zu füllen wäre naheliegend und falsch: Sie wäre ein zweiter Weg, einen
+Beleg zu lesen, vorbei an der Berechtigung dafür.
+
+#### Platzhalter
+
+Oben auf der Seite steht, welche es gibt — und es gibt nur diese. Eine freie
+Vorlagensprache könnte den ganzen Belegtext in eine Mail schreiben, an einen
+Empfänger, den ein Stammdatum bestimmt.
+
+| Fall | Was geschieht |
+|---|---|
+| unbekannter Platzhalter | wird beim **Speichern abgewiesen** |
+| bekannter, aber ohne Wert | wird zu einem Strich — die Angabe fehlt am Beleg |
+
+Steht ein unbekannter Platzhalter doch in einer Vorlage — etwa aus einer
+älteren Fassung —, bleibt er beim Versand **stehen** statt zu verschwinden.
+Das ist die unbequemere Wahl und die richtige: So fällt der Tippfehler beim
+Blick auf die Vorschau auf, statt einer Bank eine Mail mit einer Lücke zu
+schicken. Die Seite markiert solche Vorlagen rot.
+
 ## Abläufe ändern
 
 Unter *Abläufe* steht je Belegart und Ordnungsgruppe die aktive Fassung, dazu

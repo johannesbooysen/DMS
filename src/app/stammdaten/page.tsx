@@ -124,6 +124,14 @@ export default async function Stammdaten({
       {!darf.stammdaten && <NurLesend was="die Stammdaten" />}
 
       <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+        Was das Haus verlässt, steht unter{' '}
+        <Link href="/stammdaten/vorlagen">Vorlagen</Link>; woher Belege von selbst
+        hereinkommen, unter <Link href="/eingang">Eingangsquellen</Link>.
+      </p>
+      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+        {/* Der Verweis auf Benutzer und Rollen steht nur da, wenn er zu etwas
+            führt -- sonst wäre er eine Einladung in eine Seite, auf der man
+            nichts tun kann. Der Satz daneben erklärt trotzdem, warum. */}
         {darf.benutzer ? (
           <>
             Benutzer und Rollen stehen unter{' '}
