@@ -21,9 +21,20 @@ on:
   pull_request:
 
 # Ein laufender Durchgang je Branch reicht; ein überholter sagt nichts mehr.
+#
+# **Auf `main` wird nicht abgebrochen.** Nachgestellt am ersten Tag: Vier
+# Zusammenfuehrungen binnen fuenf Minuten haben drei Laeufe gegenseitig
+# abgeschossen (Pruefung #9 bis #11). Sachlich ging nichts verloren -- jeder
+# Zweig war vorher geprueft --, aber in der Liste steht seitdem bei drei
+# Commits ein graues Zeichen. Ein abgebrochener Lauf ist **kein Urteil**,
+# sieht aber fast wie eines aus.
+#
+# Jeder Commit auf `main` ist ein Stand, den wir haetten ausliefern koennen;
+# dazu gehoert ein eigenes Ergebnis. Wer in einem halben Jahr fragt, ob ein
+# bestimmter Commit getragen hat, soll eine Antwort finden und kein Grau.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   pruefung:
