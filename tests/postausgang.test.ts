@@ -132,6 +132,10 @@ describe('Vorlagen im Bestand', () => {
     expect(vorlagen.map((v) => v.schluessel).sort()).toEqual([
       'abtretung',
       'einsicht_link',
+      // Seit Konzept 24.9 im Grundbestand: die taegliche Sammelmail. Sie
+      // nennt nur Zahlen und einen Link -- ein Postfach ist schlechter
+      // geschuetzt als dieses System.
+      'tagesuebersicht',
       'technikmeldung',
       'zahlungsauftrag',
     ])
@@ -146,7 +150,7 @@ describe('Vorlagen im Bestand', () => {
         'select count(*) n from vorlage where mandant_id = $1',
         [neu.id],
       )
-      expect(Number(zaehlung.n)).toBe(4)
+      expect(Number(zaehlung.n)).toBe(5)
     } finally {
       await direkt('delete from vorlage where mandant_id = $1', [neu.id])
       await direkt('delete from mandant where id = $1', [neu.id])
@@ -156,8 +160,8 @@ describe('Vorlagen im Bestand', () => {
   it('sind je Mandant getrennt', async () => {
     const meine = await vorlagenLaden(ANNA)
     const fremde = await vorlagenLaden(DORIS)
-    expect(meine.length).toBe(4)
-    expect(fremde.length).toBe(4)
+    expect(meine.length).toBe(5)
+    expect(fremde.length).toBe(5)
     // Verschiedene Zeilen, gleiche Schluessel.
     expect(meine.map((v) => v.id).some((id) => fremde.map((f) => f.id).includes(id))).toBe(
       false,

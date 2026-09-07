@@ -222,6 +222,12 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Nichts verlässt das Haus außerhalb des Ausgangsbuchs.** Kein Modul versendet selbst. Wer nach draußen will, schreibt mit `postAnlegen(c, …)` einen `ausgang` — **in derselben Transaktion wie sein Anlass**, sonst gibt es Zahlungen ohne Auftrag oder Aufträge ohne Zahlung. Gesendet wird später im Worker; ein hängender Mailserver darf keinen Stempel blockieren. Betreff und Text kommen aus `vorlage` über eine Platzhalter-Weißliste — ein unbekannter Name bleibt sichtbar stehen, ein bekannter ohne Wert wird `—`. Fehlgeschlagenes wird **nicht** selbsttätig wiederholt: Es steht mit Grund im Ausgangsbuch, und ein Mensch entscheidet. Enthält der Text ein Geheimnis (heute nur der Einsichts-Token), gehört `fluechtig: true` dazu — die Datenbank ersetzt den Text nach erfolgreichem Versand.
 
+**Benachrichtigung ist Zähler *und* Sammelmail — verschieden dosiert** (§24.9). Der Zähler neben „Postfächer" wirkt ständig und kostet eine indizierte Zählabfrage je Seite; die Mail kommt **einmal am Tag** und nur, wenn etwas offen ist. Keine Mail je Aufgabe: Die hält zwei Wochen, danach filtert sie jeder in einen Ordner, den niemand öffnet — und dann ist auch die eine verloren, die wichtig war. `app.aufgaben_zaehler` läuft **ohne** `security definer`: Ein Zähler, der mehr zählt als die Liste darunter zeigt, schickt jemanden suchen.
+
+**In der Sammelmail steht kein Beleg** — nur Zahlen und ein Link ins Postfach. Ein Postfach hat keine RLS, keine Sitzung und kein Protokoll; eine Aufzählung der fälligen Belege wäre eine zweite, schwächere Kopie des Bestands, die täglich neu entstünde. Die Weißliste kennt dafür nur `anzahl` und `ueberfaellig`. Ohne `DMS_BASIS_URL` entsteht **keine** Mail: Eine Benachrichtigung mit einem Link ins Leere kostet den Empfänger zweimal Zeit.
+
+**Wer fällig ist, fragt der Worker ohne Benutzer — eingetragen wird unter dem Empfänger.** `app.benachrichtigung_faellig` ist `security definer` (der Worker hat keinen Benutzer) und gibt nur Zahlen heraus; `postAnlegen` läuft dann über `alsBenutzer`, sonst findet es die Vorlage nicht (die Policy braucht einen Mandanten) und der Ausgang landete ohne Haus.
+
 **Adapterschicht für Stammdaten und Fremdsysteme.** `externe_id`/`sync_quelle`/`sync_stand` an den Stammdatentabellen sind der Grund, warum dieselbe Codebasis eigenständig und als Modul in einer Verwaltungssoftware laufen kann. Fachlogik nie direkt gegen ein Fremdsystem schreiben.
 
 ## Fallen, die nur unter Last sichtbar werden

@@ -1743,6 +1743,55 @@ Rechte machen jede spätere Prüfung unbeantwortbar.
 
 ---
 
+## Benachrichtigungen
+
+Zwei Wege, und sie sind bewusst verschieden dosiert.
+
+### Die Zahl neben „Postfächer"
+
+Steht in der Navigation, sobald etwas offen ist — blau, und rot, sobald
+etwas über der Frist liegt. Sie ist die wirksamere Hälfte: Die Mail kommt
+einmal am Tag, diese Zahl sieht man den ganzen Tag.
+
+Bei null Aufgaben steht dort nichts. Eine Null neben jedem Eintrag wäre
+Rauschen, und Rauschen macht die eine Zahl unsichtbar, auf die es ankommt.
+
+### Die tägliche Sammelmail
+
+Eine Mail am Tag, zur gewünschten Uhrzeit — und **nur, wenn etwas offen
+ist**. Einstellbar unten im Postfach; ohne Einstellung ist sie an, um 7 Uhr.
+
+> **Warum keine Mail je Aufgabe.** Die erste Idee, und sie hält zwei Wochen.
+> Danach filtert sie jeder in einen Ordner, den niemand öffnet — und dann ist
+> auch die eine Mail verloren, die wichtig war. Ein Postfach mit vierzig
+> ungelesenen Systemmails ist schlechter als gar keine Benachrichtigung, weil
+> es Sicherheit vortäuscht.
+
+**In der Mail stehen keine Belegdaten.** Kein Kreditor, kein Betrag, keine
+Rechnungsnummer — nur zwei Zahlen und ein Link hierher.
+
+Das ist Absicht: Ein Postfach ist schlechter geschützt als dieses System. Es
+hat keine Berechtigungen, keine Sitzung und kein Zugriffsprotokoll, und es
+wird auf Geräten gelesen, über die niemand Auskunft geben kann. Eine
+Aufzählung der fälligen Belege wäre eine zweite, schwächere Kopie des
+Bestands — und sie entstünde jeden Tag neu.
+
+Die Mail ist ein Anstoß, kein Bericht. Gearbeitet wird im System.
+
+### Wenn keine Mail ankommt
+
+Drei Möglichkeiten, in dieser Reihenfolge:
+
+1. **Nichts offen.** Dann kommt keine — das ist richtig so.
+2. **Abgeschaltet.** Steht unten im Postfach.
+3. **`DMS_BASIS_URL` fehlt.** Ohne sie weiß der Worker nicht, wohin der Link
+   zeigen soll, und schickt deshalb gar nichts; er sagt es beim Start. Eine
+   Mail mit einem Link ins Leere kostet den Empfänger zweimal Zeit — beim
+   Lesen und beim Nachfragen.
+
+Gesendet wird über das Ausgangsbuch wie jede andere Post: Was nicht hinausging,
+steht dort mit Grund.
+
 ## Die drei Postfächer
 
 Alle drei sind Sichten auf dieselben Daten, kein eigener Ablageort.

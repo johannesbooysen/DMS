@@ -143,7 +143,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-72 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+73 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -220,6 +220,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `verfahrensdokumentation` | [`20260902140000_verfahrensdoku.sql`](../supabase/migrations/20260902140000_verfahrensdoku.sql) |
 | `schriftverkehr_fakten` | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 | `loeschung` | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
+| `benachrichtigung` | [`20260907100000_benachrichtigung.sql`](../supabase/migrations/20260907100000_benachrichtigung.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -257,7 +258,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (68): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `loeschung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (69): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `loeschung`, `mandant`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -420,6 +421,7 @@ Tabellen mit Policies (68): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `vorlage_lesen` | `vorlage` | select | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 | `vorlage_schreiben` | `vorlage` | all | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 | `loeschung_lesen` | `loeschung` | select | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
+| `benachrichtigung_eigene` | `benachrichtigung` | all | [`20260907100000_benachrichtigung.sql`](../supabase/migrations/20260907100000_benachrichtigung.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -433,6 +435,7 @@ des Ausgangsbuchs (`postAnlegen`).
 |---|---|---|
 | Eingang | nutzt sie | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) |
 | Ausgang | nutzt sie | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) |
+| Ausgang | nutzt sie | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) |
 | Eingang | nutzt sie | [`src/eingang/index.ts`](../src/eingang/index.ts) |
 | Ausgang | nutzt sie | [`src/einsicht/index.ts`](../src/einsicht/index.ts) |
 | Eingang | Schleuse | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) |
@@ -609,6 +612,25 @@ belegt.
 - erkennt einen leeren Filter als ungefiltert
 - erkennt jeden gesetzten Filter
 - taucht in der Liste auf, obwohl keine Aufgabe mehr offen ist
+
+### [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts)
+
+- zaehlt die eigenen offenen Aufgaben
+- zaehlt nicht die Aufgaben anderer
+- gilt ohne Eintrag als an
+- laesst sich abschalten und wieder einschalten
+- weist eine unmoegliche Stunde ab
+- laesst niemanden den Wunsch eines anderen aendern
+- legt einen Ausgang an, wenn Aufgaben offen sind
+- nennt Zahlen und einen Link, aber keinen Beleg
+- schickt keine Mail ueber null Aufgaben
+- schickt nicht zweimal am selben Tag
+- beachtet die gewuenschte Stunde
+- schickt nichts an jemanden, der abgeschaltet hat
+- schickt nichts ohne bekannte Adresse der Anwendung
+- schneidet den Schraegstrich am Ende ab
+- kennt die beiden neuen Platzhalter
+- kennt weiterhin keinen Belegtext
 
 ### [`tests/eingang.test.ts`](../tests/eingang.test.ts)
 

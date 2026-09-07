@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 72 Tabellen, 168 Policies,
-96 Module, 775 Testfaelle in 40 Dateien,
+Auf einen Blick: 73 Tabellen, 169 Policies,
+98 Module, 791 Testfaelle in 41 Dateien,
 6 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -380,6 +380,16 @@ Funktionen: `app.loeschung_faellig`, `app.loeschung_schutz`, `app.archiv_unverae
 
 Policies: 1
 
+### `supabase/migrations/20260907100000_benachrichtigung.sql`
+
+===========================================================================
+
+Tabellen: `benachrichtigung`
+
+Funktionen: `app.aufgaben_zaehler`, `app.benachrichtigung_faellig`, `app.benachrichtigung_vermerken`, `app.vorlagen_grundbestand`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -404,6 +414,7 @@ Policies: 1
 | [`src/app/lib/anmelde-aktionen.ts`](../src/app/lib/anmelde-aktionen.ts) | 'use server' |
 | [`src/app/lib/belege.ts`](../src/app/lib/belege.ts) | Datenzugriff des Viewers |
 | [`src/app/lib/belegliste.ts`](../src/app/lib/belegliste.ts) | Die Belegübersicht mit Daten versorgen |
+| [`src/app/lib/benachrichtigung-aktionen.ts`](../src/app/lib/benachrichtigung-aktionen.ts) | 'use server' |
 | [`src/app/lib/einsicht-aktionen.ts`](../src/app/lib/einsicht-aktionen.ts) | 'use server' |
 | [`src/app/lib/fehlerkorb-aktionen.ts`](../src/app/lib/fehlerkorb-aktionen.ts) | 'use server' |
 | [`src/app/lib/konfig-aktionen.ts`](../src/app/lib/konfig-aktionen.ts) | 'use server' |
@@ -426,6 +437,7 @@ Policies: 1
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
+| [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/eingang/index.ts`](../src/eingang/index.ts) | Belege, die von selbst hereinkommen |
@@ -491,6 +503,7 @@ Policies: 1
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
+| [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |

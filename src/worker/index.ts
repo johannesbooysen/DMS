@@ -11,6 +11,7 @@ import { DateisystemAblage } from '../ablage'
 import { kannSperren, s3AusUmgebung } from '../ablage-s3'
 import { objektsperrenSetzen } from '../archiv/objektsperre'
 import { loeschdateienAbraeumen } from '../archiv/loeschen'
+import { basisAdresse, sammelmailsEintragen } from '../benachrichtigung'
 import { alsSystem } from '../db'
 import {
   AUFBEREITUNG,
@@ -54,6 +55,15 @@ const SPERRTAKT_MS = 900_000
  * gar nicht verschwindet, schon. Deshalb regelmaessig, aber nicht haeufig.
  */
 const RAEUMTAKT_MS = 3_600_000
+
+/**
+ * Wie oft nachgesehen wird, ob eine Sammelmail faellig ist.
+ *
+ * Stuendlich, weil die Wunschstunde je Benutzer eine volle Stunde ist. Ein
+ * feinerer Takt braechte nichts -- ein groeberer liesse Stunden aus, und
+ * wessen Wunschstunde dann uebersprungen wird, bekaeme nie eine Mail.
+ */
+const MELDETAKT_MS = 3_600_000
 
 /**
  * Wie oft nach faelligen Eingangsquellen gesehen wird.
@@ -254,6 +264,24 @@ async function start(): Promise<void> {
       }
     })
   }, RAEUMTAKT_MS).unref()
+
+  /*
+   * Die taegliche Sammelmail (Konzept 24.9). Eingetragen wird nur ins
+   * Ausgangsbuch -- gesendet wird sie vom Postausgang wie jede andere Post.
+   */
+  if (basisAdresse() === null) {
+    console.log('[worker] DMS_BASIS_URL fehlt, keine Sammelmails -- ein Link ins Leere waere schlechter als keine Mail')
+  } else {
+    setInterval(() => {
+      void sammelmailsEintragen().then(({ eingetragen, gescheitert }) => {
+        // Keine Adressen im Log -- eine Postfachadresse ist personenbezogen
+        // (Projektregel).
+        if (eingetragen + gescheitert > 0) {
+          console.log('[worker] Sammelmails:', eingetragen, 'eingetragen,', gescheitert, 'gescheitert')
+        }
+      })
+    }, MELDETAKT_MS).unref()
+  }
 
   console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG, FEHLERKORB)
 }

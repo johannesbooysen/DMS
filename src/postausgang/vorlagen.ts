@@ -35,6 +35,16 @@ export const PLATZHALTER: Record<string, Feldbeschreibung> = {
   link: { anzeige: 'Link', hinweis: 'vollständige Adresse, etwa zur Belegeinsicht' },
   gueltig_bis: { anzeige: 'Gültig bis', hinweis: 'Ende einer Einsichtsgewährung' },
   heute: { anzeige: 'Heute', hinweis: 'Datum des Versands' },
+
+  /*
+   * Fuer die taegliche Sammelmail (Konzept 24.9). Bewusst nur Zahlen: Ein
+   * Postfach ist schlechter geschuetzt als dieses System -- keine RLS,
+   * keine Sitzung, kein Protokoll --, und eine Aufzaehlung der faelligen
+   * Belege waere eine zweite, schwaechere Kopie des Bestands, die taeglich
+   * neu entstuende.
+   */
+  anzahl: { anzeige: 'Anzahl', hinweis: 'offene Aufgaben insgesamt' },
+  ueberfaellig: { anzeige: 'Ueberfaellig', hinweis: 'davon ueber der Frist' },
 }
 
 export type Werte = Partial<Record<keyof typeof PLATZHALTER, string>> &

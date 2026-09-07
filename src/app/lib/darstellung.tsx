@@ -9,6 +9,9 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
+import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
+import { alsBenutzer } from '@/db'
+import { zaehlerLaden } from '@/benachrichtigung'
 
 export const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 export const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
@@ -69,7 +72,29 @@ export function Ampel({ wert }: { wert: string | null }) {
   )
 }
 
-export function Seitenrahmen({ titel, children }: { titel: string; children: ReactNode }) {
+/**
+ * Die Zahl neben dem Postfach.
+ *
+ * Die staendig wirkende Haelfte des Benachrichtigungskonzepts (Konzept
+ * 24.9): Die Sammelmail kommt einmal am Tag, diese Zahl sieht man den
+ * ganzen Tag. Sie kostet eine indizierte Zaehlabfrage je Seite.
+ *
+ * **Faellt sie aus, faellt sie weg** -- nicht die Seite. Ein Zaehler ist
+ * eine Beigabe; wer wegen ihm eine Belegansicht nicht mehr oeffnen kann,
+ * hat einen schlechten Tausch gemacht.
+ */
+async function aufgabenzahl(): Promise<{ offen: number; ueberfaellig: number } | null> {
+  try {
+    const benutzer = await angemeldeterBenutzerOderNichts()
+    if (benutzer === null) return null
+    return await alsBenutzer(benutzer, zaehlerLaden)
+  } catch {
+    return null
+  }
+}
+
+export async function Seitenrahmen({ titel, children }: { titel: string; children: ReactNode }) {
+  const zaehler = await aufgabenzahl()
   return (
     <main
       style={{
@@ -117,6 +142,29 @@ export function Seitenrahmen({ titel, children }: { titel: string; children: Rea
             <span key={ziel}>
               {i > 0 && ' · '}
               <Link href={String(ziel)}>{name}</Link>
+              {/* Die Zahl steht nur am Postfach und nur, wenn es etwas zu
+                  zaehlen gibt. Eine Null neben jedem Eintrag waere Rauschen,
+                  und Rauschen macht die eine Zahl unsichtbar, auf die es
+                  ankommt. */}
+              {name === 'Postfächer' && zaehler !== null && zaehler.offen > 0 && (
+                <span
+                  title={
+                    zaehler.ueberfaellig > 0
+                      ? `${zaehler.offen} offen, ${zaehler.ueberfaellig} über der Frist`
+                      : `${zaehler.offen} offen`
+                  }
+                  style={{
+                    background: zaehler.ueberfaellig > 0 ? '#B3271E' : '#3B4A80',
+                    borderRadius: '999px',
+                    color: '#fff',
+                    fontSize: '0.7rem',
+                    marginLeft: '0.3rem',
+                    padding: '0.05rem 0.4rem',
+                  }}
+                >
+                  {zaehler.offen}
+                </span>
+              )}
             </span>
           ))}
         </span>

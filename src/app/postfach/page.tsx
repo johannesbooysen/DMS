@@ -13,6 +13,9 @@ import {
   type Postfachzeile,
 } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { alsBenutzer } from '@/db'
+import { wunschLaden } from '@/benachrichtigung'
+import { wunschSpeichernAktion } from '@/app/lib/benachrichtigung-aktionen'
 import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
@@ -60,10 +63,11 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
 
 export default async function Postfaecher() {
   const benutzer = await angemeldeterBenutzer()
-  const [persoenlich, spezial, klaerungen] = await Promise.all([
+  const [persoenlich, spezial, klaerungen, wunsch] = await Promise.all([
     persoenlichesPostfach(benutzer),
     poolPostfach(benutzer),
     klaerungsPostfach(benutzer),
+    alsBenutzer(benutzer, wunschLaden),
   ])
 
   return (
@@ -94,6 +98,67 @@ export default async function Postfaecher() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section
+        style={{
+          borderTop: '1px solid #ddd',
+          color: '#555',
+          fontSize: '0.85rem',
+          marginTop: '2rem',
+          paddingTop: '1rem',
+        }}
+      >
+        <h2 style={{ fontSize: '1rem', margin: '0 0 0.25rem' }}>Tägliche Übersicht</h2>
+        <p style={{ margin: '0 0 0.75rem' }}>
+          Eine Sammelmail am Tag — und nur, wenn etwas offen ist. Keine Mail je Aufgabe: Die
+          filtert nach zwei Wochen jeder in einen Ordner, den niemand öffnet, und dann ist
+          auch die eine verloren, die wichtig war.{' '}
+          <strong>Belegdaten stehen nicht darin</strong>, nur Zahlen und ein Link hierher.
+        </p>
+        <form
+          action={wunschSpeichernAktion}
+          style={{ alignItems: 'flex-end', display: 'flex', gap: '0.75rem' }}
+        >
+          <input type="hidden" name="zurueck" value="/postfach" />
+          <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
+            <span>Sammelmail</span>
+            <select
+              name="taeglich"
+              defaultValue={wunsch.taeglich ? 'ja' : 'nein'}
+              style={{ border: '1px solid #bbb', font: 'inherit', padding: '0.3rem' }}
+            >
+              <option value="ja">ja</option>
+              <option value="nein">nein</option>
+            </select>
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
+            <span>Uhrzeit</span>
+            <select
+              name="stunde"
+              defaultValue={String(wunsch.stunde)}
+              style={{ border: '1px solid #bbb', font: 'inherit', padding: '0.3rem' }}
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>
+                  {String(h).padStart(2, '0')}:00
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="submit"
+            style={{
+              background: '#3B4A80',
+              border: 0,
+              color: '#fff',
+              font: 'inherit',
+              padding: '0.35rem 0.7rem',
+            }}
+          >
+            Übernehmen
+          </button>
+        </form>
       </section>
     </Seitenrahmen>
   )
