@@ -25,13 +25,33 @@ Extraktionsergebnisse — sind Hilfsmittel und werden bei Bedarf neu erzeugt.
 | Rolle | Aufgabe | Wer |
 |---|---|---|
 | Verfahrensverantwortung | gibt die Verfahrensdokumentation frei, entscheidet über Ablaufänderungen | ⬜ offen |
-| Systembetreuung | Betrieb, Sicherung, Wiederherstellung, Zugriffsverwaltung | ⬜ offen |
+| Systembetreuung | Betrieb, Sicherung, Wiederherstellung, Zugriffsverwaltung | Johannes Booysen |
 | Datenschutz | Löschanträge, Einschränkungen, Verzeichnis der Verarbeitungstätigkeiten | ⬜ offen |
 | Fachliche Prüfung | sachliche und rechnerische Richtigkeit, Kontierung | siehe Rollen im System (§17 des Konzepts) |
 
 Die fachlichen Rollen stehen nicht hier, sondern in den Stammdaten
 (`rolle`, `benutzer_rolle_objekt`, `objekt_zustaendigkeit`) — dort sind sie
 datiert und nachvollziehbar, hier wären sie eine zweite Wahrheit.
+
+### Betriebsumgebung
+
+Ein Server in Deutschland, betrieben als `docker compose` mit vier
+Containern: Datenbank (PostgreSQL 17), Anwendung, Worker und Reverse Proxy
+(TLS). Anwendung und Worker teilen sich **ein** Image und unterscheiden sich
+nur im Startbefehl. Die Begründung samt Verworfenem steht in
+[ADR 0007](adr/0007-betriebsumgebung.md).
+
+Am Worker hängen neben den Warteschlangen die Objektsperre, das Abräumen
+gelöschter Dateien und die tägliche Benachrichtigung. Fällt er aus, geschieht
+nichts davon — sichtbar wird das über das Lebenszeichen
+(`npm run betrieb:pruefen`, `/api/lebenszeichen`), nicht über die
+Oberfläche.
+
+**Änderungen am Datenmodell** werden von Hand eingespielt, nie beim Start
+eines Containers: Zwei startende Container würden dieselbe Migration
+nebenläufig anwenden, und eine fehlerhafte liefe ohne Aufsicht.
+
+Konkreter Server, Anbieter und Standort: ⬜ offen.
 
 ### Aufbewahrungsort
 
@@ -118,6 +138,12 @@ sie ohnehin findet:
   Fassung. Diese Lücke lässt sich nicht nachträglich schließen — sie wäre eine
   Behauptung über ein Verfahren, das damals nicht beschrieben war. Sichtbar
   über `app.archiv_ohne_verfahrensdoku()`.
+- **Das System läuft auf einem Rechner.** Fällt er aus, steht es, bis er
+  wiederhergestellt ist. Das ist für diese Größenordnung eine bewusste
+  Entscheidung ([ADR 0007](adr/0007-betriebsumgebung.md)) und trägt nur,
+  solange die Wiederherstellung tatsächlich geprobt wird — siehe „Letzte
+  geprobte Wiederherstellung" oben. Ein zweiter Rechner ohne geprobtes
+  Zurückholen wäre die schlechtere Absicherung.
 - **Das Löschen nach Fristablauf geschieht nicht von selbst.** Fällige Belege
   stehen unter *Archiv*; gelöscht wird je Beleg auf ausdrückliche Handlung.
   Das ist Absicht — ein automatischer Lauf, der Belege entfernt, ist im

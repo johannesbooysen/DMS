@@ -1,0 +1,114 @@
+# ===========================================================================
+# Prüfung (ADR 0007)
+# ===========================================================================
+#
+# **Derselbe Weg wie lokal.** Datenbank über die Supabase-CLI, Objektspeicher
+# über `npm run speicher:start` — nicht über Service-Container mit eigenen
+# Images. Das kostet zwei Minuten und ist sie wert: Ein CI, das anders
+# aufbaut als die Entwicklung, bleibt grün, während die Sache kaputt ist.
+#
+# **Hier liegen keine echten Daten.** Fixtures und Seed arbeiten
+# ausschließlich mit erfundenen Namen und Bankverbindungen (Projektregel).
+# Deshalb ist ein Lauf auf fremder Infrastruktur vertretbar. Was hier
+# ausdrücklich **nicht** hingehört, ist ein Schritt mit Produktionszugang —
+# sonst wäre ein Pull Request der kürzeste Weg in die Datenbank.
+
+name: Prüfung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Ein laufender Durchgang je Branch reicht; ein überholter sagt nichts mehr.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruefung:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Dieselbe Hauptfassung wie im Image (`Dockerfile`).
+          node-version: 22
+          cache: npm
+
+      - name: Abhängigkeiten
+        run: npm ci
+
+      # Die drei schnellen Prüfungen zuerst: Sie brauchen keine Datenbank und
+      # scheitern in Sekunden statt in Minuten.
+      - name: Typen
+        run: npm run typecheck
+
+      - name: Linter
+        run: npm run lint
+
+      - name: Dokumentation
+        run: npm run docs:check
+
+      # Der Bau darf **keine** Datenbank brauchen -- im Image gibt es keine.
+      # Nachgemessen, nicht angenommen (ADR 0007).
+      - name: Bau ohne Datenbank
+        env:
+          DATABASE_URL: postgresql://niemand:nichts@127.0.0.1:1/leer
+        run: npm run build
+
+      - name: Datenbank
+        run: |
+          npm run db:start
+          npm run db:reset
+
+      # **Ohne MinIO melden sich die S3-Tests als übersprungen** -- richtig,
+      # aber nutzlos. Ein CI, in dem die Objektsperre dauerhaft ungeprüft
+      # bleibt, prüft ausgerechnet die Zusicherung nicht, die im
+      # Prüfungsfall zählt.
+      - name: Objektspeicher
+        run: npm run speicher:start
+
+      - name: Tests
+        run: npm test
+
+      - name: Browser
+        run: npx playwright install --with-deps chromium
+
+      # Setzt die Datenbank selbst zurück (globalSetup) und startet den Worker.
+      - name: Ende-zu-Ende
+        run: npm run e2e
+
+      # Die geprobte Wiederherstellung ist Teil des Verfahrens, nicht ein
+      # Zusatz (GoBD, Konzept 24.7). Ein Verfahren, das nur beschrieben ist,
+      # ist keins.
+      - name: Sicherung und Restore-Probe
+        env:
+          DMS_PG_CONTAINER: supabase_db_DMS
+        run: |
+          npm run sicherung -- ci-sicherung
+          npm run sicherung:pruefen -- ci-sicherung
+
+      # Die Verfahrensdokumentation wird aus dem Repository abgeleitet. Läuft
+      # sie hinter dem Code her, beschreibt sie ein anderes Verfahren als das
+      # laufende -- und das ist schlimmer als gar keine.
+      - name: Verfahrensdokumentation ist aktuell
+        run: |
+          npm run verfahrensdoku
+          git diff --exit-code docs/verfahrensdokumentation.md
+
+      # Erst ganz am Ende: Der Bau dauert lange, und wenn die Prüfungen davor
+      # rot sind, interessiert das Image niemanden.
+      - name: Image baut
+        run: docker build --build-arg DMS_FASSUNG=${{ github.sha }} -t dms:${{ github.sha }} .
+
+      - name: Playwright-Bericht bei Fehlschlag
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-bericht
+          path: playwright-report/
+          retention-days: 7

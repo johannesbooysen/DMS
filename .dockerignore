@@ -1,0 +1,24 @@
+# Was nicht ins Image gehoert.
+#
+# Vor allem: **keine Geheimnisse und keine Belege.** Eine .env im Image waere
+# ein Passwort in einer Datei, die weitergereicht wird; die Ablage waere ein
+# zweiter Ort, an dem Belege liegen und altern.
+
+node_modules
+.next
+.git
+.github
+.ablage
+.ablage-e2e
+.env
+.env.*
+!.env.beispiel
+*.log
+sicherungen
+test-results
+playwright-report
+supabase/.branches
+supabase/.temp
+.claude/settings.local.json
+Dockerfile
+compose.yaml

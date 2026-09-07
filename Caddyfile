@@ -1,0 +1,63 @@
+# ===========================================================================
+# Reverse Proxy und TLS (ADR 0007)
+# ===========================================================================
+#
+# Caddy holt und erneuert das Zertifikat selbsttaetig. Der Name in
+# DMS_DOMAENE muss dafuer wirklich auf diesen Server zeigen.
+
+{$DMS_DOMAENE} {
+	encode zstd gzip
+
+	# **Der Lebenszeichen-Pfad bleibt drinnen.** Er antwortet ohne Anmeldung,
+	# weil die Container-Pruefung keine Sitzung hat -- das ist ein Grund fuer
+	# das interne Netz, nicht fuer das offene. Er nennt die Programmfassung,
+	# und das ist eine Auskunft, die von aussen niemand braucht.
+	@lebenszeichen path /api/lebenszeichen*
+	respond @lebenszeichen 404
+
+	# Etwas ueber der Grenze der Server Action (64 MB, siehe
+	# `next.config.ts`). **Absichtlich darueber:** So lehnt die Anwendung ab,
+	# die weiss, worum es ging -- und nicht der Proxy mit einem nackten 413.
+	request_body {
+		max_size 80MB
+	}
+
+	header {
+		# Ein Jahr HSTS. Erst einschalten, wenn das Zertifikat steht --
+		# vorher sperrt man sich Browser aus, die den Namen schon kennen.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		# SAMEORIGIN und nicht DENY: Die Belegansicht bettet die Vorschau ein.
+		X-Frame-Options SAMEORIGIN
+		-Server
+	}
+
+	reverse_proxy web:3000 {
+		# Grosse Scans brauchen laenger als die Vorgabe.
+		transport http {
+			read_timeout 300s
+			write_timeout 300s
+		}
+	}
+
+	# **Keine Pfade mit Kennungen ins Zugriffsprotokoll.** Belegpfade tragen
+	# UUIDs, Einsichtspfade tragen den Token -- der Token *ist* der Zugang
+	# (Konzept, externe Einsicht). Ein Protokoll, das ihn mitschreibt, ist
+	# eine zweite Tuer. Deshalb nur Fehler, und ohne URI.
+	log {
+		output file /data/zugriff.log {
+			roll_size 20MB
+			roll_keep 5
+		}
+		format filter {
+			wrap console
+			fields {
+				request>uri delete
+				request>headers>Cookie delete
+				request>headers>Authorization delete
+			}
+		}
+		level ERROR
+	}
+}

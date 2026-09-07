@@ -8,9 +8,9 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 73 Tabellen, 169 Policies,
-98 Module, 791 Testfaelle in 41 Dateien,
-6 Architekturentscheidungen, 3 markierte offene Stellen.
+Auf einen Blick: 74 Tabellen, 170 Policies,
+100 Module, 799 Testfaelle in 42 Dateien,
+7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -42,6 +42,7 @@ Auf einen Blick: 73 Tabellen, 169 Policies,
 | `npm run sicherung:pruefen` | `tsx scripts/sicherung-pruefen.ts` |
 | `npm run e2e` | `playwright test` |
 | `npm run e2e:ui` | `playwright test --ui` |
+| `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
 
 ## Migrationen
 
@@ -390,6 +391,16 @@ Funktionen: `app.aufgaben_zaehler`, `app.benachrichtigung_faellig`, `app.benachr
 
 Policies: 1
 
+### `supabase/migrations/20260907140000_lebenszeichen.sql`
+
+===========================================================================
+
+Tabellen: `betrieb_lebenszeichen`
+
+Funktionen: `app.lebenszeichen_setzen`, `app.lebenszeichen`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -408,6 +419,7 @@ Policies: 1
 | [`src/app/api/beleg/[id]/seite/[nr]/route.ts`](../src/app/api/beleg/[id]/seite/[nr]/route.ts) | Vorgerenderte Seite als WebP |
 | [`src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts`](../src/app/api/einsicht/[token]/[dokument]/[seite]/route.ts) | Eine Belegseite für die externe Ansicht |
 | [`src/app/api/einsicht/[token]/[dokument]/pdf/route.ts`](../src/app/api/einsicht/[token]/[dokument]/pdf/route.ts) | Das Original als PDF — nur bei ausdrücklichem Download-Recht |
+| [`src/app/api/lebenszeichen/route.ts`](../src/app/api/lebenszeichen/route.ts) | Lebenszeichen der Betriebsumgebung (ADR 0007) |
 | [`src/app/api/stapel/[id]/seite/[nr]/route.ts`](../src/app/api/stapel/[id]/seite/[nr]/route.ts) | Eine Stapelseite als Miniatur |
 | [`src/app/lib/adresse.ts`](../src/app/lib/adresse.ts) | Wie die Anwendung von außen heißt |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
@@ -438,6 +450,7 @@ Policies: 1
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
+| [`src/betrieb/index.ts`](../src/betrieb/index.ts) | Lebenszeichen und Gesundheit der Betriebsumgebung (ADR 0007) |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
 | [`src/eingang/index.ts`](../src/eingang/index.ts) | Belege, die von selbst hereinkommen |
@@ -504,6 +517,7 @@ Policies: 1
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
+| [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
@@ -549,6 +563,7 @@ Policies: 1
 | [ADR 0004 — Anmeldung über Entra ID, Sitzung in Postgres](adr/0004-anmeldung.md) | unbekannt |
 | [ADR 0005 — Linter mit Typwissen, dafür TypeScript 6](adr/0005-linter.md) | unbekannt |
 | [ADR 0006 — Object Lock schützt Fassungen, nicht Schlüssel](adr/0006-objektsperre.md) | unbekannt |
+| [ADR 0007 — Ein Server, ein Image, zwei Prozesse](adr/0007-betriebsumgebung.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 

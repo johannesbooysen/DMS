@@ -41,13 +41,33 @@ Extraktionsergebnisse — sind Hilfsmittel und werden bei Bedarf neu erzeugt.
 | Rolle | Aufgabe | Wer |
 |---|---|---|
 | Verfahrensverantwortung | gibt die Verfahrensdokumentation frei, entscheidet über Ablaufänderungen | ⬜ offen |
-| Systembetreuung | Betrieb, Sicherung, Wiederherstellung, Zugriffsverwaltung | ⬜ offen |
+| Systembetreuung | Betrieb, Sicherung, Wiederherstellung, Zugriffsverwaltung | Johannes Booysen |
 | Datenschutz | Löschanträge, Einschränkungen, Verzeichnis der Verarbeitungstätigkeiten | ⬜ offen |
 | Fachliche Prüfung | sachliche und rechnerische Richtigkeit, Kontierung | siehe Rollen im System (§17 des Konzepts) |
 
 Die fachlichen Rollen stehen nicht hier, sondern in den Stammdaten
 (`rolle`, `benutzer_rolle_objekt`, `objekt_zustaendigkeit`) — dort sind sie
 datiert und nachvollziehbar, hier wären sie eine zweite Wahrheit.
+
+### Betriebsumgebung
+
+Ein Server in Deutschland, betrieben als `docker compose` mit vier
+Containern: Datenbank (PostgreSQL 17), Anwendung, Worker und Reverse Proxy
+(TLS). Anwendung und Worker teilen sich **ein** Image und unterscheiden sich
+nur im Startbefehl. Die Begründung samt Verworfenem steht in
+[ADR 0007](adr/0007-betriebsumgebung.md).
+
+Am Worker hängen neben den Warteschlangen die Objektsperre, das Abräumen
+gelöschter Dateien und die tägliche Benachrichtigung. Fällt er aus, geschieht
+nichts davon — sichtbar wird das über das Lebenszeichen
+(`npm run betrieb:pruefen`, `/api/lebenszeichen`), nicht über die
+Oberfläche.
+
+**Änderungen am Datenmodell** werden von Hand eingespielt, nie beim Start
+eines Containers: Zwei startende Container würden dieselbe Migration
+nebenläufig anwenden, und eine fehlerhafte liefe ohne Aufsicht.
+
+Konkreter Server, Anbieter und Standort: ⬜ offen.
 
 ### Aufbewahrungsort
 
@@ -134,6 +154,12 @@ sie ohnehin findet:
   Fassung. Diese Lücke lässt sich nicht nachträglich schließen — sie wäre eine
   Behauptung über ein Verfahren, das damals nicht beschrieben war. Sichtbar
   über `app.archiv_ohne_verfahrensdoku()`.
+- **Das System läuft auf einem Rechner.** Fällt er aus, steht es, bis er
+  wiederhergestellt ist. Das ist für diese Größenordnung eine bewusste
+  Entscheidung ([ADR 0007](adr/0007-betriebsumgebung.md)) und trägt nur,
+  solange die Wiederherstellung tatsächlich geprobt wird — siehe „Letzte
+  geprobte Wiederherstellung" oben. Ein zweiter Rechner ohne geprobtes
+  Zurückholen wäre die schlechtere Absicherung.
 - **Das Löschen nach Fristablauf geschieht nicht von selbst.** Fällige Belege
   stehen unter *Archiv*; gelöscht wird je Beleg auf ausdrückliche Handlung.
   Das ist Absicht — ein automatischer Lauf, der Belege entfernt, ist im
@@ -143,7 +169,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-73 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+74 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -221,6 +247,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `schriftverkehr_fakten` | [`20260902180000_schriftverkehr.sql`](../supabase/migrations/20260902180000_schriftverkehr.sql) |
 | `loeschung` | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 | `benachrichtigung` | [`20260907100000_benachrichtigung.sql`](../supabase/migrations/20260907100000_benachrichtigung.sql) |
+| `betrieb_lebenszeichen` | [`20260907140000_lebenszeichen.sql`](../supabase/migrations/20260907140000_lebenszeichen.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -631,6 +658,17 @@ belegt.
 - schneidet den Schraegstrich am Ende ab
 - kennt die beiden neuen Platzhalter
 - kennt weiterhin keinen Belegtext
+
+### [`tests/betrieb.test.ts`](../tests/betrieb.test.ts)
+
+- wird eingetragen und gilt danach als frisch
+- meldet einen Dienst, der nie eingetragen hat, als verstummt
+- meldet ein zu altes Lebenszeichen als verstummt
+- prueft nur die erwarteten Dienste
+- nennt die Fassung, die eingetragen hat
+- laesst sich nicht von Hand setzen
+- zeigt allen dasselbe -- die Tabelle hat bewusst keinen Mandanten
+- ist der, den der Worker eintraegt
 
 ### [`tests/eingang.test.ts`](../tests/eingang.test.ts)
 

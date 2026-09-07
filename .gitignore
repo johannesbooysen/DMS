@@ -19,6 +19,8 @@ test-results/
 # Konfiguration mit Zugangsdaten — gehört nie ins Repository
 .env
 .env.*
+# Die Vorlage traegt keine Werte und gehoert ins Repository.
+!.env.beispiel
 !.env.example
 *.pem
 *.key

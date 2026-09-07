@@ -1,0 +1,130 @@
+# ===========================================================================
+# Betriebsumgebung (ADR 0007): ein Server, vier Container
+# ===========================================================================
+#
+# Web, Worker, Datenbank, Reverse Proxy. Der Objektspeicher liegt **nicht**
+# hier, sondern beim Anbieter -- am selben Standort wie dieser Server, weil
+# jedes Seitenbild durch den Webprozess geht und die Latenz dorthin bei jedem
+# ersten Ansehen anfaellt (docs/messungen.md).
+#
+# Web und Worker teilen sich ein Image und unterscheiden sich nur im Befehl.
+
+x-anwendung: &anwendung
+  build:
+    context: .
+    args:
+      DMS_FASSUNG: ${DMS_FASSUNG:-unbekannt}
+  image: dms:${DMS_FASSUNG:-lokal}
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORT:?POSTGRES_PASSWORT fehlt}@db:5432/postgres
+    DMS_FASSUNG: ${DMS_FASSUNG:-unbekannt}
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+  volumes:
+    # Rueckfall-Ablage. In Produktion gehoeren die Belege nach S3 -- ohne
+    # Objektsperre gibt es keinen Schutz am Speicher vorbei (ADR 0006).
+    - ablage:/app/.ablage
+
+services:
+  db:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORT:?POSTGRES_PASSWORT fehlt}
+      # **UTC, und das ist keine Geschmacksfrage.** Die Hash-Kette rechnet
+      # ueber `zeitpunkt::text`; gemessen stimmten alle Eintraege unter UTC
+      # und keiner unter Europe/Berlin. Die Hashfunktionen nageln die
+      # Einstellung inzwischen selbst fest -- das hier ist der zweite Riegel,
+      # damit ein Restore auf einen anders eingestellten Server nicht
+      # dieselbe Frage neu stellt.
+      TZ: UTC
+      PGTZ: UTC
+    command:
+      - postgres
+      - -c
+      - timezone=UTC
+      - -c
+      - datestyle=ISO, MDY
+    volumes:
+      - db-daten:/var/lib/postgresql/data
+    # **Nur auf die Rueckadresse.** Migrationen laufen ueber einen
+    # SSH-Tunnel von der Wartungsmaschine (siehe docs/handbuch.md); eine
+    # Datenbank am offenen Netz braucht dieses System nie.
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  web:
+    <<: *anwendung
+    command: ["npm", "run", "start"]
+    expose:
+      - "3000"
+    # Nur Anwendung und Datenbank (`?dienste=`). Wuerde hier der Worker
+    # mitgeprueft, startete Docker bei einem toten Worker die Anwendung neu
+    # -- den einen Prozess, der nichts dafuer kann.
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "--eval"
+        - "fetch('http://127.0.0.1:3000/api/lebenszeichen?dienste=').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2g
+
+  worker:
+    <<: *anwendung
+    command: ["npm", "run", "worker"]
+    # **Der Worker bekommt weniger, und zwar absichtlich.** OCR und
+    # PDF-Rendern sind die einzigen Arbeiten im System, die einen Kern lange
+    # belegen. Ohne Grenze bremst der Stapelscan eines Mandanten die Suche
+    # aller anderen -- bei einer gemeinsamen Datenbank ist das kein
+    # Fremdverschulden mehr, sondern unsere Auslegung.
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 2g
+    # Prueft sein **eigenes** Lebenszeichen in der Datenbank. Damit haengt
+    # der Neustart an dem Prozess, der auch neu gestartet werden muss.
+    healthcheck:
+      test: ["CMD", "npm", "run", "--silent", "betrieb:pruefen"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 60s
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DMS_DOMAENE: ${DMS_DOMAENE:?DMS_DOMAENE fehlt}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-daten:/data
+      - caddy-konfig:/config
+
+volumes:
+  db-daten:
+  ablage:
+  caddy-daten:
+  caddy-konfig:

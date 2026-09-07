@@ -1464,6 +1464,83 @@ daran ändern, dass der Beleg gelöscht ist. Und es geht auf, weil die
 Objektsperre genau bis zum Ende der Aufbewahrungsfrist läuft — vorher gibt der
 Speicher die Datei nicht her, danach schon.
 
+## Der Server
+
+Das System läuft auf **einem** Server mit vier Containern: Datenbank,
+Anwendung, Worker und einem Reverse Proxy, der die Verschlüsselung übernimmt.
+Warum so und nicht bei einem Cloudanbieter, steht in
+[ADR 0007](adr/0007-betriebsumgebung.md).
+
+### Hochfahren
+
+```bash
+cp .env.beispiel .env
+```
+
+Ausfüllen — vier Angaben sind Pflicht, ohne sie startet der Verbund gar nicht
+erst: Datenbankpasswort, Domäne, Basisadresse und das Sitzungsgeheimnis.
+Danach die Rechte einschränken (`chmod 600 .env`); in dieser Datei stehen
+alle Zugangsdaten, auch die der Mailpostfächer.
+
+```bash
+DMS_FASSUNG=$(git rev-parse --short HEAD) docker compose up -d --build
+```
+
+Die **Domäne muss wirklich auf diesen Server zeigen**, bevor Sie starten: Der
+Proxy holt das Zertifikat selbsttätig, und dafür muss der Name auflösen.
+
+### Änderungen am Datenmodell
+
+Nicht beim Start, sondern von Hand — über einen SSH-Tunnel zur Datenbank, die
+absichtlich nur auf der Rückadresse des Servers lauscht:
+
+```bash
+ssh -L 5433:127.0.0.1:5432 server
+npx supabase db push --db-url "postgresql://postgres:PASSWORT@127.0.0.1:5433/postgres?sslmode=disable"
+```
+
+**`sslmode=disable` gehört dazu**, und das ist hier kein Nachlassen: Die
+CLI bricht sonst mit *„The server does not support SSL connections"* ab. Die
+Verbindung läuft bereits durch den SSH-Tunnel, ist also verschlüsselt — eine
+zweite Schicht darunter fügte nichts hinzu. Die Datenbank lauscht außerdem
+nur auf der Rückadresse des Servers; ohne Tunnel kommt niemand an sie heran.
+
+Das ist Absicht und keine Unbequemlichkeit: Ein Container, der beim Start
+selbst migriert, tut das nachts um drei, ohne dass jemand zusieht — und wenn
+zwei Container gleichzeitig hochfahren, tun es beide.
+
+### Läuft noch alles?
+
+Der Worker ist der Prozess, dessen Ausfall man **nicht** sieht. An ihm hängen
+die Texterkennung, die Objektsperre, das Abräumen gelöschter Dateien und die
+tägliche Benachrichtigung. Fällt er aus, arbeitet die Oberfläche völlig
+normal weiter — Belege kommen herein, Stempel lassen sich setzen — nur
+geschieht im Hintergrund nichts mehr.
+
+Deshalb trägt er jede Minute ein Lebenszeichen ein:
+
+```bash
+npm run betrieb:pruefen
+docker compose logs -f worker
+```
+
+Meldet der Befehl *verstummt*, läuft der Worker nicht mehr oder kommt nicht
+an die Datenbank. **Ein Dienst, der noch nie eingetragen hat, gilt ebenfalls
+als verstummt** — sonst gäbe eine leere Liste ausgerechnet für den Fall
+Entwarnung, in dem gar nichts läuft.
+
+Dieselbe Auskunft im Browser gibt es unter `/api/lebenszeichen`, aber nur
+vom Server aus: Nach außen ist der Pfad gesperrt.
+
+### Wenn etwas nicht startet
+
+| Meldung | Grund |
+|---|---|
+| `POSTGRES_PASSWORT fehlt` | `.env` nicht angelegt oder nicht ausgefüllt |
+| Container `web` bleibt *unhealthy* | Datenbank nicht erreichbar — `docker compose logs db` |
+| Kein Zertifikat | Die Domäne zeigt nicht auf diesen Server |
+| Uploads scheitern ab einer Größe | Grenze in `next.config.ts` und `Caddyfile` gemeinsam anheben |
+
 ## Sicherung und Wiederherstellung
 
 **Ein Archiv ohne getesteten Restore ist kein Archiv.** Deshalb gibt es hier

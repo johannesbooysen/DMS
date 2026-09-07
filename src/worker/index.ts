@@ -12,6 +12,7 @@ import { kannSperren, s3AusUmgebung } from '../ablage-s3'
 import { objektsperrenSetzen } from '../archiv/objektsperre'
 import { loeschdateienAbraeumen } from '../archiv/loeschen'
 import { basisAdresse, sammelmailsEintragen } from '../benachrichtigung'
+import { WORKER, lebenszeichenSetzen } from '../betrieb'
 import { alsSystem } from '../db'
 import {
   AUFBEREITUNG,
@@ -31,6 +32,17 @@ import { stapelAufbereiten } from './stapelaufbereitung'
 import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
 
 const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
+
+/**
+ * Wie oft der Worker sein Lebenszeichen eintraegt.
+ *
+ * Haeufig, im Gegensatz zu allen anderen Takten hier -- eine Zeile zu
+ * ueberschreiben kostet nichts, und der Wert liegt gerade in der Dichte:
+ * Der Endpunkt schlaegt nach drei verpassten Takten an (`FRIST_S`), also
+ * nach drei Minuten. Waere der Takt so selten wie die Objektsperre, fiele
+ * ein toter Worker erst nach einer Dreiviertelstunde auf.
+ */
+const LEBENSTAKT_MS = 60_000
 
 /** Wie oft im Ausgangsbuch nachgesehen wird. */
 const POSTTAKT_MS = 30_000
@@ -282,6 +294,22 @@ async function start(): Promise<void> {
       })
     }, MELDETAKT_MS).unref()
   }
+
+  /*
+   * Das Lebenszeichen (ADR 0007).
+   *
+   * Sofort einmal und danach im Takt: Sonst gaelte der Worker nach einem
+   * Neustart drei Minuten lang als verstummt -- und ein Neustart ist der
+   * haeufigste Grund, warum ueberhaupt jemand nachsieht.
+   *
+   * Scheitert das Eintragen, bleibt es dabei; der naechste Takt versucht
+   * es erneut. Den Worker daran sterben zu lassen waere verkehrt herum:
+   * Er arbeitet weiter, nur die Auskunft ueber ihn fehlt.
+   */
+  void lebenszeichenSetzen(WORKER).catch(() => undefined)
+  setInterval(() => {
+    void lebenszeichenSetzen(WORKER).catch(() => undefined)
+  }, LEBENSTAKT_MS).unref()
 
   console.log('[worker] bereit, Warteschlangen:', AUFBEREITUNG, STAPELAUFBEREITUNG, FEHLERKORB)
 }

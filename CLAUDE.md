@@ -80,6 +80,19 @@ Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung
 DMS_BENUTZER_EXPORT=<kennung> npm run objektakte -- <objektnummer> [ziel]
 ```
 
+Betrieb (ADR 0007) — Produktion läuft als `docker compose` mit vier Containern: Datenbank, Web, Worker, Reverse Proxy. Web und Worker teilen sich **ein** Image und unterscheiden sich nur im Startbefehl:
+
+```bash
+cp .env.beispiel .env          # ausfüllen, danach chmod 600 .env
+DMS_FASSUNG=$(git rev-parse --short HEAD) docker compose up -d --build
+docker compose logs -f worker
+npm run betrieb:pruefen        # laufen die Hintergrunddienste noch?
+```
+
+**Migrationen laufen nie beim Start**, sondern von Hand über einen SSH-Tunnel (`supabase db push --db-url …`). Zwei startende Container würden dieselbe Migration nebenläufig anwenden, und eine fehlerhafte liefe nachts um drei ohne jemanden, der zusieht.
+
+Der Worker ist mehr als die Warteschlangen: An ihm hängen die Objektsperre, das Abräumen gelöschter Dateien und die Sammelmail. **Stirbt er, hört das System still auf zu sperren, zu löschen und zu benachrichtigen** — die Oberfläche sieht dabei normal aus. Deshalb trägt er im Minutentakt ein Lebenszeichen ein, und es gibt drei Blickwinkel darauf: `/api/lebenszeichen` (System, für Überwachung und Menschen), `/api/lebenszeichen?dienste=` (nur Anwendung und Datenbank, für den Web-Container) und `npm run betrieb:pruefen` (der Worker prüft sich selbst). Ohne diese Trennung startete Docker bei totem Worker die Anwendung neu — den einen Prozess, der nichts dafür kann. Ein Dienst, der **nie** eingetragen hat, gilt als verstummt und nicht als unauffällig.
+
 `npm run dev` startet zwei Prozesse: die Next.js-Anwendung und den Worker. Einzeln laufen sie über `npm run dev:web` und `npm run dev:worker` — nützlich, wenn nur an der Pipeline gearbeitet wird.
 
 **Zwei Testarten mit verschiedenen Aufgaben.** `tests/` prüft **Regeln** — RLS, Summenzwang, Hash-Kette — gegen die Datenbank, im Rollback, schnell. `e2e/` prüft **die Kette**: dass Anmeldung, Sitzung, RLS, Engine, Server-Aktion und Umleitung zusammen tragen. Deshalb dort wenige Tests, und jeder geht einen ganzen Weg. Eine Zusicherung über eine Policy gehört **nie** in einen Browsertest — sie lässt sich an einer Oberfläche nicht beweisen.
