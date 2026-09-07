@@ -31,6 +31,24 @@ updates:
         update-types:
           - version-update:semver-major
 
+      # **Die Linter-Kette bewegt sich als Ganzes oder gar nicht.**
+      # Nachgestellt am ersten Tag: Dependabot schlug ESLint 10 vor, und der
+      # Durchgang scheiterte nach 37 Sekunden. `eslint-config-next` erlaubt
+      # formal `eslint >= 9.0.0`, bringt aber `typescript-eslint ^8` mit --
+      # und das kennt ESLint 10 nicht. Ein gruener Peer-Bereich ist eben
+      # keine Zusage, dass es zusammen laeuft.
+      #
+      # Ein Hauptversionssprung hier gehoert deshalb von Hand gemacht:
+      # eslint, eslint-config-next und typescript-eslint zusammen, danach
+      # `npm run lint` -- sonst fallen die drei Regeln mit Typwissen aus,
+      # wegen derer es den Linter ueberhaupt gibt (ADR 0005).
+      - dependency-name: eslint
+        update-types:
+          - version-update:semver-major
+      - dependency-name: eslint-config-next
+        update-types:
+          - version-update:semver-major
+
       # Next und React heben wir bewusst von Hand an: Diese Fassung von Next
       # weicht von der bekannten ab (siehe die Hinweise in CLAUDE.md), und
       # ein Hauptversionssprung will gelesen, nicht zusammengeführt werden.

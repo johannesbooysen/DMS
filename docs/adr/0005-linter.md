@@ -95,3 +95,20 @@ war Glück, nicht Prüfung.
 Navigationslinks als `<a>` statt `Link`. **Kein einziges vergessenes
 `await`.** Das ist die beruhigendste Auskunft dieses Vorgangs — und sie war
 vorher nicht zu haben.
+
+## Nachtrag (2026-09-07): auch ESLint ist festgelegt
+
+Am Tag, an dem das Repository nach GitHub kam, schlug Dependabot **ESLint 10**
+vor. Der Durchgang scheiterte nach 37 Sekunden.
+
+`eslint-config-next` nennt als Peer `eslint >= 9.0.0` — formal ist ESLint 10
+also erlaubt. Es bringt aber `typescript-eslint ^8` mit, und das kennt
+ESLint 10 nicht. **Ein grüner Peer-Bereich ist keine Zusage, dass es zusammen
+läuft.**
+
+Damit ist nicht nur TypeScript festgelegt, sondern die ganze Kette:
+`eslint`, `eslint-config-next`, `typescript-eslint` und `typescript` bewegen
+sich **gemeinsam oder gar nicht**. Hauptversionssprünge sind in
+`.github/dependabot.yml` ausgenommen und von Hand zu machen — danach
+`npm run lint`, denn die Zusicherung dieses ADR sind die drei Regeln mit
+Typwissen, und die fallen still aus, wenn die Kette auseinanderfällt.
