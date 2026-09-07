@@ -1,0 +1,51 @@
+# Abhängigkeiten nachziehen (ADR 0005, ADR 0007)
+#
+# **Monatlich und gebündelt.** Wöchentlich einzeln wären bei rund dreißig
+# Paketen mehrere Pull Requests die Woche — die liest nach kurzer Zeit
+# niemand mehr, und dann geht die eine unter, die eine Sicherheitslücke
+# schließt. Sicherheitswarnungen kommen davon unabhängig sofort.
+
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      # Ein Pull Request für alles Kleine. Was wirklich bricht, ist ein
+      # Hauptversionssprung, und der kommt unten einzeln.
+      nebenfassungen:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # **TypeScript bleibt auf 6.x.** `typescript-eslint` lehnt TS 7 rundheraus
+      # ab; wer die Fassung anhebt, bricht den Linter und damit die drei
+      # Regeln mit Typwissen, wegen derer es ihn gibt (ADR 0005). Die
+      # Bedingungen zum Zurücknehmen stehen dort — bis dahin wäre ein
+      # Dependabot-Vorschlag hier nur ein Pull Request, den man jeden Monat
+      # neu schließt.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+
+      # Next und React heben wir bewusst von Hand an: Diese Fassung von Next
+      # weicht von der bekannten ab (siehe die Hinweise in CLAUDE.md), und
+      # ein Hauptversionssprung will gelesen, nicht zusammengeführt werden.
+      - dependency-name: next
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react-dom
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2

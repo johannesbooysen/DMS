@@ -102,7 +102,14 @@ jobs:
 
       # Erst ganz am Ende: Der Bau dauert lange, und wenn die Prüfungen davor
       # rot sind, interessiert das Image niemanden.
+      #
+      # **Nur auf `main`.** Der Bau ist mit rund fünf Minuten der teuerste
+      # Schritt, und private Repositories haben ein Minutenbudget. Bei einem
+      # Pull Request ist die Frage "übersetzt der Code" schon durch
+      # `npm run build` beantwortet; die Frage "baut das Image" stellt sich
+      # erst, wenn daraus etwas ausgeliefert werden soll.
       - name: Image baut
+        if: github.ref == 'refs/heads/main'
         run: docker build --build-arg DMS_FASSUNG=${{ github.sha }} -t dms:${{ github.sha }} .
 
       - name: Playwright-Bericht bei Fehlschlag
