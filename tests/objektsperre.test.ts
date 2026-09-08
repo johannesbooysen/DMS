@@ -35,6 +35,35 @@ const ENDPUNKT = process.env['DMS_S3_ENDPUNKT'] ?? 'http://127.0.0.1:9000'
 const SCHLUESSEL = process.env['DMS_S3_SCHLUESSEL'] ?? 'dmsminio'
 const GEHEIMNIS = process.env['DMS_S3_GEHEIMNIS'] ?? 'dmsminio123'
 
+/**
+ * Laeuft der Objektspeicher auf diesem Rechner?
+ *
+ * **Diese Datei darf nur gegen einen oertlichen MinIO laufen.** Sie geht den
+ * Anwendungsweg: archivieren, dann `objektsperrenSetzen` -- und das setzt die
+ * **echte** Aufbewahrungsfrist (2036) im COMPLIANCE-Modus. Ausserdem legt sie
+ * je Lauf einen eigenen Eimer an.
+ *
+ * Gegen einen fremden Anbieter waeren das bei jedem Testlauf ein neuer Eimer
+ * mit Objekten, die zehn Jahre lang niemand loeschen kann -- auch der
+ * Wurzelbenutzer nicht, das ist der Sinn des Modus (ADR 0006). Der Eimer
+ * liesse sich dann ebenfalls nicht entfernen, und die Grundgebuehr liefe
+ * weiter. Ein Testbeleg als Zehnjahresvertrag.
+ *
+ * Wer einen Anbieter pruefen will, nimmt `tests/ablage-s3.test.ts`: Die
+ * Datei sperrt mit sechzig Sekunden und beantwortet dieselben Fragen ueber
+ * das Verhalten des Speichers.
+ */
+function oertlich(adresse: string): boolean {
+  try {
+    const rechner = new URL(adresse).hostname
+    return rechner === 'localhost' || rechner === '127.0.0.1' || rechner === '::1'
+  } catch {
+    return false
+  }
+}
+
+const OERTLICH = oertlich(ENDPUNKT)
+
 let beleg = ''
 let schluesselAktuell = ''
 let ablage: S3Ablage | null = null
@@ -245,6 +274,16 @@ describe('Der Durchgang gegen den Speicher', () => {
    * gruen, waehrend die gepruefte Verarbeitung gar nicht lief.
    */
   afterAll(() => {
+    if (!OERTLICH) {
+      process.stdout.write(
+        `
+  Uebersprungen: DMS_S3_ENDPUNKT zeigt nicht auf einen oertlichen MinIO.
+  Diese Datei setzt Sperren bis 2036 und legt je Lauf einen eigenen Eimer an.
+  Fuer eine Anbieterpruefung: npm test -- tests/ablage-s3.test.ts
+`,
+      )
+      return
+    }
     if (!erreichbar) {
       process.stdout.write(
         `
@@ -257,6 +296,11 @@ describe('Der Durchgang gegen den Speicher', () => {
 
   beforeEach(async () => {
     if (ablage !== null) return
+    // Kein fremder Speicher -- siehe `oertlich` oben.
+    if (!OERTLICH) {
+      erreichbar = false
+      return
+    }
     const klient = new S3Client({
       region: 'us-east-1',
       endpoint: ENDPUNKT,
