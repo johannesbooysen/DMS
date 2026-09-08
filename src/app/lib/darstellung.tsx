@@ -12,6 +12,7 @@ import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
 import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { zaehlerLaden } from '@/benachrichtigung'
+import { laufende, type Zugriff } from '@/notfall'
 
 export const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 export const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
@@ -93,8 +94,30 @@ async function aufgabenzahl(): Promise<{ offen: number; ueberfaellig: number } |
   }
 }
 
+/**
+ * Laufende Notfallzugriffe (Konzept 24.10).
+ *
+ * **Der Ersatz fuer die Vorabfreigabe, die im Notfall niemand geben
+ * kann.** Ein Zugriff auf fremde Belege, den man nur in einer eigenen
+ * Maske findet, ist eine leise Hintertuer -- also steht er ueber jeder
+ * Seite, fuer jeden im Mandanten. Sichtbarkeit *ist* hier die Kontrolle.
+ *
+ * Faellt die Abfrage aus, faellt das Band weg und nicht die Seite --
+ * dieselbe Regel wie beim Zaehler.
+ */
+async function notfaelle(): Promise<Zugriff[]> {
+  try {
+    const benutzer = await angemeldeterBenutzerOderNichts()
+    if (benutzer === null) return []
+    return await alsBenutzer(benutzer, laufende)
+  } catch {
+    return []
+  }
+}
+
 export async function Seitenrahmen({ titel, children }: { titel: string; children: ReactNode }) {
   const zaehler = await aufgabenzahl()
+  const offeneNotfaelle = await notfaelle()
   return (
     <main
       style={{
@@ -137,6 +160,7 @@ export async function Seitenrahmen({ titel, children }: { titel: string; childre
             ['/fehlerkorb', 'Fehlerkorb'],
             ['/eingang', 'Eingangsquellen'],
             ['/archiv', 'Archiv'],
+            ['/notfall', 'Notfall'],
             ['/stammdaten', 'Stammdaten'],
           ].map(([ziel, name], i) => (
             <span key={ziel}>
@@ -188,6 +212,37 @@ export async function Seitenrahmen({ titel, children }: { titel: string; childre
           </button>
         </form>
       </nav>
+      {/* Das Notfallband (Konzept 24.10). Steht ueber jeder Seite, solange
+          irgendwo im Mandanten ein befristeter Zugriff laeuft -- und zwar
+          fuer alle, nicht nur fuer die Beteiligten. Wer selbst unter einem
+          solchen Zugriff arbeitet, wird ausdruecklich daran erinnert: Er
+          sieht gerade Belege, die ihm sonst nicht gehoeren. */}
+      {offeneNotfaelle.length > 0 && (
+        <aside
+          style={{
+            background: '#FFF4E5',
+            border: '1px solid #E0A458',
+            borderRadius: '0.25rem',
+            fontSize: '0.875rem',
+            marginBottom: '1rem',
+            padding: '0.5rem 0.75rem',
+          }}
+        >
+          {offeneNotfaelle.map((n) => (
+            <div key={n.id}>
+              <strong>{n.eigener ? 'Ihr Notfallzugriff' : 'Notfallzugriff'}</strong>
+              {' auf Objekt '}
+              {n.objektnummer} — {n.objektname}
+              {n.eigener ? '' : ` für ${n.benutzer}`}
+              {', bis '}
+              {n.ende.toLocaleDateString('de-DE')}. {n.grund}
+            </div>
+          ))}
+          <div style={{ marginTop: '0.25rem' }}>
+            <Link href="/notfall">Notfallzugriffe ansehen</Link>
+          </div>
+        </aside>
+      )}
       <h1 style={{ fontSize: '1.375rem', marginTop: 0 }}>{titel}</h1>
       {children}
     </main>

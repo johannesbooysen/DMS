@@ -89,9 +89,15 @@ export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<K
  * Wer bekommt die Aufgabe? Die Zuständigkeit steht an der Stufe, aufgelöst
  * wird sie gegen die Stammdaten des Belegs.
  *
- * OFFEN: zustaendigkeit_typ 'rolle', 'extern' und 'system' bleiben vorerst
- * ohne Zuweisung -- die Aufgabe entsteht, hat aber niemanden. Für 'rolle'
- * fehlt die Auflösung Rolle -> Postfach, für 'system' die Systemaktionen.
+ * OFFEN: zustaendigkeit_typ 'extern' und 'system' bleiben vorerst ohne
+ * Zuweisung -- die Aufgabe entsteht, hat aber niemanden. Für 'system'
+ * fehlen die Systemaktionen.
+ *
+ * 'rolle' ist erledigt: Die Aufgabe traegt `zugewiesen_rolle`, und das
+ * Postfach loest sie ueber `benutzer_rolle_objekt` auf (siehe
+ * `src/app/lib/postfach.ts`). Der Hinweis stand hier noch, nachdem die
+ * Aufloesung laengst gebaut war -- gefunden beim Durchsehen der offenen
+ * Punkte.
  */
 interface Traeger {
   benutzerId: string | null

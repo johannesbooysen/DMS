@@ -1762,6 +1762,64 @@ seinen Weg genommen hat.
 
 ---
 
+## Notfallzugriff
+
+**Der Fall:** Anna betreut Objekt 42 und fällt zwei Wochen aus. Die
+Rechnungen laufen weiter ein, ihre Aufgaben stapeln sich — und niemand sonst
+sieht sie. Skonti verfallen, Fristen laufen ab, und es fällt erst auf, wenn
+jemand mahnt.
+
+Unter *Notfall* richtet die Geschäftsleitung dafür einen befristeten Zugriff
+ein: eine Person, **ein** Objekt, ein Grund, eine Dauer von höchstens
+vierzehn Tagen.
+
+### Was er tut — und was nicht
+
+Er erweitert die **Reichweite** vorhandener Rechte auf dieses eine Objekt,
+nie ihre Art:
+
+| | |
+|---|---|
+| Wer stempeln darf | stempelt auch dort |
+| Wer nie kontieren durfte | kontiert auch dort nicht |
+| Stammdaten, Benutzer, Abläufe | bleiben außen vor |
+
+**Die Rollenvergabe wird nicht angefasst.** Der bequeme Weg wäre, der
+Vertretung schnell eine Zuständigkeit für das Objekt einzutragen. Danach
+steht in den Stammdaten eine Zuständigkeit, die es nie gab — und sie bleibt
+liegen, wenn Anna zurückkommt. Der Notfallzugriff läuft dagegen von selbst
+aus.
+
+### Warum ihn jeder sieht
+
+Es gibt **keine Freigabe durch einen Zweiten**. Sie wäre genau dann nicht zu
+bekommen, wenn es darauf ankommt — dann nämlich, wenn jemand ausgefallen
+ist. An ihrer Stelle steht Sichtbarkeit: Solange ein Zugriff läuft, steht er
+als Band über **jeder** Seite, für jeden im Haus, und unter *Notfall* mit
+Grund und Frist. Wer selbst unter einem solchen Zugriff arbeitet, wird
+ausdrücklich daran erinnert.
+
+Das ist Absicht und keine Nachlässigkeit: Ein Zugriff auf fremde Belege, den
+nur der Zugreifende sieht, wäre eine leise Hintertür.
+
+### Der Grund gehört sachlich formuliert
+
+„Vertretung für Objekt 42 während Abwesenheit" genügt. **Keine Angaben zur
+Gesundheit** — das Feld liest das ganze Haus, und eine Krankheitsangabe wäre
+ein besonders geschütztes Datum an einer Stelle, an der es nichts zu suchen
+hat. Der Grund erklärt den Zugriff, nicht die Abwesenheit.
+
+### Beenden
+
+Wer ihn einrichten darf, beendet ihn — und **die betroffene Person selbst**.
+Wer früher zurückkommt, soll nicht auf jemanden warten müssen. Sonst endet
+er mit Ablauf der Frist, ohne dass jemand aufräumen muss.
+
+Was länger dauert als vierzehn Tage, ist kein Notfall mehr, sondern eine
+Zuständigkeit — die gehört in die Stammdaten, wo sie datiert und
+nachvollziehbar steht.
+
+
 ## Vertretung
 
 Unter *Vertretung* gibt man seine Aufgaben für eine Zeit an jemand anderen ab —

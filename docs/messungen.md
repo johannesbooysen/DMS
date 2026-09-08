@@ -291,3 +291,28 @@ eine Seite gibt, hat keine Auswertung gebaut, sondern einen Datenauszug — die
 Frage „was hat uns das gekostet" beantwortet er nicht. Seitdem liefert
 `app.skonto_summe` die Zahl (49 ms) und `app.skonto_verluste` die 50 größten
 Einzelfälle (46 ms), beide aus derselben Definition.
+
+## `app.meine_objekte()` nach dem Notfallzugriff
+
+**Anlass:** §24.10 fügt der Funktion einen dritten `exists`-Zweig hinzu. Sie
+läuft einmal je Statement in jeder objektbezogenen Policy; §21 nennt ~2 ms,
+und die falsche Variante kostete dort 264 ms.
+
+**Gemessen am 8. September 2026** (lokale Supabase, Rolle `dms_app`, Anna):
+
+| | Ausführungszeit |
+|---|---|
+| `select app.meine_objekte()` nach der Änderung | **1,4 ms** |
+
+Unverändert im Rahmen der dokumentierten ~2 ms.
+
+**Was die Zahl nicht sagt:** Der Seed hat zwei Objekte und wenige Zeilen in
+`notfallzugriff`. Bei dieser Größe wählt der Planer ohnehin einen Seq Scan;
+die Zahl belegt also, dass nichts Grobes passiert ist, **nicht**, dass der
+Zweig unter Last billig bleibt. Dafür trägt er den partiellen Index
+`notfallzugriff_benutzer_idx (benutzer_id, objekt_id, ende desc) where
+beendet_am is null` — die Form ist richtig, die Messung dazu steht aus. Sie
+gehört nachgeholt, sobald es einen Bestand gibt, gegen den sie etwas
+bedeutet.
+
+---

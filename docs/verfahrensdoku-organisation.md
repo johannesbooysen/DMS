@@ -122,8 +122,25 @@ Vertretung im laufenden Betrieb ist im System abgebildet: Die Aufgabe wandert
 über die Eskalation, die Rolle bleibt beim Vertretenen — eine Vertretung
 überträgt **keine** Rechte.
 
-Notfallzugriff bei Ausfall des einzigen Zuständigen: ⬜ offen (Konzept §24.10).
-Vorgesehen ist ein protokollierter Zugriff ohne Rechteänderung.
+**Notfallzugriff** bei Ausfall des einzigen Zuständigen ist im System
+abgebildet (Konzept §24.10, Migration `20260908100000`): Ein befristeter
+Eintrag deckt **ein** Objekt, trägt einen Pflichtgrund und läuft nach
+höchstens vierzehn Tagen von selbst aus.
+
+Er erweitert die **Reichweite** vorhandener Rechte, nie ihre Art — wer nie
+stempeln durfte, stempelt auch im Notfall nicht; Stammdatenpflege,
+Benutzerverwaltung und Ablaufkonfiguration bleiben ausgenommen. Die
+Rollenvergabe wird dabei **nicht** angefasst: In `benutzer_rolle_objekt`
+entsteht keine Zuständigkeit, die es fachlich nie gab.
+
+Eine Freigabe durch einen Zweiten gibt es bewusst nicht — sie wäre genau
+dann nicht zu bekommen, wenn es darauf ankommt. An ihrer Stelle steht
+**Sichtbarkeit**: Jeder laufende Zugriff steht über jeder Seite und ist für
+alle im Mandanten einsehbar (`/notfall`).
+
+Einrichten darf, wer das Recht `notfallzugriff` trägt — im Auslieferungs-
+stand die Geschäftsleitung. **Wer dieses Recht bekommt, ist festzulegen:**
+⬜ offen.
 
 ### Bekannte Einschränkungen
 

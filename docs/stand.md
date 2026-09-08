@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 74 Tabellen, 170 Policies,
-100 Module, 799 Testfaelle in 42 Dateien,
+Auf einen Blick: 75 Tabellen, 173 Policies,
+102 Module, 819 Testfaelle in 43 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -401,6 +401,16 @@ Funktionen: `app.lebenszeichen_setzen`, `app.lebenszeichen`
 
 Policies: 1
 
+### `supabase/migrations/20260908100000_notfallzugriff.sql`
+
+===========================================================================
+
+Tabellen: `notfallzugriff`
+
+Funktionen: `app.notfallzugriff_schutz`, `app.meine_objekte`, `app.darf`, `app.notfallzugriff_offen`
+
+Policies: 3
+
 ## Module
 
 | Datei | Aufgabe |
@@ -435,6 +445,7 @@ Policies: 1
 | [`src/app/lib/layer-aktionen.ts`](../src/app/lib/layer-aktionen.ts) | 'use server' |
 | [`src/app/lib/loeschen-aktionen.ts`](../src/app/lib/loeschen-aktionen.ts) | 'use server' |
 | [`src/app/lib/nebenlauf-aktionen.ts`](../src/app/lib/nebenlauf-aktionen.ts) | 'use server' |
+| [`src/app/lib/notfall-aktionen.ts`](../src/app/lib/notfall-aktionen.ts) | 'use server' |
 | [`src/app/lib/postausgang-aktionen.ts`](../src/app/lib/postausgang-aktionen.ts) | 'use server' |
 | [`src/app/lib/posteingang-aktionen.ts`](../src/app/lib/posteingang-aktionen.ts) | 'use server' |
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
@@ -478,6 +489,7 @@ Policies: 1
 | [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
+| [`src/notfall/index.ts`](../src/notfall/index.ts) | Notfallzugriff (Konzept §24.10) |
 | [`src/ocr/index.ts`](../src/ocr/index.ts) | Auswahl der Texterkennung |
 | [`src/ocr/ocrmypdf.ts`](../src/ocr/ocrmypdf.ts) | Texterkennung über ocrmypdf |
 | [`src/ocr/typen.ts`](../src/ocr/typen.ts) | Texterkennung hinter einer Schnittstelle |
@@ -536,6 +548,7 @@ Policies: 1
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
+| [`tests/notfall.test.ts`](../tests/notfall.test.ts) | 20 | Ohne Notfallzugriff, Die Reichweite, Die Befristung, Der Grund, Das Recht, einen einzurichten, Die Sichtbarkeit |
 | [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
 | [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
@@ -571,4 +584,4 @@ Policies: 1
 |---|
 | [`src/worker/aufbereitung.ts:341`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:188`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:194`](../src/workflow/engine.ts) |

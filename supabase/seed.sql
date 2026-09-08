@@ -286,7 +286,12 @@ insert into rolle_recht (rolle_id, aktion, belegart, ordnungsgruppe_id) values
   -- machen. Genau das war bis 20260903100000 fuer *jeden* Benutzer moeglich.
   ('90000000-0000-0000-0000-000000000002', 'stammdaten_pflegen', null, null),
   ('90000000-0000-0000-0000-000000000003', 'stammdaten_pflegen', null, null),
-  ('90000000-0000-0000-0000-000000000003', 'benutzer_verwalten', null, null);
+  ('90000000-0000-0000-0000-000000000003', 'benutzer_verwalten', null, null),
+  -- Notfallzugriff (Konzept 24.10): nur die Geschaeftsleitung. Getrennt
+  -- von benutzer_verwalten, obwohl beides Rechteverwaltung ist -- der
+  -- Notfallzugriff ist ein Vorgang mit Begruendungspflicht, und wer nur
+  -- ihn soll, bekommt nur ihn.
+  ('90000000-0000-0000-0000-000000000003', 'notfallzugriff', null, null);
 
 insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
   -- Anna: Objektbearbeitung, ausdruecklich nur Objekt 42
