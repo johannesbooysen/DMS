@@ -43,6 +43,7 @@ Auf einen Blick: 75 Tabellen, 173 Policies,
 | `npm run e2e` | `playwright test` |
 | `npm run e2e:ui` | `playwright test --ui` |
 | `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
+| `npm run verzeichnis` | `node scripts/verzeichnis-erzeugen.mjs` |
 
 ## Migrationen
 

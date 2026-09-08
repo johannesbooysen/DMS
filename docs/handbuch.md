@@ -1406,6 +1406,33 @@ zweiter Zugang zu allen Daten.
 
 ---
 
+## Verzeichnis von Verarbeitungstätigkeiten
+
+Jedes Unternehmen, das personenbezogene Daten verarbeitet, muss ein
+Verzeichnis darüber führen (Art. 30 DSGVO) und es der Aufsichtsbehörde auf
+Verlangen vorlegen. Es liegt unter [verzeichnis.md](verzeichnis.md).
+
+**Der technische Teil erzeugt sich selbst:**
+
+```bash
+npm run verzeichnis
+```
+
+Das ist kein Komfort, sondern der Kern der Sache. Ein von Hand geführtes
+Verzeichnis wird unvollständig, sobald jemand eine neue Tabelle anlegt und
+nicht daran denkt — und genau diese Lücke fällt erst auf, wenn jemand fragt.
+Der Erzeuger vergleicht deshalb **jede** Tabelle des Systems mit der
+Einordnung und **bricht ab**, wenn eine fehlt.
+
+**Was Sie selbst ausfüllen müssen**, steht in
+[verzeichnis-organisation.md](verzeichnis-organisation.md): Verantwortlicher,
+Datenschutzbeauftragter, Rechtsgrundlagen, Empfänger. Das sind rechtliche
+Festlegungen — sie stehen dort als „⬜ offen", damit die Lücke sichtbar ist,
+statt übersehen zu werden.
+
+Der organisatorische Teil gehört mindestens einmal im Jahr durchgesehen.
+
+
 ## Löschen nach Fristablauf
 
 Unter **Archiv**. Die Seite zeigt Belege, deren Aufbewahrungsfrist abgelaufen

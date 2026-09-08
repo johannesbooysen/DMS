@@ -11,6 +11,7 @@
  *   4. jedes ADR steht im Verzeichnis docs/adr/README.md
  *   5. das Handbuch erwaehnt jeden Befehl, den ein Mensch braucht
  *   6. docs/verfahrensdokumentation.md ist auf dem aktuellen Stand
+ *   7. docs/verzeichnis.md ist aktuell und jede Tabelle ist eingeordnet
  *
  * Ob eine Beschreibung noch stimmt, kann das Skript nicht wissen. Dafuer
  * gibt es den Agenten `doku-pflege`.
@@ -21,6 +22,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { standErzeugen } from './stand-erzeugen.mjs'
 import { verfahrensdokuErzeugen } from './verfahrensdoku-erzeugen.mjs'
+import { verzeichnisErzeugen } from './verzeichnis-erzeugen.mjs'
 
 const WURZEL = fileURLToPath(new URL('..', import.meta.url))
 const lies = (pfad) => readFile(join(WURZEL, pfad), 'utf8')
@@ -133,6 +135,39 @@ const meldung = (regel, text) => maengel.push({ regel, text })
       'verfahrensdoku',
       'docs/verfahrensdokumentation.md ist veraltet. Neu schreiben mit: npm run verfahrensdoku',
     )
+  }
+}
+
+// 7 -- Verzeichnis der Verarbeitungstaetigkeiten (Art. 30 DSGVO).
+//
+// Zwei Fragen in einer: Ist die Datei aktuell -- und ist ueberhaupt jede
+// Tabelle eingeordnet? Die zweite ist die wichtigere: Ein Verzeichnis, das
+// eine Tabelle mit Personenbezug nicht kennt, ist unvollstaendig, und das
+// faellt sonst erst auf, wenn jemand danach fragt.
+{
+  const { text: erwartet, fehlend, zuviel } = await verzeichnisErzeugen()
+  let vorhanden = ''
+  try {
+    vorhanden = await lies('docs/verzeichnis.md')
+  } catch {
+    meldung('verzeichnis', 'docs/verzeichnis.md fehlt. Anlegen mit: npm run verzeichnis')
+  }
+  if (vorhanden !== '' && vorhanden.replace(/\r\n/g, '\n') !== erwartet) {
+    meldung(
+      'verzeichnis',
+      'docs/verzeichnis.md ist veraltet. Neu schreiben mit: npm run verzeichnis',
+    )
+  }
+  for (const tab of fehlend) {
+    meldung(
+      'verzeichnis',
+      `Tabelle "${tab}" ist nicht eingeordnet. In scripts/verzeichnis-daten.mjs ` +
+        'einer Verarbeitungstaetigkeit zuordnen oder mit Grund unter ' +
+        'OHNE_PERSONENBEZUG aufnehmen.',
+    )
+  }
+  for (const tab of zuviel) {
+    meldung('verzeichnis', `Tabelle "${tab}" ist eingeordnet, steht aber nicht im Schema.`)
   }
 }
 

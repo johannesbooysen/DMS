@@ -63,6 +63,17 @@ DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben [gueltig-ab]
 
 Freigeben legt den heutigen Stand mit seinem Hash in der Ablage ab; ab dem Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer. Ein **veralteter** Stand wird abgewiesen — eine Fassung, die ein anderes Verfahren beschreibt als das laufende, ist schlimmer als gar keine. Der organisatorische Teil steht von Hand in `docs/verfahrensdoku-organisation.md`; fehlt er, weist das erzeugte Dokument die Lücke aus.
 
+Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO, Konzept §24.5) — der technische Teil wird abgeleitet, der rechtliche steht von Hand in `docs/verzeichnis-organisation.md`:
+
+```bash
+npm run verzeichnis          # docs/verzeichnis.md neu erzeugen
+```
+
+**Der Ertrag ist nicht der Text, sondern die Vollständigkeitsprüfung.** Der Erzeuger liest die `create table`-Anweisungen der Migrationen und vergleicht sie mit der Einordnung in [scripts/verzeichnis-daten.mjs](scripts/verzeichnis-daten.mjs): Jede Tabelle gehört genau **einer** Verarbeitungstätigkeit — oder mit Begründung in die Liste `OHNE_PERSONENBEZUG`. Fehlt eine, bricht der Lauf mit Rückgabewert 1 ab, und `npm run docs:check` meldet sie. **Wer eine neue Tabelle anlegt, ordnet sie ein** — sonst ist das Verzeichnis unvollständig, und das fällt sonst erst auf, wenn eine Aufsichtsbehörde fragt.
+
+Eine Heuristik über Spaltennamen wäre bequemer und wäre falsch: Ob eine Spalte Personenbezug trägt, ist eine fachliche Beurteilung. Abgeleitet wird die *Vollständigkeit*, nicht die *Einordnung*.
+
+
 Sicherung und Restore-Probe (GoBD, Konzept §24.7) — die Probe ist Teil des Verfahrens, nicht ein Zusatz:
 
 ```bash
