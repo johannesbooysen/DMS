@@ -63,6 +63,16 @@ DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben [gueltig-ab]
 
 Freigeben legt den heutigen Stand mit seinem Hash in der Ablage ab; ab dem Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer. Ein **veralteter** Stand wird abgewiesen — eine Fassung, die ein anderes Verfahren beschreibt als das laufende, ist schlimmer als gar keine. Der organisatorische Teil steht von Hand in `docs/verfahrensdoku-organisation.md`; fehlt er, weist das erzeugte Dokument die Lücke aus.
 
+Berechtigungs-Presets für die Ersteinrichtung (Konzept §24.13):
+
+```bash
+npm run einrichten                        # zeigt die drei Zuschnitte
+npm run einrichten -- <mandant-id> weg    # anwenden (weg | miet | se)
+```
+
+**Warum als Skript.** Presets sollen die Ersteinrichtung tragen — aber sie anzuwenden verlangt `benutzer_verwalten`, und dieses Recht entsteht erst durch das Preset. Diese Henne fängt das Skript ein: Es läuft als Eigentümer der Tabellen, außerhalb der RLS, wie Migration und Seed. Ein Haus, das schon Benutzer hat, richtet man über die Oberfläche ein (*Benutzer und Rollen*) — dort greift die Policy.
+
+
 Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO, Konzept §24.5) — der technische Teil wird abgeleitet, der rechtliche steht von Hand in `docs/verzeichnis-organisation.md`:
 
 ```bash
@@ -217,6 +227,9 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 **Konfiguration statt Code.** Stufenfolgen, Stempeltypen, Ordnungsgruppen, Zahlungswege, Betragsgrenzen und Objekt-Overrides sind Stammdaten. Ein neuer Zahlungsweg oder eine neue Ordnungsgruppe darf **keine** Codeänderung erfordern. `prozessdefinition` wird nie überschrieben, sondern versioniert; `dokument_lauf.definition_version` friert die Fassung für laufende Belege ein.
 
 **Lesen und Schreiben sind verschiedene Rechte.** Bis §24 waren die Policies der Stammdatentabellen `for all` mit reinem Mandantenfilter — nachgestellt: Eine Objektbearbeiterin konnte sich selbst die Geschäftsleitungsrolle zuweisen (`app.darf` sprang von `false` auf `true`), eine IBAN verifizieren und andere Benutzer sperren. Seit [20260903100000](supabase/migrations/20260903100000_stammdaten_rechte.sql) gibt es je Tabelle eine **Lesepolicy** (Bedingung unverändert) und eine **Schreibpolicy** über `app.darf_stammdaten()` bzw. `app.darf_benutzer()`. Beide getrennt, weil `benutzer_verwalten` das Recht ist, aus dem alle anderen folgen: Wer Rollen vergibt, gibt sich jedes weitere selbst. Wer eine neue Stammdatentabelle anlegt, legt **beide** Policies an — eine einzelne `for all` ist die Lücke.
+
+**Ein Preset ist ein Startwert, keine Bindung** ([src/stammdaten/presets.ts](src/stammdaten/presets.ts)). Nach dem Anwenden stehen gewöhnliche Zeilen in `rolle`, `rolle_recht` und `stempel_recht` — und nichts verweist zurück. Bewusst **keine** `preset_id` an der Rolle: Sie behauptete eine Herkunft ohne Wirkung, und „warum darf diese Rolle das" wäre plötzlich an zwei Stellen zu beantworten. Presets stehen im Quelltext und nicht in einer Tabelle, weil eine Preset-Tabelle mandantenübergreifend wäre — die erste ohne Mandantenfilter. **Es wird nur ergänzt, nie überschrieben:** Eine Rolle mit demselben Kurzcode bleibt unverändert, Rechte kommen hinzu; zweimal anwenden ist wie einmal. Die Idempotenz steht dabei als `where not exists` und **nicht** als `on conflict` — der eindeutige Index auf `rolle_recht` schließt `belegart` und `ordnungsgruppe_id` ein, beide sind `null`, und `null` ist von `null` verschieden; `stempel_recht` hat überhaupt keine Eindeutigkeit. Fehlende Stempeltypen werden **gemeldet, nicht angelegt** — Stempeltypen zu erfinden ist Ablaufkonfiguration und verlangt ein anderes Recht.
+
 
 **Wer den Ablauf ändert, ändert wer entscheiden darf** ([20260909100000](supabase/migrations/20260909100000_konfigurationsrechte.sql)). Beim Bau der Berechtigungs-Presets nachgestellt: Anna (Objektbearbeitung, keine Verwaltungsrechte) konnte `insert into stempel_recht` ausführen und ihrer eigenen Rolle den Freigabestempel der Geschäftsleitung zuweisen — danach erzeugt sie die Freigaben selbst, die `app.zahlung_moeglich()` verlangt. Ebenso gelangen `insert into stempeltyp` und `insert into gruppe` (über `stempel_recht.gruppe_id` derselbe Weg ein zweites Mal). Dieselbe Klasse wie bei den Stammdaten, nur eine Migration später gefunden: eine einzelne `for all`-Policy mit reinem Mandantenfilter. Jetzt getrennt nach zwei Fragen — **`benutzer_verwalten`** für *wer darf was* (`stempel_recht`, `gruppe`, `gruppe_mitglied`) und **`prozess_konfigurieren`** für *welcher Ablauf gilt* (`stempeltyp`, alle `prozess*`). Das zweite Recht gab es seit dem Rollenmodell; es stand nur in keiner Policy. **Lesen bleibt offen** — wer einen Beleg bearbeitet, hat Grund nachzusehen, wer die nächste Stufe stempeln darf. Wer eine neue Konfigurationstabelle anlegt, legt **beide** Policies an.
 

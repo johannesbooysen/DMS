@@ -40,6 +40,12 @@ import {
   type Eingaben,
 } from '@/stammdaten'
 import { quelleAnlegen, quelleUmschalten, vorlageSpeichern } from '@/stammdaten/quellen'
+import {
+  anwenden as presetAnwenden,
+  NichtErlaubt as PresetNichtErlaubt,
+  NichtMoeglich as PresetNichtMoeglich,
+} from '@/stammdaten/presets'
+import { alsBenutzer } from '@/db'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 /** `FormData` in die einfache Abbildung, die die Fachschicht erwartet. */
@@ -145,4 +151,39 @@ export async function quelleUmschaltenAktion(f: FormData): Promise<void> {
 }
 export async function vorlageSpeichernAktion(f: FormData): Promise<void> {
   await versuchen(f, vorlageSpeichern)
+}
+
+/**
+ * Ein Berechtigungs-Preset anwenden (Konzept §24.13).
+ *
+ * Ergänzt, nimmt nichts weg, und ist beim zweiten Mal wirkungslos. Die
+ * Bilanz landet als lesbarer Hinweis in der Umleitung — vor allem die
+ * Stempelkurzcodes, zu denen es keinen Typ gibt: Ohne sie stehen zwar
+ * Rollen da, aber niemand kann etwas stempeln, und das fiele sonst erst
+ * beim ersten feststeckenden Beleg auf.
+ */
+export async function presetAnwendenAktion(f: FormData): Promise<void> {
+  const presetId = String(f.get('preset') ?? '')
+  const ziel = '/stammdaten/benutzer'
+  try {
+    const bilanz = await alsBenutzer(await angemeldeterBenutzer(), (c) =>
+      presetAnwenden(c, presetId),
+    )
+    const teile = [
+      bilanz.rollenAngelegt.length > 0
+        ? `Rollen angelegt: ${bilanz.rollenAngelegt.join(', ')}`
+        : 'Keine neue Rolle nötig',
+      `${bilanz.rechteAngelegt} Rechte und ${bilanz.stempelrechteAngelegt} Stempelzuordnungen ergänzt`,
+    ]
+    if (bilanz.ohneStempeltyp.length > 0) {
+      teile.push(`Ohne Stempeltyp geblieben: ${bilanz.ohneStempeltyp.join(', ')}`)
+    }
+    revalidatePath(ziel)
+    redirect(`${ziel}?hinweis=${encodeURIComponent(teile.join('. ') + '.')}`)
+  } catch (fehler) {
+    if (fehler instanceof PresetNichtErlaubt || fehler instanceof PresetNichtMoeglich) {
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
 }

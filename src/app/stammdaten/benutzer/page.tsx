@@ -29,7 +29,9 @@ import {
   rolleZuweisenAktion,
   zustaendigkeitBeendenAktion,
   zustaendigkeitSetzenAktion,
+  presetAnwendenAktion,
 } from '@/app/lib/stammdaten-aktionen'
+import { PRESETS } from '@/stammdaten/presets'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Seitenrahmen } from '@/app/lib/darstellung'
 import {
@@ -69,10 +71,10 @@ const WEITREICHEND = new Set(['benutzer_verwalten', 'prozess_konfigurieren'])
 export default async function BenutzerUndRollen({
   searchParams,
 }: {
-  searchParams: Promise<{ fehler?: string }>
+  searchParams: Promise<{ fehler?: string; hinweis?: string }>
 }) {
   const ich = await angemeldeterBenutzer()
-  const { fehler } = await searchParams
+  const { fehler, hinweis } = await searchParams
 
   const [darf, benutzer, rollen, objekte] = await Promise.all([
     rechtelage(ich),
@@ -159,6 +161,45 @@ export default async function BenutzerUndRollen({
           Vorgabe, aber sie fällt sonst erst beim ersten Anmelden auf.
         </p>
       </section>
+
+      {hinweis !== undefined && (
+        <p role="status" style={{ color: '#1B5E20' }}>
+          {hinweis}
+        </p>
+      )}
+
+      {darf.benutzer && (
+        <section style={{ marginBottom: '2.5rem' }}>
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Berechtigungs-Presets</h2>
+          <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+            Ein Startwert für die Ersteinrichtung, keine Bindung: Angewendet entstehen
+            gewöhnliche Rollen und Rechte, und nichts verweist zurück. Ein Preset{' '}
+            <strong>ergänzt und nimmt nichts weg</strong> — eine vorhandene Rolle mit
+            demselben Kurzcode bleibt, wie sie ist. Zweimal anwenden ist wie einmal.
+          </p>
+          <table style={tabelle}>
+            <tbody>
+              {PRESETS.map((preset) => (
+                <tr key={preset.id} style={{ borderTop: '1px solid #ddd' }}>
+                  <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
+                    <strong>{preset.name}</strong>
+                    <div style={{ color: '#555', fontSize: '0.85rem' }}>{preset.beschreibung}</div>
+                    <div style={{ color: '#555', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                      {preset.rollen.map((r) => `${r.kurzcode} ${r.name}`).join(' · ')}
+                    </div>
+                  </td>
+                  <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
+                    <form action={presetAnwendenAktion}>
+                      <input type="hidden" name="preset" value={preset.id} />
+                      <button type="submit">Anwenden</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <section style={{ marginBottom: '2.5rem' }}>
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Rollen und ihre Rechte</h2>

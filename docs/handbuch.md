@@ -1629,6 +1629,54 @@ die in diesem Fall Entwarnung gibt, erzieht dazu, ihr zu glauben.
 Datum und Ausgang jeder Probe gehören in die Verfahrensdokumentation. Eine
 Probe, die niemand notiert, hat im Prüfungsfall nicht stattgefunden.
 
+## Berechtigungs-Presets
+
+Ein frisches Haus hat keine Rollen, keine Rechte und keine Stempelzuordnung.
+Wer das von Hand aufbaut, baut es beim ersten Mal falsch — man merkt erst
+nach ein paar Wochen, welche Trennung im Alltag trägt. Deshalb gibt es drei
+fertige Zuschnitte:
+
+| Zuschnitt | Gedacht für |
+|---|---|
+| **WEG-Verwaltung** | Strikte Trennung: sachliche Prüfung am Objekt, rechnerische in der Buchhaltung, Freigabe bei der Geschäftsleitung |
+| **Mietverwaltung** | Wie oben, aber die Objektbearbeitung kontiert mit — in kleineren Teams ist die Trennung mehr Reibung als Kontrolle |
+| **Sondereigentum** | Der kleinste Zuschnitt: eine Rolle für die Arbeit, eine für die Verwaltung |
+
+**In allen dreien bleibt die Freigabe von der Bearbeitung getrennt.** Das ist
+die eine Regel, die keiner der Zuschnitte aufweicht — sonst wären die Stufen
+Zierrat.
+
+### Anwenden
+
+Für ein Haus, das schon Benutzer hat: unter *Stammdaten → Benutzer und
+Rollen*, Abschnitt *Berechtigungs-Presets*.
+
+Für das **erste** Haus geht das nicht — dort darf noch niemand Benutzer
+verwalten, und genau dieses Recht soll das Preset ja erst anlegen. Deshalb
+gibt es dafür einen Befehl, der wie Migration und Seed außerhalb der
+Rechteprüfung läuft:
+
+```bash
+npm run einrichten -- <mandant-id> weg
+```
+
+### Was ein Preset nicht tut
+
+**Es nimmt nichts weg.** Eine vorhandene Rolle mit demselben Kurzcode bleibt,
+wie sie ist; Rechte kommen hinzu. Angewendet auf ein laufendes Haus kann es
+also niemandem etwas entziehen — das fiele sonst genau dann auf, wenn jemand
+eine Freigabe braucht. Zweimal anwenden ist wie einmal.
+
+**Es bindet nichts.** Nach dem Anwenden sind es gewöhnliche Rollen, die Sie
+frei ändern können. Ändert sich später der Zuschnitt im Programm, ändert
+sich an Ihrem Haus nichts.
+
+**Es legt keine Stempeltypen an.** Fehlt zu einem Kurzcode der passende
+Stempeltyp, sagt die Rückmeldung das — die Rollen stehen dann zwar da, aber
+niemand kann damit stempeln. Stempeltypen gehören zur Ablaufkonfiguration
+unter *Abläufe*.
+
+
 ## Stammdaten
 
 Alles, was da sein muss, bevor der erste Beleg hereinkommt: Objekte,

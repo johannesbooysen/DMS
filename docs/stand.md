@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-102 Module, 829 Testfaelle in 44 Dateien,
+103 Module, 839 Testfaelle in 45 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -44,6 +44,7 @@ Auf einen Blick: 75 Tabellen, 191 Policies,
 | `npm run e2e:ui` | `playwright test --ui` |
 | `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
 | `npm run verzeichnis` | `node scripts/verzeichnis-erzeugen.mjs` |
+| `npm run einrichten` | `tsx scripts/einrichten.ts` |
 
 ## Migrationen
 
@@ -511,6 +512,7 @@ Policies: 18
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
+| [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
@@ -565,6 +567,7 @@ Policies: 18
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
+| [`tests/presets.test.ts`](../tests/presets.test.ts) | 10 | Die Presets selbst, Anwenden, Das Recht |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |

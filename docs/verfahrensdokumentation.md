@@ -1252,6 +1252,19 @@ belegt.
 - macht den Beleg unloeschbar, sobald gestempelt wurde
 - schreibt zu jedem Stempel ein Ereignis mit dem handelnden Benutzer
 
+### [`tests/presets.test.ts`](../tests/presets.test.ts)
+
+- decken die drei Verwaltungsarten ab
+- geben der Geschaeftsleitung ueberall die Verwaltungsrechte
+- trennen ueberall die Freigabe von der Bearbeitung
+- weist ein unbekanntes Preset ab
+- richtet ein leeres Haus ein
+- ist beim zweiten Mal wirkungslos
+- nimmt einer vorhandenen Rolle nichts weg
+- meldet Stempelkurzcodes, zu denen es keinen Typ gibt
+- hat, wer Benutzer verwaltet
+- hat sonst niemand
+
 ### [`tests/rls.test.ts`](../tests/rls.test.ts)
 
 - zeigt einem Benutzer aus einem fremden Mandanten keinen einzigen Beleg des anderen
