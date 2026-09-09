@@ -110,7 +110,7 @@ export default async function Vorlagen({
         >
           <h2 style={{ alignItems: 'baseline', display: 'flex', fontSize: '1rem', gap: '0.6rem', margin: '0 0 0.5rem' }}>
             {v.name}
-            <code style={{ color: '#777', fontSize: '0.8rem' }}>{v.schluessel}</code>
+            <code style={{ color: '#6F6F6F', fontSize: '0.8rem' }}>{v.schluessel}</code>
             {!v.aktiv && <Marke text="inaktiv" farbe="#B3271E" />}
             {v.unbekannt.length > 0 && (
               <Marke text={`${v.unbekannt.length} unbekannt`} farbe="#B3271E" />
@@ -118,7 +118,7 @@ export default async function Vorlagen({
           </h2>
 
           {v.geaendertVon !== null && (
-            <p style={{ color: '#777', fontSize: '0.78rem', margin: '0 0 0.75rem' }}>
+            <p style={{ color: '#6F6F6F', fontSize: '0.78rem', margin: '0 0 0.75rem' }}>
               Zuletzt geändert von {v.geaendertVon} am {v.geaendertAm}
             </p>
           )}

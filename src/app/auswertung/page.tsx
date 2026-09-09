@@ -157,14 +157,14 @@ export default async function Auswertungen({
                 <tr key={z.stufeId}>
                   <td style={zelle}>
                     {z.bezeichnung}
-                    <span style={{ color: '#777' }}> · {z.stufentyp}</span>
+                    <span style={{ color: '#6F6F6F' }}> · {z.stufentyp}</span>
                   </td>
                   <td style={zahl}>{z.anzahl}</td>
                   {/* Der Median steht **vor** dem Mittel und fett: Ein
                       einzelner Beleg über dem Jahreswechsel zieht das Mittel
                       so weit hoch, dass es nichts mehr aussagt. */}
                   <td style={{ ...zahl, fontWeight: 600 }}>{dauer(z.medianStunden)}</td>
-                  <td style={{ ...zahl, color: '#777' }}>{dauer(z.mittelStunden)}</td>
+                  <td style={{ ...zahl, color: '#6F6F6F' }}>{dauer(z.mittelStunden)}</td>
                   <td style={zahl}>{dauer(z.p90Stunden)}</td>
                 </tr>
               ))}

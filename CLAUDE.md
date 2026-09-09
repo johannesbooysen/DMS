@@ -63,6 +63,20 @@ DMS_BENUTZER_FREIGABE=<kennung> npm run verfahrensdoku:freigeben [gueltig-ab]
 
 Freigeben legt den heutigen Stand mit seinem Hash in der Ablage ab; ab dem Gültigkeitstag trägt jeder archivierte Beleg diese Versionsnummer. Ein **veralteter** Stand wird abgewiesen — eine Fassung, die ein anderes Verfahren beschreibt als das laufende, ist schlimmer als gar keine. Der organisatorische Teil steht von Hand in `docs/verfahrensdoku-organisation.md`; fehlt er, weist das erzeugte Dokument die Lücke aus.
 
+Oberfläche ansehen und prüfen:
+
+```bash
+npm run vorschau             # Anwendung mit Entwicklungsanmeldung auf 3000
+npm run bilder               # Bestandsaufnahme: jede Seite als Bild, 1280 und 1920
+```
+
+**`vorschau` schließt eine Lücke, die lange offen war.** `DMS_ANMELDUNG=entwicklung` stand nur in `playwright.config.ts` — die Oberfläche war also ausschließlich *während eines E2E-Laufs* erreichbar; wer `npm run dev` startete, kam an der Anmeldung nicht vorbei. Ein npm-Skript kann die Variable nicht portabel setzen (npm führt Skripte unter Windows über `cmd` aus), deshalb [scripts/vorschau.mjs](scripts/vorschau.mjs). Ein Weg an Entra vorbei entsteht dadurch nicht: Die Entwicklungsanmeldung verlangt zusätzlich `NODE_ENV != production`, und das Skript startet ausschließlich `next dev`.
+
+**Barrierefreiheit ist gemessen, nicht beurteilt** ([e2e/barrierefreiheit.spec.ts](e2e/barrierefreiheit.spec.ts)). `axe-core` prüft zwölf Seiten gegen WCAG 2.1 AA; die Schwelle sind `serious` und `critical` — eine Schwelle, die alles einschließt, wird nach zwei Wochen hochgesetzt und ist dann keine mehr. Der erste Lauf fand zwei Klassen: `#777` auf Weiß mit 4,47:1 (knapp unter 4,5) und — der wichtigere — ein `aria-label` auf einem `span` ohne Rolle. Letzteres ist kein Schönheitsfehler: Ein Vorleseprogramm **ignoriert** das Label dann, und die Ampel ist reine Farbe. Sie trägt jetzt `role="img"`.
+
+**Die Bestandsaufnahme ist ein Werkzeug, kein Test.** Sie behauptet nichts und schlägt nicht fehl, sie nimmt auf — deshalb trägt sie die Marke `@bilder` und läuft bei `npm run e2e` **nicht** mit (`--grep-invert @bilder`). Die Bilder landen unter `bilder/` und sind nicht versioniert.
+
+
 Berechtigungs-Presets für die Ersteinrichtung (Konzept §24.13):
 
 ```bash

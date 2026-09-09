@@ -40,11 +40,13 @@ Auf einen Blick: 75 Tabellen, 191 Policies,
 | `npm run objektakte` | `tsx scripts/objektakte.ts` |
 | `npm run sicherung` | `tsx scripts/sicherung.ts` |
 | `npm run sicherung:pruefen` | `tsx scripts/sicherung-pruefen.ts` |
-| `npm run e2e` | `playwright test` |
+| `npm run e2e` | `playwright test --grep-invert @bilder` |
 | `npm run e2e:ui` | `playwright test --ui` |
 | `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
 | `npm run verzeichnis` | `node scripts/verzeichnis-erzeugen.mjs` |
 | `npm run einrichten` | `tsx scripts/einrichten.ts` |
+| `npm run vorschau` | `node scripts/vorschau.mjs` |
+| `npm run bilder` | `playwright test --grep @bilder` |
 
 ## Migrationen
 

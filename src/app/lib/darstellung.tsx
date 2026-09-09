@@ -60,6 +60,15 @@ export function Ampel({ wert }: { wert: string | null }) {
   if (wert === null) return null
   return (
     <span
+      /*
+       * `role="img"` ist hier keine Formalie, sondern der ganze Punkt: Ein
+       * `span` ohne Rolle darf kein `aria-label` tragen, und ein
+       * Vorleseprogramm **ignoriert es dann**. Die Ampel ist aber reine
+       * Farbe -- ohne die Beschriftung trägt sie für jemanden, der sie
+       * nicht sieht, gar nichts. Gefunden von `axe` (aria-prohibited-attr),
+       * nicht beim Lesen.
+       */
+      role="img"
       title={`Ampel ${wert}`}
       aria-label={`Ampel ${wert}`}
       style={{

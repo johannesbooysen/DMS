@@ -171,7 +171,7 @@ export default async function Stammdaten({
                 <td style={zelle}>
                   {o.bezeichnung}
                   {o.adresse !== null && (
-                    <span style={{ color: '#777' }}> · {o.adresse}</span>
+                    <span style={{ color: '#6F6F6F' }}> · {o.adresse}</span>
                   )}
                 </td>
                 <td style={zelle}>
@@ -235,14 +235,14 @@ export default async function Stammdaten({
                   )}
                 </td>
                 <td style={zelle}>
-                  {k.banken.length === 0 && <span style={{ color: '#777' }}>keine</span>}
+                  {k.banken.length === 0 && <span style={{ color: '#6F6F6F' }}>keine</span>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     {k.banken.map((b) => (
                       <div key={b.id} style={{ alignItems: 'baseline', display: 'flex', gap: '0.6rem' }}>
                         <code style={{ fontSize: '0.82rem' }}>{b.iban}</code>
                         <Marke text={b.status} farbe={IBAN_MARKE[b.status] ?? '#555'} />
                         {b.bestaetigtVon !== null && (
-                          <span style={{ color: '#777', fontSize: '0.75rem' }}>
+                          <span style={{ color: '#6F6F6F', fontSize: '0.75rem' }}>
                             {b.bestaetigtVon}, {b.bestaetigtAm}
                           </span>
                         )}

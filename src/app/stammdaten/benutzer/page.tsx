@@ -219,7 +219,7 @@ export default async function BenutzerUndRollen({
             {rollen.map((r) => (
               <tr key={r.id} style={r.aktiv ? undefined : { color: '#999' }}>
                 <td style={{ ...zelle, whiteSpace: 'nowrap' }}>
-                  {r.name} <span style={{ color: '#777' }}>{r.kurzcode}</span>
+                  {r.name} <span style={{ color: '#6F6F6F' }}>{r.kurzcode}</span>
                 </td>
                 <td style={zelle}>
                   <span style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>

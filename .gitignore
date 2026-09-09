@@ -62,3 +62,6 @@ test-results/
 # ein einmal committetes Abbild bekommt man aus der Historie nicht mehr
 # heraus.
 /sicherung/
+
+# Bestandsaufnahme der Oberflaeche -- Artefakte, kein Quelltext.
+bilder/
