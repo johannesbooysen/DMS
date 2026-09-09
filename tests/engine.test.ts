@@ -25,6 +25,7 @@ const VERBINDUNG =
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
+const EVA = '20000000-0000-0000-0000-000000000005'
 const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
 const KREDITOR = '55000000-0000-0000-0000-000000000001'
 const D1 = '70000000-0000-0000-0000-000000000001'
@@ -74,6 +75,27 @@ async function belegAnlegen(c: Client, brutto: number | null): Promise<string> {
 }
 
 /** Legt eine eigene Definition mit Stufen an und gibt deren Kennungen zurück. */
+/**
+ * Fuehrt `aktion` kurz als Eva aus.
+ *
+ * Prozessdefinitionen, Stufen und Knoten anzulegen verlangt seit
+ * 20260909100000 das Recht `prozess_konfigurieren` -- Anna hat es nicht,
+ * und das ist richtig so: Wer den Ablauf aendert, aendert, wer entscheiden
+ * darf. Vorher lief das Anlegen hier durch eine Policy, die nichts pruefte.
+ *
+ * Der Wechsel gilt nur bis zum Ende der Transaktion (`set_config` mit
+ * `true`) und wird danach zurueckgenommen -- die Tests selbst arbeiten
+ * weiter als Anna, denn das ist die Fachlichkeit, die sie pruefen.
+ */
+async function konfigurierend<T>(c: Client, aktion: () => Promise<T>): Promise<T> {
+  await c.query('select set_config($1, $2, true)', ['app.benutzer_id', EVA])
+  try {
+    return await aktion()
+  } finally {
+    await c.query('select set_config($1, $2, true)', ['app.benutzer_id', ANNA])
+  }
+}
+
 async function definitionAnlegen(
   c: Client,
   stufen: Array<{
@@ -83,6 +105,7 @@ async function definitionAnlegen(
     typ?: string
   }>,
 ): Promise<{ definitionId: string; stufenIds: string[] }> {
+  return konfigurierend(c, async () => {
   const { rows: d } = await c.query<{ id: string }>(
     `insert into prozessdefinition (mandant_id, belegart, version, status, aktiv_ab)
      values ($1, 'rechnung', 99, 'entwurf', now()) returning id`,
@@ -103,6 +126,29 @@ async function definitionAnlegen(
     stufenIds.push(rows[0].id)
   }
   return { definitionId, stufenIds }
+  })
+}
+
+/**
+ * Setzt den Status einer Definition -- ebenfalls Konfiguration.
+ *
+ * Stand vorher als blankes `update` in den Tests und lief als Anna. Seit
+ * 20260909100000 hat sie das Recht nicht mehr, und ein `update` ohne Recht
+ * meldet **Erfolg mit null Zeilen** -- die Definition blieb im Entwurf, die
+ * Engine nahm die des Seeds, und der Test scheiterte drei Schritte spaeter
+ * mit "Stufe gehoert nicht zu diesem Ablauf". Genau die Falle, gegen die es
+ * `mussGewirktHaben` gibt.
+ */
+async function statusSetzen(c: Client, definitionId: string, status: string): Promise<void> {
+  await konfigurierend(c, async () => {
+    const ergebnis = await c.query('update prozessdefinition set status = $2 where id = $1', [
+      definitionId,
+      status,
+    ])
+    if (ergebnis.rowCount === 0) {
+      throw new Error(`Status nicht gesetzt -- ${definitionId} war nicht aenderbar.`)
+    }
+  })
 }
 
 async function knotenAnlegen(
@@ -114,14 +160,16 @@ async function knotenAnlegen(
   stufeId?: string,
   bedingung?: unknown,
 ): Promise<string> {
-  const { rows } = await c.query<{ id: string }>(
-    `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp,
-                                stufe_id, bedingung)
-     values ($1, $2, $3, $4, $5, $6) returning id`,
-    [definitionId, elternId, reihenfolge, knotentyp, stufeId ?? null,
-     bedingung === undefined ? null : JSON.stringify(bedingung)],
-  )
-  return rows[0].id
+  return konfigurierend(c, async () => {
+    const { rows } = await c.query<{ id: string }>(
+      `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp,
+                                  stufe_id, bedingung)
+       values ($1, $2, $3, $4, $5, $6) returning id`,
+      [definitionId, elternId, reihenfolge, knotentyp, stufeId ?? null,
+       bedingung === undefined ? null : JSON.stringify(bedingung)],
+    )
+    return rows[0].id
+  })
 }
 
 async function offeneAufgaben(c: Client, laufId: string): Promise<string[]> {
@@ -288,10 +336,8 @@ describe('Betragsgrenze', () => {
       const wurzel = await knotenAnlegen(c, definitionId, null, 0, 'nacheinander')
       await knotenAnlegen(c, definitionId, wurzel, 0, 'stufe', stufenIds[0])
       await knotenAnlegen(c, definitionId, wurzel, 1, 'stufe', stufenIds[1])
-      await c.query(`update prozessdefinition set status = 'aktiv' where id = $1`, [definitionId])
-      await c.query(`update prozessdefinition set status = 'abgeloest' where id = $1`, [
-        DEFINITION_SEED,
-      ])
+      await statusSetzen(c, definitionId, 'aktiv')
+      await statusSetzen(c, DEFINITION_SEED, 'abgeloest')
 
       const beleg = await belegAnlegen(c, 1200)
       const lauf = await laufStarten(c as never, beleg)
@@ -332,10 +378,8 @@ describe('Paralleler Block', () => {
       await knotenAnlegen(c, definitionId, parallel, 0, 'stufe', stufenIds[0])
       await knotenAnlegen(c, definitionId, parallel, 1, 'stufe', stufenIds[1])
       await knotenAnlegen(c, definitionId, wurzel, 1, 'stufe', stufenIds[2])
-      await c.query(`update prozessdefinition set status = 'aktiv' where id = $1`, [definitionId])
-      await c.query(`update prozessdefinition set status = 'abgeloest' where id = $1`, [
-        DEFINITION_SEED,
-      ])
+      await statusSetzen(c, definitionId, 'aktiv')
+      await statusSetzen(c, DEFINITION_SEED, 'abgeloest')
 
       const beleg = await belegAnlegen(c, 1000)
       const lauf = await laufStarten(c as never, beleg)
@@ -383,10 +427,8 @@ describe('Verzweigung', () => {
     })
     await knotenAnlegen(c, definitionId, zweig, 0, 'stufe', stufenIds[1])
     await knotenAnlegen(c, definitionId, zweig, 1, 'stufe', stufenIds[2])
-    await c.query(`update prozessdefinition set status = 'aktiv' where id = $1`, [definitionId])
-    await c.query(`update prozessdefinition set status = 'abgeloest' where id = $1`, [
-      DEFINITION_SEED,
-    ])
+    await statusSetzen(c, definitionId, 'aktiv')
+    await statusSetzen(c, DEFINITION_SEED, 'abgeloest')
 
     const beleg = await belegAnlegen(c, brutto)
     const lauf = await laufStarten(c as never, beleg)
@@ -464,8 +506,17 @@ describe('Simulation', () => {
 
   it('laesst eine Stufe aus, deren Betragsgrenze nicht greift', async () => {
     const schritte = await alsAnna(async (c) => {
-      await c.query(`update prozessstufe set betrag_von = 5000 where definition_id = $1
-                      and bezeichnung = 'Freigabe Geschaeftsleitung'`, [DEFINITION_SEED])
+      // Konfiguration, also als Eva -- und mit Zeilenzaehlung: Ein `update`
+      // ohne Recht meldet Erfolg mit null Zeilen, und der Test waere dann
+      // gruen fuer den falschen Grund.
+      await konfigurierend(c, async () => {
+        const e = await c.query(
+          `update prozessstufe set betrag_von = 5000 where definition_id = $1
+            and bezeichnung = 'Freigabe Geschaeftsleitung'`,
+          [DEFINITION_SEED],
+        )
+        if (e.rowCount === 0) throw new Error('Betragsgrenze nicht gesetzt.')
+      })
       const wurzel = await baumLaden(c as never, DEFINITION_SEED)
       return simulieren(wurzel!, { brutto: 1200 })
     })

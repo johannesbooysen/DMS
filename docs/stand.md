@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 75 Tabellen, 173 Policies,
-102 Module, 819 Testfaelle in 43 Dateien,
+Auf einen Blick: 75 Tabellen, 191 Policies,
+102 Module, 829 Testfaelle in 44 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -412,6 +412,14 @@ Funktionen: `app.notfallzugriff_schutz`, `app.meine_objekte`, `app.darf`, `app.n
 
 Policies: 3
 
+### `supabase/migrations/20260909100000_konfigurationsrechte.sql`
+
+===========================================================================
+
+Funktionen: `app.darf_prozess`
+
+Policies: 18
+
 ## Module
 
 | Datei | Aufgabe |
@@ -542,6 +550,7 @@ Policies: 3
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
+| [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |

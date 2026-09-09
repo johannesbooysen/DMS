@@ -471,6 +471,24 @@ Tabellen mit Policies (70): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `notfallzugriff_lesen` | `notfallzugriff` | select | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `notfallzugriff_schreiben` | `notfallzugriff` | insert | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `notfallzugriff_beenden` | `notfallzugriff` | update | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
+| `stempel_recht_lesen` | `stempel_recht` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `stempel_recht_schreiben` | `stempel_recht` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `gruppe_lesen` | `gruppe` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `gruppe_schreiben` | `gruppe` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `gruppe_mitglied_lesen` | `gruppe_mitglied` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `gruppe_mitglied_schreiben` | `gruppe_mitglied` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `stempeltyp_lesen` | `stempeltyp` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `stempeltyp_schreiben` | `stempeltyp` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessdefinition_lesen` | `prozessdefinition` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessdefinition_schreiben` | `prozessdefinition` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessstufe_lesen` | `prozessstufe` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessstufe_schreiben` | `prozessstufe` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessknoten_lesen` | `prozessknoten` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessknoten_schreiben` | `prozessknoten` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessstufe_stempeltyp_lesen` | `prozessstufe_stempeltyp` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozessstufe_stempeltyp_schreiben` | `prozessstufe_stempeltyp` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozess_override_lesen` | `prozess_override` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `prozess_override_schreiben` | `prozess_override` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -916,6 +934,19 @@ belegt.
 - laesst das Protokoll nicht nachtraeglich aendern
 - zeigt die Kette fuer einen gedachten Beleg
 - zeigt dieselbe Fassung fuer verschiedene Belege verschieden
+
+### [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts)
+
+- kann sich niemand selbst zuweisen
+- vergibt die Benutzerverwaltung
+- bleiben für alle lesbar
+- legt eine Objektbearbeiterin nicht an
+- legt die Geschaeftsleitung an
+- laesst niemanden sich selbst in eine Gruppe eintragen
+- wird nicht von jedem konfiguriert
+- wird von der Geschaeftsleitung konfiguriert
+- bleibt fuer alle lesbar
+- haelt auch fuer die Konfiguration
 
 ### [`tests/kontierung.test.ts`](../tests/kontierung.test.ts)
 

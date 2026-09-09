@@ -18,7 +18,17 @@ import {
 const VERBINDUNG =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 
-const ANNA = '20000000-0000-0000-0000-000000000001'
+/*
+ * **Eva und nicht Anna.** Diese Datei prueft die Blockbaum-Regeln des
+ * Schemas -- also muss der Constraint abweisen, nicht die Policy. Anna hat
+ * seit 20260909100000 kein `prozess_konfigurieren`; unter ihr scheiterte
+ * schon das Einfuegen, und die Tests haetten den Constraint nie erreicht.
+ *
+ * Vorher lief die Datei durch die Luecke, die diese Migration geschlossen
+ * hat -- dieselbe Beobachtung wie bei den Stammdatentests damals: Ein Test,
+ * der durch ein Loch laeuft, prueft weniger, als sein Name sagt.
+ */
+const EVA = '20000000-0000-0000-0000-000000000005'
 const DEFINITION = '65000000-0000-0000-0000-000000000001'
 const WURZEL = '67000000-0000-0000-0000-000000000001'
 const STUFE_SACHLICH = '66000000-0000-0000-0000-000000000001'
@@ -34,11 +44,11 @@ afterAll(async () => {
   await client.end()
 })
 
-async function alsAnna<T>(aktion: (c: Client) => Promise<T>): Promise<T> {
+async function alsKonfigurator<T>(aktion: (c: Client) => Promise<T>): Promise<T> {
   await client.query('begin')
   try {
     await client.query('set local role dms_app')
-    await client.query('select set_config($1, $2, true)', ['app.benutzer_id', ANNA])
+    await client.query('select set_config($1, $2, true)', ['app.benutzer_id', EVA])
     return await aktion(client)
   } finally {
     await client.query('rollback')
@@ -55,13 +65,13 @@ async function befunde(c: Client): Promise<string[]> {
 
 describe('Blockbaum', () => {
   it('haelt den Ablauf aus dem Seed fuer gueltig', async () => {
-    const gefunden = await alsAnna(befunde)
+    const gefunden = await alsKonfigurator(befunde)
     expect(gefunden).toEqual([])
   })
 
   it('laesst keinen zweiten Wurzelknoten zu', async () => {
     await expect(
-      alsAnna((c) =>
+      alsKonfigurator((c) =>
         c.query(
           `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp)
            values ($1, null, 1, 'nacheinander')`,
@@ -73,7 +83,7 @@ describe('Blockbaum', () => {
 
   it('laesst kein Blatt ohne Stufe zu', async () => {
     await expect(
-      alsAnna((c) =>
+      alsKonfigurator((c) =>
         c.query(
           `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp)
            values ($1, $2, 9, 'stufe')`,
@@ -85,7 +95,7 @@ describe('Blockbaum', () => {
 
   it('laesst keine Bedingung ausserhalb einer Verzweigung zu', async () => {
     await expect(
-      alsAnna((c) =>
+      alsKonfigurator((c) =>
         c.query(
           `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp, bedingung)
            values ($1, $2, 9, 'nacheinander', '{"feld":"brutto","op":">","wert":1}'::jsonb)`,
@@ -97,7 +107,7 @@ describe('Blockbaum', () => {
 
   it('laesst zwei Geschwister nicht auf derselben Position stehen', async () => {
     await expect(
-      alsAnna((c) =>
+      alsKonfigurator((c) =>
         c.query(
           `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp, stufe_id)
            values ($1, $2, 0, 'stufe', $3)`,
@@ -108,7 +118,7 @@ describe('Blockbaum', () => {
   })
 
   it('meldet eine Verzweigung ohne beide Zweige', async () => {
-    const gefunden = await alsAnna(async (c) => {
+    const gefunden = await alsKonfigurator(async (c) => {
       await c.query(
         `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp, bedingung)
          values ($1, $2, 9, 'verzweigung', '{"feld":"brutto","op":">","wert":5000}'::jsonb)`,
@@ -120,7 +130,7 @@ describe('Blockbaum', () => {
   })
 
   it('meldet einen leeren Behaelter', async () => {
-    const gefunden = await alsAnna(async (c) => {
+    const gefunden = await alsKonfigurator(async (c) => {
       await c.query(
         `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp)
          values ($1, $2, 9, 'gleichzeitig')`,
@@ -132,7 +142,7 @@ describe('Blockbaum', () => {
   })
 
   it('meldet eine Stufe, die im Ablauf nicht eingehaengt ist', async () => {
-    const gefunden = await alsAnna(async (c) => {
+    const gefunden = await alsKonfigurator(async (c) => {
       await c.query(
         `insert into prozessstufe (definition_id, reihenfolge, stufentyp, bezeichnung,
                                    zustaendigkeit_typ)
