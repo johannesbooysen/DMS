@@ -58,11 +58,19 @@ const MIT_DATEI: Array<{
   },
 ]
 
-export async function belegeAnlegen(): Promise<void> {
+/**
+ * @param wurzel Wohin die Dateien gehen. Vorgabe ist die E2E-Ablage; die
+ *   Vorschau (`npm run vorschau:befuellen`) reicht `.ablage` herein, damit
+ *   man die Belege im Browser auch wirklich sieht. Ohne diesen Parameter
+ *   waere die Vorbereitung an den Testlauf gefesselt -- und die Vorschau
+ *   zeigte weiter kaputte Bilder, was genau die Frage aufwirft, die sie
+ *   beantworten soll.
+ */
+export async function belegeAnlegen(wurzel: string = ABLAGE_WURZEL): Promise<void> {
   // Die Ablage des letzten Laufs wegraeumen: Sonst liegen dort mit jedem
   // Durchgang mehr Vorschaubilder, und niemand raeumt sie je auf.
-  await rm(ABLAGE_WURZEL, { force: true, recursive: true })
-  const ablage = new DateisystemAblage(ABLAGE_WURZEL)
+  await rm(wurzel, { force: true, recursive: true })
+  const ablage = new DateisystemAblage(wurzel)
 
   for (const beleg of MIT_DATEI) {
     const pdf = await pdfBauen(beleg.seiten)

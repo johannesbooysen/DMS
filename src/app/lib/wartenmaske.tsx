@@ -3,6 +3,16 @@
  *
  * Steht am Beleg und nicht in der Wartenliste, weil hier entschieden wird —
  * die Liste ist nur die Wiedervorlage.
+ *
+ * **Was offen ist, steht offen; was man beginnen kann, steht zugeklappt.**
+ * In der Bestandsaufnahme der Oberfläche fiel auf, dass Überschrift und
+ * Formular auf **jedem** Beleg über dem Dokument standen — auch dort, wo
+ * nichts wartete und nie etwas warten wird. Warten ist ein Nebenweg
+ * (Konzept §10, §11); über dem Beleg gehört, was den Beleg betrifft.
+ *
+ * Ein laufendes Warten ist etwas anderes: Es ist der Grund, warum der Beleg
+ * stillsteht, und das gehört nach oben. Deshalb die Unterscheidung statt
+ * eines pauschalen Zuklappens.
  */
 
 import { wartenBeginnenAktion } from '@/app/lib/nebenlauf-aktionen'
@@ -35,7 +45,9 @@ export function Warten({
 
   return (
     <section style={{ margin: '1rem 0' }}>
-      <h2 style={{ fontSize: '1rem' }}>Warten auf ein externes Ereignis</h2>
+      {offen.length > 0 && (
+        <h2 style={{ fontSize: '1rem' }}>Warten auf ein externes Ereignis</h2>
+      )}
 
       {offen.length > 0 && (
         <ul style={{ paddingLeft: '1.1rem' }}>
@@ -63,6 +75,10 @@ export function Warten({
         </details>
       )}
 
+      <details style={{ margin: '0.5rem 0' }}>
+        <summary style={{ cursor: 'pointer', fontSize: '0.85rem' }}>
+          Warten auf ein externes Ereignis beginnen
+        </summary>
       <form
         action={wartenBeginnenAktion}
         style={{
@@ -117,6 +133,7 @@ export function Warten({
           Warten beginnen
         </button>
       </form>
+      </details>
     </section>
   )
 }

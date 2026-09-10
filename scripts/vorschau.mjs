@@ -35,9 +35,19 @@ const umgebung = {
 }
 
 console.log('Vorschau mit Entwicklungsanmeldung auf http://localhost:3000')
-console.log('Anmelden als Anna, Bernd, Clara, Doris oder Eva -- ohne Passwort.\n')
+console.log('Anmelden als Anna, Bernd, Clara, Doris oder Eva -- ohne Passwort.')
+console.log('Keine Seitenbilder zu sehen? npm run vorschau:befuellen\n')
 
-const kind = spawn('npx', ['next', 'dev'], {
+/*
+ * **Web und Worker**, nicht nur Web.
+ *
+ * Der erste Entwurf startete allein `next dev`. Die Oberflaeche kam damit
+ * hoch, aber ein hochgeladener Beleg blieb fuer immer in `in_aufbereitung`:
+ * Rendern, Texterkennung und Extraktion laufen im Worker. Eine Vorschau, in
+ * der man nichts aufnehmen kann, beantwortet die Frage nicht, fuer die es
+ * sie gibt.
+ */
+const kind = spawn('npm', ['run', 'dev'], {
   stdio: 'inherit',
   env: umgebung,
   shell: true,

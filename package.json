@@ -38,7 +38,8 @@
     "verzeichnis": "node scripts/verzeichnis-erzeugen.mjs",
     "einrichten": "tsx scripts/einrichten.ts",
     "vorschau": "node scripts/vorschau.mjs",
-    "bilder": "playwright test --grep @bilder"
+    "bilder": "playwright test --grep @bilder",
+    "vorschau:befuellen": "tsx scripts/vorschau-befuellen.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1126.0",

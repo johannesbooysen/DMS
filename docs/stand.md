@@ -47,6 +47,7 @@ Auf einen Blick: 75 Tabellen, 191 Policies,
 | `npm run einrichten` | `tsx scripts/einrichten.ts` |
 | `npm run vorschau` | `node scripts/vorschau.mjs` |
 | `npm run bilder` | `playwright test --grep @bilder` |
+| `npm run vorschau:befuellen` | `tsx scripts/vorschau-befuellen.ts` |
 
 ## Migrationen
 

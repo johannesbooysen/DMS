@@ -68,7 +68,14 @@ Oberfläche ansehen und prüfen:
 ```bash
 npm run vorschau             # Anwendung mit Entwicklungsanmeldung auf 3000
 npm run bilder               # Bestandsaufnahme: jede Seite als Bild, 1280 und 1920
+npm run vorschau:befuellen   # der Vorschau echte Belege mit Seitenbildern geben
 ```
+
+**Der Seed hat keine Dateien** — das ist richtig so (Binärdaten gehören nicht in ein SQL-Seed), fällt aber im Browser sofort auf: kaputte Seitenbilder, PDF-Download mit 404. Wer die Oberfläche ansieht, hält dann eine Lücke in den Testdaten für einen Fehler der Anwendung. `vorschau:befuellen` führt deshalb dieselbe Vorbereitung aus wie der E2E-Lauf, nur in `.ablage`: echte PDFs durch die **gewöhnliche** Aufbereitung, wie der Worker sie fährt. Ein Beleg bleibt absichtlich ohne Datei — auch das gibt es im Betrieb.
+
+**`vorschau` startet Web *und* Worker.** Der erste Entwurf startete nur `next dev`; die Oberfläche kam hoch, aber ein hochgeladener Beleg blieb für immer in `in_aufbereitung` — Rendern, Texterkennung und Extraktion laufen im Worker. Eine Vorschau, in der man nichts aufnehmen kann, beantwortet die Frage nicht, für die es sie gibt.
+
+**Vorschau und E2E schließen einander aus.** Next.js lässt nur *einen* `next dev` je Verzeichnis zu — unabhängig vom Port, der eigene Port 3100 hilft also nicht. Wer `npm run e2e` startet, während die Vorschau läuft, bekommt „Another next dev server is already running" und einen abgebrochenen Lauf. Vorschau vorher beenden.
 
 **`vorschau` schließt eine Lücke, die lange offen war.** `DMS_ANMELDUNG=entwicklung` stand nur in `playwright.config.ts` — die Oberfläche war also ausschließlich *während eines E2E-Laufs* erreichbar; wer `npm run dev` startete, kam an der Anmeldung nicht vorbei. Ein npm-Skript kann die Variable nicht portabel setzen (npm führt Skripte unter Windows über `cmd` aus), deshalb [scripts/vorschau.mjs](scripts/vorschau.mjs). Ein Weg an Entra vorbei entsteht dadurch nicht: Die Entwicklungsanmeldung verlangt zusätzlich `NODE_ENV != production`, und das Skript startet ausschließlich `next dev`.
 
