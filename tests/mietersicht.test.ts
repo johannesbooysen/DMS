@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Client } from 'pg'
 
 const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
 const MEIKE_BIS_MAERZ = '85000000-0000-0000-0000-000000000001'

@@ -15,7 +15,7 @@ import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
 import { dubletteSuchen } from '../src/ingest/dublette'
 
 const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const MANDANT_NORD = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'

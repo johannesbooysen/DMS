@@ -50,8 +50,8 @@ npm run db:start
 ```
 
 Der erste Start lädt rund 3 GB Container-Images. Am Ende erscheinen die
-Zugänge; wichtig sind zwei: die Datenbank auf Port 54322 und die Weboberfläche
-*Studio* auf Port 54323, in der sich Tabellen und Daten ansehen lassen.
+Zugänge; wichtig sind zwei: die Datenbank auf Port 15322 und die Weboberfläche
+*Studio* auf Port 15323, in der sich Tabellen und Daten ansehen lassen.
 
 ```bash
 npm run db:reset

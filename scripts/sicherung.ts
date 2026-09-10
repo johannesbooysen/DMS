@@ -35,7 +35,7 @@ const ziel = resolve(process.argv[2] ?? join('sicherung', new Date().toISOString
  * funktioniert, wird nie ausprobiert.
  */
 function dumpBefehl(zieldatei: string): { befehl: string; argumente: string[] } {
-  const url = process.env['DATABASE_URL'] ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  const url = process.env['DATABASE_URL'] ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
   const container = process.env['DMS_PG_CONTAINER']
 
   const gemeinsam = [
@@ -65,7 +65,7 @@ function dumpBefehl(zieldatei: string): { befehl: string; argumente: string[] } 
   if (container !== undefined && container !== '') {
     /*
      * Im Container gilt die Adresse des Hosts nicht: Dort lauscht PostgreSQL
-     * auf 5432, und 127.0.0.1:54322 zeigt ins Leere. Deshalb nicht die
+     * auf 5432, und 127.0.0.1:15322 zeigt ins Leere. Deshalb nicht die
      * DATABASE_URL durchreichen, sondern die Verbindung im Container
      * benennen -- ueberschreibbar ueber DMS_PG_URL_INTERN, falls dort etwas
      * anderes laeuft.

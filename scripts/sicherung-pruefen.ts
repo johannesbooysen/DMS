@@ -45,7 +45,7 @@ if (quelle === undefined || quelle === '') {
 const verzeichnis = resolve(quelle)
 
 const BASIS =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 const CONTAINER = process.env['DMS_PG_CONTAINER']
 const imContainer = CONTAINER !== undefined && CONTAINER !== ''
 const INTERN =
