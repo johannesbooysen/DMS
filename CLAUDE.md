@@ -265,6 +265,13 @@ Diese Punkte ziehen sich durch das ganze System; ein Verstoß fällt beim Lesen 
 
 **Ein Stapel ist kein Dokument.** §24.1: „Nachträglich unangenehm, weil Seiten und Hashes dann schon geschrieben sind." Eine Scandatei wird `stapel` + `stapel_seite` und durchläuft `aufbereitung → pruefung → uebernommen`; **erst beim Übernehmen** entstehen Dokumente, je Beleg mit eigener PDF und eigenem Hash. Die Belegnummern ergeben sich aus den Trennblättern (`app.stapel_gruppieren`, `dense_rank` über die Nicht-Trenner — sonst entsteht ein Phantom-Beleg 1). Die Korrekturoberfläche ist Teil des Entwurfs, nicht ein Zugeständnis: Ein falsch getrennter Stapel erzeugt zwanzig falsche Belege auf einmal.
 
+**Der Beleg bekommt den Platz, die Entscheidung den Rest** ([belegvorschau.tsx](src/app/lib/belegvorschau.tsx)). Auf dem Bildschirm, auf dem entschieden wird, ob eine Rechnung sachlich richtig ist, stand eine Miniatur von 240 Pixeln neben einer fast leeren Fläche. Jetzt füllt die **Lesefassung** (1240 px, vom Worker beim Eingang gerendert) den größeren Teil der Breite, mit Zoom von 50 bis 300 Prozent.
+
+**Das ist die erste und bisher einzige Client-Komponente des Projekts**, und der Grund ist nicht der Zoom, sondern das Kommentarfeld daneben: Ein Zoom über Abfrageparameter und Neuladen würde einen halb getippten Satz wegwerfen. Sonst bleibt alles serverseitig.
+
+**Knöpfe statt Schieberegler** — weil `tsconfig.json` `lib: ["ES2023"]` **ohne `DOM`** setzt. Das ist ein Riegel, kein Versehen: So kann Servercode `document`, `window` oder `localStorage` gar nicht erst versehentlich benutzen. Ein `<input type="range">` bräuchte `e.target.value` und damit DOM-Typen; `onClick`-Handler, die das Ereignis nicht ansehen, brauchen sie nicht. Wer eine weitere Client-Komponente schreibt, hält sich an dieselbe Grenze.
+
+
 **PDF-Verarbeitung gehört nie in einen Request.** `src/ingest/pdf.ts` lädt seine Schriftmetriken über eine `file://`-URL aus `node_modules`; sobald das Modul in eine Server Component gerät, bricht der Bundler ab. Der Fehler ist ein Hinweis auf die Regel, nicht ihr Gegenteil — lesen und rendern läuft im Worker (`stapel-aufbereiten`, eigene Warteschlange, damit ein Stapel keinen frischen Beleg aufhält).
 
 **Alles ab Rohablage läuft asynchron in einer Queue.** Der KI-Provider steckt hinter einem Interface (Bedrock Frankfurt als Standard, lokales Modell als Fallback). Fällt er aus, startet der Workflow trotzdem und die Erfassung erfolgt manuell.

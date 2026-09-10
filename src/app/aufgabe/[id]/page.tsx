@@ -9,6 +9,7 @@
 
 import { notFound } from 'next/navigation'
 import { stempelnAktion } from '@/app/lib/aktionen'
+import { Belegvorschau } from '@/app/lib/belegvorschau'
 import { befundeLaden } from '@/app/lib/belege'
 import { kontierungsmaskeLaden } from '@/app/lib/kontierung-daten'
 import { Kontierung } from '@/app/lib/kontierungsmaske'
@@ -84,17 +85,31 @@ export default async function Aufgabenansicht({
 
       {zahlung !== null && <Zahlung ansicht={zahlung} />}
 
-      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-        <a href={`/beleg/${zeile.dokumentId}`} style={{ flexShrink: 0 }}>
-          {/* Die Miniatur liegt fertig vor -- sie kostet nichts. */}
-          <img
-            src={`/api/beleg/${zeile.dokumentId}/seite/1?groesse=miniatur`}
-            alt="Erste Seite"
-            style={{ border: '1px solid #ddd', width: '240px' }}
-          />
-        </a>
+      {/*
+        **Der Beleg bekommt den Platz, die Entscheidung den Rest.**
 
-        <div style={{ flex: 1 }}>
+        Vorher stand hier eine Miniatur von 240 Pixeln neben einer fast
+        leeren Fläche -- auf dem Bildschirm, auf dem entschieden wird, ob
+        eine Rechnung sachlich richtig ist. Wer sie nicht lesen kann, klickt
+        entweder blind oder wechselt jedes Mal in die Belegansicht und
+        zurück.
+
+        `flexWrap` statt fester Spalten: Auf einem schmalen Bildschirm
+        rutscht die Entscheidung unter den Beleg, statt beide zu quetschen.
+      */}
+      <div
+        style={{
+          alignItems: 'flex-start',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '1.5rem',
+        }}
+      >
+        <div style={{ flex: '3 1 24rem', minWidth: 0 }}>
+          <Belegvorschau dokumentId={zeile.dokumentId} />
+        </div>
+
+        <div style={{ flex: '2 1 20rem', minWidth: 0 }}>
           {stempel.length === 0 ? (
             <p style={{ color: '#666' }}>
               An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.
