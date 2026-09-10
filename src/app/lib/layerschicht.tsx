@@ -57,23 +57,80 @@ export function Layerschicht({
         }
 
         if (l.typ === 'stempel') {
+          /*
+           * **Ein Stempel muss wie ein Stempel aussehen.**
+           *
+           * Der erste Entwurf zeichnete ihn als dünn umrandetes Kästchen mit
+           * 0,5rem Schrift auf fast weißem Grund — technisch ein Layer an der
+           * richtigen Stelle, optisch ein Formularfeld. Beim ersten Rundgang
+           * durch die Oberfläche war die Rückmeldung entsprechend: „hiervon
+           * sehe ich noch nichts".
+           *
+           * Die Daten waren dabei längst da: Farbe am Stempeltyp (rot für
+           * Ablehnung, grün für Freigabe), Entscheidung, Name, Datum, und ein
+           * Platz, den der Worker so gewählt hat, dass kein Text darunter
+           * verschwindet. Es fehlte allein die Darstellung.
+           *
+           * Der Text kommt als eine Zeile „Entscheidung · Name · Datum" aus
+           * dem Trigger. Hier wird sie geteilt, damit die **Entscheidung**
+           * trägt und Name und Datum als Beleg darunter stehen — wie auf
+           * einem echten Stempel. Geteilt wird in der Anzeige und nicht in
+           * der Datenbank: Der Layertext ist zugleich der durchsuchbare
+           * Inhalt (`inhalt_tsv`), und den zerlegt man nicht für die Optik.
+           */
+          const teile = (l.text ?? '').split(' · ')
+          const entscheidung = teile[0] ?? ''
+          const beleg = teile.slice(1).join(' · ')
+          const farbe = l.farbe ?? '#3B4A80'
+
           return (
             <div
               key={l.id}
               style={{
                 ...prozent(l),
-                background: 'rgba(255, 255, 255, 0.86)',
-                border: `1.5px solid ${l.farbe ?? '#3B4A80'}`,
-                borderRadius: '0.15rem',
-                color: l.farbe ?? '#3B4A80',
-                fontSize: 'clamp(0.5rem, 0.85vw, 0.72rem)',
-                lineHeight: 1.25,
+                alignItems: 'center',
+                /* Leicht getönt statt weiß: Der Seitentext darunter bleibt
+                   ahnbar, der Stempel wirkt aufgedrückt und nicht eingefügt. */
+                background: 'rgba(255, 255, 255, 0.78)',
+                border: `0.18rem solid ${farbe}`,
+                borderRadius: '0.2rem',
+                boxSizing: 'border-box',
+                color: farbe,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 overflow: 'hidden',
-                padding: '0.2rem 0.3rem',
+                padding: '0.15rem 0.3rem',
                 position: 'absolute',
+                /* Drei Grad, nicht mehr: Ein Stempel sitzt nie ganz gerade,
+                   aber ein schiefer Text ist schlechter zu lesen. */
+                transform: 'rotate(-3deg)',
               }}
             >
-              {l.text}
+              <span
+                style={{
+                  fontSize: 'clamp(0.55rem, 1.15vw, 1rem)',
+                  fontWeight: 700,
+                  letterSpacing: '0.02em',
+                  lineHeight: 1.1,
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {entscheidung}
+              </span>
+              {beleg !== '' && (
+                <span
+                  style={{
+                    fontSize: 'clamp(0.4rem, 0.7vw, 0.62rem)',
+                    lineHeight: 1.2,
+                    opacity: 0.85,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {beleg}
+                </span>
+              )}
             </div>
           )
         }
