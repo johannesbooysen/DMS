@@ -88,5 +88,16 @@ test('Am Beleg steht der Stempel, den Anna gesetzt hat', async ({ page }) => {
    * Stempelplätze kennt. Der Rückfallweg greift, statt den Stempel zu
    * verlieren -- und dass er sichtbar greift, ist die halbe Zusage.
    */
-  await expect(page.getByText(/Sachlich richtig · Anna Ahrens/)).toBeVisible()
+  /*
+   * **Zwei Zusicherungen statt einer.** Bis der Stempel wie ein Stempel
+   * aussah, stand hier eine Zeile: `Sachlich richtig · Anna Ahrens`. Die
+   * Darstellung teilt sie jetzt -- die Entscheidung trägt, Name und Datum
+   * stehen als Beleg darunter --, und dieser Test wurde prompt rot. Genau
+   * dafür prüft er über den Sichttext und nicht über eine Kennung.
+   *
+   * Beide Teile bleiben Zusicherung: Ohne die **Entscheidung** ist der
+   * Stempel eine Verzierung, ohne den **Namen** ein Stempel ohne Urheber.
+   */
+  await expect(page.getByText('Sachlich richtig', { exact: true })).toBeVisible()
+  await expect(page.getByText(/Anna Ahrens/)).toBeVisible()
 })
