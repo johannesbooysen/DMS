@@ -297,6 +297,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `vorlage_aenderung` | `vorlage` | before insert or update | [`20260903120000_vorlagen_rechte.sql`](../supabase/migrations/20260903120000_vorlagen_rechte.sql) |
 | `loeschung_unveraenderlich` | `loeschung` | before update or delete | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 | `notfallzugriff_unveraenderlich` | `notfallzugriff` | before update or delete | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
+| `dokument_spezialgebiet` | `dokument` | before insert or update of ordnungsgruppe_id | [`20260911100000_kategorie_automatik.sql`](../supabase/migrations/20260911100000_kategorie_automatik.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -800,6 +801,8 @@ belegt.
 - zeigt die Kette, die sich fuer einen gedachten Beleg ergibt
 - laesst eine Stufe aus, deren Betragsgrenze nicht greift
 - veraendert dabei nichts
+- folgt der Kategorie, nicht der hoechsten Fassung
+- faellt ohne Angabe auf die bisherige Regel zurueck
 
 ### [`tests/export.test.ts`](../tests/export.test.ts)
 
@@ -904,6 +907,22 @@ belegt.
 - erkennt dasselbe Papier an Kreditor, Rechnungsnummer und Betrag
 - haelt gleichen Kreditor und gleichen Betrag ohne Rechnungsnummer nicht fuer eine Dublette
 - sucht nicht ueber Mandantengrenzen hinweg
+
+### [`tests/kategorie.test.ts`](../tests/kategorie.test.ts)
+
+- gilt und ist gruen
+- schlaegt das gelernte Muster — senkt dabei aber die Ampel
+- ist gruen, wenn bei diesem Kreditor immer gleich kontiert wurde
+- ist orange, wenn derselbe Kreditor auf mehrere Kategorien lief
+- zaehlt Muster ohne Objektbezug mit
+- ergeben nie besser als orange
+- ergeben nichts, wenn zwei Kategorien passen
+- greifen erst, wenn Kreditor und Muster nichts hergeben
+- wird rot und sagt warum
+- schlaegt keine Kategorie eines fremden Mandanten vor
+- wird beim Setzen der Kategorie abgeleitet
+- ueberschreibt kein von Hand gewaehltes Spezialgebiet
+- fuehrt ueber die Zustaendigkeit zu einem Menschen
 
 ### [`tests/kette.test.ts`](../tests/kette.test.ts)
 

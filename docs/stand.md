@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-103 Module, 839 Testfaelle in 45 Dateien,
+104 Module, 854 Testfaelle in 46 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -424,6 +424,13 @@ Funktionen: `app.darf_prozess`
 
 Policies: 18
 
+### `supabase/migrations/20260911100000_kategorie_automatik.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.dokument_spezialgebiet_ableiten`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -500,6 +507,7 @@ Policies: 18
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/layer/index.ts`](../src/layer/index.ts) | Layer: was neben dem Beleg liegt |
 | [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
+| [`src/lernen/kategorie.ts`](../src/lernen/kategorie.ts) | Kategorie (Ordnungsgruppe) eines Belegs bestimmen |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
 | [`src/notfall/index.ts`](../src/notfall/index.ts) | Notfallzugriff (Konzept §24.10) |
@@ -546,13 +554,14 @@ Policies: 18
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
-| [`tests/engine.test.ts`](../tests/engine.test.ts) | 15 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation |
+| [`tests/engine.test.ts`](../tests/engine.test.ts) | 17 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
+| [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 13 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
@@ -598,6 +607,6 @@ Policies: 18
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:341`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:373`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:194`](../src/workflow/engine.ts) |

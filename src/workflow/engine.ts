@@ -282,16 +282,44 @@ export async function laufStarten(
   c: PoolClient,
   dokumentId: string,
 ): Promise<{ laufId: string; aufgaben: string[] } | null> {
+  /*
+   * Welcher Ablauf gilt -- und warum.
+   *
+   * **Die Kategorie benennt ihren Ablauf.** `ordnungsgruppe.prozessdefinition_id`
+   * steht seit dem Kernschema und wurde nie gelesen. Sie ist die einfachste
+   * denkbare Steuerung: ein Auswahlfeld je Kategorie, keine Bedingung, kein
+   * Filter. Genau das war die Kritik am abzuloesenden System -- dort ergibt
+   * sich der Ablauf aus ueberlappenden Filtern, die niemand als Ganzes lesen
+   * kann (docs/analyse-amagno-bestand.md, Abschnitt 1).
+   *
+   * Bedingungen bleiben da, wo sie hingehoeren: als Verzweigung **innerhalb**
+   * eines Ablaufs ("ab 5.000 EUR zusaetzlich die Geschaeftsleitung"). Dort
+   * stehen sie an einer Stelle und werden mitsimuliert.
+   *
+   * Die bisherige Auswahl ueber Belegart und Kategorie bleibt als Rueckfall
+   * gueltig -- ein Haus, das `prozessdefinition_id` nicht pflegt, laeuft
+   * unveraendert weiter.
+   *
+   * Die Belegart muss in **beiden** Wegen passen: Eine Kategorie, die auf
+   * einen Schriftverkehrsablauf zeigt, waere ein Konfigurationsfehler, und
+   * ein Beleg im falschen Ablauf faellt erst drei Stufen spaeter auf.
+   */
   const { rows: def } = await c.query<{ id: string; version: number }>(
     `select p.id, p.version
        from dokument d
+       left join ordnungsgruppe og
+              on og.id = d.ordnungsgruppe_id
+             and og.mandant_id = d.mandant_id
        join prozessdefinition p
          on p.mandant_id = d.mandant_id
         and p.belegart = d.belegart
         and p.status = 'aktiv'
-        and (p.ordnungsgruppe_id = d.ordnungsgruppe_id or p.ordnungsgruppe_id is null)
+        and (p.id = og.prozessdefinition_id
+             or p.ordnungsgruppe_id = d.ordnungsgruppe_id
+             or p.ordnungsgruppe_id is null)
       where d.id = $1
-      order by p.ordnungsgruppe_id nulls last, p.version desc
+      order by coalesce(p.id = og.prozessdefinition_id, false) desc,
+               p.ordnungsgruppe_id nulls last, p.version desc
       limit 1`,
     [dokumentId],
   )

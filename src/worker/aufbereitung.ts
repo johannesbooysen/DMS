@@ -20,6 +20,7 @@ import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktion'
 import { istXmlRechnung } from '../extraktion/zugferd'
+import { kategorieVorschlagen, type Kategorievorschlag } from '../lernen/kategorie'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
@@ -54,6 +55,7 @@ export interface Aufbereitungsergebnis {
   erkennung?: Extraktionsbericht
   pruefung?: Pruefergebnis
   zuordnung?: Zuordnungsvorschlag
+  kategorie?: Kategorievorschlag
 }
 
 /*
@@ -333,6 +335,36 @@ export async function aufbereiten(
     }
   }
 
+  // Kategorie -- und damit Mitarbeiter, Ablauf und Kontovorschlag.
+  //
+  // **Nach** der Objektzuordnung, weil die gelernten Kontierungsmuster je
+  // Kreditor *und* Objekt gelten: Vorher waere die genauere Quelle nicht
+  // verfuegbar. Und **nach** der Erkennung, weil ohne Kreditor keine der
+  // beiden ersten Quellen greift.
+  //
+  // Uebernommen wird nur bei gruen -- dieselbe Schwelle wie beim Objekt. Ein
+  // oranger Vorschlag steht in der Aufgabe und wartet auf einen Menschen;
+  // eine still uebernommene Kategorie verteilt den Beleg zuverlaessig an den
+  // Falschen, und weil die Ableitung deterministisch ist, sieht das Ergebnis
+  // richtig aus.
+  const { rows: ohneGruppe } = await c.query<{ ordnungsgruppe_id: string | null }>(
+    'select ordnungsgruppe_id from dokument where id = $1',
+    [dokumentId],
+  )
+  let kategorie: Kategorievorschlag | undefined
+  if (ohneGruppe[0]?.ordnungsgruppe_id == null) {
+    kategorie = await kategorieVorschlagen(c, dokumentId)
+    if (kategorie.sicherheit === 'gruen' && kategorie.ordnungsgruppeId !== null) {
+      // Der Trigger `dokument_spezialgebiet` leitet daraus das Spezialgebiet
+      // ab; ueber `spezialgebiet_zustaendigkeit` faellt damit der zustaendige
+      // Mitarbeiter an, ohne dass hier jemand genannt wird.
+      await c.query('update dokument set ordnungsgruppe_id = $2 where id = $1', [
+        dokumentId,
+        kategorie.ordnungsgruppeId,
+      ])
+    }
+  }
+
   // Plausibilitaet: der zweite Vertrauenswert. Er beantwortet eine andere
   // Frage als die Extraktion -- nicht wie sicher gelesen wurde, sondern ob
   // das Gelesene fachlich Sinn ergibt (Konzept 14).
@@ -342,11 +374,13 @@ export async function aufbereiten(
   //   * PDF/A fuer Belege, die *keinen* OCR-Lauf brauchen. Heute entsteht das
   //     Derivat nur als Nebenprodukt der Erkennung -- ein Beleg mit Textlayer
   //     bekommt keines (Konzept 19).
-  //   * Lernspeicher: Objekt- und Kontierungsvorschlag (Konzept 15)
+  //   * Lernspeicher: Kontierungsvorschlag aus `kontierungs_muster` -- die
+  //     Tabelle traegt Konto, Umlageschluessel und Umlagefaehigkeit und hat
+  //     bis heute keine Zeile Code (Konzept 15)
   //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
-  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung }
+  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung, kategorie }
 }
 
 /**

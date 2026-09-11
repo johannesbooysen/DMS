@@ -546,3 +546,92 @@ describe('Simulation', () => {
     expect(nachher).toBe(vorher)
   })
 })
+
+/**
+ * Die Kategorie benennt ihren Ablauf.
+ *
+ * `ordnungsgruppe.prozessdefinition_id` steht seit dem Kernschema und wurde
+ * nie gelesen -- die Auswahl lief allein ueber Belegart und Kategorie, mit
+ * der hoechsten Fassung als Stichentscheid. Das ist die einfachste denkbare
+ * Steuerung: ein Auswahlfeld je Kategorie statt eines Filters, den niemand
+ * als Ganzes lesen kann (docs/analyse-amagno-bestand.md).
+ *
+ * Damit der Test etwas beweist, stehen **zwei** aktive Definitionen
+ * bereit. Die alte Regel wuerde die hoehere Fassung nehmen; die Kategorie
+ * zeigt auf die niedrigere. Wer gewinnt, sagt, welche Regel greift.
+ */
+describe('Auswahl des Ablaufs', () => {
+  const BETRIEBSKOSTEN = '40000000-0000-0000-0000-000000000001'
+
+  /** Beleg mit Kategorie -- sonst gibt es nichts zu waehlen. */
+  async function belegMitKategorie(c: Client): Promise<string> {
+    const beleg = await belegAnlegen(c, 1000)
+    await c.query('update dokument set ordnungsgruppe_id = $2 where id = $1', [
+      beleg,
+      BETRIEBSKOSTEN,
+    ])
+    return beleg
+  }
+
+  /** Eine aktive Definition mit einer Stufe und einem Blockbaum. */
+  async function ablaufBereit(
+    c: Client,
+    bezeichnung: string,
+    version: number,
+  ): Promise<string> {
+    const { definitionId, stufenIds } = await definitionAnlegen(c, [{ bezeichnung }])
+    await konfigurierend(c, async () => {
+      await c.query('update prozessdefinition set version = $2 where id = $1', [
+        definitionId,
+        version,
+      ])
+    })
+    const wurzel = await knotenAnlegen(c, definitionId, null, 1, 'nacheinander')
+    await knotenAnlegen(c, definitionId, wurzel, 1, 'stufe', stufenIds[0])
+    await statusSetzen(c, definitionId, 'aktiv')
+    return definitionId
+  }
+
+  it('folgt der Kategorie, nicht der hoechsten Fassung', async () => {
+    const ergebnis = await alsAnna(async (c) => {
+      const genannt = await ablaufBereit(c, 'Von der Kategorie benannt', 98)
+      await ablaufBereit(c, 'Nur die hoechste Fassung', 99)
+
+      await konfigurierend(c, async () => {
+        const { rowCount } = await c.query(
+          'update ordnungsgruppe set prozessdefinition_id = $2 where id = $1',
+          [BETRIEBSKOSTEN, genannt],
+        )
+        // Eine Policy weist nicht ab, sie laesst die Zeile verschwinden.
+        if (rowCount === 0) throw new Error('Kategorie war nicht aenderbar.')
+      })
+
+      const beleg = await belegMitKategorie(c)
+      const lauf = await laufStarten(c as never, beleg)
+      const { rows } = await c.query<{ definition_id: string }>(
+        'select definition_id from dokument_lauf where id = $1',
+        [lauf!.laufId],
+      )
+      return { gewaehlt: rows[0].definition_id, genannt }
+    })
+
+    expect(ergebnis.gewaehlt).toBe(ergebnis.genannt)
+  })
+
+  it('faellt ohne Angabe auf die bisherige Regel zurueck', async () => {
+    const ergebnis = await alsAnna(async (c) => {
+      await ablaufBereit(c, 'Aeltere Fassung', 98)
+      const hoechste = await ablaufBereit(c, 'Hoechste Fassung', 99)
+
+      const beleg = await belegMitKategorie(c)
+      const lauf = await laufStarten(c as never, beleg)
+      const { rows } = await c.query<{ definition_id: string }>(
+        'select definition_id from dokument_lauf where id = $1',
+        [lauf!.laufId],
+      )
+      return { gewaehlt: rows[0].definition_id, hoechste }
+    })
+
+    expect(ergebnis.gewaehlt).toBe(ergebnis.hoechste)
+  })
+})
