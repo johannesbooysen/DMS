@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-104 Module, 858 Testfaelle in 46 Dateien,
+105 Module, 858 Testfaelle in 46 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -530,6 +530,7 @@ Funktionen: `app.kategorie_ablauf_recht`
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
+| [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |

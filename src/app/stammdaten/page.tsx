@@ -397,6 +397,11 @@ export default async function Stammdaten({
         titel="Ordnungsgruppen"
         hinweis="Nur deaktivierbar, nie löschbar — sie tragen die Sichtbarkeit archivierter Belege."
       >
+        <p style={{ fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          Wer eine Ordnungsgruppe bearbeitet, welchen Ablauf sie nimmt und worauf
+          sie gebucht wird, steht unter{' '}
+          <Link href="/stammdaten/kategorien">Kategorien und ihre Steuerung</Link>.
+        </p>
         <table style={tabelle}>
           <thead>
             <tr>

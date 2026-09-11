@@ -40,6 +40,25 @@ export const feld = {
   padding: '0.3rem 0.4rem',
 } as const
 
+/**
+ * Sichtbar fuer Vorleseprogramme, unsichtbar auf dem Bildschirm.
+ *
+ * Nicht `display: none` und nicht `visibility: hidden` — beides nimmt den
+ * Text auch dem Vorleseprogramm weg und waere damit dasselbe wie gar keine
+ * Beschriftung.
+ */
+export const nurFuerVorleser = {
+  border: 0,
+  clip: 'rect(0 0 0 0)',
+  height: '1px',
+  margin: '-1px',
+  overflow: 'hidden',
+  padding: 0,
+  position: 'absolute' as const,
+  whiteSpace: 'nowrap' as const,
+  width: '1px',
+}
+
 export const knopf = {
   background: 'none',
   border: 0,
@@ -122,17 +141,36 @@ export function Auswahl({
   optionen,
   breite = '10rem',
   leer,
+  wert,
+  labelVerbergen,
 }: {
   name: string
   label: string
   optionen: Array<{ wert: string; text: string }>
   breite?: string
   leer?: string
+  /**
+   * Vorbelegung. Wo eine Auswahl einen **bestehenden** Zustand aendert und
+   * nicht etwas Neues anlegt, muss sie zeigen, was gerade gilt — sonst
+   * setzt ein Formular, das jemand nur halb ausfuellt, das Uebrige still
+   * zurueck.
+   */
+  wert?: string | null
+  /**
+   * Beschriftung nur fuer Vorleseprogramme.
+   *
+   * In einer Tabellenzeile ist die Spaltenueberschrift fuer Sehende Kontext
+   * genug — fuer ein Vorleseprogramm ist sie es **nicht**: Es liest das Feld
+   * einzeln vor. Eine leere Beschriftung ergaebe ein namenloses Auswahlfeld,
+   * und das ist derselbe Fehler wie das `aria-label` an der Ampel: Er sieht
+   * nach nichts aus und macht die Stelle unbedienbar.
+   */
+  labelVerbergen?: boolean
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
-      <span style={{ color: '#555' }}>{label}</span>
-      <select name={name} style={{ ...feld, width: breite }}>
+      <span style={labelVerbergen === true ? nurFuerVorleser : { color: '#555' }}>{label}</span>
+      <select name={name} defaultValue={wert ?? ''} style={{ ...feld, width: breite }}>
         {leer !== undefined && <option value="">{leer}</option>}
         {optionen.map((o) => (
           <option key={o.wert} value={o.wert}>

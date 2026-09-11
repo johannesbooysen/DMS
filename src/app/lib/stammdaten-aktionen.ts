@@ -39,6 +39,11 @@ import {
   zustaendigkeitSetzen,
   type Eingaben,
 } from '@/stammdaten'
+import {
+  ablaufSetzen,
+  kreditorStandardSetzen,
+  zuordnungSetzen,
+} from '@/stammdaten/kategorien'
 import { quelleAnlegen, quelleUmschalten, vorlageSpeichern } from '@/stammdaten/quellen'
 import {
   anwenden as presetAnwenden,
@@ -186,4 +191,22 @@ export async function presetAnwendenAktion(f: FormData): Promise<void> {
     }
     throw fehler
   }
+}
+
+/*
+ * Kategorien und ihre Steuerung.
+ *
+ * Zwei Handlungen und nicht eine, weil dahinter zwei Rechte stehen:
+ * Spezialgebiet, Konto und Schluesselworte sind Stammdatenpflege -- welcher
+ * Ablauf gilt, ist Ablaufkonfiguration. Zusammengelegt wuerde das Speichern
+ * einer Farbe an einem fehlenden Ablaufrecht scheitern.
+ */
+export async function kategorieZuordnungAktion(f: FormData): Promise<void> {
+  await versuchen(f, zuordnungSetzen)
+}
+export async function kategorieAblaufAktion(f: FormData): Promise<void> {
+  await versuchen(f, ablaufSetzen)
+}
+export async function kreditorStandardAktion(f: FormData): Promise<void> {
+  await versuchen(f, kreditorStandardSetzen)
 }
