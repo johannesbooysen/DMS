@@ -4,6 +4,21 @@
 ohne ihre Beantwortung würde ich raten. Ist der Entwurf angenommen, wird
 daraus je Hälfte ein ADR und dann Code.
 
+> **Nachtrag nach der Bestandsanalyse.**
+> [analyse-amagno-bestand.md](analyse-amagno-bestand.md) wertet das
+> Workflow-Diagramm des abzulösenden Systems aus. Drei Änderungen an diesem
+> Entwurf folgen daraus:
+>
+> - **Frage 2 („was nervt an Amagno") ist beantwortet** — durch den Bestand
+>   selbst. Die Antworten stehen dort in den Abschnitten 1 bis 9.
+> - **Frage 1 war falsch gestellt.** Der Kreditor *wählt* im Bestand keinen
+>   Ablauf, er *füllt* die Felder, die ihn wählen. Das sind zwei
+>   Mechanismen; welcher gemeint ist, ist jetzt Frage 1 der Analyse.
+> - **Neu hinzugekommen ist die Ausführbarkeitsprüfung** (Analyse,
+>   Abschnitt 4): ob überhaupt jemand die Stempel einer Stufe setzen darf.
+>   Sie fehlt hier, sie fehlt in Amagno, und sie fehlt in unserer
+>   `app.prozessbaum_pruefen`.
+
 ---
 
 ## 1. Was heute schon steht — und was nicht

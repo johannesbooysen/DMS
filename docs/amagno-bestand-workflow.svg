@@ -1,0 +1,401 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 2400" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1F4E79"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C00000"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#548235"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#BF8F00"/>
+    </marker>
+
+    <linearGradient id="entryGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D5E8F0"/>
+      <stop offset="100%" stop-color="#B4D7E5"/>
+    </linearGradient>
+    <linearGradient id="mainGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E2EFDA"/>
+      <stop offset="100%" stop-color="#C6E0B4"/>
+    </linearGradient>
+    <linearGradient id="warnGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF2CC"/>
+      <stop offset="100%" stop-color="#FFE699"/>
+    </linearGradient>
+    <linearGradient id="errGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FCE4D6"/>
+      <stop offset="100%" stop-color="#F8CBAD"/>
+    </linearGradient>
+    <linearGradient id="endGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A9D08E"/>
+      <stop offset="100%" stop-color="#70AD47"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ==== TITEL ==== -->
+  <rect x="0" y="0" width="1800" height="80" fill="#1F4E79"/>
+  <text x="900" y="38" font-size="24" font-weight="bold" fill="white" text-anchor="middle">Amagno Workflow-Diagramm – Booysen Hausverwaltung &amp; Immobilien (BHI)</text>
+  <text x="900" y="62" font-size="14" fill="white" text-anchor="middle" font-style="italic">Vollständiger Rechnungseingangsworkflow mit Sub-Workflows (Klärung, Gutschriften, Bezahlen)</text>
+
+  <!-- ==== LEGENDE ==== -->
+  <g transform="translate(20, 100)">
+    <text x="0" y="0" font-size="14" font-weight="bold" fill="#1F4E79">LEGENDE</text>
+    <rect x="0" y="10" width="40" height="20" fill="url(#entryGrad)" stroke="#5B9BD5"/>
+    <text x="48" y="25" font-size="11">Eingang/Posteingang</text>
+    <rect x="180" y="10" width="40" height="20" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="228" y="25" font-size="11">Hauptpfad (Workflow-Schritt)</text>
+    <rect x="380" y="10" width="40" height="20" fill="url(#warnGrad)" stroke="#BF8F00"/>
+    <text x="428" y="25" font-size="11">Klärungs-Workflow</text>
+    <rect x="540" y="10" width="40" height="20" fill="#FCE4D6" stroke="#C00000"/>
+    <text x="588" y="25" font-size="11">Konfigurations-Problem</text>
+    <rect x="740" y="10" width="40" height="20" fill="url(#endGrad)" stroke="#385723"/>
+    <text x="788" y="25" font-size="11">Endzustand</text>
+    
+    <line x1="900" y1="20" x2="940" y2="20" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="950" y="25" font-size="11">Hauptfluss</text>
+    <line x1="1040" y1="20" x2="1080" y2="20" stroke="#C00000" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowRed)"/>
+    <text x="1090" y="25" font-size="11">Fehler/Rücksprung</text>
+    <line x1="1200" y1="20" x2="1240" y2="20" stroke="#BF8F00" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowOrange)"/>
+    <text x="1250" y="25" font-size="11">Klärungs-Verzweigung</text>
+    <line x1="1400" y1="20" x2="1440" y2="20" stroke="#548235" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrowGreen)"/>
+    <text x="1450" y="25" font-size="11">Gutschrifts-Pfad</text>
+  </g>
+
+  <!-- ==== HAUPTPFAD MITTE ==== -->
+  
+  <!-- Scan-Eingang -->
+  <g>
+    <rect x="700" y="160" width="400" height="70" rx="8" fill="url(#entryGrad)" stroke="#1F4E79" stroke-width="2"/>
+    <text x="900" y="190" font-size="20" font-weight="bold" text-anchor="middle">📥 SCAN</text>
+    <text x="900" y="215" font-size="12" text-anchor="middle">Posteingang scannt eingehende Dokumente</text>
+  </g>
+
+  <!-- Pfeil -->
+  <line x1="900" y1="230" x2="900" y2="265" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Magnet "01. Rechnungseingang" -->
+  <g>
+    <rect x="600" y="270" width="600" height="100" rx="8" fill="url(#entryGrad)" stroke="#1F4E79" stroke-width="2"/>
+    <text x="900" y="295" font-size="14" font-weight="bold" text-anchor="middle">📂 Dokumenteneingänge / 01. Rechnungseingang</text>
+    <text x="900" y="315" font-size="11" text-anchor="middle" font-style="italic" fill="#595959">Magnet: Dokumenttyp = Eingangsrechnung/Mahnung UND Status leer</text>
+    <line x1="620" y1="325" x2="1180" y2="325" stroke="#5B9BD5" stroke-dasharray="3,3"/>
+    <text x="900" y="345" font-size="13" font-weight="bold" text-anchor="middle" fill="#1F4E79">▶ Stempel "Rechnungseingang"</text>
+    <text x="900" y="362" font-size="11" text-anchor="middle">Setzt: Status="Rechnungseingang abgeschlossen" + Ordnungsgruppe + Objektdaten</text>
+  </g>
+
+  <!-- Pfeil mit Verzweigungs-Hinweis -->
+  <line x1="900" y1="370" x2="900" y2="400" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Entscheidung Freigabe-pflichtig? -->
+  <g>
+    <polygon points="900,400 1100,460 900,520 700,460" fill="url(#warnGrad)" stroke="#BF8F00" stroke-width="2"/>
+    <text x="900" y="450" font-size="13" font-weight="bold" text-anchor="middle">VERZWEIGUNG</text>
+    <text x="900" y="468" font-size="11" text-anchor="middle">Bruttosumme ≥ 5.000 €?</text>
+    <text x="900" y="483" font-size="11" text-anchor="middle">Ordnungsgruppe = Technik?</text>
+    <text x="900" y="498" font-size="11" text-anchor="middle">Mahnung?</text>
+  </g>
+
+  <!-- Linker Pfad: Direkt zur Sachlichen Prüfung (kleine Beträge) -->
+  <line x1="700" y1="460" x2="380" y2="460" stroke="#1F4E79" stroke-width="2"/>
+  <line x1="380" y1="460" x2="380" y2="610" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="540" y="450" font-size="11" font-style="italic" fill="#385723">NEIN → direkt zur Sachprüfung</text>
+
+  <!-- Rechter Pfad: Zur Freigabe (große Beträge) -->
+  <line x1="1100" y1="460" x2="1420" y2="460" stroke="#1F4E79" stroke-width="2"/>
+  <line x1="1420" y1="460" x2="1420" y2="610" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1260" y="450" font-size="11" font-style="italic" fill="#9C5700">JA → Pflicht-Freigabe</text>
+
+  <!-- 01. Freigabe (rechts) -->
+  <g>
+    <rect x="1260" y="610" width="320" height="100" rx="8" fill="url(#warnGrad)" stroke="#BF8F00" stroke-width="2"/>
+    <text x="1420" y="635" font-size="14" font-weight="bold" text-anchor="middle">📂 01. Freigabe</text>
+    <text x="1420" y="652" font-size="10" text-anchor="middle" font-style="italic" fill="#595959">Magnet: Bruttosumme≥5000 ODER Technik ODER Mahnung</text>
+    <line x1="1280" y1="660" x2="1560" y2="660" stroke="#BF8F00" stroke-dasharray="3,3"/>
+    <text x="1420" y="680" font-size="12" font-weight="bold" text-anchor="middle" fill="#9C5700">▶ Stempel "Freigabe"</text>
+    <text x="1420" y="697" font-size="10" text-anchor="middle">durch GF (WS_1) → Status="Freigegeben"</text>
+  </g>
+
+  <!-- Verzweigung: In Klärung (vom Freigabe-Schritt) -->
+  <line x1="1580" y1="660" x2="1700" y2="660" stroke="#BF8F00" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowOrange)"/>
+  <text x="1610" y="650" font-size="10" font-style="italic" fill="#9C5700">"In Klärung"</text>
+
+  <!-- Pfeil von Freigabe zur Sachprüfung -->
+  <line x1="1420" y1="710" x2="1420" y2="760" stroke="#1F4E79" stroke-width="2"/>
+  <line x1="1420" y1="760" x2="900" y2="760" stroke="#1F4E79" stroke-width="2"/>
+  <line x1="900" y1="760" x2="900" y2="780" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 02. Sachliche Prüfung (Mutter) -->
+  <g>
+    <rect x="380" y="610" width="320" height="100" rx="8" fill="url(#mainGrad)" stroke="#548235" stroke-width="2"/>
+    <text x="540" y="635" font-size="14" font-weight="bold" text-anchor="middle">📂 02. Sachliche Prüfung</text>
+    <text x="540" y="652" font-size="10" text-anchor="middle" font-style="italic" fill="#595959">Magnet: Bruttosumme&lt;5000 + bestimmte OG</text>
+    <text x="540" y="678" font-size="11" text-anchor="middle">Verteilung an WS_1 ... WS_6</text>
+    <text x="540" y="697" font-size="10" text-anchor="middle" fill="#385723">Über Felder: Zuständig + Ordnungsgruppe</text>
+  </g>
+
+  <!-- Pfeil Sachlich → Sammel -->
+  <line x1="540" y1="710" x2="540" y2="760" stroke="#1F4E79" stroke-width="2"/>
+  <line x1="540" y1="760" x2="900" y2="760" stroke="#1F4E79" stroke-width="2"/>
+
+  <!-- Sammel/Collapse: WS-Sammel -->
+  <g>
+    <rect x="600" y="780" width="600" height="120" rx="8" fill="url(#mainGrad)" stroke="#548235" stroke-width="2"/>
+    <text x="900" y="805" font-size="14" font-weight="bold" text-anchor="middle">02. Sachliche Prüfung – WS_x</text>
+    <text x="900" y="825" font-size="10" text-anchor="middle" font-style="italic" fill="#595959">je 6 WS-Ordner mit individuellen Magneten</text>
+    <line x1="620" y1="833" x2="1180" y2="833" stroke="#548235" stroke-dasharray="3,3"/>
+    <text x="900" y="855" font-size="12" font-weight="bold" text-anchor="middle" fill="#385723">▶ Stempel "Sachlich geprüft"</text>
+    <text x="900" y="872" font-size="11" text-anchor="middle">durch WS_1 ... WS_6 (Sachbearbeiter)</text>
+    <text x="900" y="890" font-size="11" text-anchor="middle">→ Status="Sachlich geprüft" + Projektdaten</text>
+  </g>
+
+  <!-- Pfeil zur Rechnerischen Prüfung -->
+  <line x1="900" y1="900" x2="900" y2="940" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 03. Rechnerische Prüfung -->
+  <g>
+    <rect x="600" y="940" width="600" height="120" rx="8" fill="url(#mainGrad)" stroke="#548235" stroke-width="2"/>
+    <text x="900" y="965" font-size="14" font-weight="bold" text-anchor="middle">03. Rechnerische Prüfung – WS_x</text>
+    <text x="900" y="985" font-size="10" text-anchor="middle" font-style="italic" fill="#595959">Versicherungs-Themen → automatisch zu WS_4 + WS_6</text>
+    <line x1="620" y1="993" x2="1180" y2="993" stroke="#548235" stroke-dasharray="3,3"/>
+    <text x="900" y="1015" font-size="12" font-weight="bold" text-anchor="middle" fill="#385723">▶ Stempel "Rechnerisch geprüft"</text>
+    <text x="900" y="1032" font-size="11" text-anchor="middle">durch WS_1 ... WS_6</text>
+    <text x="900" y="1050" font-size="11" text-anchor="middle">→ Status="Rechnerisch geprüft"</text>
+  </g>
+
+  <!-- Pfeil zur Kostenstelle -->
+  <line x1="900" y1="1060" x2="900" y2="1100" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 04. Kostenstelle zuordnen -->
+  <g>
+    <rect x="600" y="1100" width="600" height="130" rx="8" fill="url(#mainGrad)" stroke="#548235" stroke-width="2"/>
+    <text x="900" y="1125" font-size="14" font-weight="bold" text-anchor="middle">04. Kostenstelle zuordnen</text>
+    <text x="900" y="1145" font-size="10" text-anchor="middle" font-style="italic" fill="#595959">durch B. Buchen (Buchhaltung)</text>
+    <line x1="620" y1="1153" x2="1180" y2="1153" stroke="#548235" stroke-dasharray="3,3"/>
+    <text x="900" y="1175" font-size="12" font-weight="bold" text-anchor="middle" fill="#385723">▶ Stempel "Kostenstelle zuordnen"</text>
+    <text x="900" y="1192" font-size="11" text-anchor="middle">erfasst Buchungs- + Daueraktendaten</text>
+    <text x="900" y="1210" font-size="12" font-weight="bold" text-anchor="middle" fill="#385723">▶ Stempel "Kostenstelle zugeordnet"</text>
+    <text x="900" y="1225" font-size="10" text-anchor="middle">→ Status="Kostenstelle zugeordnet"</text>
+  </g>
+
+  <!-- Pfeil zur 05. Bezahlen (oder zur Freigabe wenn nötig) -->
+  <line x1="900" y1="1230" x2="900" y2="1270" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 05. Bezahlen Container -->
+  <g>
+    <rect x="500" y="1270" width="800" height="380" rx="8" fill="#F2F2F2" stroke="#1F4E79" stroke-width="2"/>
+    <rect x="500" y="1270" width="800" height="40" rx="8" fill="#1F4E79"/>
+    <text x="900" y="1297" font-size="16" font-weight="bold" text-anchor="middle" fill="white">05. BEZAHLEN (Subworkflow mit 4-Augen-Prinzip)</text>
+    
+    <!-- Sub 01: Erfassung -->
+    <rect x="530" y="1330" width="740" height="80" rx="6" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="900" y="1355" font-size="13" font-weight="bold" text-anchor="middle">01. Erfassung Hausbank</text>
+    <text x="900" y="1373" font-size="11" text-anchor="middle">durch B. Zahlungserfassung (WS_5) + zusätzlich M. Stelzer (WS_3)</text>
+    <text x="900" y="1393" font-size="12" font-weight="bold" text-anchor="middle" fill="#385723">▶ Stempel "Scan To Bank" → Status="Zahlung erfasst"</text>
+    
+    <!-- Pfeil -->
+    <line x1="900" y1="1410" x2="900" y2="1430" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+    
+    <!-- Sub 02: Prüfung -->
+    <rect x="530" y="1430" width="740" height="100" rx="6" fill="url(#errGrad)" stroke="#C00000"/>
+    <text x="900" y="1455" font-size="13" font-weight="bold" text-anchor="middle">02. Prüfung (4-Augen) ⚠</text>
+    <text x="900" y="1475" font-size="10" text-anchor="middle" font-style="italic" fill="#9C5700">Soll: B. Zahlungsprüfung (WS_2) – Ist: Schellhorn (WS_9) für "i.O."!</text>
+    <text x="700" y="1500" font-size="11" font-weight="bold" text-anchor="middle" fill="#385723">▶ "Zahlung geprüft &amp; i. O." (positiv)</text>
+    <text x="1100" y="1500" font-size="11" font-weight="bold" text-anchor="middle" fill="#C00000">▶ "Zahlungsdaten fehlerhaft" (Rücksprung!)</text>
+    <text x="900" y="1520" font-size="10" text-anchor="middle">→ Status="Zahlungsdaten geprüft" / Rücksprung auf "Kostenstelle zugeordnet"</text>
+    
+    <!-- Pfeil OK -->
+    <line x1="700" y1="1530" x2="700" y2="1565" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+    <!-- Pfeil Fehler -->
+    <line x1="1100" y1="1530" x2="1100" y2="1565" stroke="#C00000" stroke-width="2" stroke-dasharray="6,3"/>
+    <line x1="1100" y1="1565" x2="1280" y2="1565" stroke="#C00000" stroke-width="2" stroke-dasharray="6,3"/>
+    <line x1="1280" y1="1565" x2="1280" y2="1170" stroke="#C00000" stroke-width="2" stroke-dasharray="6,3"/>
+    <line x1="1280" y1="1170" x2="1200" y2="1170" stroke="#C00000" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowRed)"/>
+    <text x="1300" y="1380" font-size="10" font-style="italic" fill="#C00000" transform="rotate(90 1300 1380)">RÜCKSPRUNG zu Kostenstelle</text>
+    
+    <!-- Sub 03: Zahlung ausführen -->
+    <rect x="530" y="1565" width="340" height="70" rx="6" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="700" y="1590" font-size="13" font-weight="bold" text-anchor="middle">03. Zahlung ausführen</text>
+    <text x="700" y="1605" font-size="10" text-anchor="middle">B. Zahlung (WS_3) + WS_5</text>
+    <text x="700" y="1622" font-size="11" font-weight="bold" text-anchor="middle" fill="#385723">▶ "Bezahlt"</text>
+  </g>
+
+  <!-- Pfeil zum Ende -->
+  <line x1="700" y1="1635" x2="700" y2="1675" stroke="#1F4E79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Endzustand -->
+  <g>
+    <rect x="500" y="1675" width="400" height="80" rx="8" fill="url(#endGrad)" stroke="#385723" stroke-width="3"/>
+    <text x="700" y="1705" font-size="18" font-weight="bold" text-anchor="middle" fill="white">✅ BEZAHLT &amp; ARCHIVIERT</text>
+    <text x="700" y="1728" font-size="11" text-anchor="middle" fill="white">Status="Bezahlt &amp; Archiviert"</text>
+    <text x="700" y="1745" font-size="10" text-anchor="middle" fill="white" font-style="italic">+ Archivendedatum +10 Jahre (GoBD)</text>
+  </g>
+
+  <!-- ==== KLÄRUNGS-WORKFLOW (rechts) ==== -->
+  <g transform="translate(0, 0)">
+    <!-- Titel -->
+    <rect x="1640" y="700" width="160" height="35" fill="#BF8F00"/>
+    <text x="1720" y="724" font-size="13" font-weight="bold" text-anchor="middle" fill="white">KLÄRUNGSWORKFLOW</text>
+    
+    <!-- 01. In Klärung -->
+    <rect x="1640" y="740" width="160" height="80" rx="6" fill="url(#warnGrad)" stroke="#BF8F00"/>
+    <text x="1720" y="763" font-size="11" font-weight="bold" text-anchor="middle">01. In Klärung</text>
+    <text x="1720" y="780" font-size="9" text-anchor="middle">Sachbearbeiter klärt</text>
+    <text x="1720" y="795" font-size="9" text-anchor="middle">extern (Mail, Tel.)</text>
+    <text x="1720" y="813" font-size="9" font-style="italic" fill="#9C5700">Status-Klärung=In Klärung</text>
+    
+    <!-- Pfeil -->
+    <line x1="1720" y1="820" x2="1720" y2="850" stroke="#BF8F00" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <text x="1620" y="838" font-size="9" font-style="italic" fill="#9C5700">"Warten auf Rückmeldung"</text>
+    
+    <!-- 02. Warten -->
+    <rect x="1640" y="850" width="160" height="80" rx="6" fill="url(#warnGrad)" stroke="#BF8F00"/>
+    <text x="1720" y="873" font-size="11" font-weight="bold" text-anchor="middle">02. Warten auf Rückm.</text>
+    <text x="1720" y="892" font-size="9" text-anchor="middle">Wartephase –</text>
+    <text x="1720" y="906" font-size="9" text-anchor="middle">externe Antwort</text>
+    <text x="1720" y="922" font-size="9" font-style="italic" fill="#9C5700">3 Ausstiegspfade ↓</text>
+    
+    <!-- 3 Pfade -->
+    <line x1="1720" y1="930" x2="1720" y2="960" stroke="#BF8F00" stroke-width="2"/>
+    <line x1="1660" y1="960" x2="1660" y2="990" stroke="#548235" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    <line x1="1720" y1="960" x2="1720" y2="990" stroke="#BF8F00" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <line x1="1780" y1="960" x2="1780" y2="990" stroke="#BF8F00" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <line x1="1660" y1="960" x2="1780" y2="960" stroke="#BF8F00" stroke-width="1"/>
+    
+    <!-- Ausstieg 1: Zurück -->
+    <rect x="1620" y="990" width="80" height="50" rx="4" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="1660" y="1009" font-size="9" font-weight="bold" text-anchor="middle">Zurück in</text>
+    <text x="1660" y="1022" font-size="9" font-weight="bold" text-anchor="middle">Workflow</text>
+    <text x="1660" y="1035" font-size="8" text-anchor="middle" fill="#385723">→ Hauptpfad</text>
+    
+    <!-- Ausstieg 2: Erledigt -->
+    <rect x="1700" y="990" width="80" height="50" rx="4" fill="#FCE4D6" stroke="#9C5700"/>
+    <text x="1740" y="1009" font-size="9" font-weight="bold" text-anchor="middle">Erledigt &amp;</text>
+    <text x="1740" y="1022" font-size="9" font-weight="bold" text-anchor="middle">Archiviert</text>
+    <text x="1740" y="1035" font-size="8" text-anchor="middle" fill="#9C5700">Sackgasse</text>
+    
+    <!-- Ausstieg 3: Erstattung -->
+    <rect x="1640" y="1050" width="160" height="60" rx="4" fill="#FFF2CC" stroke="#BF8F00"/>
+    <text x="1720" y="1070" font-size="10" font-weight="bold" text-anchor="middle">03. Erstattung prüfen</text>
+    <text x="1720" y="1086" font-size="8" text-anchor="middle">(NUR Mingolla WS_6!)</text>
+    <text x="1720" y="1100" font-size="8" text-anchor="middle" fill="#9C5700">Magnet: Versicherungsschäden</text>
+    
+    <text x="1720" y="1130" font-size="9" font-style="italic" text-anchor="middle" fill="#595959">⚠ Single Point of Failure</text>
+  </g>
+
+  <!-- Pfeil vom Hauptpfad zur Klärung (von Freigabe-Bereich) -->
+  <line x1="1580" y1="660" x2="1640" y2="780" stroke="#BF8F00" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowOrange)"/>
+
+  <!-- Pfeil von "Zurück in Workflow" zurück zum Hauptpfad -->
+  <line x1="1620" y1="1015" x2="1500" y2="1015" stroke="#548235" stroke-width="2" stroke-dasharray="2,2"/>
+  <line x1="1500" y1="1015" x2="1500" y2="660" stroke="#548235" stroke-width="2" stroke-dasharray="2,2"/>
+  <line x1="1500" y1="660" x2="1580" y2="660" stroke="#548235" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Pfeil von Bezahlt-Status zur Erstattung prüfen (Versicherungsfälle) -->
+  <line x1="900" y1="1755" x2="1720" y2="1755" stroke="#BF8F00" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="1720" y1="1755" x2="1720" y2="1110" stroke="#BF8F00" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrowOrange)"/>
+  <text x="1380" y="1745" font-size="9" font-style="italic" fill="#9C5700">nach Bezahlung: bei Versicherungsschäden zu "Erstattung prüfen"</text>
+
+  <!-- ==== GUTSCHRIFT-WORKFLOW (links) ==== -->
+  <g transform="translate(0, 0)">
+    <!-- Titel -->
+    <rect x="20" y="700" width="160" height="35" fill="#548235"/>
+    <text x="100" y="724" font-size="13" font-weight="bold" text-anchor="middle" fill="white">GUTSCHRIFTS-WORKFLOW</text>
+    
+    <!-- Stempel "Gutschrift angefordert" -->
+    <rect x="20" y="740" width="160" height="70" rx="6" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="100" y="760" font-size="11" font-weight="bold" text-anchor="middle">Stempel:</text>
+    <text x="100" y="775" font-size="11" font-weight="bold" text-anchor="middle">"Gutschrift angefordert"</text>
+    <text x="100" y="792" font-size="9" text-anchor="middle">während Sachl./Rechn. Prüfung</text>
+    <text x="100" y="805" font-size="9" font-style="italic" fill="#385723">Status-GS=Neu | Warten</text>
+    
+    <line x1="100" y1="810" x2="100" y2="840" stroke="#548235" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    
+    <!-- Wartephase -->
+    <rect x="20" y="840" width="160" height="60" rx="6" fill="#F2F2F2" stroke="#595959" stroke-dasharray="3,3"/>
+    <text x="100" y="860" font-size="11" font-weight="bold" text-anchor="middle">[Wartephase]</text>
+    <text x="100" y="876" font-size="9" text-anchor="middle">Lieferant verarbeitet</text>
+    <text x="100" y="890" font-size="9" text-anchor="middle">Reklamation</text>
+    
+    <line x1="100" y1="900" x2="100" y2="930" stroke="#548235" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    
+    <!-- Stempel "Gutschrift erhalten" -->
+    <rect x="20" y="930" width="160" height="80" rx="6" fill="url(#mainGrad)" stroke="#548235"/>
+    <text x="100" y="950" font-size="11" font-weight="bold" text-anchor="middle">Stempel:</text>
+    <text x="100" y="965" font-size="11" font-weight="bold" text-anchor="middle">"Gutschrift erhalten"</text>
+    <text x="100" y="982" font-size="9" text-anchor="middle">B. Dokumenteneingang</text>
+    <text x="100" y="997" font-size="9" font-style="italic" fill="#385723">+Zuständig auto-vererbt</text>
+    
+    <line x1="100" y1="1010" x2="100" y2="1040" stroke="#548235" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    
+    <!-- Sachl/Rechn -->
+    <rect x="20" y="1040" width="160" height="60" rx="6" fill="url(#mainGrad)" stroke="#548235" stroke-dasharray="3,3"/>
+    <text x="100" y="1060" font-size="10" font-weight="bold" text-anchor="middle">durchläuft Sachl. +</text>
+    <text x="100" y="1075" font-size="10" font-weight="bold" text-anchor="middle">Rechnerische Prüfung</text>
+    <text x="100" y="1090" font-size="9" text-anchor="middle" font-style="italic">wie eine Rechnung</text>
+    
+    <line x1="100" y1="1100" x2="100" y2="1130" stroke="#548235" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    
+    <!-- Eingangsgutschrifts-WF -->
+    <rect x="20" y="1130" width="160" height="80" rx="6" fill="url(#endGrad)" stroke="#385723"/>
+    <text x="100" y="1152" font-size="10" font-weight="bold" text-anchor="middle" fill="white">Eingangsgutschrifts-</text>
+    <text x="100" y="1166" font-size="10" font-weight="bold" text-anchor="middle" fill="white">workflow</text>
+    <text x="100" y="1183" font-size="10" text-anchor="middle" fill="white" font-weight="bold">"Zahlung erhalten</text>
+    <text x="100" y="1196" font-size="10" text-anchor="middle" fill="white" font-weight="bold">| Verrechnet"</text>
+  </g>
+
+  <!-- ==== KONFIGURATIONS-PROBLEME (unten) ==== -->
+  <g transform="translate(0, 1820)">
+    <rect x="60" y="0" width="1680" height="40" fill="#C00000"/>
+    <text x="900" y="27" font-size="16" font-weight="bold" text-anchor="middle" fill="white">⚠ KRITISCHE KONFIGURATIONS-PROBLEME (zur Behebung empfohlen)</text>
+    
+    <rect x="60" y="40" width="1680" height="180" fill="#FCE4D6" stroke="#C00000"/>
+    
+    <text x="80" y="65" font-size="12" font-weight="bold" fill="#C00000">1. Stempel "Zahlung geprüft &amp; i. O.": Falsche Berechtigungsgruppe</text>
+    <text x="100" y="83" font-size="11">→ Nur B. S. Schellhorn (WS_9, Einzelperson) berechtigt statt der Gruppe B. Zahlungsprüfung (WS_2)</text>
+    <text x="100" y="98" font-size="11" font-style="italic" fill="#595959">Empfehlung: Auf B. Zahlungsprüfung umstellen, Schellhorn als Einzelperson entfernen</text>
+    
+    <text x="80" y="120" font-size="12" font-weight="bold" fill="#C00000">2. Zwei Stempel sind funktional inaktiv (niemand berechtigt)</text>
+    <text x="100" y="138" font-size="11">→ "Dokument obsolet": Berechtigung für Admin + GF einrichten</text>
+    <text x="100" y="153" font-size="11">→ "E-Mailaktion – Versicherungsprämien": Berechtigung für WS_1, WS_4, WS_6 einrichten</text>
+    
+    <text x="80" y="175" font-size="12" font-weight="bold" fill="#C00000">3. Single Points of Failure</text>
+    <text x="100" y="193" font-size="11">→ Mingolla (Erstattungsprüfung), Schellhorn (Zahlungsprüfung), Mingolla (Rechnungseingang) – Vertretungen einrichten!</text>
+    <text x="100" y="208" font-size="11">→ Schreibweise WS-8 vs. WS_x: bei Otto auf WS_8 normalisieren (Konsistenz für Datenbank-Lookups)</text>
+  </g>
+
+  <!-- ==== AUTOMATISIERUNGS-HINWEIS oben rechts ==== -->
+  <g transform="translate(20, 2080)">
+    <rect x="40" y="0" width="1720" height="280" fill="#E2EFDA" stroke="#385723" stroke-width="2"/>
+    <text x="900" y="28" font-size="16" font-weight="bold" text-anchor="middle" fill="#385723">🎯 SOLL-KONZEPT: Automatisierte Magnetisierung (Schritt 2 der Anforderung)</text>
+    
+    <text x="60" y="55" font-size="12" font-weight="bold">Heutige manuelle Eingabe → künftig automatische Datenbank-gestützte Befüllung beim Stempel "Rechnungseingang":</text>
+    
+    <!-- 3 Felder -->
+    <rect x="100" y="75" width="500" height="100" rx="6" fill="#A9D08E" stroke="#385723"/>
+    <text x="350" y="98" font-size="14" font-weight="bold" text-anchor="middle">Feld: Objektdaten</text>
+    <text x="350" y="118" font-size="10" text-anchor="middle">"Welche Liegenschaft betrifft die Rechnung?"</text>
+    <text x="350" y="138" font-size="10" text-anchor="middle">Heute: manuell durch Posteingang</text>
+    <text x="350" y="158" font-size="11" font-style="italic" text-anchor="middle" fill="#385723">Künftig: aus Lieferant + Verbrauchsstelle</text>
+    
+    <rect x="650" y="75" width="500" height="100" rx="6" fill="#A9D08E" stroke="#385723"/>
+    <text x="900" y="98" font-size="14" font-weight="bold" text-anchor="middle">Feld: Ordnungsgruppe (Rubrik)</text>
+    <text x="900" y="118" font-size="10" text-anchor="middle">Werte: Betr.Kosten, Technik, Legal,</text>
+    <text x="900" y="133" font-size="10" text-anchor="middle">Versicherungsschäden, -prämien</text>
+    <text x="900" y="158" font-size="11" font-style="italic" text-anchor="middle" fill="#385723">Künftig: aus Lieferant-Default + Schlüsselworten</text>
+    
+    <rect x="1200" y="75" width="500" height="100" rx="6" fill="#A9D08E" stroke="#385723"/>
+    <text x="1450" y="98" font-size="14" font-weight="bold" text-anchor="middle">Feld: Zuständig (Sachbearbeiter)</text>
+    <text x="1450" y="118" font-size="10" text-anchor="middle">Werte: WS_1, WS_2, WS_3, WS_4, WS_5, WS_6</text>
+    <text x="1450" y="138" font-size="10" text-anchor="middle">Heute: manuell durch Posteingang</text>
+    <text x="1450" y="158" font-size="11" font-style="italic" text-anchor="middle" fill="#385723">Künftig: aus Objekt + Ordnungsgruppe</text>
+    
+    <text x="900" y="200" font-size="13" font-weight="bold" text-anchor="middle">→ Sobald diese 3 Felder gesetzt sind, läuft die nachgelagerte Magnetisierung (Schritt 3) AUTOMATISCH wie heute schon</text>
+    <text x="900" y="220" font-size="11" text-anchor="middle" font-style="italic" fill="#385723">Datenbasis: Lieferanten-Stammdatensatz + Objekt-Sachbearbeiter-Mapping + ggf. Verbrauchsstellen-Tabelle</text>
+    
+    <text x="900" y="250" font-size="11" text-anchor="middle" font-style="italic" fill="#595959">Magnet-Architektur ist bereits geeignet – es muss nur die manuelle Eingabe durch eine OCR-/Datenbank-gestützte Vorbefüllung ersetzt werden.</text>
+  </g>
+
+</svg>
