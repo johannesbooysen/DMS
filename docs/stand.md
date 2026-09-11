@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-105 Module, 858 Testfaelle in 46 Dateien,
+105 Module, 863 Testfaelle in 47 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -594,6 +594,7 @@ Funktionen: `app.kategorie_ablauf_recht`
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
+| [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |

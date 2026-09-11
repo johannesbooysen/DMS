@@ -1427,6 +1427,14 @@ belegt.
 - laesst ihn auch nicht trennen
 - wird ein Beleg mit allen Seiten
 
+### [`tests/stufen.test.ts`](../tests/stufen.test.ts)
+
+- zaehlt genau das, was die Liste zeigt -- fuer jede Stufe
+- fuehrt den neuen Beleg in seiner Stufe
+- zaehlt ueberfaellig, was faellig war
+- zeigt einem fremden Mandanten nichts -- weder Zahl noch Zeile
+- zaehlt fuer den Objektverantwortlichen nur seine Objekte
+
 ### [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts)
 
 - steht am archivierten Beleg

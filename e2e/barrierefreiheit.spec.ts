@@ -19,6 +19,7 @@ import { anmelden, BENUTZER } from './anmeldung'
 /** Die Seiten, die die Tagesarbeit tragen. */
 const SEITEN: Array<[pfad: string, name: string]> = [
   ['/postfach', 'Postfächer'],
+  ['/stufen', 'Wo steht was'],
   ['/posteingang', 'Posteingang'],
   ['/belege', 'Belege'],
   ['/auswertung', 'Auswertungen'],

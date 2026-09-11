@@ -159,6 +159,7 @@ export async function Seitenrahmen({ titel, children }: { titel: string; childre
           {[
             ['/posteingang', 'Posteingang'],
             ['/postfach', 'Postfächer'],
+            ['/stufen', 'Wo steht was'],
             ['/belege', 'Belege'],
             ['/konfiguration', 'Abläufe'],
             ['/warten', 'Warten'],

@@ -309,3 +309,83 @@ export async function stempelSetzen(
     })
   })
 }
+
+/*
+ * Die Stufenuebersicht -- Amagnos Ordnerbaum mit Zaehlern, ohne Ordner.
+ *
+ * Wer aus Amagno kommt, kennt den Blick auf "01. Freigabe (7)", "02.
+ * Sachliche Pruefung (12)". Diese Zahlen fehlten hier; die Postfaecher
+ * zeigen nur, was mich selbst betrifft. Die Uebersicht zeigt, **wo alles
+ * steht** -- und wo etwas liegen bleibt.
+ *
+ * **Gruppiert nach Bezeichnung, nicht nach Stufenkennung.** Eine Stufe
+ * "Sachliche Pruefung" gibt es je Fassung des Ablaufs einmal; laufende
+ * Belege haengen an verschiedenen Fassungen. Ein Mensch meint mit "in der
+ * sachlichen Pruefung" alle zusammen.
+ *
+ * **Laeuft unter der RLS, nicht als security definer** -- dieselbe Regel wie
+ * bei den Auswertungen: Eine Kennzahl wird geglaubt. Wer einen Beleg nicht
+ * sehen darf, darf ihn auch nicht in einer Summe wiederfinden, und ein
+ * Zaehler, der mehr zaehlt als die Liste darunter zeigt, schickt jemanden
+ * suchen.
+ */
+
+export interface Stufenzaehler {
+  belegart: string
+  stufe: string
+  stufentyp: string
+  reihenfolge: number
+  offen: number
+  ueberfaellig: number
+  /** Der aelteste Faelligkeitstermin -- was am laengsten liegt. */
+  aeltesteFaelligkeit: string | null
+}
+
+export async function stufenuebersicht(benutzerId: string): Promise<Stufenzaehler[]> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<Record<string, unknown>>(
+      `select p.belegart, s.bezeichnung as stufe, s.stufentyp,
+              min(s.reihenfolge) as reihenfolge,
+              count(*)::int as offen,
+              count(*) filter (where a.faellig_am < now())::int as ueberfaellig,
+              to_char(min(a.faellig_am), 'YYYY-MM-DD') as aelteste
+         from aufgabe a
+         join prozessstufe s on s.id = a.stufe_id
+         join prozessdefinition p on p.id = s.definition_id
+        where a.status in ('offen','in_arbeit')
+        group by p.belegart, s.bezeichnung, s.stufentyp
+        order by p.belegart, min(s.reihenfolge), s.bezeichnung`,
+    )
+    return rows.map((z) => ({
+      belegart: String(z['belegart']),
+      stufe: String(z['stufe']),
+      stufentyp: String(z['stufentyp']),
+      reihenfolge: Number(z['reihenfolge']),
+      offen: Number(z['offen']),
+      ueberfaellig: Number(z['ueberfaellig']),
+      aeltesteFaelligkeit: z['aelteste'] == null ? null : String(z['aelteste']),
+    }))
+  })
+}
+
+/**
+ * Die Belege in einer Stufe -- der Klick auf den "Ordner".
+ *
+ * Dieselbe Abfrage wie die Postfaecher, nur anders gefiltert: Es ist
+ * dieselbe Arbeit. Deshalb steht hier keine zweite Zeilenform.
+ */
+export async function stufenpostfach(
+  benutzerId: string,
+  belegart: string,
+  stufe: string,
+): Promise<Postfachzeile[]> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query(
+      `${ZEILEN_ABFRAGE}
+          and d.belegart = $1 and s.bezeichnung = $2
+        order by a.faellig_am nulls last, d.eingang_am`,
+      [belegart, stufe],
+    )
+    return rows.map(zeile)
+  })
+}
