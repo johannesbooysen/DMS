@@ -298,6 +298,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `loeschung_unveraenderlich` | `loeschung` | before update or delete | [`20260903140000_loeschen.sql`](../supabase/migrations/20260903140000_loeschen.sql) |
 | `notfallzugriff_unveraenderlich` | `notfallzugriff` | before update or delete | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `dokument_spezialgebiet` | `dokument` | before insert or update of ordnungsgruppe_id | [`20260911100000_kategorie_automatik.sql`](../supabase/migrations/20260911100000_kategorie_automatik.sql) |
+| `ordnungsgruppe_ablauf_recht` | `ordnungsgruppe` | before insert or update | [`20260911110000_kategorie_steuerung_recht.sql`](../supabase/migrations/20260911110000_kategorie_steuerung_recht.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -923,6 +924,10 @@ belegt.
 - wird beim Setzen der Kategorie abgeleitet
 - ueberschreibt kein von Hand gewaehltes Spezialgebiet
 - fuehrt ueber die Zustaendigkeit zu einem Menschen
+- weist Bernd ab, obwohl er Stammdaten pflegen darf
+- laesst Bernd die uebrigen Spalten weiterhin aendern
+- laesst Eva die Steuerung setzen
+- wirkt bei Anna gar nicht -- die Policy, nicht der Trigger
 
 ### [`tests/kette.test.ts`](../tests/kette.test.ts)
 

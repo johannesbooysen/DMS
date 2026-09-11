@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-104 Module, 854 Testfaelle in 46 Dateien,
+104 Module, 858 Testfaelle in 46 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -431,6 +431,13 @@ Policies: 18
 Funktionen: `app.dokument_spezialgebiet_ableiten`
 
 
+### `supabase/migrations/20260911110000_kategorie_steuerung_recht.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.kategorie_ablauf_recht`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -561,7 +568,7 @@ Funktionen: `app.dokument_spezialgebiet_ableiten`
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
-| [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 13 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet |
+| [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |

@@ -99,6 +99,34 @@ async function alsEigentuemer(sql: string, werte: unknown[] = []): Promise<void>
   }
 }
 
+/**
+ * Wie `alsEigentuemer`, aber mit gesetztem Benutzer.
+ *
+ * Der Eigentuemer umgeht die RLS -- **Trigger fireen trotzdem**. Ohne
+ * Benutzerkontext ist `app.darf_prozess()` falsch, und schon das Aufraeumen
+ * von `prozessdefinition_id` scheitert am Rechtetrigger. Der Kontext gilt nur
+ * bis zum Ende der Transaktion, damit die Kennung nicht ueber die
+ * wiederverwendete Verbindung in andere Tests sickert.
+ */
+async function alsEigentuemerMit(
+  benutzerId: string,
+  sql: string,
+  werte: unknown[] = [],
+): Promise<void> {
+  const c = await verbindungspool().connect()
+  try {
+    await c.query('begin')
+    await c.query('select set_config($1, $2, true)', ['app.benutzer_id', benutzerId])
+    await c.query(sql, werte)
+    await c.query('commit')
+  } catch (fehler) {
+    await c.query('rollback')
+    throw fehler
+  } finally {
+    c.release()
+  }
+}
+
 beforeEach(async () => {
   angelegt.length = 0
   await alsEigentuemer('delete from kontierungs_muster')
@@ -328,5 +356,89 @@ describe('Aus der Kategorie faellt das Spezialgebiet', () => {
       ),
     )
     expect(rows[0]?.benutzer_id).toBe(CLARA)
+  })
+})
+
+/**
+ * Wer die Kategorie auf einen Ablauf zeigen laesst, aendert den Ablauf.
+ *
+ * Seit die Engine `ordnungsgruppe.prozessdefinition_id` liest, ist diese eine
+ * Spalte Ablaufsteuerung -- sie steht nur zufaellig auf einer
+ * Stammdatentabelle, deren Schreibpolicy `stammdaten_pflegen` verlangt.
+ * Ohne eigene Pruefung koennte, wer Kreditoren pflegt, eine Kategorie auf
+ * einen Ablauf ohne Freigabestufe zeigen lassen -- und alle Belege dieser
+ * Kategorie liefen an der Geschaeftsleitung vorbei.
+ */
+describe('Recht an der Ablaufsteuerung', () => {
+  // Bernd ist der Pruefstein: Er pflegt Stammdaten, konfiguriert aber keine
+  // Ablaeufe. Eva darf beides, Anna keines von beidem.
+  const BERND = '20000000-0000-0000-0000-000000000002'
+  const EVA = '20000000-0000-0000-0000-000000000005'
+  const SEED_ABLAUF = '65000000-0000-0000-0000-000000000001'
+
+  /*
+   * **Vorher** zuruecksetzen, nicht nur nachher.
+   *
+   * Diese Tests laufen ohne Rollback. Beim ersten Entwurf stand die Spalte
+   * nach einem frueheren Lauf noch auf demselben Wert -- und `is distinct
+   * from` schlaegt dann zu Recht nicht an. Der Rechtetest war gruen, weil
+   * gar keine Aenderung stattfand.
+   */
+  beforeEach(async () => {
+    await alsEigentuemerMit(EVA, 'update ordnungsgruppe set prozessdefinition_id = null')
+  })
+
+  afterEach(async () => {
+    await alsEigentuemerMit(EVA, 'update ordnungsgruppe set prozessdefinition_id = null')
+  })
+
+  it('weist Bernd ab, obwohl er Stammdaten pflegen darf', async () => {
+    await expect(
+      alsBenutzer(BERND, (c) =>
+        c.query('update ordnungsgruppe set prozessdefinition_id = $2 where id = $1', [
+          BETRIEBSKOSTEN,
+          SEED_ABLAUF,
+        ]),
+      ),
+    ).rejects.toThrow(/Ablauf/)
+  })
+
+  it('laesst Bernd die uebrigen Spalten weiterhin aendern', async () => {
+    // Sonst waere die Trennung eine Sperre statt einer Unterscheidung: Wer
+    // eine Farbe aendert, bestimmt keinen Ablauf.
+    const { rowCount } = await alsBenutzer(BERND, (c) =>
+      c.query('update ordnungsgruppe set farbe = $2 where id = $1', [BETRIEBSKOSTEN, '#123456']),
+    )
+    expect(rowCount).toBe(1)
+  })
+
+  it('laesst Eva die Steuerung setzen', async () => {
+    const { rowCount } = await alsBenutzer(EVA, (c) =>
+      c.query('update ordnungsgruppe set prozessdefinition_id = $2 where id = $1', [
+        BETRIEBSKOSTEN,
+        SEED_ABLAUF,
+      ]),
+    )
+    expect(rowCount).toBe(1)
+  })
+
+  /*
+   * Und der Grund, warum der Trigger nicht genuegt haette, um das zu pruefen.
+   *
+   * Anna traegt keines der beiden Rechte. Ihr `update` wirft **nichts** -- die
+   * Lesepolicy laesst die Zeile verschwinden, und ein `update` ohne Treffer
+   * ist erfolgreich. Der Trigger kommt gar nicht zum Zug.
+   *
+   * Beim ersten Entwurf dieses Tests stand hier Anna, der Test war gruen, und
+   * er hat nichts bewiesen. Deshalb steht der Fall jetzt ausdruecklich da.
+   */
+  it('wirkt bei Anna gar nicht -- die Policy, nicht der Trigger', async () => {
+    const { rowCount } = await alsBenutzer(ANNA, (c) =>
+      c.query('update ordnungsgruppe set prozessdefinition_id = $2 where id = $1', [
+        BETRIEBSKOSTEN,
+        SEED_ABLAUF,
+      ]),
+    )
+    expect(rowCount).toBe(0)
   })
 })
