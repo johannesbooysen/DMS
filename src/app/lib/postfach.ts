@@ -12,6 +12,7 @@
 
 import { alsBenutzer } from '@/db'
 import { kontierungPruefen } from '@/kontierung/kontierung'
+import { musterLernen } from '@/kontierung/vorschlag'
 import { UebergabeNichtMoeglich, zahlungUebergeben } from '@/zahlung'
 import { postablage } from '@/app/lib/zahlungsmittel'
 import { ABLAGE } from '@/app/lib/belege'
@@ -249,6 +250,11 @@ export async function stempelSetzen(
       if (stufen[0]?.stufentyp === 'kontierung') {
         const hindernis = await kontierungPruefen(c, aufgabe.dokument_id)
         if (hindernis !== null) throw new StempelAbgelehnt(hindernis)
+        // Erst jetzt lernen -- nach dem Summenzwang, vor dem Stempel, in
+        // derselben Transaktion. Ein Muster aus einer Kontierung, die nie
+        // abgeschlossen wurde, waere gelernter Irrtum; scheitert der Stempel,
+        // rollt das Lernen mit zurueck.
+        await musterLernen(c, aufgabe.dokument_id)
       }
 
       // Die Zahlungsstufe ist keine Bestaetigung, sondern eine Handlung: Der

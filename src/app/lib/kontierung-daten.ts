@@ -11,6 +11,7 @@ import {
   kontierungLaden,
   type Kontierungsstand,
 } from '@/kontierung/kontierung'
+import { kontierungVorschlagen, type Kontierungsvorschlag } from '@/kontierung/vorschlag'
 
 export interface Kontoauswahl {
   id: string
@@ -23,6 +24,8 @@ export interface Kontierungsmaske {
   stand: Kontierungsstand
   konten: Kontoauswahl[]
   umlageschluessel: Array<{ id: string; name: string }>
+  /** Nur solange noch nichts kontiert ist -- danach hat ein Mensch entschieden. */
+  vorschlag: Kontierungsvorschlag | null
 }
 
 export async function kontierungsmaskeLaden(
@@ -33,10 +36,12 @@ export async function kontierungsmaskeLaden(
     const { rows } = await c.query<{ id: string; name: string }>(
       'select id, name from umlageschluessel where aktiv order by name',
     )
+    const stand = await kontierungLaden(c, dokumentId)
     return {
-      stand: await kontierungLaden(c, dokumentId),
+      stand,
       konten: await kontenFuerBeleg(c, dokumentId),
       umlageschluessel: rows,
+      vorschlag: stand.zeilen.length === 0 ? await kontierungVorschlagen(c, dokumentId) : null,
     }
   })
 }

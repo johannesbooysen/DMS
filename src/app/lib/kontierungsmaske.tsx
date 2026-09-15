@@ -36,7 +36,7 @@ export function Kontierung({
   dokumentId: string
   aufgabeId: string
 }) {
-  const { stand, konten, umlageschluessel } = maske
+  const { stand, konten, umlageschluessel, vorschlag } = maske
 
   if (konten.length === 0) {
     return (
@@ -150,6 +150,52 @@ export function Kontierung({
         </tfoot>
       </table>
 
+      {/*
+        Der Vorschlag aus dem Lernspeicher -- mit einem Klick zur Zeile.
+        Dieselbe Aktion wie „Rest übernehmen", nur mit vorbelegtem Konto:
+        Der Lernspeicher schreibt nie selbst, ein Mensch bestätigt. Was er
+        spart, ist das Suchen im Kontenrahmen und das Abtippen des Betrags —
+        die beiden Stellen, an denen Fehler entstehen.
+      */}
+      {vorschlag !== null && stand.rechnungsbetrag !== null && (
+        <form
+          action={zeileHinzufuegenAktion}
+          style={{
+            alignItems: 'center',
+            background: vorschlag.sicherheit === 'gruen' ? '#EEF6EE' : '#FFF6E5',
+            border: `1px solid ${vorschlag.sicherheit === 'gruen' ? '#8DBB8D' : '#E3B85C'}`,
+            borderRadius: '0.3rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            marginTop: '1rem',
+            padding: '0.6rem 0.8rem',
+          }}
+        >
+          {verstecktesZiel}
+          <input type="hidden" name="kontoId" value={vorschlag.kontoId} />
+          <input type="hidden" name="steuersatz" value={vorschlag.steuersatz} />
+          <input type="hidden" name="umlageschluesselId" value={vorschlag.umlageschluesselId ?? ''} />
+          <input type="hidden" name="umlagefaehig" value={vorschlag.umlagefaehig ? 'ja' : 'nein'} />
+          <span style={{ flex: '1 1 20rem', fontSize: '0.9rem' }}>
+            <strong>Vorschlag:</strong> {vorschlag.kontonummer} {vorschlag.kontobezeichnung}
+            {' · '}
+            {vorschlag.steuersatz} %{vorschlag.umlagefaehig ? ' · umlagefähig' : ''}
+            <span style={{ color: '#555', display: 'block', fontSize: '0.8rem' }}>
+              {vorschlag.begruendung}
+            </span>
+          </span>
+          <button
+            type="submit"
+            name="rest"
+            value="ja"
+            style={{ cursor: 'pointer', padding: '0.45rem 0.9rem' }}
+          >
+            Vorschlag übernehmen ({euro.format(stand.offen)})
+          </button>
+        </form>
+      )}
+
       <form
         action={zeileHinzufuegenAktion}
         style={{
@@ -167,6 +213,7 @@ export function Kontierung({
           <select
             name="kontoId"
             required
+            defaultValue={vorschlag?.kontoId}
             style={{ display: 'block', minWidth: '18rem', padding: '0.35rem' }}
           >
             {konten.map((k) => (

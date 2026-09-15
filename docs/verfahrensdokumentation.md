@@ -1005,6 +1005,19 @@ belegt.
 - laesst beide auch keine Zeile anlegen
 - haelt den Beleg auch vor dem Loeschen einer fremden Zeile geschuetzt
 
+### [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts)
+
+- bleibt aus, wenn nichts bekannt ist
+- ist orange nach einer Kontierung und gruen ab drei
+- zieht das Muster fuer dieses Objekt dem allgemeinen vor
+- schlaegt kein Konto aus einem fremden Kontenrahmen vor
+- faellt auf den Kontovorschlag der Kategorie zurueck -- orange
+- leitet den Steuersatz aus dem Beleg ab
+- legt beim ersten Mal ein Muster an und zaehlt danach hoch
+- setzt bei einem anderen Konto neu an statt zu mischen
+- lernt aus einem Split nichts
+- traegt kein Muster ueber die Mandantengrenze
+
 ### [`tests/layer.test.ts`](../tests/layer.test.ts)
 
 - legt eine Notiz an und liefert sie zurueck
