@@ -226,6 +226,14 @@ export async function restVerteilen(
   kontoId: string,
   steuersatz: number,
   umlageschluesselId: string | null = null,
+  /**
+   * `null` heißt: wie im Konto hinterlegt. Der Kontierungsvorschlag gibt den
+   * gelernten Wert mit — beim Bedienen sagte der Vorschlag „nicht
+   * umlagefähig", und die Zeile war es dann doch, weil hier stumm die
+   * Kontovorgabe griff. Ein Vorschlag, der etwas anderes tut, als er sagt,
+   * ist schlimmer als keiner.
+   */
+  umlagefaehig: boolean | null = null,
 ): Promise<string | null> {
   const stand = await kontierungLaden(c, dokumentId)
   if (stand.rechnungsbetrag === null) {
@@ -240,6 +248,7 @@ export async function restVerteilen(
     betragBrutto: stand.offen,
     steuersatz,
     umlageschluesselId,
+    umlagefaehig,
   })
 }
 

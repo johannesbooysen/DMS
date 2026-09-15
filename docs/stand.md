@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-106 Module, 873 Testfaelle in 48 Dateien,
+106 Module, 874 Testfaelle in 48 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -575,7 +575,7 @@ Funktionen: `app.kategorie_ablauf_recht`
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
-| [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 10 | Vorschlag, Lernen, Mandantentrennung |
+| [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |
 | [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |

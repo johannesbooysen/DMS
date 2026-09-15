@@ -289,3 +289,16 @@ describe('Mandantentrennung', () => {
     expect(v).toBeNull()
   })
 })
+
+describe('Uebernehmen tut, was der Vorschlag sagt', () => {
+  it('haelt die Umlagefaehigkeit des Vorschlags, nicht die Kontovorgabe', async () => {
+    // Konto 4200 ist im Seed umlagefaehig; der Vorschlag sagt: nicht.
+    const beleg = await belegAnlegen()
+    const { restVerteilen, kontierungLaden } = await import('../src/kontierung/kontierung')
+    await alsBenutzer(ANNA, (c) => restVerteilen(c, beleg, KONTO_4200, 19, null, false))
+    const stand = await alsBenutzer(ANNA, (c) => kontierungLaden(c, beleg))
+    expect(stand.zeilen).toHaveLength(1)
+    expect(stand.zeilen[0]?.umlagefaehig).toBe(false)
+    expect(stand.stimmt).toBe(true)
+  })
+})

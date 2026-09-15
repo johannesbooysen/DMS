@@ -1017,6 +1017,7 @@ belegt.
 - setzt bei einem anderen Konto neu an statt zu mischen
 - lernt aus einem Split nichts
 - traegt kein Muster ueber die Mandantengrenze
+- haelt die Umlagefaehigkeit des Vorschlags, nicht die Kontovorgabe
 
 ### [`tests/layer.test.ts`](../tests/layer.test.ts)
 

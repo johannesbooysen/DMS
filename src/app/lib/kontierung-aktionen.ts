@@ -40,7 +40,14 @@ export async function zeileHinzufuegenAktion(formular: FormData): Promise<void> 
   try {
     await alsBenutzer(await angemeldeterBenutzer(), async (c) => {
       if (restNehmen) {
-        await restVerteilen(c, dokumentId, kontoId, steuersatz, umlageschluesselId)
+        await restVerteilen(
+          c,
+          dokumentId,
+          kontoId,
+          steuersatz,
+          umlageschluesselId,
+          formular.has('umlagefaehig') ? formular.get('umlagefaehig') === 'ja' : null,
+        )
         return
       }
       // Ueber betragLesen, nicht ueber Number(): "1.023,40" ist im Formular
