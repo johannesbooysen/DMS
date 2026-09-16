@@ -191,7 +191,11 @@ export default async function Fassung({
                   key={b.befund}
                   style={{ color: b.schwere === 'fehler' ? '#B3271E' : '#B5741A' }}
                 >
-                  {b.befund}
+                  {/* Das Wort steht dabei, nicht nur die Farbe: Ein Fehler
+                      verhindert das Aktivieren, eine Warnung nicht -- wer das
+                      nur an Rot gegen Ocker erkennen soll, erkennt es nicht
+                      (dieselbe Regel wie bei der Ampel). */}
+                  <strong>{b.schwere === 'fehler' ? 'Fehler' : 'Warnung'}:</strong> {b.befund}
                 </li>
               ))}
             </ul>
