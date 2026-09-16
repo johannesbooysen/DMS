@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-106 Module, 874 Testfaelle in 48 Dateien,
+106 Module, 881 Testfaelle in 49 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -438,6 +438,13 @@ Funktionen: `app.dokument_spezialgebiet_ableiten`
 Funktionen: `app.kategorie_ablauf_recht`
 
 
+### `supabase/migrations/20260916100000_ausfuehrbarkeit.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.prozessbaum_pruefen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -557,6 +564,7 @@ Funktionen: `app.kategorie_ablauf_recht`
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 35 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
+| [`tests/ausfuehrbarkeit.test.ts`](../tests/ausfuehrbarkeit.test.ts) | 6 | Niemand darf stempeln, Zustaendigkeit ohne Menschen, Genau eine Person |
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 29 | Feed, Akte eines Objekts, Filter, Volltext, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
@@ -599,7 +607,7 @@ Funktionen: `app.kategorie_ablauf_recht`
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
-| [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 20 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
+| [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 21 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 | [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 33 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
 
 ## Architekturentscheidungen

@@ -241,7 +241,11 @@ describe('Aktivieren', () => {
 
   it('meldet die Befunde vor dem Aktivieren', async () => {
     const entwurf = await entwurfAnlegen(EVA, DEFINITION_AKTIV)
-    expect(await entwurfPruefung(EVA, entwurf)).toEqual([])
+    // Nur Fehler, nicht alle Befunde: Seit der Ausfuehrbarkeitspruefung
+    // (20260916100000) warnt der Seed zu Recht an jeder Stufe -- dort kann
+    // genau eine Person entscheiden. Eine Warnung ist kein Hindernis.
+    const vorher = await entwurfPruefung(EVA, entwurf)
+    expect(vorher.filter((b) => b.schwere === 'fehler')).toEqual([])
 
     const wurzel = await baumFuerAnzeige(EVA, entwurf)
     await knotenEinfuegen(EVA, entwurf, { elternId: wurzel!.id, knotentyp: 'gleichzeitig' })

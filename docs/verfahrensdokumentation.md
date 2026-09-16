@@ -628,6 +628,15 @@ belegt.
 - meldet bei einem Scan ohne Textlayer, dass OCR noetig ist
 - legt die Derivate in der Ablage ab
 
+### [`tests/ausfuehrbarkeit.test.ts`](../tests/ausfuehrbarkeit.test.ts)
+
+- meldet eine Stufe, deren Stempel kein aktiver Benutzer setzen darf
+- meldet nichts, solange jemand darf
+- meldet eine Gruppe ohne Mitglieder
+- laesst objektverantwortlich ungeprueft -- das haengt am Beleg
+- warnt, wenn eine Stufe an einer Person haengt
+- ist eine Warnung, kein Hindernis -- aktivieren geht trotzdem
+
 ### [`tests/auswertung.test.ts`](../tests/auswertung.test.ts)
 
 - misst vom Eintritt in die Stufe bis zum beendenden Stempel
@@ -1488,6 +1497,7 @@ belegt.
 ### [`tests/workflow.test.ts`](../tests/workflow.test.ts)
 
 - haelt den Ablauf aus dem Seed fuer gueltig
+- warnt im Seed an jeder Stufe: genau eine Person kann entscheiden
 - laesst keinen zweiten Wurzelknoten zu
 - laesst kein Blatt ohne Stufe zu
 - laesst keine Bedingung ausserhalb einer Verzweigung zu

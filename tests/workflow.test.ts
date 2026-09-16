@@ -66,7 +66,18 @@ async function befunde(c: Client): Promise<string[]> {
 describe('Blockbaum', () => {
   it('haelt den Ablauf aus dem Seed fuer gueltig', async () => {
     const gefunden = await alsKonfigurator(befunde)
-    expect(gefunden).toEqual([])
+    // Gueltig heisst: keine Fehler. Warnungen gibt es im Seed zu Recht --
+    // seit 20260916100000 meldet die Pruefung, dass an jeder Stufe genau
+    // eine Person entscheiden kann. Das ist eine Tatsache der Testdaten,
+    // kein Hindernis.
+    expect(gefunden.filter((g) => !g.startsWith('warnung:'))).toEqual([])
+  })
+
+  it('warnt im Seed an jeder Stufe: genau eine Person kann entscheiden', async () => {
+    const gefunden = await alsKonfigurator(befunde)
+    const warnungen = gefunden.filter((g) => g.includes('genau einer Person'))
+    // Fuenf Stufen, fuenf Personen-Engpaesse -- Anna, Bernd, Eva, je allein.
+    expect(warnungen.length).toBeGreaterThanOrEqual(5)
   })
 
   it('laesst keinen zweiten Wurzelknoten zu', async () => {
