@@ -50,8 +50,19 @@ export default async function Aufgabenansicht({
       ? await zahlungsansichtLaden(await angemeldeterBenutzer(), zeile.dokumentId)
       : null
 
-  const brauchtKlaerungsfelder = stempel.some((s) => s.entscheidung === 'klaerung')
-  const brauchtKommentar = stempel.some((s) => s.kommentarPflicht)
+  /*
+   * An der Kontierungsstufe wandert der abschliessende Stempel in die Maske,
+   * direkt unter die Summe -- Eingabe und Stempel in einem Blick. Rechts
+   * neben dem Beleg bleiben nur die Ausweichwege (Klaerung, Rueckgabe).
+   * Zweimal derselbe Knopf waere eine Frage mehr ("welchen?"), nicht ein
+   * Weg weniger.
+   */
+  const abschluss =
+    maske === null ? null : (stempel.find((s) => s.entscheidung === 'freigabe') ?? null)
+  const rechts = abschluss === null ? stempel : stempel.filter((s) => s !== abschluss)
+
+  const brauchtKlaerungsfelder = rechts.some((s) => s.entscheidung === 'klaerung')
+  const brauchtKommentar = rechts.some((s) => s.kommentarPflicht)
 
   return (
     <Seitenrahmen titel={zeile.stufe}>
@@ -80,7 +91,12 @@ export default async function Aufgabenansicht({
       <Befunde befunde={befunde} />
 
       {maske !== null && (
-        <Kontierung maske={maske} dokumentId={zeile.dokumentId} aufgabeId={zeile.aufgabeId} />
+        <Kontierung
+          maske={maske}
+          dokumentId={zeile.dokumentId}
+          aufgabeId={zeile.aufgabeId}
+          abschluss={abschluss}
+        />
       )}
 
       {zahlung !== null && <Zahlung ansicht={zahlung} />}
@@ -110,9 +126,11 @@ export default async function Aufgabenansicht({
         </div>
 
         <div style={{ flex: '2 1 20rem', minWidth: 0 }}>
-          {stempel.length === 0 ? (
+          {rechts.length === 0 ? (
             <p style={{ color: '#666' }}>
-              An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.
+              {abschluss === null
+                ? 'An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.'
+                : 'Der Stempel steht oben bei der Kontierung.'}
             </p>
           ) : (
             <form action={stempelnAktion}>
@@ -137,7 +155,7 @@ export default async function Aufgabenansicht({
               )}
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                {stempel.map((s) => (
+                {rechts.map((s) => (
                   <button
                     key={s.stempeltypId}
                     type="submit"

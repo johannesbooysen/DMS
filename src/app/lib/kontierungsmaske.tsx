@@ -11,7 +11,9 @@
  */
 
 import {
+  kontiertStempelnAktion,
   umlageUmschaltenAktion,
+  vorschlagUndStempelAktion,
   zeileEntfernenAktion,
   zeileHinzufuegenAktion,
 } from '@/app/lib/kontierung-aktionen'
@@ -27,14 +29,26 @@ const zelle = {
 } as const
 const rechts = { ...zelle, textAlign: 'right' } as const
 
+/**
+ * Der Stempel, der die Kontierungsstufe abschließt — wenn der Anwender ihn
+ * setzen darf. `null`, wenn ihm an dieser Stufe kein Freigabestempel zusteht.
+ */
+export interface Abschlussstempel {
+  stempeltypId: string
+  name: string
+  farbe: string | null
+}
+
 export function Kontierung({
   maske,
   dokumentId,
   aufgabeId,
+  abschluss = null,
 }: {
   maske: Kontierungsmaske
   dokumentId: string
   aufgabeId: string
+  abschluss?: Abschlussstempel | null
 }) {
   const { stand, konten, umlageschluessel, vorschlag } = maske
 
@@ -151,6 +165,52 @@ export function Kontierung({
       </table>
 
       {/*
+        Der abschliessende Stempel steht **hier**, unter der Summe -- nicht in
+        der rechten Spalte neben dem Beleg. Wer kontiert, sieht den Summenzwang
+        und den Knopf in einem Blick: Stimmt die Summe, ist der Knopf da;
+        stimmt sie nicht, steht dort, was fehlt, und kein Knopf, der erst
+        beim Druecken abgewiesen wuerde.
+      */}
+      {abschluss !== null && stand.zeilen.length > 0 && (
+        <div
+          style={{
+            alignItems: 'center',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            marginTop: '0.75rem',
+          }}
+        >
+          {stand.stimmt ? (
+            <form action={kontiertStempelnAktion} style={{ display: 'inline' }}>
+              {verstecktesZiel}
+              <input type="hidden" name="stempeltypId" value={abschluss.stempeltypId} />
+              <button
+                type="submit"
+                style={{
+                  background: abschluss.farbe ?? '#333',
+                  border: 0,
+                  borderRadius: '0.25rem',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  padding: '0.6rem 1rem',
+                }}
+              >
+                {abschluss.name}
+              </button>
+            </form>
+          ) : (
+            <span style={{ color: '#B3271E', fontSize: '0.9rem' }}>
+              {stand.rechnungsbetrag === null
+                ? 'Ohne Rechnungsbetrag lässt sich der Summenzwang nicht prüfen.'
+                : `Noch nicht stempelbar — es ${stand.offen < 0 ? 'sind' : 'fehlen'} ${euro.format(Math.abs(stand.offen))}${stand.offen < 0 ? ' zu viel' : ''}.`}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/*
         Der Vorschlag aus dem Lernspeicher -- mit einem Klick zur Zeile.
         Dieselbe Aktion wie „Rest übernehmen", nur mit vorbelegtem Konto:
         Der Lernspeicher schreibt nie selbst, ein Mensch bestätigt. Was er
@@ -193,6 +253,39 @@ export function Kontierung({
           >
             Vorschlag übernehmen ({euro.format(stand.offen)})
           </button>
+          {/*
+            Ein Schritt statt zwei. Im abzuloesenden System *ist* der Stempel
+            das Formular („Kostenstelle zuordnen" erfasst und stempelt). Hier
+            waren es zwei Handgriffe mit Scrollen dazwischen. Der Knopf
+            uebernimmt die Zeile und stempelt -- dieselben zwei Aktionen, die
+            der Anwender sonst nacheinander ausloest, nur ohne Weg dazwischen.
+          */}
+          {/*
+            Der Stempeltyp als verstecktes Feld, nicht als name/value des
+            Knopfs: Mit `formAction` kam der Wert des Knopfs nicht in der
+            Aktion an -- der Stempel wurde als "an dieser Stufe nicht
+            moeglich" abgewiesen, obwohl er es war. Die Zeile war da schon
+            geschrieben. Ein verstecktes Feld reist mit jedem Absenden.
+          */}
+          {abschluss !== null && (
+            <input type="hidden" name="stempeltypId" value={abschluss.stempeltypId} />
+          )}
+          {abschluss !== null && (
+            <button
+              type="submit"
+              formAction={vorschlagUndStempelAktion}
+              style={{
+                background: abschluss.farbe ?? '#333',
+                border: 0,
+                borderRadius: '0.25rem',
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '0.45rem 0.9rem',
+              }}
+            >
+              Übernehmen und „{abschluss.name}“ stempeln
+            </button>
+          )}
         </form>
       )}
 

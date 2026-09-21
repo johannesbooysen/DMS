@@ -20,6 +20,7 @@ import {
   zeileHinzufuegen,
 } from '@/kontierung/kontierung'
 import { betragLesen } from '@/extraktion/zahlen'
+import { StempelAbgelehnt, stempelSetzen } from '@/app/lib/postfach'
 
 /** Zurueck zu der Aufgabe, aus der die Maske aufgerufen wurde. */
 function zurueck(formular: FormData, fehler?: string): never {
@@ -89,4 +90,62 @@ export async function umlageUmschaltenAktion(formular: FormData): Promise<void> 
     umlagefaehigkeitAendern(c, dokumentId, zeileId, neu),
   )
   zurueck(formular)
+}
+
+/*
+ * Ein Schritt statt zwei.
+ *
+ * Im abzuloesenden System *ist* der Stempel das Formular: "Kostenstelle
+ * zuordnen" erfasst die Buchungsdaten und stempelt. Hier waren es zwei
+ * Handgriffe -- Zeile anlegen, dann rechts neben dem Beleg stempeln -- mit
+ * Scrollen dazwischen. Die beiden Aktionen unten sind keine neue Logik: Sie
+ * rufen nacheinander auf, was der Anwender sonst nacheinander ausloest.
+ *
+ * **Zwei Transaktionen, mit Absicht.** Die Zeile entsteht in der ersten, der
+ * Stempel in der zweiten. Scheitert der Stempel (Summenzwang, Recht), bleibt
+ * die Zeile stehen -- genau der Zustand, den ein Mensch auch haette, der
+ * die Zeile angelegt hat und dann am Stempel gescheitert ist. Der Grund
+ * steht auf der Aufgabe.
+ */
+
+/** Uebernimmt den Vorschlag als Zeile und stempelt die Stufe ab. */
+export async function vorschlagUndStempelAktion(formular: FormData): Promise<void> {
+  const dokumentId = String(formular.get('dokumentId') ?? '')
+  const kontoId = String(formular.get('kontoId') ?? '')
+  const steuersatz = Number(formular.get('steuersatz') ?? 0)
+  const umlageschluesselRoh = String(formular.get('umlageschluesselId') ?? '')
+
+  try {
+    await alsBenutzer(await angemeldeterBenutzer(), (c) =>
+      restVerteilen(
+        c,
+        dokumentId,
+        kontoId,
+        steuersatz,
+        umlageschluesselRoh === '' ? null : umlageschluesselRoh,
+        formular.has('umlagefaehig') ? formular.get('umlagefaehig') === 'ja' : null,
+      ),
+    )
+  } catch (fehler) {
+    if (fehler instanceof KontierungAbgelehnt) zurueck(formular, fehler.message)
+    throw fehler
+  }
+
+  await kontiertStempelnAktion(formular)
+}
+
+/** Stempelt die Kontierungsstufe ab -- aus der Maske heraus. */
+export async function kontiertStempelnAktion(formular: FormData): Promise<void> {
+  const aufgabeId = String(formular.get('aufgabeId') ?? '')
+  const stempeltypId = String(formular.get('stempeltypId') ?? '')
+
+  try {
+    await stempelSetzen(await angemeldeterBenutzer(), { aufgabeId, stempeltypId })
+  } catch (fehler) {
+    if (fehler instanceof StempelAbgelehnt) zurueck(formular, fehler.message)
+    throw fehler
+  }
+
+  revalidatePath('/postfach')
+  redirect('/postfach')
 }
