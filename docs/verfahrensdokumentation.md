@@ -186,7 +186,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-76 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+77 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -267,6 +267,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `betrieb_lebenszeichen` | [`20260907140000_lebenszeichen.sql`](../supabase/migrations/20260907140000_lebenszeichen.sql) |
 | `notfallzugriff` | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `layer_position_ereignis` | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
+| `gespeicherte_suche` | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -310,7 +311,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (71): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (72): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -496,6 +497,7 @@ Tabellen mit Policies (71): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `prozess_override_lesen` | `prozess_override` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 | `prozess_override_schreiben` | `prozess_override` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 | `layer_position_ereignis_lesen` | `layer_position_ereignis` | select | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
+| `gespeicherte_suche_eigene` | `gespeicherte_suche` | all | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -921,6 +923,16 @@ belegt.
 - reiht ein und laesst den Beleg in Aufbereitung
 - reiht einen Beleg nicht ein, der schon weiter ist
 - laesst Doris keinen fremden Beleg einreihen
+
+### [`tests/gespeicherte-suche.test.ts`](../tests/gespeicherte-suche.test.ts)
+
+- behaelt nur, was die Liste kennt, und laesst Leeres weg
+- baut daraus die Abfrage der Belegliste
+- speichert und liest die eigene Suche
+- ersetzt bei gleichem Namen statt zu scheitern
+- verlangt einen Namen und einen Filter
+- zeigt Bernd nicht, was Anna gespeichert hat -- auch nicht im selben Haus
+- laesst Bernd Annas Suche nicht loeschen
 
 ### [`tests/ingest.test.ts`](../tests/ingest.test.ts)
 

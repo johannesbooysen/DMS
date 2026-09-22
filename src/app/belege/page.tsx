@@ -14,6 +14,8 @@
  * etwas ergänzt wird.
  */
 
+import { sucheLoeschenAktion, sucheSpeichernAktion } from '@/app/lib/suche-aktionen'
+import { alsAbfrage, suchenLaden, suchfilterLesen } from '@/belege/suchen-speichern'
 import { uebersichtLaden } from '@/app/lib/belegliste'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
@@ -73,13 +75,58 @@ export default async function Belegübersicht({
     limit: 50,
   }
 
-  const uebersicht = await uebersichtLaden(await angemeldeterBenutzer(), filter)
+  const benutzer = await angemeldeterBenutzer()
+  const uebersicht = await uebersichtLaden(benutzer, filter)
+  // Die eigenen gespeicherten Suchen -- Amagnos "eigener Magnet", nur dass
+  // er Belege zeigt und keine schiebt.
+  const gespeichert = await suchenLaden(benutzer)
+  const aktuell = suchfilterLesen(s)
+  const aktuelleAbfrage = alsAbfrage(aktuell)
 
   const feld = { display: 'block', fontSize: '0.75rem' } as const
   const eingabe = { display: 'block', padding: '0.3rem' } as const
 
   return (
     <Seitenrahmen titel="Belege">
+      {s['fehler'] !== undefined && (
+        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+          {s['fehler']}
+        </p>
+      )}
+
+      {gespeichert.length > 0 && (
+        <nav aria-label="Gespeicherte Suchen" style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+          <span style={{ color: '#555' }}>Meine Suchen: </span>
+          {gespeichert.map((g, i) => {
+            const abfrage = alsAbfrage(g.filter)
+            const aktiv = abfrage === aktuelleAbfrage
+            return (
+              <span key={g.id} style={{ whiteSpace: 'nowrap' }}>
+                {i > 0 && ' · '}
+                <a
+                  href={abfrage}
+                  aria-current={aktiv ? 'page' : undefined}
+                  style={{ fontWeight: aktiv ? 700 : 400 }}
+                >
+                  {g.name}
+                </a>
+                {aktiv && (
+                  <form action={sucheLoeschenAktion} style={{ display: 'inline' }}>
+                    <input type="hidden" name="id" value={g.id} />
+                    <button
+                      type="submit"
+                      aria-label={`Gespeicherte Suche „${g.name}“ löschen`}
+                      style={{ background: 'none', border: 0, color: '#A33', cursor: 'pointer', padding: '0 0.3rem' }}
+                    >
+                      ×
+                    </button>
+                  </form>
+                )}
+              </span>
+            )
+          })}
+        </nav>
+      )}
       <form
         method="get"
         style={{
@@ -165,6 +212,30 @@ export default async function Belegübersicht({
           </a>
         )}
       </form>
+
+      {/*
+        Die laufende Suche speichern -- nur, wenn gefiltert ist: Die ganze
+        Liste zu speichern waere kein Filter. Die Filterwerte reisen als
+        versteckte Felder mit; die Fachschicht behaelt davon, was die Liste
+        kennt.
+      */}
+      {uebersicht.gefiltert && (
+        <form
+          action={sucheSpeichernAktion}
+          style={{ alignItems: 'flex-end', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}
+        >
+          {Object.entries(aktuell).map(([k, v]) => (
+            <input key={k} type="hidden" name={k} value={v} />
+          ))}
+          <label style={feld}>
+            Diese Suche speichern als
+            <input name="name" required maxLength={80} placeholder="z. B. Rote Belege Objekt 42" style={{ ...eingabe, width: '16rem' }} />
+          </label>
+          <button type="submit" style={{ cursor: 'pointer', padding: '0.4rem 0.9rem' }}>
+            Speichern
+          </button>
+        </form>
+      )}
 
       <p style={{ color: '#555', fontSize: '0.85rem' }}>
         {uebersicht.gefiltert

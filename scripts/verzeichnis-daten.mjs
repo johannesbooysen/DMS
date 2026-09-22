@@ -62,6 +62,8 @@ export const TAETIGKEITEN = [
       // Wer einen Stempel wann verschoben hat -- Benutzerkennung, dieselbe
       // Taetigkeit wie der Layer selbst.
       'layer_position_ereignis',
+      // Persoenliche Suchfilter -- Benutzerkennung, sonst nur Filterwerte.
+      'gespeicherte_suche',
       'dokument_merkmal',
       'dokument_seite',
       'extraktion_feld',

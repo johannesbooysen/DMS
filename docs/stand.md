@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 76 Tabellen, 192 Policies,
-109 Module, 920 Testfaelle in 53 Dateien,
+Auf einen Blick: 77 Tabellen, 193 Policies,
+111 Module, 927 Testfaelle in 54 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -476,6 +476,14 @@ Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_ste
 Funktionen: `app.stempel_feldwert`, `app.stempel_layer_setzen`
 
 
+### `supabase/migrations/20260923120000_gespeicherte_suche.sql`
+
+---------------------------------------------------------------------------
+
+Tabellen: `gespeicherte_suche`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -516,6 +524,7 @@ Funktionen: `app.stempel_feldwert`, `app.stempel_layer_setzen`
 | [`src/app/lib/postfach.ts`](../src/app/lib/postfach.ts) | Postfächer und Stempeln |
 | [`src/app/lib/sitzung.ts`](../src/app/lib/sitzung.ts) | Wer ist angemeldet? |
 | [`src/app/lib/stammdaten-aktionen.ts`](../src/app/lib/stammdaten-aktionen.ts) | 'use server' |
+| [`src/app/lib/suche-aktionen.ts`](../src/app/lib/suche-aktionen.ts) | 'use server' |
 | [`src/app/lib/vertretung-aktionen.ts`](../src/app/lib/vertretung-aktionen.ts) | 'use server' |
 | [`src/app/lib/zahlung-daten.ts`](../src/app/lib/zahlung-daten.ts) | Die Zahlungsansicht mit Daten versorgen |
 | [`src/app/lib/zahlungsmittel.ts`](../src/app/lib/zahlungsmittel.ts) | Womit die Anwendung Zahlungen übergibt |
@@ -526,6 +535,7 @@ Funktionen: `app.stempel_feldwert`, `app.stempel_layer_setzen`
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
 | [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
+| [`src/belege/suchen-speichern.ts`](../src/belege/suchen-speichern.ts) | Gespeicherte Suchen -- ein Filter der Belegliste mit Namen |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
 | [`src/betrieb/index.ts`](../src/betrieb/index.ts) | Lebenszeichen und Gesundheit der Betriebsumgebung (ADR 0007) |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
@@ -612,6 +622,7 @@ Funktionen: `app.stempel_feldwert`, `app.stempel_layer_setzen`
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |
+| [`tests/gespeicherte-suche.test.ts`](../tests/gespeicherte-suche.test.ts) | 7 | Weissliste, Speichern, Persoenlich |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
