@@ -814,6 +814,16 @@ belegt.
 - folgt der Kategorie, nicht der hoechsten Fassung
 - faellt ohne Angabe auf die bisherige Regel zurueck
 
+### [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts)
+
+- nennt Objekt und Kategorie mit dem aufgeschriebenen Grund
+- sagt ehrlich, wenn kein Grund aufgezeichnet ist
+- erklaert den Standardablauf, wenn die Kategorie keinen benennt
+- erklaert den Ablauf ueber die Kategorie, wenn sie ihn benennt
+- nennt die offene Stufe und wer sie bearbeiten kann
+- hat keine Stufe ohne Lauf
+- erklaert einem fremden Mandanten nichts
+
 ### [`tests/export.test.ts`](../tests/export.test.ts)
 
 - gibt die Datei unveraendert heraus

@@ -328,9 +328,13 @@ export async function aufbereiten(
   if (ohneObjekt[0]?.objekt_id == null) {
     zuordnung = await objektVorschlagen(c, dokumentId)
     if (zuordnung.sicherheit === 'gruen' && zuordnung.objektId !== null) {
-      await c.query('select app.dokument_zuordnen($1, $2)', [
+      // Mit Begruendung: Sie wird im Moment der Zuordnung aufgeschrieben,
+      // weil sich spaeter nicht mehr sicher nachrechnen laesst, welches
+      // Merkmal damals griff (Migration 20260922100000).
+      await c.query('select app.dokument_zuordnen($1, $2, $3)', [
         dokumentId,
         zuordnung.objektId,
+        zuordnung.begruendung,
       ])
     }
   }
@@ -358,10 +362,12 @@ export async function aufbereiten(
       // Der Trigger `dokument_spezialgebiet` leitet daraus das Spezialgebiet
       // ab; ueber `spezialgebiet_zustaendigkeit` faellt damit der zustaendige
       // Mitarbeiter an, ohne dass hier jemand genannt wird.
-      await c.query('update dokument set ordnungsgruppe_id = $2 where id = $1', [
-        dokumentId,
-        kategorie.ordnungsgruppeId,
-      ])
+      await c.query(
+        `update dokument
+            set ordnungsgruppe_id = $2, kategorie_quelle = $3, kategorie_begruendung = $4
+          where id = $1`,
+        [dokumentId, kategorie.ordnungsgruppeId, kategorie.quelle, kategorie.begruendung],
+      )
     }
   }
 

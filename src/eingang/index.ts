@@ -185,10 +185,15 @@ async function eineQuelle(
         quelle.traegerId,
       )
       if (quelle.ordnungsgruppeId !== null) {
-        await c.query('update dokument set ordnungsgruppe_id = $2 where id = $1', [
-          auf.dokumentId,
-          quelle.ordnungsgruppeId,
-        ])
+        // Mit Herkunft: Am Beleg soll spaeter stehen, dass die Kategorie
+        // nicht abgeleitet, sondern von der Quelle vorgegeben wurde.
+        await c.query(
+          `update dokument
+              set ordnungsgruppe_id = $2, kategorie_quelle = 'eingangsquelle',
+                  kategorie_begruendung = 'Von der Eingangsquelle vorgegeben.'
+            where id = $1`,
+          [auf.dokumentId, quelle.ordnungsgruppeId],
+        )
       }
       await vormerken(c, quelle.quelleId, stueck.herkunft, auf.dokumentId)
     })

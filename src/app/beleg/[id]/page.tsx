@@ -8,6 +8,7 @@
 
 import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
+import { zuordnungErklaeren } from '@/belege/erklaerung'
 import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
 import { layerLaden } from '@/layer'
 import { Befunde, belegBezeichnung, Seitenrahmen } from '@/app/lib/darstellung'
@@ -37,6 +38,7 @@ export default async function Belegansicht({
   const layer = await layerLaden(benutzer, id)
   const befunde = await befundeLaden(benutzer, id)
   const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
+  const erklaerung = await zuordnungErklaeren(benutzer, id)
   const warten = await alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id))
   // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
   // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
@@ -98,6 +100,64 @@ export default async function Belegansicht({
       )}
 
       <Befunde befunde={befunde} />
+
+      {/*
+        Warum ist dieser Beleg hier? Vier Saetze mit Grund -- die Auskunft,
+        fuer die man im abzuloesenden System alle Magneten gleichzeitig lesen
+        muss. Objekt und Kategorie stehen mit dem Grund, der im Moment der
+        Zuordnung aufgeschrieben wurde; Ablauf und Bearbeiter mit dem, der
+        heute gilt.
+      */}
+      {erklaerung !== null && (
+        <section
+          id="warum"
+          aria-labelledby="warum-titel"
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: '0.3rem',
+            fontSize: '0.9rem',
+            margin: '1rem 0',
+            padding: '0.75rem 1rem',
+          }}
+        >
+          <h2 id="warum-titel" style={{ fontSize: '1rem', margin: '0 0 0.5rem' }}>
+            Warum hier
+          </h2>
+          <dl style={{ display: 'grid', gap: '0.35rem 1rem', gridTemplateColumns: 'max-content 1fr', margin: 0 }}>
+            {(
+              [
+                ['Objekt', erklaerung.objekt],
+                ['Kategorie', erklaerung.kategorie],
+                ['Ablauf', erklaerung.ablauf],
+                ['Stufe', erklaerung.stufe],
+              ] as const
+            ).map(([name, zeile]) => (
+              <div key={name} style={{ display: 'contents' }}>
+                <dt style={{ color: '#555' }}>{name}</dt>
+                <dd style={{ margin: 0 }}>
+                  {zeile === null ? (
+                    <span style={{ color: '#6F6F6F' }}>—</span>
+                  ) : (
+                    <>
+                      <strong>{zeile.was}</strong>
+                      <span style={{ color: '#555' }}> — {zeile.warum}</span>
+                      {'personen' in zeile && zeile.personen.length > 0 && (
+                        <span style={{ color: '#555' }}>
+                          {' '}
+                          Das können: {zeile.personen.join(', ')}.
+                        </span>
+                      )}
+                      {'personen' in zeile && zeile.personen.length === 0 && (
+                        <span style={{ color: '#A33' }}> Niemand kann das derzeit.</span>
+                      )}
+                    </>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       {gewaehrleistung.length > 0 && (
         <section

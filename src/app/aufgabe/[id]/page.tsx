@@ -86,6 +86,11 @@ export default async function Aufgabenansicht({
         ]
           .filter(Boolean)
           .join(' · ')}
+        {' · '}
+        {/* Die vier Saetze mit Grund stehen am Beleg, nicht hier: Wer
+            entscheidet, braucht den Beleg -- wer sich wundert, warum er
+            ihn bekommen hat, braucht die Erklaerung. */}
+        <a href={`/beleg/${zeile.dokumentId}#warum`}>Warum bei mir?</a>
       </p>
 
       <Befunde befunde={befunde} />

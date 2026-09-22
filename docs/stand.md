@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 75 Tabellen, 191 Policies,
-106 Module, 881 Testfaelle in 49 Dateien,
+107 Module, 888 Testfaelle in 50 Dateien,
 7 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -445,6 +445,13 @@ Funktionen: `app.kategorie_ablauf_recht`
 Funktionen: `app.prozessbaum_pruefen`
 
 
+### `supabase/migrations/20260922100000_zuordnung_begruendung.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.dokument_zuordnen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -493,6 +500,7 @@ Funktionen: `app.prozessbaum_pruefen`
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
+| [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
 | [`src/betrieb/index.ts`](../src/betrieb/index.ts) | Lebenszeichen und Gesundheit der Betriebsumgebung (ADR 0007) |
@@ -572,6 +580,7 @@ Funktionen: `app.prozessbaum_pruefen`
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 17 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
+| [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts) | 7 | Gelesene Gruende, Abgeleitete Gruende, Mandantentrennung |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
@@ -626,6 +635,6 @@ Funktionen: `app.prozessbaum_pruefen`
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:373`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:379`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:194`](../src/workflow/engine.ts) |
