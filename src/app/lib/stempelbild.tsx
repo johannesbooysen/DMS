@@ -32,6 +32,37 @@ export function rahmenStil(g: Gestaltung, farbe: string): string {
   return `${staerke} ${art} ${farbe}`
 }
 
+/**
+ * Die Farbe, in der der Text steht -- dunkel genug, um lesbar zu sein.
+ *
+ * Der Rahmen traegt die Stempelfarbe unveraendert; der Text nicht immer:
+ * Ein Orange wie `#B5741A` erreicht auf fast weissem Grund 3,8:1, und die
+ * Barrierefreiheitspruefung verlangt 4,5:1 (WCAG AA). Statt die Farbe des
+ * Stempeltyps zu verbieten, wird der Text schrittweise abgedunkelt, bis er
+ * das Mass erreicht. Gruen und Rot aus dem Seed bleiben, wie sie sind.
+ */
+export function lesefarbe(farbe: string): string {
+  const treffer = /^#([0-9a-f]{6})$/i.exec(farbe.trim())
+  if (treffer === null) return farbe
+  let [r, g, b] = [0, 2, 4].map((i) => parseInt(treffer[1]!.slice(i, i + 2), 16)) as [
+    number,
+    number,
+    number,
+  ]
+  const kanal = (c: number) => {
+    const s = c / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+  const kontrast = () => 1.05 / (0.2126 * kanal(r) + 0.7152 * kanal(g) + 0.0722 * kanal(b) + 0.05)
+  for (let i = 0; i < 8 && kontrast() < 4.6; i += 1) {
+    r = Math.round(r * 0.88)
+    g = Math.round(g * 0.88)
+    b = Math.round(b * 0.88)
+  }
+  const hex = (c: number) => c.toString(16).padStart(2, '0')
+  return `#${hex(r)}${hex(g)}${hex(b)}`
+}
+
 export function Stempelbild({
   text,
   farbe,
@@ -59,7 +90,7 @@ export function Stempelbild({
         border: rahmen ?? rahmenStil(gestaltung, farbe),
         borderRadius: RADIUS[gestaltung.form],
         boxSizing: 'border-box',
-        color: farbe,
+        color: lesefarbe(farbe),
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -84,7 +115,10 @@ export function Stempelbild({
         {kopf}
       </span>
       {rest !== '' && (
-        <span style={{ fontSize: schrift.rest, lineHeight: 1.2, opacity: 0.85, whiteSpace: 'nowrap' }}>
+        // Ohne `opacity`: Sie hellte die Schrift auf und drueckte den
+        // Kontrast unter 4,5:1 -- der Rest ist klein genug, er braucht
+        // keine zweite Abschwaechung.
+        <span style={{ fontSize: schrift.rest, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
           {rest}
         </span>
       )}

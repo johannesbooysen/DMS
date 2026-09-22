@@ -18,6 +18,13 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
   const stempeltypId = String(formular.get('stempeltypId') ?? '')
   const kommentar = String(formular.get('kommentar') ?? '')
   const wiedervorlageAm = String(formular.get('wiedervorlageAm') ?? '')
+  /*
+   * Woher der Stempel kam, dorthin geht es zurueck. Vom Arbeitsplatz aus
+   * heisst "zurueck": zur naechsten Aufgabe in der Liste, ohne Umweg ueber
+   * das Postfach -- das ist der Sinn der geteilten Ansicht. Von der
+   * einzelnen Aufgabenseite aus bleibt es beim Postfach.
+   */
+  const vomArbeitsplatz = formular.get('herkunft') === 'arbeitsplatz'
 
   try {
     await stempelSetzen(await angemeldeterBenutzer(), {
@@ -29,11 +36,13 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
   } catch (fehler) {
     if (fehler instanceof StempelAbgelehnt) {
       // Der Grund gehoert dem Anwender gezeigt, nicht verschluckt.
-      redirect(`/aufgabe/${aufgabeId}?fehler=${encodeURIComponent(fehler.message)}`)
+      const ziel = vomArbeitsplatz ? `/arbeitsplatz/${aufgabeId}` : `/aufgabe/${aufgabeId}`
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
     }
     throw fehler
   }
 
   revalidatePath('/postfach')
-  redirect('/postfach')
+  revalidatePath('/arbeitsplatz')
+  redirect(vomArbeitsplatz ? '/arbeitsplatz' : '/postfach')
 }

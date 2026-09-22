@@ -75,13 +75,15 @@ test('Von der Belegansicht kommt man wieder weg', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
 })
 
-test('Die Wurzel führt ins Postfach, nicht auf eine Platzhalterseite', async ({ page }) => {
+test('Die Wurzel führt an den Arbeitsplatz, nicht auf eine Platzhalterseite', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
   await page.goto('/')
 
   // Hier stand der Satz „Viewer und Postfächer sind noch nicht gebaut" —
-  // einmal richtig, seit vielen Wochen falsch.
-  await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
+  // einmal richtig, seit vielen Wochen falsch. Seit es den Arbeitsplatz
+  // gibt, beginnt der Tag dort: bei der ersten offenen Aufgabe.
+  await expect(page.getByRole('heading', { name: 'Arbeitsplatz' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Aufgaben' })).toBeVisible()
 })
 
 test('Ein Beleg ohne Datei verschluckt sich nicht', async ({ page }) => {

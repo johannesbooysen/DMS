@@ -1,0 +1,600 @@
+/*
+ * Das gemeinsame Stilsystem.
+ *
+ * Bis hierher trug jede Seite ihre Farben und Abstaende als Inline-Stile --
+ * 40 Seiten, 40 Meinungen. Was hier steht, erben alle: die Huelle
+ * (Seitenleiste, Kopfzeile, Inhalt), die Grundformen (Felder, Knoepfe,
+ * Tabellen, Marken) und die Farbtoken. Inline-Stile, die noch stehen,
+ * ueberschreiben die Grundformen nur dort, wo sie es ausdruecklich tun.
+ *
+ * **Bewusst nur hell.** Ohne festen Hintergrund zeichnete der Browser die
+ * Seiten im Dunkelmodus schwarz mit dunkelblauen Links -- ein Fehler, keine
+ * Geschmacksfrage. Ein echter Dunkelmodus kommt erst, wenn die Inline-Farben
+ * aus den Seiten heraus sind; bis dahin ist "hell, immer" die ehrliche
+ * Antwort. Die Token sind so benannt, dass er dann eine zweite Wertezeile
+ * ist und kein Umbau.
+ */
+
+:root {
+  color-scheme: light;
+
+  --farbe-hintergrund: #f3f4f7;
+  --farbe-flaeche: #ffffff;
+  --farbe-flaeche-leise: #f8f9fb;
+  --farbe-text: #1f2430;
+  --farbe-text-leise: #5b6270;
+  --farbe-linie: #dce0e6;
+  --farbe-linie-stark: #b9bfc9;
+
+  --farbe-akzent: #3b4a80;
+  --farbe-akzent-dunkel: #2c3763;
+  --farbe-akzent-hell: #eef1f6;
+  --farbe-akzent-text: #ffffff;
+
+  --farbe-rot: #b3271e;
+  --farbe-rot-hell: #f6dcd9;
+  --farbe-orange: #b5741a;
+  --farbe-orange-hell: #fdf3e3;
+  --farbe-gruen: #2f6f4e;
+  --farbe-gruen-hell: #e4f1ea;
+
+  --leiste-hintergrund: #22294a;
+  --leiste-text: #e6e9f2;
+  --leiste-text-leise: #aab2cc;
+  --leiste-aktiv: rgba(255, 255, 255, 0.12);
+
+  --radius: 6px;
+  --schatten: 0 1px 2px rgba(20, 24, 40, 0.06), 0 1px 6px rgba(20, 24, 40, 0.05);
+
+  --leiste-breite: 14.5rem;
+  --kopf-hoehe: 3.5rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--farbe-hintergrund);
+  color: var(--farbe-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--farbe-akzent);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+ * Grundformen: Felder, Knoepfe, Tabellen
+ * ------------------------------------------------------------------------ */
+
+input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+select,
+textarea {
+  background: var(--farbe-flaeche);
+  border: 1px solid var(--farbe-linie-stark);
+  border-radius: var(--radius);
+  color: var(--farbe-text);
+  font: inherit;
+  padding: 0.4rem 0.55rem;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--farbe-akzent);
+  outline-offset: 1px;
+}
+
+button {
+  background: var(--farbe-flaeche);
+  border: 1px solid var(--farbe-linie-stark);
+  border-radius: var(--radius);
+  color: var(--farbe-text);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+}
+
+button:hover {
+  border-color: var(--farbe-akzent);
+}
+
+.knopf-primaer {
+  background: var(--farbe-akzent);
+  border-color: var(--farbe-akzent);
+  color: var(--farbe-akzent-text);
+}
+
+.knopf-primaer:hover {
+  background: var(--farbe-akzent-dunkel);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  color: var(--farbe-text-leise);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ---------------------------------------------------------------------------
+ * Die Huelle
+ * ------------------------------------------------------------------------ */
+
+.huelle {
+  display: grid;
+  grid-template-columns: var(--leiste-breite) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.seitenleiste {
+  background: var(--leiste-hintergrund);
+  color: var(--leiste-text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
+  position: sticky;
+  top: 0;
+}
+
+.seitenleiste-marke {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.75rem 1rem;
+}
+
+.seitenleiste-marke small {
+  color: var(--leiste-text-leise);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.seitenleiste-gruppe {
+  margin-bottom: 1rem;
+}
+
+.seitenleiste-titel {
+  color: var(--leiste-text-leise);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.25rem;
+  padding: 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.seitenleiste a {
+  align-items: center;
+  border-radius: var(--radius);
+  color: var(--leiste-text);
+  display: flex;
+  font-size: 0.9rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.38rem 0.75rem;
+  text-decoration: none;
+}
+
+.seitenleiste a:hover {
+  background: var(--leiste-aktiv);
+}
+
+.seitenleiste a[aria-current='page'] {
+  background: var(--leiste-aktiv);
+  color: #fff;
+  font-weight: 600;
+}
+
+.seitenleiste-fuss {
+  margin-top: auto;
+  padding: 0.75rem 0.75rem 0;
+}
+
+.seitenleiste-fuss button {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--leiste-text);
+  width: 100%;
+}
+
+.seitenleiste-fuss button:hover {
+  background: var(--leiste-aktiv);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.zaehler {
+  background: var(--farbe-akzent);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 0.05rem 0.45rem;
+}
+
+.zaehler--ueberfaellig {
+  background: var(--farbe-rot);
+}
+
+.seitenleiste .zaehler {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.seitenleiste .zaehler--ueberfaellig {
+  background: var(--farbe-rot);
+}
+
+.hauptbereich {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+.kopfzeile {
+  align-items: center;
+  background: var(--farbe-flaeche);
+  border-bottom: 1px solid var(--farbe-linie);
+  display: flex;
+  gap: 1rem;
+  height: var(--kopf-hoehe);
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.kopfzeile h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kopfzeile-rechts {
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.notfallband {
+  background: var(--farbe-orange-hell);
+  border-bottom: 1px solid #e0a458;
+  font-size: 0.875rem;
+  padding: 0.5rem 1.5rem;
+}
+
+.inhalt {
+  flex: 1;
+  margin: 0 auto;
+  max-width: 80rem;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.inhalt--breit {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Der Arbeitsplatz: Liste | Beleg | Entscheidung
+ * ------------------------------------------------------------------------ */
+
+.arbeitsplatz {
+  display: grid;
+  grid-template-columns: 18rem minmax(0, 1fr) 25rem;
+  height: calc(100vh - var(--kopf-hoehe));
+}
+
+.arbeitsplatz > * {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.aufgabenleiste {
+  background: var(--farbe-flaeche);
+  border-right: 1px solid var(--farbe-linie);
+}
+
+.aufgabenleiste h2 {
+  color: var(--farbe-text-leise);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+  padding: 0.85rem 1rem 0.35rem;
+  text-transform: uppercase;
+}
+
+.aufgabenleiste ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.aufgabenleiste a {
+  border-left: 3px solid transparent;
+  color: var(--farbe-text);
+  display: block;
+  padding: 0.55rem 1rem 0.55rem 0.85rem;
+  text-decoration: none;
+}
+
+.aufgabenleiste a:hover {
+  background: var(--farbe-flaeche-leise);
+}
+
+.aufgabenleiste a[aria-current='page'] {
+  background: var(--farbe-akzent-hell);
+  border-left-color: var(--farbe-akzent);
+}
+
+.aufgabenleiste-titel {
+  align-items: center;
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 500;
+  gap: 0.4rem;
+  line-height: 1.25;
+}
+
+.aufgabenleiste-titel > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aufgabenleiste-zeile {
+  color: var(--farbe-text-leise);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin-top: 0.15rem;
+  padding-left: 1rem;
+}
+
+.aufgabenleiste-leer {
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem 0.75rem;
+}
+
+.aufgabenleiste-hinweis {
+  border-top: 1px solid var(--farbe-linie);
+  color: var(--farbe-text-leise);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
+}
+
+kbd {
+  background: var(--farbe-flaeche-leise);
+  border: 1px solid var(--farbe-linie-stark);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 0 0.3rem;
+}
+
+.arbeitsplatz-beleg {
+  background: #e9ebef;
+  display: flex;
+  flex-direction: column;
+}
+
+.zoomleiste {
+  align-items: center;
+  background: var(--farbe-flaeche);
+  border-bottom: 1px solid var(--farbe-linie);
+  display: flex;
+  flex: none;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.zoomleiste span {
+  color: var(--farbe-text-leise);
+  font-size: 0.8rem;
+  min-width: 3rem;
+}
+
+.zoomleiste button {
+  line-height: 1;
+  padding: 0.25rem 0.55rem;
+}
+
+.zoomleiste-rechts {
+  font-size: 0.8rem;
+  margin-left: auto;
+}
+
+.betrachter {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.betrachter-seite {
+  background: #fff;
+  box-shadow: var(--schatten);
+  margin: 0 auto 1rem;
+  position: relative;
+}
+
+.betrachter-seite img {
+  display: block;
+  width: 100%;
+}
+
+.betrachter-seitenzahl {
+  color: var(--farbe-text-leise);
+  font-size: 0.72rem;
+  margin: -0.6rem auto 1rem;
+  text-align: center;
+}
+
+.arbeitsplatz-entscheidung {
+  background: var(--farbe-flaeche);
+  border-left: 1px solid var(--farbe-linie);
+  padding: 1rem 1.25rem 2rem;
+}
+
+.arbeitsplatz-entscheidung h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.arbeitsplatz-entscheidung h3 {
+  color: var(--farbe-text-leise);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  margin: 1.25rem 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.belegkopf {
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.belegkopf dl {
+  display: grid;
+  gap: 0.2rem 0.75rem;
+  grid-template-columns: max-content 1fr;
+  margin: 0.5rem 0 0;
+}
+
+.belegkopf dt {
+  color: var(--farbe-text-leise);
+}
+
+.belegkopf dd {
+  color: var(--farbe-text);
+  margin: 0;
+}
+
+.stempelknoepfe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stempelknoepfe button {
+  border: 0;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  text-align: left;
+}
+
+.stempelknoepfe button:hover {
+  filter: brightness(0.92);
+}
+
+.entscheidung-feld {
+  display: block;
+  font-size: 0.8rem;
+  margin: 0 0 0.75rem;
+}
+
+.entscheidung-feld textarea,
+.entscheidung-feld input {
+  display: block;
+  margin-top: 0.2rem;
+  width: 100%;
+}
+
+.meldung-fehler {
+  background: var(--farbe-rot-hell);
+  border-radius: var(--radius);
+  color: #6b1d15;
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.arbeitsplatz-leer {
+  color: var(--farbe-text-leise);
+  grid-column: 2 / 4;
+  padding: 3rem;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .arbeitsplatz {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+  }
+
+  .arbeitsplatz-entscheidung {
+    border-left: 0;
+    border-top: 1px solid var(--farbe-linie);
+    grid-column: 2;
+  }
+
+  .arbeitsplatz-beleg {
+    min-height: 70vh;
+  }
+}
+
+@media (max-width: 760px) {
+  .huelle {
+    grid-template-columns: 1fr;
+  }
+
+  .seitenleiste {
+    height: auto;
+    position: static;
+  }
+
+  .arbeitsplatz {
+    grid-template-columns: 1fr;
+  }
+
+  .arbeitsplatz-entscheidung {
+    grid-column: 1;
+  }
+}

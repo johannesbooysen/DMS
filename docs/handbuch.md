@@ -131,6 +131,35 @@ npm test -- -t "Mandant"
 
 ---
 
+## Der Arbeitsplatz
+
+Der Ort, an dem der Tag beginnt: **links die Aufgaben, in der Mitte der
+Beleg, rechts die Entscheidung** — nebeneinander, ohne Seitenwechsel. Wer
+die Anwendung ohne Pfad aufruft, landet hier, bei der ersten offenen
+Aufgabe.
+
+- **Links** stehen die persönlichen Aufgaben und darunter der Pool — dieselben
+  Postfächer wie unter *Postfächer*, nur angeordnet zum Arbeiten. Der
+  geöffnete Eintrag ist markiert. Mit **↓** und **↑** (oder `j` und `k`)
+  wechseln Sie zur nächsten und vorigen Aufgabe; die Liste bleibt stehen.
+- **In der Mitte** liegt der Beleg mit allen Seiten und allen Stempeln, die
+  schon darauf stehen. Vergrößern und verkleinern mit **−** und **+**,
+  *Seitenbreite* stellt zurück. Wer einen Stempel verschieben, eine Notiz
+  setzen oder den Beleg ausgeben will, geht über den Verweis oben rechts in
+  die Belegansicht — am Arbeitsplatz wird entschieden, nicht gestaltet.
+- **Rechts** steht, worum es geht (Objekt, Gruppe, Betrag, Fälligkeit), die
+  Prüfhinweise, an der Kontierungsstufe die Kontierungsmaske, an der
+  Zahlungsstufe die Zahlungsansicht — und darunter die Stempel als
+  Entscheidung. Kein Zielfeld: Wohin der Beleg geht, leitet der Ablauf ab.
+
+Nach einem Stempel öffnet sich die **nächste** Aufgabe, nicht das Postfach.
+Ist nichts mehr offen, sagt die Seite das.
+
+Die Belegansicht (*Belege* → Beleg) und die einzelne Aufgabenseite bleiben
+bestehen; sie zeigen dasselbe, nur nicht nebeneinander.
+
+---
+
 ## Die Begriffe
 
 Die Fachbegriffe sind durchgängig deutsch und heißen im Code genauso wie im

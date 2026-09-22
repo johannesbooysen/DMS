@@ -1,5 +1,5 @@
 /**
- * Die Wurzel führt ins Postfach.
+ * Die Wurzel führt an den Arbeitsplatz.
  *
  * Hier stand eine Platzhalterseite mit dem Satz „Viewer und Postfächer sind
  * noch nicht gebaut". Das war einmal richtig und ist es seit vielen Wochen
@@ -14,5 +14,7 @@
 import { redirect } from 'next/navigation'
 
 export default function Startseite(): never {
-  redirect('/postfach')
+  // Seit es den Arbeitsplatz gibt, ist er der Ort, an dem der Tag beginnt:
+  // die erste offene Aufgabe, der Beleg gross, die Entscheidung daneben.
+  redirect('/arbeitsplatz')
 }

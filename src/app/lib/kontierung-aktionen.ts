@@ -25,7 +25,10 @@ import { StempelAbgelehnt, stempelSetzen } from '@/app/lib/postfach'
 /** Zurueck zu der Aufgabe, aus der die Maske aufgerufen wurde. */
 function zurueck(formular: FormData, fehler?: string): never {
   const aufgabeId = String(formular.get('aufgabeId') ?? '')
-  const ziel = aufgabeId === '' ? '/postfach' : `/aufgabe/${aufgabeId}`
+  // Vom Arbeitsplatz aus bleibt man am Arbeitsplatz -- die Maske steht dort
+  // in der rechten Spalte, und ein Fehler soll neben ihr erscheinen.
+  const seite = formular.get('herkunft') === 'arbeitsplatz' ? 'arbeitsplatz' : 'aufgabe'
+  const ziel = aufgabeId === '' ? '/postfach' : `/${seite}/${aufgabeId}`
   redirect(fehler === undefined ? ziel : `${ziel}?fehler=${encodeURIComponent(fehler)}`)
 }
 
@@ -147,5 +150,8 @@ export async function kontiertStempelnAktion(formular: FormData): Promise<void> 
   }
 
   revalidatePath('/postfach')
-  redirect('/postfach')
+  revalidatePath('/arbeitsplatz')
+  // Nach dem Stempel die naechste Aufgabe, nicht das Postfach -- wenn man
+  // vom Arbeitsplatz kam.
+  redirect(formular.get('herkunft') === 'arbeitsplatz' ? '/arbeitsplatz' : '/postfach')
 }

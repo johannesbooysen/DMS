@@ -83,31 +83,19 @@ test('Die Kontierung verlangt die volle Summe — und sagt das', async ({ page }
     await expect(page.getByRole('button', { name: /Rest übernehmen \(/ })).toBeVisible()
   })
 
-  await test.step('Und der Stempel wird verweigert, nicht nur ausgegraut', async () => {
-    await page.getByRole('button', { name: 'Kontiert' }).click()
-
+  await test.step('Und der Stempel steht gar nicht da -- statt erst beim Drücken abgewiesen zu werden', async () => {
     /*
-     * Der Summenzwang blockiert die Stufe, nicht die Ampel (Konzept 6). Und
-     * die Meldung nennt beide Zahlen und die Differenz — sie sagt nicht
-     * „nicht möglich", sondern was zu tun ist.
-     *
-     * Nicht über `getByRole('alert')`: Next hängt einen eigenen Ansager mit
-     * dieser Rolle in jede Seite, der Selektor wäre mehrdeutig.
+     * Der Summenzwang blockiert die Stufe, nicht die Ampel (Konzept 6).
+     * Frueher stand der Knopf da und wurde beim Druecken abgewiesen; seit
+     * der Stempel in der Maske unter der Summe steht, erscheint er erst,
+     * wenn die Summe stimmt -- und an seiner Stelle steht, was fehlt. Der
+     * Anwender liest 300,00 € und traegt sie ein, statt einen Knopf zu
+     * druecken, der nein sagt. Dass die Datenbank den Stempel trotzdem
+     * abweisen wuerde, pruefen die Regeltests (Summenzwang), nicht der
+     * Browser.
      */
-    /*
-     * Zwei mögliche Sätze, je nachdem wie weit die Kontierung ist:
-     *
-     *   gar keine Zeile → „Der Beleg ist noch nicht kontiert."
-     *   Zeilen, aber falsche Summe → „Die Kontierung ergibt X, der
-     *   Rechnungsbetrag ist Y. Es fehlen Z."
-     *
-     * Beide sagen, was zu tun ist — und darauf kommt es an. Der erste
-     * Entwurf verlangte den zweiten Satz und übersah, dass hier die einzige
-     * Zeile entfernt wurde.
-     */
-    await expect(
-      page.getByText(/noch nicht kontiert|Die Kontierung ergibt .* Es fehlen /),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Kontiert' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /Rest übernehmen \(300,00 €\)/ })).toBeVisible()
   })
 
   await test.step('Rest übernehmen, dann geht es weiter', async () => {

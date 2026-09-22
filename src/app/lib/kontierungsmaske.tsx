@@ -44,11 +44,14 @@ export function Kontierung({
   dokumentId,
   aufgabeId,
   abschluss = null,
+  herkunft = 'aufgabe',
 }: {
   maske: Kontierungsmaske
   dokumentId: string
   aufgabeId: string
   abschluss?: Abschlussstempel | null
+  /** Von wo die Maske aufgerufen wurde -- dorthin kehren die Aktionen zurueck. */
+  herkunft?: 'aufgabe' | 'arbeitsplatz'
 }) {
   const { stand, konten, umlageschluessel, vorschlag } = maske
 
@@ -68,6 +71,7 @@ export function Kontierung({
     <>
       <input type="hidden" name="dokumentId" value={dokumentId} />
       <input type="hidden" name="aufgabeId" value={aufgabeId} />
+      <input type="hidden" name="herkunft" value={herkunft} />
     </>
   )
 
