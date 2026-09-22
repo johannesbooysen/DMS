@@ -129,9 +129,12 @@ Das sind drei `exists`-Abfragen in einer Funktion, die es schon gibt. Der
 Ertrag ist groß: Die drei Befunde, für die hier ein Mensch ein ganzes
 Diagramm zurückkonstruieren musste, fielen beim Aktivieren an.
 
-**Ein vierter Befund derselben Klasse steckt in unserem eigenen Schema.**
+**Ein vierter Befund derselben Klasse steckte in unserem eigenen Schema.**
 `vier_augen_pflicht` steht in zwei Tabellen — `prozessstufe` und
-`stempeltyp` — und wird **nirgends ausgewertet**. Die Spalte wird beim
+`stempeltyp` — und wurde bis Migration `20260922140000` **nirgends
+ausgewertet**. Seitdem prüft ein Trigger beide Schalter, die Oberfläche
+bietet den Stempel gar nicht erst an, und die Ausführbarkeitsprüfung
+meldet, wenn eine Stufe vier Augen verlangt, es aber kein zweites Paar gibt. Die Spalte wird beim
 Versionieren gewissenhaft mitkopiert und hat keine Wirkung. Das ist genau
 Amagno-Problem 1 in unserem Haus: eine Einstellung, die aussieht, als
 schütze sie etwas.

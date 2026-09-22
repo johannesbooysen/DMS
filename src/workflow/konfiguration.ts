@@ -430,3 +430,27 @@ export async function baumFuerAnzeige(
 ): Promise<Knoten | null> {
   return alsBenutzer(benutzerId, (c) => baumLaden(c, definitionId))
 }
+
+/**
+ * Vier Augen an einer Stufe ein- oder ausschalten.
+ *
+ * Eine Einstellung des Ablaufs, also des Entwurfs -- mit demselben Recht und
+ * derselben Sperre wie jeder Baustein. Ob die Regel erfuellbar ist, sagt die
+ * Pruefung vor dem Aktivieren (Migration 20260922140000).
+ */
+export async function stufeVierAugenSetzen(
+  benutzerId: string,
+  definitionId: string,
+  stufeId: string,
+  wert: boolean,
+): Promise<void> {
+  return alsBenutzer(benutzerId, async (c) => {
+    await rechtPruefen(c)
+    await entwurfPruefen(c, definitionId)
+    const { rowCount } = await c.query(
+      'update prozessstufe set vier_augen_pflicht = $3 where id = $1 and definition_id = $2',
+      [stufeId, definitionId, wert],
+    )
+    if (rowCount === 0) throw new NichtMoeglich('Stufe nicht gefunden')
+  })
+}

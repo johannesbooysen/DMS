@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 76 Tabellen, 192 Policies,
-107 Module, 903 Testfaelle in 51 Dateien,
+107 Module, 910 Testfaelle in 52 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -462,6 +462,13 @@ Funktionen: `app.layer_position_unveraenderlich`, `app.stempel_verschiebbar`, `a
 
 Policies: 1
 
+### `supabase/migrations/20260922140000_vier_augen.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_stempel`, `app.prozessbaum_pruefen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -627,6 +634,7 @@ Policies: 1
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
+| [`tests/vier-augen.test.ts`](../tests/vier-augen.test.ts) | 7 | An der Stufe, Am Stempeltyp, Die Pruefung des Ablaufs |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 21 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
 | [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 33 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
 

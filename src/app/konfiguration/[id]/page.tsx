@@ -16,6 +16,7 @@ import {
   bausteinEinfuegenAktion,
   bausteinEntfernenAktion,
   bausteinVerschiebenAktion,
+  vierAugenAktion,
 } from '@/app/lib/konfig-aktionen'
 import { Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
@@ -69,10 +70,33 @@ function Baustein({
               knoten.stufe.zustaendigkeitTyp,
               knoten.stufe.betragVon !== null && `ab ${knoten.stufe.betragVon} EUR`,
               knoten.stufe.pflicht ? 'Pflicht' : 'freiwillig',
+              knoten.stufe.vierAugenPflicht && 'Vier Augen',
             ]
               .filter(Boolean)
               .join(' · ')}
           </span>
+        )}
+
+        {/*
+          Vier Augen: nicht dieselbe Person wie an der vorherigen Stufe. Eine
+          Einstellung des Ablaufs -- je Kategorie --, nicht der Rolle: Rollen
+          sagen, wer darf; dieser Schalter sagt, dass es zwei sein muessen.
+          Ob es die zwei gibt, meldet die Pruefung unten.
+        */}
+        {bearbeitbar && knoten.knotentyp === 'stufe' && knoten.stufe !== null && (
+          <form action={vierAugenAktion} style={{ display: 'inline' }}>
+            <input type="hidden" name="definitionId" value={definitionId} />
+            <input type="hidden" name="stufeId" value={knoten.stufe.id} />
+            <input type="hidden" name="wert" value={knoten.stufe.vierAugenPflicht ? 'nein' : 'ja'} />
+            <button
+              type="submit"
+              aria-pressed={knoten.stufe.vierAugenPflicht}
+              title="Nicht dieselbe Person wie an der vorherigen Stufe"
+              style={{ fontSize: '0.75rem' }}
+            >
+              {knoten.stufe.vierAugenPflicht ? 'Vier Augen aus' : 'Vier Augen an'}
+            </button>
+          </form>
         )}
 
         {bearbeitbar && !istWurzel && (

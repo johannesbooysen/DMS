@@ -23,6 +23,8 @@ export interface Stufe {
   zustaendigkeitTyp: string
   zustaendigkeitRef: string | null
   slaStunden: number | null
+  /** Nicht dieselbe Person wie an der vorherigen Stufe (Migration 20260922140000). */
+  vierAugenPflicht: boolean
 }
 
 export interface Knoten {
@@ -50,13 +52,14 @@ interface Zeile {
   zustaendigkeit_typ: string | null
   zustaendigkeit_ref: string | null
   sla_stunden: number | null
+  vier_augen_pflicht: boolean | null
 }
 
 export async function baumLaden(c: PoolClient, definitionId: string): Promise<Knoten | null> {
   const { rows } = await c.query<Zeile>(
     `select k.id, k.eltern_id, k.reihenfolge, k.knotentyp, k.bedingung, k.stufe_id,
             s.bezeichnung, s.stufentyp, s.pflicht, s.betrag_von, s.betrag_bis,
-            s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden
+            s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden, s.vier_augen_pflicht
        from prozessknoten k
        left join prozessstufe s on s.id = k.stufe_id
       where k.definition_id = $1
@@ -84,6 +87,7 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
               zustaendigkeitTyp: z.zustaendigkeit_typ ?? 'system',
               zustaendigkeitRef: z.zustaendigkeit_ref,
               slaStunden: z.sla_stunden,
+              vierAugenPflicht: z.vier_augen_pflicht ?? false,
             },
       kinder: [],
       eltern: null,

@@ -302,6 +302,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `ordnungsgruppe_ablauf_recht` | `ordnungsgruppe` | before insert or update | [`20260911110000_kategorie_steuerung_recht.sql`](../supabase/migrations/20260911110000_kategorie_steuerung_recht.sql) |
 | `layer_position_ereignis_unveraenderlich` | `layer_position_ereignis` | before update or delete | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `dokument_layer_position_protokoll` | `dokument_layer` | after update | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
+| `aaa_stempel_ereignis_vier_augen` | `stempel_ereignis` | before insert | [`20260922140000_vier_augen.sql`](../supabase/migrations/20260922140000_vier_augen.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -1525,6 +1526,16 @@ belegt.
 - laesst bereits zugewiesene Aufgaben unberuehrt
 - gibt dem Vertreter nur die Stempel, die seine eigenen Rollen hergeben
 - aendert die Rollen des Vertreters nicht
+
+### [`tests/vier-augen.test.ts`](../tests/vier-augen.test.ts)
+
+- weist dieselbe Person an der naechsten Stufe ab -- und bietet ihr den Knopf nicht an
+- laesst eine andere Person die naechste Stufe abschliessen
+- ist ohne Schalter wie bisher: dieselbe Person darf beides
+- haelt auch ein direktes Ereignis ab -- die Grenze ist der Trigger
+- laesst nur stempeln, wer auf dem Beleg noch nichts abgeschlossen hat
+- meldet, wenn vier Augen verlangt sind, aber es kein zweites Paar gibt
+- meldet nichts, wo ein zweites Paar da ist
 
 ### [`tests/workflow.test.ts`](../tests/workflow.test.ts)
 

@@ -17,6 +17,7 @@ import {
   knotenVerschieben,
   NichtErlaubt,
   NichtMoeglich,
+  stufeVierAugenSetzen,
 } from '@/workflow/konfiguration'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
@@ -92,4 +93,13 @@ export async function aktivierenAktion(formular: FormData): Promise<void> {
   await versuchen(`/konfiguration/${definitionId}`, async () => {
     await entwurfAktivieren(await angemeldeterBenutzer(), definitionId)
   })
+}
+
+export async function vierAugenAktion(formular: FormData): Promise<void> {
+  const definitionId = String(formular.get('definitionId') ?? '')
+  const stufeId = String(formular.get('stufeId') ?? '')
+  const wert = formular.get('wert') === 'ja'
+  await versuchen(`/konfiguration/${definitionId}`, async () =>
+    stufeVierAugenSetzen(await angemeldeterBenutzer(), definitionId, stufeId, wert),
+  )
 }
