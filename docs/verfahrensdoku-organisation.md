@@ -51,7 +51,15 @@ Oberfläche.
 eines Containers: Zwei startende Container würden dieselbe Migration
 nebenläufig anwenden, und eine fehlerhafte liefe ohne Aufsicht.
 
-Konkreter Server, Anbieter und Standort: ⬜ offen.
+Vorgesehen ist ein Server der Hetzner Online GmbH im Rechenzentrum
+Nürnberg (`nbg1`) — derselbe Standort wie der Objektspeicher, weil jedes
+Seitenbild durch den Webprozess geht ([ADR 0007](adr/0007-betriebsumgebung.md)).
+Konkrete Maschine und Datum der Inbetriebnahme: ⬜ offen.
+
+Vor dem ersten Beleg und danach jederzeit stellt `npm run inbetriebnahme`
+die Fragen, die sonst erst im Prüfungsfall gestellt werden: Sperrt der
+Eimer wirklich? Beschreibt die freigegebene Verfahrensdokumentation diesen
+Stand? Wurde geprobt? Es liest keine Checkliste, es misst.
 
 ### Aufbewahrungsort
 
@@ -61,7 +69,11 @@ Konkreter Server, Anbieter und Standort: ⬜ offen.
 | Datenbank | PostgreSQL | Rollen und Row Level Security |
 | Freigegebene Verfahrensdokumentation | derselbe Objektspeicher, `verfahrensdoku/` | Hash in der Datenbank |
 
-Konkreter Anbieter, Region und Auftragsverarbeitungsvertrag: ⬜ offen.
+Anbieter des Objektspeichers: Hetzner Object Storage, Standort Nürnberg
+(`nbg1`), Eimer **mit Object Lock angelegt** — nachträglich geht das nicht.
+Hetzner beantwortet nur die Unterdomänenform (`DMS_S3_PFADFORM=nein`).
+Auftragsverarbeitungsvertrag nach Art. 28 DSGVO mit der Hetzner Online GmbH:
+⬜ offen — abzuschließen über das Hetzner-Kundenkonto, vor dem ersten Beleg.
 
 ### Datensicherung und Wiederherstellung
 
@@ -96,9 +108,13 @@ Probe monatlich und nach jeder Änderung an Schema oder Ablage.
 **Aufbewahrung der Sicherungen:** ⬜ offen — Ort, Verschlüsselung,
 Aufbewahrungsdauer.
 
-**Letzte geprobte Wiederherstellung:** ⬜ offen — Datum und Ergebnis sind
-hier zu führen. Eine Probe, die niemand notiert, hat im Prüfungsfall nicht
-stattgefunden.
+**Letzte geprobte Wiederherstellung:** wird nicht hier geführt, sondern von
+der Probe selbst. Jeder Lauf von `npm run sicherung:pruefen` vermerkt
+Zeitpunkt, Alter der Sicherung, Ausgang und Zählwerte in `sicherungs_probe`
+(append-only, ohne Befundtexte). Die Frage „wann zuletzt, mit welchem
+Ausgang" beantwortet `npm run inbetriebnahme` — sie ist eine Abfrage, keine
+Erinnerung. Eine Probe, die sich nicht vermerken konnte, endet mit
+Rückgabewert 1: Sie hat nicht stattgefunden.
 
 ### Änderungen am Verfahren
 

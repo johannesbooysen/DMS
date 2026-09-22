@@ -293,6 +293,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 | `prozessstufe_stempeltyp` | Ablaufkonfiguration. |
 | `rolle` | Rollennamen -- die Zuweisung an Personen steht in benutzer_rolle_objekt. |
 | `rolle_recht` | Rechte je Rolle. |
+| `sicherungs_probe` | Protokoll der Restore-Proben: Zeitpunkt, Ausgang, Zaehlwerte. Keine Befundtexte, keine Personen. |
 | `spezialgebiet` | Stammdatum. |
 | `stempel_recht` | Welche Rolle welchen Stempel setzen darf. |
 | `stempeltyp` | Stammdatum. |
@@ -304,7 +305,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 ## Vollständigkeit
 
-Das Schema hat **77 Tabellen**. Jede ist genau einmal
+Das Schema hat **78 Tabellen**. Jede ist genau einmal
 eingeordnet — entweder in einer Tätigkeit oder in der Liste ohne
 Personenbezug. Geprüft beim Erzeugen gegen die `create table`-Anweisungen
 der Migrationen; fehlt eine, bricht `npm run verzeichnis` ab.

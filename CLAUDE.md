@@ -116,6 +116,8 @@ Gesichert werden nur die Schemata `public` und `app` — ohne diese Einschränku
 
 Die Probe holt in eine eigene, danach verworfene Datenbank zurück und prüft, was ein erfolgreicher `pg_restore` **nicht** beantwortet: Zeilenzahlen gegen das Manifest, Hash-Kette, RLS und Trigger, Dateien gegen ihre Archivhashes. Findet sie nichts vor, sagt sie das — statt Entwarnung zu geben.
 
+**Die Probe vermerkt sich selbst** (`sicherungs_probe`, append-only, ohne Befundtexte): Zeitpunkt, Alter der Sicherung, Ausgang `getragen | befunde | leer`, Zählwerte. Vorher stand „Datum und Ergebnis sind hier zu führen" als Auftrag an einen Menschen im organisatorischen Teil — ein Auftrag, der beim dritten Mal vergessen wird. Geschrieben wird nur als Eigentümer; unter `dms_app` gibt es keine Schreibpolicy, weil ein zweiter Weg, eine Probe zu vermerken, ein Weg wäre, eine vorzutäuschen. Kann sie sich nicht vermerken, gibt sie 1 zurück, auch wenn die Sicherung getragen hätte.
+
 Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung eines Benutzers und damit unter dessen Rechten:
 
 ```bash
@@ -129,7 +131,10 @@ cp .env.beispiel .env          # ausfüllen, danach chmod 600 .env
 DMS_FASSUNG=$(git rev-parse --short HEAD) docker compose up -d --build
 docker compose logs -f worker
 npm run betrieb:pruefen        # laufen die Hintergrunddienste noch?
+npm run inbetriebnahme         # vor dem ersten Beleg: sperrt der Eimer, ist freigegeben, wurde geprobt?
 ```
+
+**`inbetriebnahme` misst, es liest keine Checkliste ab.** Es schreibt ein Objekt in den Eimer, sperrt es sechzig Sekunden im Compliance-Modus und liest die gesperrte Fassung über ihre Kennung zurück; es rechnet den Hash der freigegebenen Verfahrensdokumentation gegen den erzeugten Text nach; es liest das Probenprotokoll (`sicherungs_probe`); es zählt eingespielte Migrationen gegen die Dateien. Jeder Bereich sagt, was er geprüft hat, auch bei Erfolg — eine Prüfung, die bei Erfolg schweigt, ist von einer nicht gelaufenen nicht zu unterscheiden. Harte Befunde geben 1 zurück. Läuft von der Wartungsmaschine mit der `.env` des Servers und der Datenbank durch den Tunnel, weil nur dort Umgebung, Speicher, Datenbank und Repository zugleich erreichbar sind. **Hetzner braucht `DMS_S3_PFADFORM=nein`** — es beantwortet nur die Unterdomänenform, und die Vorgabe (Pfadform, für MinIO) scheitert dort mit einer Meldung, die das nicht sagt; die Umgebungsprüfung meldet es hart.
 
 **Migrationen laufen nie beim Start**, sondern von Hand über einen SSH-Tunnel (`supabase db push --db-url …`). Zwei startende Container würden dieselbe Migration nebenläufig anwenden, und eine fehlerhafte liefe nachts um drei ohne jemanden, der zusieht.
 

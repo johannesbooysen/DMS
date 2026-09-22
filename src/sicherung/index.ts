@@ -248,3 +248,92 @@ export function manifestVergleichen(vorher: Manifest, nachher: Manifest): Befund
   }
   return befunde
 }
+
+/**
+ * Das Protokoll der Proben (Migration 20260924100000).
+ *
+ * „Eine Probe, die niemand notiert, hat im Prüfungsfall nicht
+ * stattgefunden." Deshalb notiert sie sich selbst — in der Datenbank, die
+ * sie geprobt hat. Vermerkt werden Ausgang und Zählwerte, **keine
+ * Befundtexte**: Die nennen Dokumentkennungen, und ein Protokoll, das
+ * dauerhaft bleibt, soll nicht mehr tragen, als die Frage braucht.
+ *
+ * Läuft als Eigentümer. Unter `dms_app` gibt es keine Schreibpolicy, und
+ * das ist gewollt: Ein zweiter Weg, eine Probe zu vermerken, wäre ein Weg,
+ * eine vorzutäuschen.
+ */
+export type Probeergebnis = 'getragen' | 'befunde' | 'leer'
+
+export interface Probe {
+  zeitpunkt: string
+  alterTage: number
+  sicherungVom: string
+  ergebnis: Probeergebnis
+  geprueft: { ereignisse: number; archiveintraege: number; dateien: number }
+  befunde: number
+  fassung: string | null
+}
+
+/** Der Ausgang einer Probe aus Befunden und Zählwerten — an einer Stelle. */
+export function probeergebnis(befunde: Befund[], geprueft: Pruefbericht['geprueft']): Probeergebnis {
+  if (befunde.some((b) => b.schwere === 'hart')) return 'befunde'
+  if (geprueft.ereignisse === 0 && geprueft.archiveintraege === 0) return 'leer'
+  return 'getragen'
+}
+
+export async function probeVermerken(
+  c: PoolClient,
+  angaben: {
+    sicherungVom: string
+    ergebnis: Probeergebnis
+    geprueft: Pruefbericht['geprueft']
+    befunde: number
+    fassung?: string | null
+  },
+): Promise<void> {
+  const { rowCount } = await c.query(
+    `insert into sicherungs_probe
+       (sicherung_vom, ergebnis, ereignisse, archiveintraege, dateien, befunde, fassung)
+     values ($1::timestamptz, $2, $3, $4, $5, $6, $7)`,
+    [
+      angaben.sicherungVom,
+      angaben.ergebnis,
+      angaben.geprueft.ereignisse,
+      angaben.geprueft.archiveintraege,
+      angaben.geprueft.dateien,
+      angaben.befunde,
+      angaben.fassung ?? null,
+    ],
+  )
+  if (rowCount !== 1) throw new Error('Die Probe wurde nicht vermerkt.')
+}
+
+/** Die letzte Probe, oder `null`, wenn nie geprobt wurde — und das ist ein Befund. */
+export async function letzteProbe(c: PoolClient): Promise<Probe | null> {
+  const { rows } = await c.query<{
+    zeitpunkt: string
+    alter_tage: number
+    sicherung_vom: string
+    ergebnis: Probeergebnis
+    ereignisse: number
+    archiveintraege: number
+    dateien: number
+    befunde: number
+    fassung: string | null
+  }>('select * from app.letzte_sicherungsprobe()')
+  const z = rows[0]
+  if (z === undefined) return null
+  return {
+    zeitpunkt: z.zeitpunkt,
+    alterTage: Number(z.alter_tage),
+    sicherungVom: z.sicherung_vom,
+    ergebnis: z.ergebnis,
+    geprueft: {
+      ereignisse: Number(z.ereignisse),
+      archiveintraege: Number(z.archiveintraege),
+      dateien: Number(z.dateien),
+    },
+    befunde: Number(z.befunde),
+    fassung: z.fassung,
+  }
+}

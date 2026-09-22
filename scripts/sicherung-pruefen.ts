@@ -29,10 +29,13 @@ import { spawn } from 'node:child_process'
 import { Client, type PoolClient } from 'pg'
 import { DateisystemAblage, type Ablage } from '../src/ablage'
 import { s3AusUmgebung } from '../src/ablage-s3'
+import { poolSchliessen, verbindungspool } from '../src/db'
 import {
   archivPruefen,
   manifestErstellen,
   manifestVergleichen,
+  probeVermerken,
+  probeergebnis,
   type Befund,
   type Manifest,
 } from '../src/sicherung'
@@ -193,6 +196,43 @@ try {
     console.error(`  Die Probedatenbank ${PROBE} liess sich nicht entfernen.`)
   })
 }
+
+/*
+ * Die Probe vermerkt sich selbst -- in der **laufenden** Datenbank, als
+ * Eigentuemer, bevor irgendetwas ausgegeben wird.
+ *
+ * "Eine Probe, die niemand notiert, hat im Pruefungsfall nicht
+ * stattgefunden." Bisher stand das als Auftrag im organisatorischen Teil
+ * der Verfahrensdokumentation; jetzt ist es eine Zeile in
+ * `sicherungs_probe`, und `npm run inbetriebnahme` fragt danach. Scheitert
+ * das Vermerken, ist die Probe nicht gelaufen -- Rueckgabewert 1, auch wenn
+ * die Sicherung getragen haette.
+ */
+const geprueft = bericht?.geprueft ?? { ereignisse: 0, archiveintraege: 0, dateien: 0 }
+const ergebnis = probeergebnis(befunde, geprueft)
+try {
+  const c = await verbindungspool().connect()
+  try {
+    await probeVermerken(c, {
+      sicherungVom: manifestVorher.erstellt,
+      ergebnis,
+      geprueft,
+      befunde: befunde.length,
+      fassung: process.env['DMS_FASSUNG'] ?? null,
+    })
+  } finally {
+    c.release()
+  }
+} catch (fehler) {
+  console.error(
+    `\nDie Probe liess sich nicht vermerken: ${fehler instanceof Error ? fehler.message : String(fehler)}`,
+  )
+  console.error('Eine Probe, die nicht vermerkt ist, hat nicht stattgefunden.')
+  await poolSchliessen()
+  process.exit(1)
+}
+await poolSchliessen()
+console.log(`\nVermerkt in sicherungs_probe: ${ergebnis}`)
 
 console.log('\nGeprueft:')
 console.log(`  ${bericht?.geprueft.ereignisse ?? 0} Stempelereignisse (Hash-Kette)`)

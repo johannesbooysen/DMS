@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 77 Tabellen, 193 Policies,
-111 Module, 927 Testfaelle in 54 Dateien,
+Auf einen Blick: 78 Tabellen, 194 Policies,
+112 Module, 944 Testfaelle in 55 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -43,6 +43,7 @@ Auf einen Blick: 77 Tabellen, 193 Policies,
 | `npm run e2e` | `playwright test --grep-invert @bilder` |
 | `npm run e2e:ui` | `playwright test --ui` |
 | `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
+| `npm run inbetriebnahme` | `tsx scripts/inbetriebnahme.ts` |
 | `npm run verzeichnis` | `node scripts/verzeichnis-erzeugen.mjs` |
 | `npm run einrichten` | `tsx scripts/einrichten.ts` |
 | `npm run vorschau` | `node scripts/vorschau.mjs` |
@@ -484,6 +485,16 @@ Tabellen: `gespeicherte_suche`
 
 Policies: 1
 
+### `supabase/migrations/20260924100000_sicherungs_probe.sql`
+
+===========================================================================
+
+Tabellen: `sicherungs_probe`
+
+Funktionen: `app.letzte_sicherungsprobe`, `app.schutz_pruefen`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -537,6 +548,7 @@ Policies: 1
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/belege/suchen-speichern.ts`](../src/belege/suchen-speichern.ts) | Gespeicherte Suchen -- ein Filter der Belegliste mit Namen |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
+| [`src/betrieb/inbetriebnahme.ts`](../src/betrieb/inbetriebnahme.ts) | Inbetriebnahmeprüfung — die Fragen, die sonst erst im Prüfungsfall |
 | [`src/betrieb/index.ts`](../src/betrieb/index.ts) | Lebenszeichen und Gesundheit der Betriebsumgebung (ADR 0007) |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
 | [`src/db.ts`](../src/db.ts) | Datenbankzugriff |
@@ -623,6 +635,7 @@ Policies: 1
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 24 | Melden, Mandantengrenze, Ausgaenge, Haengengebliebene, Stapel, Haenger neu einreihen |
 | [`tests/gespeicherte-suche.test.ts`](../tests/gespeicherte-suche.test.ts) | 7 | Weissliste, Speichern, Persoenlich |
+| [`tests/inbetriebnahme.test.ts`](../tests/inbetriebnahme.test.ts) | 17 | Umgebung, Das Probenprotokoll, Datenbank, Verfahrensdokumentation, Objektspeicher |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |

@@ -39,8 +39,10 @@
  */
 
 import {
+  GetBucketVersioningCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  GetObjectLockConfigurationCommand,
   GetObjectRetentionCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -194,6 +196,44 @@ export class S3Ablage implements SperrbareAblage {
       }),
     )
     return fassung
+  }
+
+  /**
+   * Ist der Eimer so angelegt, wie ADR 0006 es verlangt?
+   *
+   * Object Lock laesst sich **nur beim Anlegen** einschalten. Ein Eimer ohne
+   * Sperre bleibt fuer immer einer ohne -- und das faellt im Betrieb erst
+   * auf, wenn der Sperrdurchgang bei jedem Beleg scheitert. Deshalb fragt
+   * die Inbetriebnahmepruefung vorher.
+   *
+   * `unbekannt` ist eine eigene Antwort und kein `aus`: Nicht jeder Anbieter
+   * beantwortet die Konfigurationsabfrage, und die Sperre kann trotzdem
+   * greifen. Dann entscheidet die Probe mit einem echten Objekt.
+   */
+  async eimerPruefen(): Promise<{
+    objectLock: 'an' | 'aus' | 'unbekannt'
+    versionierung: 'an' | 'aus' | 'unbekannt'
+  }> {
+    let objectLock: 'an' | 'aus' | 'unbekannt' = 'unbekannt'
+    try {
+      const antwort = await this.klient.send(
+        new GetObjectLockConfigurationCommand({ Bucket: this.eimer }),
+      )
+      objectLock = antwort.ObjectLockConfiguration?.ObjectLockEnabled === 'Enabled' ? 'an' : 'aus'
+    } catch (fehler) {
+      const name = (fehler as { name?: string }).name ?? ''
+      if (name.includes('ObjectLockConfigurationNotFound')) objectLock = 'aus'
+    }
+
+    let versionierung: 'an' | 'aus' | 'unbekannt' = 'unbekannt'
+    try {
+      const antwort = await this.klient.send(new GetBucketVersioningCommand({ Bucket: this.eimer }))
+      versionierung = antwort.Status === 'Enabled' ? 'an' : 'aus'
+    } catch {
+      versionierung = 'unbekannt'
+    }
+
+    return { objectLock, versionierung }
   }
 
   async sperrstand(schluessel: string, fassung?: string | null): Promise<Date | null> {

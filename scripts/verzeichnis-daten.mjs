@@ -241,6 +241,8 @@ export const OHNE_PERSONENBEZUG = {
   prozessstufe_stempeltyp: 'Ablaufkonfiguration.',
   rolle: 'Rollennamen -- die Zuweisung an Personen steht in benutzer_rolle_objekt.',
   rolle_recht: 'Rechte je Rolle.',
+  sicherungs_probe:
+    'Protokoll der Restore-Proben: Zeitpunkt, Ausgang, Zaehlwerte. Keine Befundtexte, keine Personen.',
   spezialgebiet: 'Stammdatum.',
   stempel_recht: 'Welche Rolle welchen Stempel setzen darf.',
   stempeltyp: 'Stammdatum.',

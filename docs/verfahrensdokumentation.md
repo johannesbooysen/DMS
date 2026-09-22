@@ -67,7 +67,15 @@ Oberfläche.
 eines Containers: Zwei startende Container würden dieselbe Migration
 nebenläufig anwenden, und eine fehlerhafte liefe ohne Aufsicht.
 
-Konkreter Server, Anbieter und Standort: ⬜ offen.
+Vorgesehen ist ein Server der Hetzner Online GmbH im Rechenzentrum
+Nürnberg (`nbg1`) — derselbe Standort wie der Objektspeicher, weil jedes
+Seitenbild durch den Webprozess geht ([ADR 0007](adr/0007-betriebsumgebung.md)).
+Konkrete Maschine und Datum der Inbetriebnahme: ⬜ offen.
+
+Vor dem ersten Beleg und danach jederzeit stellt `npm run inbetriebnahme`
+die Fragen, die sonst erst im Prüfungsfall gestellt werden: Sperrt der
+Eimer wirklich? Beschreibt die freigegebene Verfahrensdokumentation diesen
+Stand? Wurde geprobt? Es liest keine Checkliste, es misst.
 
 ### Aufbewahrungsort
 
@@ -77,7 +85,11 @@ Konkreter Server, Anbieter und Standort: ⬜ offen.
 | Datenbank | PostgreSQL | Rollen und Row Level Security |
 | Freigegebene Verfahrensdokumentation | derselbe Objektspeicher, `verfahrensdoku/` | Hash in der Datenbank |
 
-Konkreter Anbieter, Region und Auftragsverarbeitungsvertrag: ⬜ offen.
+Anbieter des Objektspeichers: Hetzner Object Storage, Standort Nürnberg
+(`nbg1`), Eimer **mit Object Lock angelegt** — nachträglich geht das nicht.
+Hetzner beantwortet nur die Unterdomänenform (`DMS_S3_PFADFORM=nein`).
+Auftragsverarbeitungsvertrag nach Art. 28 DSGVO mit der Hetzner Online GmbH:
+⬜ offen — abzuschließen über das Hetzner-Kundenkonto, vor dem ersten Beleg.
 
 ### Datensicherung und Wiederherstellung
 
@@ -112,9 +124,13 @@ Probe monatlich und nach jeder Änderung an Schema oder Ablage.
 **Aufbewahrung der Sicherungen:** ⬜ offen — Ort, Verschlüsselung,
 Aufbewahrungsdauer.
 
-**Letzte geprobte Wiederherstellung:** ⬜ offen — Datum und Ergebnis sind
-hier zu führen. Eine Probe, die niemand notiert, hat im Prüfungsfall nicht
-stattgefunden.
+**Letzte geprobte Wiederherstellung:** wird nicht hier geführt, sondern von
+der Probe selbst. Jeder Lauf von `npm run sicherung:pruefen` vermerkt
+Zeitpunkt, Alter der Sicherung, Ausgang und Zählwerte in `sicherungs_probe`
+(append-only, ohne Befundtexte). Die Frage „wann zuletzt, mit welchem
+Ausgang" beantwortet `npm run inbetriebnahme` — sie ist eine Abfrage, keine
+Erinnerung. Eine Probe, die sich nicht vermerken konnte, endet mit
+Rückgabewert 1: Sie hat nicht stattgefunden.
 
 ### Änderungen am Verfahren
 
@@ -186,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-77 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+78 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -268,6 +284,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `notfallzugriff` | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `layer_position_ereignis` | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `gespeicherte_suche` | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
+| `sicherungs_probe` | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -304,6 +321,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `layer_position_ereignis_unveraenderlich` | `layer_position_ereignis` | before update or delete | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `dokument_layer_position_protokoll` | `dokument_layer` | after update | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `aaa_stempel_ereignis_vier_augen` | `stempel_ereignis` | before insert | [`20260922140000_vier_augen.sql`](../supabase/migrations/20260922140000_vier_augen.sql) |
+| `sicherungs_probe_unveraenderlich` | `sicherungs_probe` | before update or delete | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -933,6 +951,26 @@ belegt.
 - verlangt einen Namen und einen Filter
 - zeigt Bernd nicht, was Anna gespeichert hat -- auch nicht im selben Haus
 - laesst Bernd Annas Suche nicht loeschen
+
+### [`tests/inbetriebnahme.test.ts`](../tests/inbetriebnahme.test.ts)
+
+- hat bei vollstaendiger Umgebung keinen Befund und sagt, was sie sah
+- weist die Entwicklungsanmeldung hart ab
+- verlangt fuer Hetzner die Unterdomaenenform
+- macht aus fehlendem Objektspeicher einen harten und aus fehlendem Postausgang einen weichen Befund
+- kennt ohne Probe keine -- und das ist ein harter Befund
+- vermerkt eine Probe und liest sie als letzte zurueck
+- leitet den Ausgang an einer Stelle ab
+- macht aus Befunden einen harten und aus "leer" einen weichen Befund
+- meldet eine alte Probe als weichen Befund
+- laesst die Anwendung keine Probe vortaeuschen und keine aendern
+- zeigt die letzte Probe auch der Anwendungsrolle
+- findet die lokale Datenbank vollstaendig migriert und geschuetzt
+- sagt, wenn es die Migrationsdateien nicht pruefen konnte
+- meldet jeden Mandanten ohne Freigabe hart
+- erkennt eine Freigabe, die den laufenden Stand beschreibt -- und eine, die es nicht tut
+- findet einen Eimer mit Object Lock in Ordnung und beschreibt die Probe
+- weist einen Eimer ohne Object Lock hart ab
 
 ### [`tests/ingest.test.ts`](../tests/ingest.test.ts)
 

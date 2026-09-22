@@ -166,6 +166,16 @@ ein Weg wäre, eines vorzutäuschen.
   geglaubt: `tests/ablage-s3.test.ts` und `tests/objektsperre.test.ts` laufen
   gegen einen echten Endpunkt.
 
+  *Nachtrag 2026-09-22:* Hetzner Object Storage, Standort Nürnberg (`nbg1`),
+  am selben Ort wie der Server. Hetzner kann Object Lock im Compliance-Modus
+  und Versionierung, beantwortet aber **nur die Unterdomänenform** — die
+  Vorgabe des Systems (Pfadform, für MinIO) scheitert dort mit einer
+  nichtssagenden Meldung; `DMS_S3_PFADFORM=nein` ist Pflicht.
+  `npm run inbetriebnahme` misst vor dem ersten Beleg, ob der Eimer wirklich
+  sperrt: Es schreibt ein Objekt, sperrt es sechzig Sekunden im
+  Compliance-Modus und liest die gesperrte Fassung über ihre Kennung zurück —
+  derselbe Weg, den ein archivierter Beleg geht.
+
 ## Wann das falsch wird
 
 Wenn die Systembetreuung faktisch niemand mehr übernimmt. Ein ungepatchter

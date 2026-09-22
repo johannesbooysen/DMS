@@ -1292,6 +1292,12 @@ Fehlt bei gesetztem Eimer eines der Zugangsdaten, bricht der Start ab. Es gibt
 keinen stillen Rückfall ins Dateisystem — eine Ablage, die klaglos woanders
 hinschreibt, wäre die schlechteste Antwort.
 
+Für Hetzner Object Storage kommt eine fünfte Angabe dazu:
+`DMS_S3_PFADFORM=nein`. Hetzner beantwortet nur die Unterdomänenform
+(`eimer.nbg1.your-objectstorage.com`); die Vorgabe des Systems ist die
+Pfadform, weil MinIO sie braucht. Der Endpunkt ist dann
+`https://nbg1.your-objectstorage.com`, die Region `nbg1`.
+
 > **Der Eimer muss mit Object Lock angelegt werden.** Nachträglich lässt sich
 > das nicht einschalten; ein Eimer ohne Sperre bleibt für immer einer ohne.
 > Das Sperren schlägt dann bei jedem Beleg fehl, und die Belege bleiben offen
@@ -1516,6 +1522,56 @@ DMS_FASSUNG=$(git rev-parse --short HEAD) docker compose up -d --build
 Die **Domäne muss wirklich auf diesen Server zeigen**, bevor Sie starten: Der
 Proxy holt das Zertifikat selbsttätig, und dafür muss der Name auflösen.
 
+### Inbetriebnahme
+
+Die Reihenfolge, in der ein neuer Server in Betrieb geht. Sie ist nicht
+beliebig: Der Eimer muss vor dem ersten Beleg stehen, die Migration vor dem
+Preset, die Freigabe der Verfahrensdokumentation vor der ersten
+Archivierung.
+
+1. **Objektspeicher anlegen** — bei Hetzner am Standort Nürnberg (`nbg1`),
+   demselben wie der Server. Der Eimer muss **mit Object Lock** angelegt
+   werden; die Konsole hat dafür einen Haken, die Befehlszeile den Schalter
+   `--object-lock-enabled-for-bucket`. Ein Eimer ohne Sperre bleibt für immer
+   einer ohne. In der `.env` dann `DMS_S3_ENDPUNKT=https://nbg1.your-objectstorage.com`,
+   `DMS_S3_REGION=nbg1` und **`DMS_S3_PFADFORM=nein`** — Hetzner kennt nur die
+   Unterdomänenform, und mit der Vorgabe scheitert jeder Zugriff mit einer
+   Meldung, die das nicht sagt.
+2. **Hochfahren** wie oben. Die Datenbank ist danach leer.
+3. **Migrieren** über den SSH-Tunnel (nächster Abschnitt).
+4. **Erstes Haus einrichten:** Mandant und ersten Benutzer anlegen, dann
+   `npm run einrichten -- <mandant-id> weg` (oder `miet`, `se`).
+5. **Verfahrensdokumentation freigeben** — erst den organisatorischen Teil
+   ausfüllen, dann `npm run verfahrensdoku` und `verfahrensdoku:freigeben`.
+   Was vor der Freigabe archiviert wird, bleibt für immer ohne Fassung.
+6. **Erste Sicherung und erste Probe** (`npm run sicherung`,
+   `npm run sicherung:pruefen`). Die Probe wird auf einer leeren Datenbank
+   „leer" melden — das ist ehrlich, nicht schlecht; nach den ersten Belegen
+   noch einmal.
+7. **Prüfen lassen:**
+
+```bash
+npm run inbetriebnahme
+```
+
+Der Befehl läuft von der Wartungsmaschine aus, wie die Migrationen: die
+`.env` des Servers in die Umgebung geladen (`set -a; source .env; set +a`),
+die Datenbank durch den Tunnel als `DATABASE_URL`. Er liest keine
+Checkliste ab, er **misst**: Er schreibt ein Objekt in den Eimer, sperrt es
+sechzig Sekunden im Compliance-Modus und liest die gesperrte Fassung über
+ihre Kennung zurück. Er rechnet den Hash der freigegebenen
+Verfahrensdokumentation gegen den erzeugten Text nach. Er liest das
+Probenprotokoll. Er zählt die eingespielten Migrationen gegen die Dateien
+im Repository.
+
+Jeder Bereich sagt, was er geprüft hat — auch wenn alles in Ordnung war.
+Ein **harter** Befund (Rückgabewert 1) heißt: so nicht in Betrieb. Ein
+**weicher** braucht jemanden, aber nicht heute — offene Punkte im
+organisatorischen Teil, fehlende Texterkennung, eine alte Probe.
+
+Der Befehl darf jederzeit wieder laufen; nach jeder Änderung an Ablage oder
+Datenmodell sollte er es.
+
 ### Änderungen am Datenmodell
 
 Nicht beim Start, sondern von Hand — über einen SSH-Tunnel zur Datenbank, die
@@ -1624,10 +1680,22 @@ keine Stempelereignisse und keine Archiveinträge, dann haben Kettenprüfung und
 Dateiprüfung nichts angesehen — und die Probe belegt sie nicht. Eine Prüfung,
 die in diesem Fall Entwarnung gibt, erzieht dazu, ihr zu glauben.
 
-### Das Ergebnis gehört notiert
+### Die Probe notiert sich selbst
 
-Datum und Ausgang jeder Probe gehören in die Verfahrensdokumentation. Eine
-Probe, die niemand notiert, hat im Prüfungsfall nicht stattgefunden.
+Eine Probe, die niemand notiert, hat im Prüfungsfall nicht stattgefunden.
+Deshalb trägt sich jede Probe selbst ein — in die Datenbank, die sie
+geprobt hat (`sicherungs_probe`): Zeitpunkt, Alter der Sicherung, Ausgang
+(*getragen*, *befunde* oder *leer*) und die Zählwerte. Keine Befundtexte;
+wer den Grund wissen will, wiederholt die Probe.
+
+Der Vermerk lässt sich weder ändern noch löschen, und die Anwendung kann
+keinen anlegen — ein zweiter Weg, eine Probe zu vermerken, wäre ein Weg, eine
+vorzutäuschen. Kann die Probe sich nicht vermerken, endet sie mit
+Rückgabewert 1, auch wenn die Sicherung getragen hätte.
+
+Ob und wann zuletzt geprobt wurde, fragt `npm run inbetriebnahme` ab. Es
+meldet eine fehlende Probe als harten Befund und eine ältere als fünf
+Wochen als weichen.
 
 ## Berechtigungs-Presets
 
