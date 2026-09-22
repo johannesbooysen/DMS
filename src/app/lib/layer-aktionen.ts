@@ -11,7 +11,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { LayerAbgelehnt, layerAnlegen, layerAusblenden } from '@/layer'
+import { LayerAbgelehnt, layerAnlegen, layerAusblenden, stempelVerschieben } from '@/layer'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 function zurueck(dokumentId: string, grund?: string): never {
@@ -50,6 +50,35 @@ export async function layerAnlegenAktion(formular: FormData): Promise<void> {
 export async function layerAusblendenAktion(formular: FormData): Promise<void> {
   const dokumentId = String(formular.get('dokumentId') ?? '')
   await layerAusblenden(await angemeldeterBenutzer(), String(formular.get('layerId') ?? ''))
+  revalidatePath(`/beleg/${dokumentId}`)
+  zurueck(dokumentId)
+}
+
+/**
+ * Einen Stempel verschieben -- die eine Ausnahme vom Satz oben.
+ *
+ * Kein zweiter Weg zum Ereignis: Das Ereignis bleibt, nur die Lage aendert
+ * sich, und ob sie sich aendern darf, prueft der Trigger (Migration
+ * 20260922120000). Diese Aktion reicht Zahlen durch und zeigt den Grund.
+ */
+export async function stempelVerschiebenAktion(formular: FormData): Promise<void> {
+  const dokumentId = String(formular.get('dokumentId') ?? '')
+  const zahl = (name: string) => Number(formular.get(name) ?? 0)
+
+  try {
+    await stempelVerschieben(await angemeldeterBenutzer(), {
+      layerId: String(formular.get('layerId') ?? ''),
+      seite: zahl('seite'),
+      x: zahl('x'),
+      y: zahl('y'),
+      breite: zahl('breite'),
+      hoehe: zahl('hoehe'),
+    })
+  } catch (fehler) {
+    if (fehler instanceof LayerAbgelehnt) zurueck(dokumentId, fehler.message)
+    throw fehler
+  }
+
   revalidatePath(`/beleg/${dokumentId}`)
   zurueck(dokumentId)
 }

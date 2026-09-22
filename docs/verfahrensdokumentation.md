@@ -186,7 +186,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-75 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+76 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -266,6 +266,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `benachrichtigung` | [`20260907100000_benachrichtigung.sql`](../supabase/migrations/20260907100000_benachrichtigung.sql) |
 | `betrieb_lebenszeichen` | [`20260907140000_lebenszeichen.sql`](../supabase/migrations/20260907140000_lebenszeichen.sql) |
 | `notfallzugriff` | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
+| `layer_position_ereignis` | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -299,6 +300,8 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `notfallzugriff_unveraenderlich` | `notfallzugriff` | before update or delete | [`20260908100000_notfallzugriff.sql`](../supabase/migrations/20260908100000_notfallzugriff.sql) |
 | `dokument_spezialgebiet` | `dokument` | before insert or update of ordnungsgruppe_id | [`20260911100000_kategorie_automatik.sql`](../supabase/migrations/20260911100000_kategorie_automatik.sql) |
 | `ordnungsgruppe_ablauf_recht` | `ordnungsgruppe` | before insert or update | [`20260911110000_kategorie_steuerung_recht.sql`](../supabase/migrations/20260911110000_kategorie_steuerung_recht.sql) |
+| `layer_position_ereignis_unveraenderlich` | `layer_position_ereignis` | before update or delete | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
+| `dokument_layer_position_protokoll` | `dokument_layer` | after update | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -306,7 +309,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (70): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (71): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -491,6 +494,7 @@ Tabellen mit Policies (70): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `prozessstufe_stempeltyp_schreiben` | `prozessstufe_stempeltyp` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 | `prozess_override_lesen` | `prozess_override` | select | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 | `prozess_override_schreiben` | `prozess_override` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
+| `layer_position_ereignis_lesen` | `layer_position_ereignis` | select | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1459,6 +1463,24 @@ belegt.
 - zeigt einem fremden Mandanten den Stapel nicht
 - laesst ihn auch nicht trennen
 - wird ein Beleg mit allen Seiten
+
+### [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts)
+
+- laesst den Setzer verschieben und schreibt es ins Protokoll
+- weist jeden anderen ab -- auch einen, der den Beleg bearbeiten darf
+- liegt fest, sobald die naechste Stufe gestempelt ist
+- ist fuer einen fremden Mandanten nicht da
+- nie ueber Text
+- nie ueber den Rand
+- nie kleiner als lesbar
+- darf groesser werden
+- darf auf eine andere Seite -- und auf die Leerseite
+- nicht auf eine Seite, die es nicht gibt
+- nicht auf eine Seite ohne Textkaesten
+- haelt jede andere Aenderung weiterhin ab
+- prueft auch ein direktes Update der Lage
+- schreibt Datum mit Uhrzeit auf den Stempel
+- LayerAbgelehnt traegt den Grund der Datenbank
 
 ### [`tests/stufen.test.ts`](../tests/stufen.test.ts)
 

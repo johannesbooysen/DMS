@@ -189,3 +189,65 @@ export function ueberschneidet(a: Kasten, b: Kasten): boolean {
 function klemme(wert: number, klein: number, gross: number): number {
   return Math.max(klein, Math.min(gross, wert))
 }
+
+/**
+ * Untergrenze fuer einen verschobenen Stempel -- kleiner wird er unleserlich.
+ * Dieselben Werte stehen in `app.stempel_lage_pruefen`; wer sie hier aendert,
+ * aendert sie dort.
+ */
+export const STEMPEL_MINDESTMASSE = { breite: 120, hoehe: 40 } as const
+
+/** Seitenrand und Textabstand, fuer die Anzeige beim Verschieben. */
+export const STEMPEL_RAND = RAND
+export const STEMPEL_TEXTABSTAND = TEXTABSTAND
+
+/**
+ * Woerter zu Zeilen.
+ *
+ * Grundlage dafuer, dass ein von Hand verschobener Stempel keinen Text
+ * ueberdeckt (Migration 20260922120000). Die Fundstellen je Wort waeren
+ * bei einer Million Belegen zweistellige Gigabytes; Zeilen sind rund
+ * zehnmal weniger -- eine Rechnung hat sechzig Zeilen, nicht sechshundert
+ * Woerter.
+ *
+ * Konservativ: Eine Zeile wird zu **einem** Kasten von ihrem ersten bis zu
+ * ihrem letzten Wort, auch ueber die Luecke zwischen zwei Spalten hinweg.
+ * Damit ist eine Stelle zwischen "Betrag" und "1.240,00" verboten, obwohl
+ * dort nichts steht -- lieber ein Platz zu wenig als ein Stempel auf einer
+ * Zahl.
+ */
+export function zeilenKaesten(stuecke: Kasten[]): Kasten[] {
+  const sortiert = stuecke
+    .filter((k) => k.breite > 0 && k.hoehe > 0)
+    .sort((a, b) => a.y - b.y || a.x - b.x)
+
+  const zeilen: Kasten[] = []
+  for (const k of sortiert) {
+    const letzte = zeilen[zeilen.length - 1]
+    if (letzte !== undefined) {
+      const mitteK = k.y + k.hoehe / 2
+      const mitteZ = letzte.y + letzte.hoehe / 2
+      // Dieselbe Zeile, wenn die Mitten naeher beieinander liegen als eine
+      // halbe Zeilenhoehe -- Hoch- und Tiefstellungen bleiben so dabei.
+      if (Math.abs(mitteK - mitteZ) <= Math.min(k.hoehe, letzte.hoehe) / 2) {
+        const links = Math.min(letzte.x, k.x)
+        const oben = Math.min(letzte.y, k.y)
+        const rechts = Math.max(letzte.x + letzte.breite, k.x + k.breite)
+        const unten = Math.max(letzte.y + letzte.hoehe, k.y + k.hoehe)
+        letzte.x = links
+        letzte.y = oben
+        letzte.breite = rechts - links
+        letzte.hoehe = unten - oben
+        continue
+      }
+    }
+    zeilen.push({ x: k.x, y: k.y, breite: k.breite, hoehe: k.hoehe })
+  }
+  // Auf ganze Punkte gerundet -- in der Datenbank sollen keine 14 Nachkommastellen liegen.
+  return zeilen.map((z) => ({
+    x: Math.floor(z.x),
+    y: Math.floor(z.y),
+    breite: Math.ceil(z.breite),
+    hoehe: Math.ceil(z.hoehe),
+  }))
+}

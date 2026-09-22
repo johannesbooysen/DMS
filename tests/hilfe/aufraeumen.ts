@@ -18,6 +18,9 @@ const SCHUTZ: Array<[string, string]> = [
   ['kontierung', 'kontierung_archiv_schutz'],
   ['rechnung_fakten', 'rechnung_fakten_archiv_schutz'],
   ['archiv_eintrag', 'archiv_eintrag_unveraenderlich'],
+  // Das Protokoll der Stempelverschiebungen faengt auch die Kaskade ab --
+  // derselbe Schutz wie bei den Stempelereignissen, aus demselben Grund.
+  ['layer_position_ereignis', 'layer_position_ereignis_unveraenderlich'],
 ]
 
 export async function belegEntfernen(dokumentId: string): Promise<void> {

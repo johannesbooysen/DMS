@@ -9,8 +9,9 @@
 import { notFound } from 'next/navigation'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
 import { zuordnungErklaeren } from '@/belege/erklaerung'
+import { stempelVerschiebenAktion } from '@/app/lib/layer-aktionen'
 import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
-import { layerLaden } from '@/layer'
+import { layerLaden, textkaestenLaden, verschiebbareStempel } from '@/layer'
 import { Befunde, belegBezeichnung, Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
@@ -36,6 +37,11 @@ export default async function Belegansicht({
 
   const seiten = await seitentextLaden(benutzer, id)
   const layer = await layerLaden(benutzer, id)
+  // Welche Stempel der Betrachter jetzt anfassen darf, und wo auf jeder
+  // Seite Text steht -- beides nur Rueckmeldung; die Grenze zieht der
+  // Trigger (ADR 0008).
+  const beweglich = [...(await verschiebbareStempel(benutzer, id))]
+  const textkaesten = await textkaestenLaden(benutzer, id)
   const befunde = await befundeLaden(benutzer, id)
   const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
   const erklaerung = await zuordnungErklaeren(benutzer, id)
@@ -215,6 +221,10 @@ export default async function Belegansicht({
                       layer={aufSeite}
                       breite={masse?.breite ?? 0}
                       hoehe={masse?.hoehe ?? 0}
+                      beweglich={beweglich}
+                      textkaesten={textkaesten.get(nr) ?? []}
+                      seitenzahl={seitenzahl}
+                      dokumentId={id}
                     />
                   </div>
                   <figcaption>
@@ -234,7 +244,31 @@ export default async function Belegansicht({
                   {layer
                     .filter((l) => l.seite === 0)
                     .map((l) => (
-                      <li key={l.id}>{l.text}</li>
+                      <li key={l.id}>
+                        {l.text}
+                        {/* Der eigene, noch nicht festgelegte Stempel darf
+                            von der Leerseite auf eine echte Seite -- oben
+                            links; der Trigger weist ab, wenn dort Text steht,
+                            und dann sagt die Meldung das. Feinschliff danach
+                            auf der Seite selbst. */}
+                        {beweglich.includes(l.id) && (
+                          <form
+                            action={stempelVerschiebenAktion}
+                            style={{ display: 'inline', marginLeft: '0.5rem' }}
+                          >
+                            <input type="hidden" name="dokumentId" value={id} />
+                            <input type="hidden" name="layerId" value={l.id} />
+                            <input type="hidden" name="seite" value={1} />
+                            <input type="hidden" name="x" value={40} />
+                            <input type="hidden" name="y" value={40} />
+                            <input type="hidden" name="breite" value={l.breite} />
+                            <input type="hidden" name="hoehe" value={l.hoehe} />
+                            <button type="submit" style={{ cursor: 'pointer', font: 'inherit' }}>
+                              Auf Seite 1 legen
+                            </button>
+                          </form>
+                        )}
+                      </li>
                     ))}
                 </ul>
               </aside>

@@ -8,9 +8,9 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 75 Tabellen, 191 Policies,
-107 Module, 888 Testfaelle in 50 Dateien,
-7 Architekturentscheidungen, 3 markierte offene Stellen.
+Auf einen Blick: 76 Tabellen, 192 Policies,
+107 Module, 903 Testfaelle in 51 Dateien,
+8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -452,6 +452,16 @@ Funktionen: `app.prozessbaum_pruefen`
 Funktionen: `app.dokument_zuordnen`
 
 
+### `supabase/migrations/20260922120000_stempel_verschieben.sql`
+
+---------------------------------------------------------------------------
+
+Tabellen: `layer_position_ereignis`
+
+Funktionen: `app.layer_position_unveraenderlich`, `app.stempel_verschiebbar`, `app.stempel_lage_pruefen`, `app.layer_unveraenderlich`, `app.layer_position_protokollieren`, `app.stempel_verschieben`, `app.stempel_layer_setzen`
+
+Policies: 1
+
 ## Module
 
 | Datei | Aufgabe |
@@ -613,6 +623,7 @@ Funktionen: `app.dokument_zuordnen`
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
+| [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
@@ -630,11 +641,12 @@ Funktionen: `app.dokument_zuordnen`
 | [ADR 0005 — Linter mit Typwissen, dafür TypeScript 6](adr/0005-linter.md) | unbekannt |
 | [ADR 0006 — Object Lock schützt Fassungen, nicht Schlüssel](adr/0006-objektsperre.md) | unbekannt |
 | [ADR 0007 — Ein Server, ein Image, zwei Prozesse](adr/0007-betriebsumgebung.md) | unbekannt |
+| [0008 — Stempel verschieben: Herkunft bleibt das Ereignis, Lage wird frei](adr/0008-stempel-verschieben.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:379`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:385`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:194`](../src/workflow/engine.ts) |

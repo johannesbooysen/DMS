@@ -263,3 +263,24 @@ In dieser Reihenfolge, weil jede Stufe die nächste trägt:
 
 Punkt 1 bis 3 sind die Substanz; 4 und 5 sind sichtbar, aber tragen nichts,
 solange die Auswahl nicht erklärbar ist.
+
+---
+
+## Antworten (22.09.2026)
+
+Zu den Stempelfragen 5 bis 9, wörtlich:
+
+| Frage | Antwort |
+|---|---|
+| 5 — Wer darf verschieben, bis wann? | *„derjenige der ein Stempel setzt, bis zur nächsten Stufe"* |
+| 6 — Darf ein Stempel Text überdecken? | *„nein"* |
+| 7 — Größe änderbar? | *„Position & Größe"* |
+| 8 — Welche Seite? | *„soll frei wählbar, Default Seite 1"* |
+| 9 — Was steht darauf? | *„Stempeltext, Datum + Uhrzeit + Mitarbeiter (es soll jedoch ein Stempel-Designer geben)"* |
+
+Umgesetzt in [ADR 0008](adr/0008-stempel-verschieben.md) und Migration
+`20260922120000`. Der **Stempel-Designer** ist ein eigener, noch offener
+Punkt.
+
+Die Fragen 1 bis 4 (Ablauf) sind durch die Bestandsanalyse und die
+Kategoriesteuerung überholt — siehe den Nachtrag oben.

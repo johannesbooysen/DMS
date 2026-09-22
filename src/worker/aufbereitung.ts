@@ -25,7 +25,7 @@ import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
 import { mailtext } from '../eingang/mail'
-import { freieBloecke } from '../layer/platzierung'
+import { freieBloecke, zeilenKaesten } from '../layer/platzierung'
 import { texterkennung, type Texterkennung } from '../ocr'
 import { AUFBEREITUNG } from '../queue'
 
@@ -253,14 +253,20 @@ export async function aufbereiten(
       seite.seite === 1
         ? JSON.stringify(freieBloecke(seite.breite, seite.hoehe, seite.stuecke))
         : null
+    // Die Textflaechen als Zeilen, fuer jede Seite: Ein Stempel darf von Hand
+    // auf jede Seite, und auch dort ueberdeckt er keinen Text (Migration
+    // 20260922120000). Zeilen statt Woerter -- rund ein Zehntel der Groesse.
+    const textkaesten = JSON.stringify(zeilenKaesten(seite.stuecke))
 
     await c.query(
-      `insert into dokument_seite (dokument_id, seite, text, breite, hoehe, freie_bloecke)
-       values ($1, $2, $3, $4, $5, $6::jsonb)
+      `insert into dokument_seite (dokument_id, seite, text, breite, hoehe,
+                                   freie_bloecke, textkaesten)
+       values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb)
        on conflict (dokument_id, seite) do update
           set text = excluded.text, breite = excluded.breite,
-              hoehe = excluded.hoehe, freie_bloecke = excluded.freie_bloecke`,
-      [dokumentId, seite.seite, seite.text, seite.breite, seite.hoehe, bloecke],
+              hoehe = excluded.hoehe, freie_bloecke = excluded.freie_bloecke,
+              textkaesten = excluded.textkaesten`,
+      [dokumentId, seite.seite, seite.text, seite.breite, seite.hoehe, bloecke, textkaesten],
     )
   }
 

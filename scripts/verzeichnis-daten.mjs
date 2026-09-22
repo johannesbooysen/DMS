@@ -59,6 +59,9 @@ export const TAETIGKEITEN = [
       'dokument_datei',
       'dokument_lauf',
       'dokument_layer',
+      // Wer einen Stempel wann verschoben hat -- Benutzerkennung, dieselbe
+      // Taetigkeit wie der Layer selbst.
+      'layer_position_ereignis',
       'dokument_merkmal',
       'dokument_seite',
       'extraktion_feld',

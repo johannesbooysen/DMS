@@ -19,6 +19,7 @@
 
 import { alsBenutzer } from '@/db'
 import { alsZeitpunkt } from '@/datum'
+import type { Kasten } from './platzierung'
 
 export * from './platzierung'
 
@@ -159,4 +160,77 @@ export async function layerAusblenden(
 export function gehtNachDraussen(l: Layerzeile): boolean {
   if (l.typ === 'schwaerzung') return true
   return l.sichtbarkeit === 'extern' || l.sichtbarkeit === 'alle'
+}
+
+/*
+ * Stempel verschieben.
+ *
+ * Die Herkunft bleibt das Ereignis, die Lage wird frei -- unter Bedingungen,
+ * die die Datenbank selbst nachprueft (Migration 20260922120000, ADR 0008):
+ * nur wer den Stempel setzte, nur bis zur naechsten Stufe, nie ueber Text.
+ * Diese Schicht prueft nichts nach; sie ruft und uebersetzt den Grund.
+ */
+
+export interface Stempellage {
+  layerId: string
+  seite: number
+  x: number
+  y: number
+  breite: number
+  hoehe: number
+}
+
+export async function stempelVerschieben(benutzerId: string, lage: Stempellage): Promise<void> {
+  return alsBenutzer(benutzerId, async (c) => {
+    try {
+      await c.query('select app.stempel_verschieben($1, $2, $3, $4, $5, $6)', [
+        lage.layerId,
+        Math.round(lage.seite),
+        Math.round(lage.x),
+        Math.round(lage.y),
+        Math.round(lage.breite),
+        Math.round(lage.hoehe),
+      ])
+    } catch (fehler) {
+      // Die Datenbank sagt den Grund im Klartext -- er gehoert dem Anwender.
+      if (fehler instanceof Error) throw new LayerAbgelehnt(fehler.message)
+      throw fehler
+    }
+  })
+}
+
+/** Die Stempel dieses Belegs, die der Handelnde jetzt verschieben darf. */
+export async function verschiebbareStempel(
+  benutzerId: string,
+  dokumentId: string,
+): Promise<Set<string>> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<{ id: string }>(
+      `select l.id from dokument_layer l
+        where l.dokument_id = $1 and l.typ = 'stempel' and l.geloescht_am is null
+          and app.stempel_verschiebbar(l.id) is null`,
+      [dokumentId],
+    )
+    return new Set(rows.map((z) => z.id))
+  })
+}
+
+/**
+ * Die Textflaechen je Seite -- fuer die Anzeige beim Verschieben, damit der
+ * Anwender sieht, wo Text liegt, bevor die Datenbank ihn abweist. Die
+ * Pruefung bleibt trotzdem dort.
+ */
+export async function textkaestenLaden(
+  benutzerId: string,
+  dokumentId: string,
+): Promise<Map<number, Kasten[]>> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<{ seite: number; textkaesten: Kasten[] | null }>(
+      'select seite, textkaesten from dokument_seite where dokument_id = $1',
+      [dokumentId],
+    )
+    const karte = new Map<number, Kasten[]>()
+    for (const z of rows) karte.set(Number(z.seite), z.textkaesten ?? [])
+    return karte
+  })
 }

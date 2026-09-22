@@ -13,7 +13,9 @@
  */
 
 import { layerAnlegenAktion, layerAusblendenAktion } from '@/app/lib/layer-aktionen'
+import { Stempelbewegen } from '@/app/lib/stempelbewegen'
 import type { Layerzeile } from '@/layer'
+import type { Kasten } from '@/layer/platzierung'
 
 const FARBE: Record<string, string> = {
   highlight: 'rgba(255, 214, 82, 0.38)',
@@ -24,10 +26,20 @@ export function Layerschicht({
   layer,
   breite,
   hoehe,
+  beweglich = [],
+  textkaesten = [],
+  seitenzahl = 1,
+  dokumentId = '',
 }: {
   layer: Layerzeile[]
   breite: number
   hoehe: number
+  /** Kennungen der Stempel, die der Betrachter jetzt verschieben darf. */
+  beweglich?: string[]
+  /** Textflächen dieser Seite -- Rückmeldung beim Verschieben. */
+  textkaesten?: Kasten[]
+  seitenzahl?: number
+  dokumentId?: string
 }) {
   // Ohne bekannte Seitenmasse laesst sich nichts umrechnen. Dann lieber
   // nichts zeichnen als etwas an der falschen Stelle.
@@ -52,6 +64,31 @@ export function Layerschicht({
               key={l.id}
               title="Geschwärzt"
               style={{ ...prozent(l), background: '#000', position: 'absolute' }}
+            />
+          )
+        }
+
+        if (l.typ === 'stempel' && beweglich.includes(l.id)) {
+          // Der eigene, noch nicht festgelegte Stempel: anfassbar (ADR 0008).
+          // Alle anderen bleiben gezeichnet wie unten -- unbeweglich.
+          return (
+            <Stempelbewegen
+              key={l.id}
+              stempel={{
+                id: l.id,
+                seite: l.seite,
+                x: l.x,
+                y: l.y,
+                breite: l.breite,
+                hoehe: l.hoehe,
+                text: l.text,
+                farbe: l.farbe,
+              }}
+              seitenBreite={breite}
+              seitenHoehe={hoehe}
+              textkaesten={textkaesten}
+              seitenzahl={seitenzahl}
+              dokumentId={dokumentId}
             />
           )
         }
