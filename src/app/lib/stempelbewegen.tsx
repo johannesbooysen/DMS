@@ -27,6 +27,8 @@
 
 import { useState } from 'react'
 import { stempelVerschiebenAktion } from '@/app/lib/layer-aktionen'
+import { Stempelbild } from '@/app/lib/stempelbild'
+import type { Gestaltung } from '@/layer/gestaltung'
 import { STEMPEL_MINDESTMASSE, STEMPEL_RAND, STEMPEL_TEXTABSTAND } from '@/layer/platzierung'
 import type { Kasten } from '@/layer/platzierung'
 
@@ -60,6 +62,7 @@ export interface Stempeldaten {
   hoehe: number
   text: string | null
   farbe: string | null
+  gestaltung: Gestaltung
 }
 
 export function Stempelbewegen({
@@ -108,9 +111,7 @@ export function Stempelbewegen({
     height: `${(lage.hoehe / seitenHoehe) * 100}%`,
   }
 
-  const teile = (stempel.text ?? '').split(' · ')
-  const entscheidung = teile[0] ?? ''
-  const beleg = teile.slice(1).join(' · ')
+  const entscheidung = (stempel.text ?? '').split(' · ')[0] ?? ''
   const farbe = hinweis === null ? (stempel.farbe ?? '#3B4A80') : '#B3271E'
 
   const anfassen = (art: 'ziehen' | 'skalieren') => (roh: unknown) => {
@@ -180,42 +181,21 @@ export function Stempelbewegen({
         onKeyDown={taste}
         style={{
           ...prozent,
-          alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.78)',
-          border: `0.18rem ${geaendert ? 'dashed' : 'solid'} ${farbe}`,
-          borderRadius: '0.2rem',
-          boxSizing: 'border-box',
-          color: farbe,
           cursor: griff?.art === 'ziehen' ? 'grabbing' : 'grab',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          padding: '0.15rem 0.3rem',
           pointerEvents: 'auto',
           position: 'absolute',
           touchAction: 'none',
-          transform: 'rotate(-3deg)',
           userSelect: 'none',
         }}
       >
-        <span
-          style={{
-            fontSize: 'clamp(0.55rem, 1.15vw, 1rem)',
-            fontWeight: 700,
-            letterSpacing: '0.02em',
-            lineHeight: 1.1,
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {entscheidung}
-        </span>
-        {beleg !== '' && (
-          <span style={{ fontSize: 'clamp(0.4rem, 0.7vw, 0.62rem)', lineHeight: 1.2, opacity: 0.85, whiteSpace: 'nowrap' }}>
-            {beleg}
-          </span>
-        )}
+        {/* Dasselbe Bild wie auf dem Beleg; geaendert und noch nicht
+            uebernommen heisst gestrichelt, Konflikt heisst rot. */}
+        <Stempelbild
+          text={stempel.text ?? ''}
+          farbe={farbe}
+          gestaltung={stempel.gestaltung}
+          rahmen={geaendert ? `0.18rem dashed ${farbe}` : undefined}
+        />
         {/* Der Griff zum Skalieren: rechts unten, wie man es kennt. */}
         <span
           aria-hidden="true"

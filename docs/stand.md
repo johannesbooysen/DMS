@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 76 Tabellen, 192 Policies,
-107 Module, 910 Testfaelle in 52 Dateien,
+109 Module, 920 Testfaelle in 53 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -469,6 +469,13 @@ Policies: 1
 Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_stempel`, `app.prozessbaum_pruefen`
 
 
+### `supabase/migrations/20260923100000_stempel_gestaltung.sql`
+
+---------------------------------------------------------------------------
+
+Funktionen: `app.stempel_feldwert`, `app.stempel_layer_setzen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -545,6 +552,7 @@ Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_ste
 | [`src/ingest/schriften.ts`](../src/ingest/schriften.ts) | Schriften für das Rendern |
 | [`src/kontierung/kontierung.ts`](../src/kontierung/kontierung.ts) | Kontierung mit Split |
 | [`src/kontierung/vorschlag.ts`](../src/kontierung/vorschlag.ts) | Kontierungsvorschlag aus dem Lernspeicher |
+| [`src/layer/gestaltung.ts`](../src/layer/gestaltung.ts) | Die Gestaltung eines Stempeltyps -- was der Stempel-Designer einstellt |
 | [`src/layer/index.ts`](../src/layer/index.ts) | Layer: was neben dem Beleg liegt |
 | [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
 | [`src/lernen/kategorie.ts`](../src/lernen/kategorie.ts) | Kategorie (Ordnungsgruppe) eines Belegs bestimmen |
@@ -566,6 +574,7 @@ Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_ste
 | [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
+| [`src/stammdaten/stempel.ts`](../src/stammdaten/stempel.ts) | Stempeltypen und ihre Gestaltung -- die Fachschicht des Stempel-Designers |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
 | [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
@@ -630,6 +639,7 @@ Funktionen: `app.vier_augen_grund`, `app.vier_augen_pruefen`, `app.moegliche_ste
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
+| [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |

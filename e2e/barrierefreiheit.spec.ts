@@ -27,6 +27,7 @@ const SEITEN: Array<[pfad: string, name: string]> = [
   ['/stammdaten', 'Stammdaten'],
   ['/stammdaten/benutzer', 'Benutzer und Rollen'],
   ['/stammdaten/kategorien', 'Kategorien und ihre Steuerung'],
+  ['/stammdaten/stempel', 'Stempel gestalten'],
   ['/notfall', 'Notfallzugriff'],
   ['/eingang', 'Eingangsquellen'],
   ['/postausgang', 'Postausgang'],

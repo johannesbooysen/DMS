@@ -45,6 +45,7 @@ import {
   zuordnungSetzen,
 } from '@/stammdaten/kategorien'
 import { quelleAnlegen, quelleUmschalten, vorlageSpeichern } from '@/stammdaten/quellen'
+import { gestaltungSetzen, stempeltypAnlegen, stempeltypUmschalten } from '@/stammdaten/stempel'
 import {
   anwenden as presetAnwenden,
   NichtErlaubt as PresetNichtErlaubt,
@@ -209,4 +210,26 @@ export async function kategorieAblaufAktion(f: FormData): Promise<void> {
 }
 export async function kreditorStandardAktion(f: FormData): Promise<void> {
   await versuchen(f, kreditorStandardSetzen)
+}
+
+/*
+ * Stempel-Designer.
+ *
+ * Drei Handlungen unter dem Recht, Ablaeufe zu konfigurieren -- ein
+ * Stempeltyp ist Ablaufkonfiguration, kein Stammdatum. Gestaltet wird, was
+ * auf dem Stempel steht und wie er aussieht; ein Zielfeld gibt es nicht und
+ * wird es nicht geben.
+ */
+export async function stempeltypAnlegenAktion(f: FormData): Promise<void> {
+  await versuchen(f, stempeltypAnlegen)
+}
+export async function stempelGestaltungAktion(f: FormData): Promise<void> {
+  // Die Felder kommen als mehrere Kaestchen gleichen Namens; die Fachschicht
+  // erwartet sie kommagetrennt.
+  const felder = f.getAll('feld').map(String).join(',')
+  f.set('felder', felder)
+  await versuchen(f, gestaltungSetzen)
+}
+export async function stempeltypUmschaltenAktion(f: FormData): Promise<void> {
+  await versuchen(f, stempeltypUmschalten)
 }

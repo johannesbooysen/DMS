@@ -400,7 +400,9 @@ export default async function Stammdaten({
         <p style={{ fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
           Wer eine Ordnungsgruppe bearbeitet, welchen Ablauf sie nimmt und worauf
           sie gebucht wird, steht unter{' '}
-          <Link href="/stammdaten/kategorien">Kategorien und ihre Steuerung</Link>.
+          <Link href="/stammdaten/kategorien">Kategorien und ihre Steuerung</Link>. Wie ein
+          Stempel aussieht und was darauf steht, unter{' '}
+          <Link href="/stammdaten/stempel">Stempel gestalten</Link>.
         </p>
         <table style={tabelle}>
           <thead>

@@ -1465,6 +1465,19 @@ belegt.
 - laesst ihn auch nicht trennen
 - wird ein Beleg mit allen Seiten
 
+### [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts)
+
+- meldet Unbekanntes beim Einstellen
+- setzt den Stempeltext immer zuerst und ordnet die Felder
+- ersetzt Verdorbenes aus der Datenbank durch die Vorgabe
+- rueckt Datum und Uhrzeit zusammen
+- setzt den Text aus den gewaehlten Feldern zusammen
+- nimmt ohne Einstellung die Vorgabe: Text, Mitarbeiter, Datum mit Uhrzeit
+- aendert einen gesetzten Stempel nicht, wenn der Designer spaeter bedient wird
+- laesst nur gestalten, wer Ablaeufe konfigurieren darf
+- legt einen Stempeltyp nur mit dem Recht an -- und nie mit Zielfeld
+- weist eine Farbe ab, die keine ist
+
 ### [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts)
 
 - laesst den Setzer verschieben und schreibt es ins Protokoll

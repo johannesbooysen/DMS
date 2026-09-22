@@ -18,6 +18,7 @@
  * zweite wäre eine, die irgendwann abweicht.
  */
 
+import type { Gestaltung } from '../layer/gestaltung'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 import {
   degrees,
@@ -36,6 +37,9 @@ export interface Exportlayer {
   breite: number
   hoehe: number
   text: string | null
+  /** Beim Stempel: Farbe und Gestaltung des Stempeltyps (Designer). */
+  farbe?: string | null
+  gestaltung?: Gestaltung | null
 }
 
 export interface Seitenbild {
@@ -156,7 +160,16 @@ function layerZeichnen(seite: PDFPage, schrift: PDFFont, l: Exportlayer): void {
   }
 
   // Stempel und Notiz: Rahmen mit Text.
-  const farbe = l.typ === 'stempel' ? rgb(0.23, 0.29, 0.5) : rgb(0.42, 0.42, 0.42)
+  //
+  // Der Stempel in seiner Farbe und Gestaltung (Designer) -- vorher zeichnete
+  // der Export jeden Stempel blau, gleich welche Farbe der Typ trug, und ein
+  // roter Ablehnungsstempel wurde im PDF blau. Drehung wird hier bewusst
+  // nicht gezeichnet: Ein gedrehter Text im PDF ist fuer die Volltextsuche
+  // eines Pruefers ein Aergernis; die Neigung bleibt Sache des Bildschirms.
+  const g = l.typ === 'stempel' ? l.gestaltung ?? null : null
+  const farbe =
+    l.typ === 'stempel' ? hexZuRgb(l.farbe ?? '#3B4A80') : rgb(0.42, 0.42, 0.42)
+  const rahmenStaerke = g?.rahmen === 'doppelt' ? 0.9 : 1.2
   seite.drawRectangle({
     x: l.x,
     y,
@@ -165,25 +178,52 @@ function layerZeichnen(seite: PDFPage, schrift: PDFFont, l: Exportlayer): void {
     color: rgb(1, 1, 1),
     opacity: 0.86,
     borderColor: farbe,
-    borderWidth: 1.2,
+    borderWidth: rahmenStaerke,
+    ...(g?.rahmen === 'gestrichelt' ? { borderDashArray: [4, 3] } : {}),
   })
+  if (g?.rahmen === 'doppelt') {
+    seite.drawRectangle({
+      x: l.x + 2.5,
+      y: y + 2.5,
+      width: l.breite - 5,
+      height: l.hoehe - 5,
+      borderColor: farbe,
+      borderWidth: rahmenStaerke,
+    })
+  }
 
+  const groesse = g?.schrift === 'klein' ? 6.5 : g?.schrift === 'gross' ? 10 : 8
   textInKasten(seite, schrift, l.text ?? '', {
     x: l.x + 4,
     y: y + l.hoehe - 4,
     breite: l.breite - 8,
     hoehe: l.hoehe - 8,
     farbe,
+    groesse,
   })
+}
+
+/** "#3B4A80" -> pdf-lib-Farbe. Ungueltiges wird blau, nie ein Absturz beim Export. */
+function hexZuRgb(hex: string): ReturnType<typeof rgb> {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim())
+  if (m === null) return rgb(0.23, 0.29, 0.5)
+  return rgb(parseInt(m[1]!, 16) / 255, parseInt(m[2]!, 16) / 255, parseInt(m[3]!, 16) / 255)
 }
 
 function textInKasten(
   seite: PDFPage,
   schrift: PDFFont,
   text: string,
-  kasten: { x: number; y: number; breite: number; hoehe: number; farbe: ReturnType<typeof rgb> },
+  kasten: {
+    x: number
+    y: number
+    breite: number
+    hoehe: number
+    farbe: ReturnType<typeof rgb>
+    groesse?: number
+  },
 ): void {
-  const groesse = 8
+  const groesse = kasten.groesse ?? 8
   const zeilenhoehe = groesse * 1.25
   let y = kasten.y - groesse
 

@@ -14,6 +14,8 @@
 
 import { layerAnlegenAktion, layerAusblendenAktion } from '@/app/lib/layer-aktionen'
 import { Stempelbewegen } from '@/app/lib/stempelbewegen'
+import { Stempelbild } from '@/app/lib/stempelbild'
+import { VORGABE } from '@/layer/gestaltung'
 import type { Layerzeile } from '@/layer'
 import type { Kasten } from '@/layer/platzierung'
 
@@ -83,6 +85,7 @@ export function Layerschicht({
                 hoehe: l.hoehe,
                 text: l.text,
                 farbe: l.farbe,
+                gestaltung: l.gestaltung ?? VORGABE,
               }}
               seitenBreite={breite}
               seitenHoehe={hoehe}
@@ -115,59 +118,15 @@ export function Layerschicht({
            * der Datenbank: Der Layertext ist zugleich der durchsuchbare
            * Inhalt (`inhalt_tsv`), und den zerlegt man nicht für die Optik.
            */
-          const teile = (l.text ?? '').split(' · ')
-          const entscheidung = teile[0] ?? ''
-          const beleg = teile.slice(1).join(' · ')
-          const farbe = l.farbe ?? '#3B4A80'
-
+          // Das Bild an einer Stelle: `Stempelbild` zeichnet hier, beim
+          // Verschieben und in der Vorschau des Designers dasselbe.
           return (
-            <div
-              key={l.id}
-              style={{
-                ...prozent(l),
-                alignItems: 'center',
-                /* Leicht getönt statt weiß: Der Seitentext darunter bleibt
-                   ahnbar, der Stempel wirkt aufgedrückt und nicht eingefügt. */
-                background: 'rgba(255, 255, 255, 0.78)',
-                border: `0.18rem solid ${farbe}`,
-                borderRadius: '0.2rem',
-                boxSizing: 'border-box',
-                color: farbe,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                padding: '0.15rem 0.3rem',
-                position: 'absolute',
-                /* Drei Grad, nicht mehr: Ein Stempel sitzt nie ganz gerade,
-                   aber ein schiefer Text ist schlechter zu lesen. */
-                transform: 'rotate(-3deg)',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 'clamp(0.55rem, 1.15vw, 1rem)',
-                  fontWeight: 700,
-                  letterSpacing: '0.02em',
-                  lineHeight: 1.1,
-                  textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {entscheidung}
-              </span>
-              {beleg !== '' && (
-                <span
-                  style={{
-                    fontSize: 'clamp(0.4rem, 0.7vw, 0.62rem)',
-                    lineHeight: 1.2,
-                    opacity: 0.85,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {beleg}
-                </span>
-              )}
+            <div key={l.id} style={{ ...prozent(l), position: 'absolute' }}>
+              <Stempelbild
+                text={l.text ?? ''}
+                farbe={l.farbe ?? '#3B4A80'}
+                gestaltung={l.gestaltung ?? VORGABE}
+              />
             </div>
           )
         }

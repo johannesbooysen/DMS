@@ -10,6 +10,7 @@
  * nur zusammengetragen: welche Layer, welches Original, welche Seitenbilder.
  */
 
+import { gestaltungLesen } from '../layer/gestaltung'
 import type { PoolClient } from 'pg'
 import type { Ablage } from '@/ablage'
 import { alsBenutzer } from '@/db'
@@ -173,13 +174,16 @@ async function layerLesen(c: PoolClient, dokumentId: string): Promise<
   Array<Exportlayer & { sichtbarkeit: string }>
 > {
   const { rows } = await c.query<Record<string, unknown>>(
-    `select typ, seite, x, y, breite, hoehe, inhalt_text, sichtbarkeit
-       from dokument_layer
-      where dokument_id = $1 and geloescht_am is null
+    `select l.typ, l.seite, l.x, l.y, l.breite, l.hoehe, l.inhalt_text, l.sichtbarkeit,
+            t.farbe, t.gestaltung
+       from dokument_layer l
+       left join stempel_ereignis e on e.id = l.stempel_ereignis_id
+       left join stempeltyp t on t.id = e.stempeltyp_id
+      where l.dokument_id = $1 and l.geloescht_am is null
       order by
         -- Schwaerzungen zuletzt: Sie liegen ueber allem anderen.
-        case when typ = 'schwaerzung' then 1 else 0 end,
-        erstellt_am`,
+        case when l.typ = 'schwaerzung' then 1 else 0 end,
+        l.erstellt_am`,
     [dokumentId],
   )
   return rows.map((z) => ({
@@ -191,6 +195,8 @@ async function layerLesen(c: PoolClient, dokumentId: string): Promise<
     hoehe: Number(z['hoehe']),
     text: z['inhalt_text'] == null ? null : String(z['inhalt_text']),
     sichtbarkeit: String(z['sichtbarkeit']),
+    farbe: z['farbe'] == null ? null : String(z['farbe']),
+    gestaltung: String(z['typ']) === 'stempel' ? gestaltungLesen(z['gestaltung']) : null,
   }))
 }
 

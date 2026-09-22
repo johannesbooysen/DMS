@@ -20,6 +20,7 @@
 import { alsBenutzer } from '@/db'
 import { alsZeitpunkt } from '@/datum'
 import type { Kasten } from './platzierung'
+import { gestaltungLesen, type Gestaltung } from './gestaltung'
 
 export * from './platzierung'
 
@@ -40,6 +41,8 @@ export interface Layerzeile {
   sichtbarkeit: Sichtbarkeit
   /** Farbe des Stempeltyps, falls es einer ist. */
   farbe: string | null
+  /** Gestaltung des Stempeltyps (Designer), falls es einer ist. */
+  gestaltung: Gestaltung | null
   erstelltVon: string | null
   erstelltAm: string
 }
@@ -58,7 +61,7 @@ export async function layerLaden(
     const { rows } = await c.query<Record<string, unknown>>(
       `select l.id, l.typ, l.seite, l.x, l.y, l.breite, l.hoehe,
               l.inhalt_text, l.sichtbarkeit, l.erstellt_am,
-              t.farbe, b.name as erstellt_von
+              t.farbe, t.gestaltung, b.name as erstellt_von
          from dokument_layer l
          left join stempel_ereignis e on e.id = l.stempel_ereignis_id
          left join stempeltyp t on t.id = e.stempeltyp_id
@@ -83,6 +86,7 @@ function zeile(z: Record<string, unknown>): Layerzeile {
     text: z['inhalt_text'] == null ? null : String(z['inhalt_text']),
     sichtbarkeit: String(z['sichtbarkeit']) as Sichtbarkeit,
     farbe: z['farbe'] == null ? null : String(z['farbe']),
+    gestaltung: String(z['typ']) === 'stempel' ? gestaltungLesen(z['gestaltung']) : null,
     erstelltVon: z['erstellt_von'] == null ? null : String(z['erstellt_von']),
     erstelltAm: alsZeitpunkt(z['erstellt_am']) ?? '',
   }
