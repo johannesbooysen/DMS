@@ -662,10 +662,11 @@ herein, ist das ein neues Dokument.
 Ein „erledigt"-Haken, der nur den Eintrag wegnimmt, ist bewusst nicht dabei:
 Er hätte den Korb geleert und das Problem stehen lassen.
 
-> Noch nicht da: eine **Benachrichtigung**, wenn etwas in den Korb fällt
-> (Konzept 24, Punkt 9 — Mail oder nur ein Zähler in der Oberfläche, das ist
-> noch nicht entschieden). Bis dahin sieht man in den Korb, indem man
-> hinschaut.
+Liegt etwas im Korb, steht die Zahl **rot neben „Fehlerkorb"** in der
+Navigation — offene Einträge und Hänger zusammen, den ganzen Tag, auf jeder
+Seite. Keine Mail: Der Korb füllt sich stoßweise (ein Scanner, eine fehlende
+Erkennung), und zwanzig Mails an einem Vormittag wären genau die
+Benachrichtigung, die jeder wegfiltert.
 
 ---
 
@@ -2244,6 +2245,9 @@ einmal am Tag, diese Zahl sieht man den ganzen Tag.
 
 Bei null Aufgaben steht dort nichts. Eine Null neben jedem Eintrag wäre
 Rauschen, und Rauschen macht die eine Zahl unsichtbar, auf die es ankommt.
+
+Dieselbe Form neben **Fehlerkorb**, immer rot: Was dort liegt, ist
+liegengeblieben, und dafür gibt es keine Frist, die noch laufen könnte.
 
 ### Die tägliche Sammelmail
 

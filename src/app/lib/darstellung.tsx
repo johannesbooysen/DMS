@@ -19,6 +19,7 @@ import { Navigationslink } from '@/app/lib/navigationslink'
 import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { zaehlerLaden } from '@/benachrichtigung'
+import { fehlerkorbZaehler } from '@/fehlerkorb'
 import { laufende, type Zugriff } from '@/notfall'
 
 export { AMPELFARBEN, Ampel, Befunde, belegBezeichnung, datum, euro, seit } from '@/app/lib/anzeige'
@@ -91,6 +92,20 @@ async function aufgabenzahl(): Promise<{ offen: number; ueberfaellig: number } |
 }
 
 /**
+ * Die Zahl neben "Fehlerkorb": offene Eintraege und Haenger. Dieselbe Regel
+ * wie beim Aufgabenzaehler -- faellt sie aus, faellt sie weg.
+ */
+async function fehlerzahl(): Promise<number> {
+  try {
+    const benutzer = await angemeldeterBenutzerOderNichts()
+    if (benutzer === null) return 0
+    return await alsBenutzer(benutzer, fehlerkorbZaehler)
+  } catch {
+    return 0
+  }
+}
+
+/**
  * Laufende Notfallzugriffe (Konzept 24.10).
  *
  * **Der Ersatz fuer die Vorabfreigabe, die im Notfall niemand geben
@@ -121,8 +136,7 @@ export async function Seitenrahmen({
   /** Ohne Rand und Hoechstbreite -- fuer den Arbeitsplatz, der die Flaeche selbst aufteilt. */
   breit?: boolean
 }) {
-  const zaehler = await aufgabenzahl()
-  const offeneNotfaelle = await notfaelle()
+  const [zaehler, fehler, offeneNotfaelle] = await Promise.all([aufgabenzahl(), fehlerzahl(), notfaelle()])
 
   const zaehlerMarke =
     zaehler !== null && zaehler.offen > 0 ? (
@@ -164,6 +178,14 @@ export async function Seitenrahmen({
                     und Rauschen macht die eine Zahl unsichtbar, auf die es
                     ankommt. */}
                 {name === 'Postfächer' && zaehlerMarke}
+                {/* Der Fehlerkorb zaehlt immer rot: Was dort liegt, ist
+                    liegengeblieben, und dafuer gibt es keine Frist, die noch
+                    laufen koennte. */}
+                {name === 'Fehlerkorb' && fehler > 0 && (
+                  <span className="zaehler zaehler--ueberfaellig" title={`${fehler} liegengeblieben`}>
+                    {fehler}
+                  </span>
+                )}
               </Navigationslink>
             ))}
           </div>

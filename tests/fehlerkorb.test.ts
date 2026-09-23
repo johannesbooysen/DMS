@@ -16,11 +16,12 @@
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
-import { poolSchliessen, verbindungspool } from '../src/db'
+import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import {
   alleWiederholen,
   FehlerkorbAbgelehnt,
   fehlerkorbLaden,
+  fehlerkorbZaehler,
   fehlerManuell,
   fehlerMelden,
   fehlerVerwerfen,
@@ -254,6 +255,21 @@ describe('Alle wiederholen', () => {
   it('ist beim zweiten Mal leer, statt doppelt einzureihen', async () => {
     await alleWiederholen(BERND)
     expect(await alleWiederholen(BERND)).toBe(0)
+  })
+})
+
+describe('Zaehler', () => {
+  it('zaehlt offene Eintraege und Haenger zusammen', async () => {
+    // Der Beleg des Fixtures haengt (zwei Stunden in Aufbereitung, kein Eintrag).
+    expect(await alsBenutzer(BERND, (c) => fehlerkorbZaehler(c))).toBe(1)
+    await fehlerMelden(ANNA, { dokumentId, warteschlange: 'q', grund: 'kein OCR' })
+    // Jetzt steht er im Korb und gilt nicht mehr als Haenger: weiterhin eins.
+    expect(await alsBenutzer(BERND, (c) => fehlerkorbZaehler(c))).toBe(1)
+  })
+
+  it('zaehlt fuer Doris nichts aus dem fremden Mandanten', async () => {
+    await fehlerMelden(ANNA, { dokumentId, warteschlange: 'q', grund: 'kein OCR' })
+    expect(await alsBenutzer(DORIS, (c) => fehlerkorbZaehler(c))).toBe(0)
   })
 })
 

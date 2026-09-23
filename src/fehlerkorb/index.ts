@@ -341,3 +341,21 @@ export async function alleWiederholen(benutzerId: string): Promise<number> {
   }
   return eingereiht
 }
+
+/**
+ * Die Zahl neben "Fehlerkorb" -- offene Eintraege plus Haenger.
+ *
+ * Konzept 24, Punkt 9 liess offen, ob eine Mail oder ein Zaehler: Es ist der
+ * Zaehler, aus demselben Grund wie beim Postfach -- er wirkt den ganzen Tag,
+ * und ein Korb, in den man nur hineinsieht, wenn man daran denkt, ist ein
+ * Korb, in den niemand sieht. Unter der RLS; ohne `security definer`, damit
+ * die Zahl nie mehr zaehlt, als die Seite darunter zeigt.
+ */
+export async function fehlerkorbZaehler(c: import('pg').PoolClient, minuten = 30): Promise<number> {
+  const { rows } = await c.query<{ n: string }>(
+    `select (select count(*) from verarbeitungsfehler where erledigt_am is null)
+          + (select count(*) from app.aufbereitung_haengt($1)) as n`,
+    [minuten],
+  )
+  return Number(rows[0]?.n ?? 0)
+}

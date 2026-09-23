@@ -942,6 +942,8 @@ belegt.
 - reiht jeden offenen Eintrag neu ein und schliesst ihn
 - wiederholt fuer Doris nichts -- der Korb ist mandantengetrennt
 - ist beim zweiten Mal leer, statt doppelt einzureihen
+- zaehlt offene Eintraege und Haenger zusammen
+- zaehlt fuer Doris nichts aus dem fremden Mandanten
 - findet einen Beleg, den niemand gemeldet hat
 - schweigt, solange der Beleg im Korb steht
 - schweigt bei einem frisch eingegangenen Beleg

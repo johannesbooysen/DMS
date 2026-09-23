@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-114 Module, 967 Testfaelle in 56 Dateien,
+114 Module, 969 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -646,7 +646,7 @@ Policies: 2
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
-| [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 27 | Melden, Mandantengrenze, Ausgaenge, Alle wiederholen, Haengengebliebene, Stapel, Haenger neu einreihen |
+| [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 29 | Melden, Mandantengrenze, Ausgaenge, Alle wiederholen, Zaehler, Haengengebliebene, Stapel, Haenger neu einreihen |
 | [`tests/gespeicherte-suche.test.ts`](../tests/gespeicherte-suche.test.ts) | 7 | Weissliste, Speichern, Persoenlich |
 | [`tests/inbetriebnahme.test.ts`](../tests/inbetriebnahme.test.ts) | 17 | Umgebung, Das Probenprotokoll, Datenbank, Verfahrensdokumentation, Objektspeicher |
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
