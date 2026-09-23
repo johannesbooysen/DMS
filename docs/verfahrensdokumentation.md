@@ -1495,6 +1495,9 @@ belegt.
 - nimmt eine Vorlage mit erlaubten Platzhaltern an
 - zeigt die Vorschau mit erfundenen Beispielwerten
 - haelt fest, wer zuletzt geaendert hat
+- legt eine eigene Vorlage an -- Schluessel geprueft, Platzhalter geprueft, eindeutig
+- laesst eine Objektbearbeiterin keine Vorlage anlegen
+- zieht eine Vorlage aus dem Verkehr und holt sie zurueck -- nie loeschen
 - laesst eine Objektbearbeiterin keine Vorlage aendern
 - laesst sie die Vorlagen aber lesen
 - zeigt einem fremden Mandanten keine Vorlage aus Nord

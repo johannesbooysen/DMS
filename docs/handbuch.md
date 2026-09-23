@@ -1237,8 +1237,13 @@ Vorlagen ändert man auf der Seite *Postausgang*. Geprüft wird **vor** dem
 Speichern; schlägt die Prüfung an, bleibt das Formular offen und die Vorlage
 unverändert.
 
-> Noch nicht da: Vorlagen anlegen und löschen — es gibt die vier festen.
-> Ebenso fehlt der Versand als PDF-Brief; hinaus geht bisher nur E-Mail.
+Eigene Vorlagen legt man unter *Stammdaten → Vorlagen* an — mit einem
+Schlüssel, unter dem eine Systemaktion sie findet. Gelöscht wird nie: Eine
+Vorlage lässt sich **deaktivieren** und zurückholen; eine Systemaktion, die
+eine inaktive Vorlage nennt, meldet in den Fehlerkorb statt still nichts zu
+schicken.
+
+> Noch nicht da: der Versand als PDF-Brief; hinaus geht bisher nur E-Mail.
 
 
 ---

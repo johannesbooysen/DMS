@@ -22,7 +22,9 @@ import {
   quelleUmschalten,
   quelleneinrichtungLaden,
   vorlagenpflegeLaden,
+  vorlageAnlegen,
   vorlageSpeichern,
+  vorlageUmschalten,
 } from '../src/stammdaten/quellen'
 
 const ANNA = '20000000-0000-0000-0000-000000000001'
@@ -41,6 +43,7 @@ async function direkt<T>(frage: string, werte: unknown[] = []): Promise<T[]> {
 }
 
 afterEach(async () => {
+  await direkt("delete from vorlage where schluessel like 'test_%'")
   await direkt("delete from eingangsquelle where bezeichnung like 'TEST-%'")
 })
 
@@ -268,6 +271,44 @@ describe('Vorlagen', () => {
      */
     expect(neu?.geaendertVon).toBe('Bernd Bruns')
     expect(neu?.geaendertAm).not.toBeNull()
+  })
+
+  it('legt eine eigene Vorlage an -- Schluessel geprueft, Platzhalter geprueft, eindeutig', async () => {
+    await vorlageAnlegen(EVA, {
+      schluessel: 'test_rueckfrage',
+      name: 'TEST Rückfrage an den Kreditor',
+      betreff: 'Rückfrage zu {{rechnungsnummer}}',
+      text: 'Sehr geehrte Damen und Herren, zu {{betrag}} haben wir eine Frage.',
+    })
+    const neu = (await vorlagenpflegeLaden(EVA)).find((v) => v.schluessel === 'test_rueckfrage')
+    expect(neu?.aktiv).toBe(true)
+    expect(neu?.unbekannt).toEqual([])
+
+    await expect(
+      vorlageAnlegen(EVA, { schluessel: 'test_rueckfrage', name: 'x', betreff: 'x', text: 'x' }),
+    ).rejects.toThrow(/gibt es schon/)
+    await expect(
+      vorlageAnlegen(EVA, { schluessel: 'Mit Leerzeichen', name: 'x', betreff: 'x', text: 'x' }),
+    ).rejects.toThrow(/Schlüssel/)
+    await expect(
+      vorlageAnlegen(EVA, { schluessel: 'test_falsch', name: 'x', betreff: '{{rechnungsnr}}', text: 'x' }),
+    ).rejects.toThrow(/rechnungsnr/)
+  })
+
+  it('laesst eine Objektbearbeiterin keine Vorlage anlegen', async () => {
+    await expect(
+      vorlageAnlegen(ANNA, { schluessel: 'test_anna', name: 'x', betreff: 'x', text: 'x' }),
+    ).rejects.toBeInstanceOf(NichtErlaubt)
+  })
+
+  it('zieht eine Vorlage aus dem Verkehr und holt sie zurueck -- nie loeschen', async () => {
+    await vorlageAnlegen(EVA, { schluessel: 'test_weg', name: 'TEST weg', betreff: 'x', text: 'x' })
+    const id = (await vorlagenpflegeLaden(EVA)).find((v) => v.schluessel === 'test_weg')!.id
+    await vorlageUmschalten(EVA, { id, aktiv: 'nein' })
+    expect((await vorlagenpflegeLaden(EVA)).find((v) => v.id === id)?.aktiv).toBe(false)
+    await vorlageUmschalten(EVA, { id, aktiv: 'ja' })
+    expect((await vorlagenpflegeLaden(EVA)).find((v) => v.id === id)?.aktiv).toBe(true)
+    await expect(vorlageUmschalten(ANNA, { id, aktiv: 'nein' })).rejects.toBeInstanceOf(NichtErlaubt)
   })
 
   it('laesst eine Objektbearbeiterin keine Vorlage aendern', async () => {

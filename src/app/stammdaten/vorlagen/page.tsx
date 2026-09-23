@@ -19,10 +19,10 @@
 import Link from 'next/link'
 import { rechtelage } from '@/stammdaten'
 import { platzhalterListe, vorlagenpflegeLaden } from '@/stammdaten/quellen'
-import { vorlageSpeichernAktion } from '@/app/lib/stammdaten-aktionen'
+import { vorlageAnlegenAktion, vorlageSpeichernAktion, vorlageUmschaltenAktion } from '@/app/lib/stammdaten-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Seitenrahmen } from '@/app/lib/darstellung'
-import { feld, Fehler, kopfzelle, Marke, NurLesend, tabelle, zelle } from '@/app/lib/stammdaten-teile'
+import { feld, Fehler, Handlung, kopfzelle, Marke, NurLesend, tabelle, zelle } from '@/app/lib/stammdaten-teile'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +115,19 @@ export default async function Vorlagen({
             {v.unbekannt.length > 0 && (
               <Marke text={`${v.unbekannt.length} unbekannt`} farbe="var(--farbe-rot)" />
             )}
+            {/* Nie loeschen: Systemaktionen nennen den Schluessel, das
+                Ausgangsbuch verweist auf den Text. Aus dem Verkehr ziehen
+                genuegt -- und ist umkehrbar. */}
+            {darf.stammdaten && (
+              <Handlung
+                aktion={vorlageUmschaltenAktion}
+                zurueck={HIER}
+                felder={{ id: v.id, aktiv: v.aktiv ? 'nein' : 'ja' }}
+                farbe={v.aktiv ? 'var(--farbe-rot)' : 'var(--farbe-gruen)'}
+              >
+                {v.aktiv ? 'deaktivieren' : 'aktivieren'}
+              </Handlung>
+            )}
           </h2>
 
           {v.geaendertVon !== null && (
@@ -190,6 +203,43 @@ export default async function Vorlagen({
           )}
         </section>
       ))}
+
+      {/* Eigene Vorlagen -- fuer Systemaktionen, die der Grundbestand nicht
+          kennt. Der Schluessel ist die Anknuepfung und bleibt danach fest. */}
+      {darf.stammdaten && (
+        <section className="karte">
+          <h2>Vorlage anlegen</h2>
+          <p className="absatz-leise">
+            Für eine Systemaktion, die es im Grundbestand nicht gibt. Der Schlüssel ist der
+            Name, unter dem der Ablauf sie findet — Kleinbuchstaben, Ziffern, Unterstrich — und
+            ändert sich danach nicht mehr.
+          </p>
+          <form action={vorlageAnlegenAktion}>
+            <input type="hidden" name="zurueck" value={HIER} />
+            <div className="filterzeile">
+              <label className="feld">
+                Schlüssel
+                <input name="schluessel" required pattern="[a-z0-9_]{2,40}" maxLength={40} style={{ width: '12rem' }} />
+              </label>
+              <label className="feld">
+                Name
+                <input name="name" required maxLength={80} style={{ width: '20rem' }} />
+              </label>
+            </div>
+            <label className="feld" style={{ marginBottom: '0.6rem' }}>
+              Betreff
+              <input name="betreff" required style={{ ...feld, display: 'block', width: '100%' }} />
+            </label>
+            <label className="feld">
+              Text
+              <textarea name="text" required rows={6} style={{ ...feld, display: 'block', fontFamily: 'inherit', width: '100%' }} />
+            </label>
+            <button type="submit" className="knopf-primaer" style={{ marginTop: '0.6rem' }}>
+              Vorlage anlegen
+            </button>
+          </form>
+        </section>
+      )}
     </Seitenrahmen>
   )
 }

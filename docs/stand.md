@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-116 Module, 985 Testfaelle in 57 Dateien,
+116 Module, 988 Testfaelle in 57 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -700,7 +700,7 @@ Funktionen: `app.eskalation_durchgang`
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
-| [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
+| [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 19 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 22 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |

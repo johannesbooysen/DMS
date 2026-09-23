@@ -310,6 +310,66 @@ export async function vorlageSpeichern(benutzerId: string, f: Eingaben): Promise
   })
 }
 
+/** Der Schluessel: klein, ohne Leerzeichen -- so, wie der Code ihn nennt. */
+const SCHLUESSELFORM = /^[a-z0-9_]{2,40}$/
+
+/**
+ * Legt eine eigene Vorlage an -- fuer Systemaktionen, die es im Grundbestand
+ * nicht gibt (Rueckfrage an den Kreditor, Meldung an den Beirat).
+ *
+ * Der Schluessel ist die Anknuepfung: Eine Systemaktion nennt ihn, und er
+ * bleibt beim Kopieren einer Ablaufdefinition gueltig. Deshalb ist er je
+ * Mandant eindeutig und aendert sich nicht mehr. Die Platzhalter werden wie
+ * beim Aendern gegen die Weissliste geprueft.
+ */
+export async function vorlageAnlegen(benutzerId: string, f: Eingaben): Promise<void> {
+  const schluessel = pflicht(f['schluessel'], 'Der Schlüssel').trim().toLowerCase()
+  const name = pflicht(f['name'], 'Der Name')
+  const betreff = pflicht(f['betreff'], 'Der Betreff')
+  const inhalt = pflicht(f['text'], 'Der Text')
+  if (!SCHLUESSELFORM.test(schluessel)) {
+    throw new NichtMoeglich('Der Schlüssel besteht aus Kleinbuchstaben, Ziffern und Unterstrich (2 bis 40 Zeichen).')
+  }
+  const unbekannt = vorlagePruefen(betreff, inhalt)
+  if (unbekannt.length > 0) {
+    throw new NichtMoeglich(
+      `Unbekannte Platzhalter: ${unbekannt.map((n) => `{{${n}}}`).join(', ')}. ` +
+        `Erlaubt sind: ${Object.keys(PLATZHALTER).join(', ')}.`,
+    )
+  }
+  await schreiben(benutzerId, async (c) => {
+    const { rows } = await c.query<{ n: string }>(
+      'select count(*) as n from vorlage where schluessel = $1',
+      [schluessel],
+    )
+    if (Number(rows[0]?.n) > 0) {
+      throw new NichtMoeglich(`Den Schlüssel „${schluessel}“ gibt es schon.`)
+    }
+    await c.query(
+      `insert into vorlage (mandant_id, schluessel, name, betreff, text)
+       values (app.mein_mandant(), $1, $2, $3, $4)`,
+      [schluessel, name, betreff, inhalt],
+    )
+  })
+}
+
+/**
+ * Eine Vorlage aus dem Verkehr ziehen -- oder zurueckholen. Nie loeschen:
+ * Eine Systemaktion kann sie nennen, und ein Ausgang im Ausgangsbuch
+ * entstand aus ihr. Eine inaktive Vorlage meldet die Systemaktion in den
+ * Fehlerkorb, statt still nichts zu schicken.
+ */
+export async function vorlageUmschalten(benutzerId: string, f: Eingaben): Promise<void> {
+  const id = pflicht(f['id'], 'Die Vorlage')
+  const aktiv = f['aktiv'] === 'ja'
+  await schreiben(benutzerId, async (c) => {
+    const { rowCount } = await c.query('update vorlage set aktiv = $2 where id = $1', [id, aktiv])
+    if (rowCount === 0) {
+      throw new NichtErlaubt('Die Änderung hat nichts bewirkt — dafür fehlt das Recht zur Stammdatenpflege.')
+    }
+  })
+}
+
 /** Die Weißliste, für die Oberfläche. */
 export function platzhalterListe(): Array<{ name: string; anzeige: string; hinweis: string }> {
   return Object.entries(PLATZHALTER).map(([name, f]) => ({

@@ -45,7 +45,7 @@ import {
   kreditorStandardSetzen,
   zuordnungSetzen,
 } from '@/stammdaten/kategorien'
-import { quelleAnlegen, quelleUmschalten, vorlageSpeichern } from '@/stammdaten/quellen'
+import { quelleAnlegen, quelleUmschalten, vorlageAnlegen, vorlageSpeichern, vorlageUmschalten } from '@/stammdaten/quellen'
 import { gestaltungSetzen, stempeltypAnlegen, stempeltypUmschalten } from '@/stammdaten/stempel'
 import {
   anwenden as presetAnwenden,
@@ -161,6 +161,12 @@ export async function quelleUmschaltenAktion(f: FormData): Promise<void> {
 }
 export async function vorlageSpeichernAktion(f: FormData): Promise<void> {
   await versuchen(f, vorlageSpeichern)
+}
+export async function vorlageAnlegenAktion(f: FormData): Promise<void> {
+  await versuchen(f, vorlageAnlegen)
+}
+export async function vorlageUmschaltenAktion(f: FormData): Promise<void> {
+  await versuchen(f, vorlageUmschalten)
 }
 
 /**
