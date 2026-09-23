@@ -13,22 +13,23 @@
  * wegen einer fehlenden E-Mail-Adresse nie zur sachlichen Pruefung kommt,
  * waere der schlechtere Fehler.
  *
- * Empfaenger heute: eine feste Adresse (Technik-Datenbank, Versicherung)
- * oder die Objektverantwortliche (ueber ihre Benutzerkennung). Der Kreditor
- * hat im Stammdatum keine E-Mail-Adresse -- wenn er eine bekommt, kommt er
- * hier als dritte Art hinzu, nicht als Sonderfall in der Engine.
+ * Empfaenger: eine feste Adresse (Technik-Datenbank, Versicherung), die
+ * Objektverantwortliche (ueber ihre Benutzerkennung) oder der Kreditor des
+ * Belegs (`kreditor.email`, Migration 20260926120000) -- die ausfuehrende
+ * Firma, an die die Abtretungserklaerung geht (Konzept 10).
  */
 
 import type { PoolClient } from 'pg'
 import { PostAbgelehnt, postAnlegen, type Werte } from '../postausgang'
 import type { Stufe } from './baum'
 
-export const EMPFAENGERARTEN = ['adresse', 'objektverantwortlich'] as const
+export const EMPFAENGERARTEN = ['adresse', 'objektverantwortlich', 'kreditor'] as const
 export type Empfaengerart = (typeof EMPFAENGERARTEN)[number]
 
 export const EMPFAENGERART_NAMEN: Record<Empfaengerart, string> = {
   adresse: 'feste Adresse',
   objektverantwortlich: 'Objektverantwortliche',
+  kreditor: 'Kreditor des Belegs',
 }
 
 export interface Systemaktion {
@@ -82,9 +83,13 @@ export function systemaktionPruefen(eingabe: {
 async function werteLaden(
   c: PoolClient,
   dokumentId: string,
-): Promise<{ werte: Werte; verantwortlich: { email: string; name: string } | null }> {
+): Promise<{
+  werte: Werte
+  verantwortlich: { email: string; name: string } | null
+  kreditor: { email: string; name: string } | null
+}> {
   const { rows } = await c.query<Record<string, string | null>>(
-    `select k.name as kreditor, f.rechnungsnummer,
+    `select k.name as kreditor, k.email as kreditor_email, f.rechnungsnummer,
             to_char(f.brutto, 'FM999G999G990D00') as betrag,
             o.objektnummer || ' — ' || o.bezeichnung as objekt,
             to_char(f.zahlungsziel, 'DD.MM.YYYY') as faellig,
@@ -105,7 +110,7 @@ async function werteLaden(
     [dokumentId],
   )
   const z = rows[0]
-  if (z === undefined) return { werte: {}, verantwortlich: null }
+  if (z === undefined) return { werte: {}, verantwortlich: null, kreditor: null }
   const werte: Werte = {}
   if (z['kreditor']) werte.kreditor = z['kreditor']
   if (z['rechnungsnummer']) werte.rechnungsnummer = z['rechnungsnummer']
@@ -116,7 +121,9 @@ async function werteLaden(
     z['verantwortlich_email'] && z['verantwortlich_name']
       ? { email: z['verantwortlich_email'], name: z['verantwortlich_name'] }
       : null
-  return { werte, verantwortlich }
+  const kreditor =
+    z['kreditor_email'] && z['kreditor'] ? { email: z['kreditor_email'], name: z['kreditor'] } : null
+  return { werte, verantwortlich, kreditor }
 }
 
 /**
@@ -142,11 +149,15 @@ export async function systemaktionAusfuehren(
   const aktion = stufe.systemaktion
   if (aktion === null) return melden('keine Vorlage und kein Empfänger hinterlegt.')
 
-  const { werte, verantwortlich } = await werteLaden(c, dokumentId)
+  const { werte, verantwortlich, kreditor } = await werteLaden(c, dokumentId)
   let empfaenger: string
   if (aktion.empfaenger === 'adresse') {
     if (aktion.adresse === null) return melden('keine feste Adresse hinterlegt.')
     empfaenger = aktion.adresse
+  } else if (aktion.empfaenger === 'kreditor') {
+    if (kreditor === null) return melden('der Kreditor des Belegs hat keine E-Mail-Adresse.')
+    empfaenger = kreditor.email
+    werte.empfaenger = kreditor.name
   } else {
     if (verantwortlich === null) return melden('kein Objektverantwortlicher mit E-Mail-Adresse.')
     empfaenger = verantwortlich.email

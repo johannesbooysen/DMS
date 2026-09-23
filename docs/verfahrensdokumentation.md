@@ -844,6 +844,7 @@ belegt.
 - nimmt den Sonst-Zweig, wenn sie nicht zutrifft
 - fuehrt die Aktion beim Erreichen aus und rueckt selbst weiter
 - haelt den Lauf nicht an, wenn kein Empfaenger auffindbar ist -- meldet in den Fehlerkorb
+- schreibt an den Kreditor des Belegs, wenn er eine Adresse hat
 - schliesst den Lauf, wenn die Systemaktion die letzte Stufe ist
 - meldet die Pflichtstufen, die noch keinen Stempel haben
 - gibt frei, wenn jede Pflichtstufe erledigt ist
@@ -1497,6 +1498,7 @@ belegt.
 - laesst die Geschaeftsleitung Rollen vergeben
 - laesst eine Objektbearbeiterin keinen Kreditor anlegen
 - laesst die Buchhaltung einen Kreditor anlegen
+- haelt die E-Mail-Adresse des Kreditors und prueft ihre Form
 - laesst eine Objektbearbeiterin keine Bankverbindung bestaetigen
 - haelt fest, wer bestaetigt hat
 - haelt es auch fest, wenn jemand die Funktion umgeht

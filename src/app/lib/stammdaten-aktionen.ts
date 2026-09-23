@@ -25,6 +25,7 @@ import {
   kontoUmschalten,
   kreditorAendern,
   kreditorAnlegen,
+  kreditorEmailSetzen,
   NichtErlaubt,
   NichtMoeglich,
   objektAendern,
@@ -95,6 +96,9 @@ export async function objektAendernAktion(f: FormData): Promise<void> {
 }
 export async function kreditorAnlegenAktion(f: FormData): Promise<void> {
   await versuchen(f, kreditorAnlegen)
+}
+export async function kreditorEmailAktion(f: FormData): Promise<void> {
+  await versuchen(f, kreditorEmailSetzen)
 }
 export async function kreditorAendernAktion(f: FormData): Promise<void> {
   await versuchen(f, kreditorAendern)

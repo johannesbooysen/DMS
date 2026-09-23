@@ -200,13 +200,15 @@ export interface Kreditorzeile {
   id: string
   name: string
   status: string
+  /** Empfaenger fuer Systemaktionen; leer heisst nicht erreichbar. */
+  email: string | null
   banken: Bankverbindung[]
 }
 
 export async function kreditorenLaden(benutzerId: string): Promise<Kreditorzeile[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      `select k.id, k.name, k.status,
+      `select k.id, k.name, k.status, k.email,
               coalesce(jsonb_agg(
                 jsonb_build_object(
                   'id', b.id, 'iban', b.iban, 'status', b.status,
@@ -217,24 +219,47 @@ export async function kreditorenLaden(benutzerId: string): Promise<Kreditorzeile
          from kreditor k
          left join kreditor_bankverbindung b on b.kreditor_id = k.id
          left join benutzer bv on bv.id = b.bestaetigt_von
-        group by k.id, k.name, k.status
+        group by k.id, k.name, k.status, k.email
         order by k.name`,
     )
     return rows.map((z) => ({
       id: String(z['id']),
       name: String(z['name']),
       status: String(z['status']),
+      email: z['email'] == null ? null : String(z['email']),
       banken: z['banken'] as Bankverbindung[],
     }))
   })
 }
 
+/** Eine E-Mail-Adresse oder nichts -- die Form prueft auch die Datenbank. */
+function emailLesen(wert: Wert): string | null {
+  const e = (wert ?? '').trim()
+  if (e === '') return null
+  if (e.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+    throw new NichtMoeglich('Die E-Mail-Adresse hat nicht die Form name@domain.')
+  }
+  return e
+}
+
 export async function kreditorAnlegen(benutzerId: string, f: Eingaben): Promise<void> {
   const name = pflicht(f['name'], 'Der Name')
+  const email = emailLesen(f['email'])
   await schreiben(benutzerId, async (c) => {
-    await c.query('insert into kreditor (mandant_id, name) values (app.mein_mandant(), $1)', [
-      name,
-    ])
+    await c.query(
+      'insert into kreditor (mandant_id, name, email) values (app.mein_mandant(), $1, $2)',
+      [name, email],
+    )
+  })
+}
+
+/** Die Adresse eines Kreditors setzen oder leeren. */
+export async function kreditorEmailSetzen(benutzerId: string, f: Eingaben): Promise<void> {
+  const id = pflicht(f['id'], 'Der Kreditor')
+  const email = emailLesen(f['email'])
+  await schreiben(benutzerId, async (c) => {
+    const { rowCount } = await c.query('update kreditor set email = $2 where id = $1', [id, email])
+    mussGewirktHaben(rowCount ?? 0)
   })
 }
 

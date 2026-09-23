@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-115 Module, 977 Testfaelle in 56 Dateien,
+115 Module, 979 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -518,6 +518,11 @@ Die Angaben nach Paragraf 35a EStG (Konzept 6, 13): Erfassung an der
 Funktionen: `app.archiv_35a_schutz`
 
 
+### `supabase/migrations/20260926120000_kreditor_email.sql`
+
+Der Kreditor bekommt eine E-Mail-Adresse -- damit die Systemaktion
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -653,7 +658,7 @@ Funktionen: `app.archiv_35a_schutz`
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
-| [`tests/engine.test.ts`](../tests/engine.test.ts) | 20 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
+| [`tests/engine.test.ts`](../tests/engine.test.ts) | 21 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
 | [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts) | 7 | Gelesene Gruende, Abgeleitete Gruende, Mandantentrennung |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
@@ -687,7 +692,7 @@ Funktionen: `app.archiv_35a_schutz`
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 16 | Eingangsquellen einrichten, Vorlagen |
-| [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 21 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
+| [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 22 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 28 | Trennblatt erkennen, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |

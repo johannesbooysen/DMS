@@ -524,6 +524,20 @@ describe('Systemaktion', () => {
     })
   })
 
+  it('schreibt an den Kreditor des Belegs, wenn er eine Adresse hat', async () => {
+    await alsAnna(async (c) => {
+      const { stufenIds } = await kette(c, { vorlage: 'abtretung', empfaenger: 'kreditor' })
+      // Die Adresse ist Stammdatum -- gesetzt von jemandem, der es darf.
+      await konfigurierend(c, () => c.query('update kreditor set email = $2 where id = $1', [KREDITOR, 'firma@example.invalid']))
+      const beleg = await belegAnlegen(c, 500)
+      const lauf = (await laufStarten(c as never, beleg))!
+      await stempeln(c as never, { laufId: lauf.laufId, stufeId: stufenIds[0]!, benutzerId: ANNA, entscheidung: 'freigabe' })
+      const { rows } = await c.query<{ empfaenger: string; text: string }>('select empfaenger, text from ausgang where dokument_id = $1', [beleg])
+      expect(rows).toHaveLength(1)
+      expect(rows[0]!.empfaenger).toBe('firma@example.invalid')
+    })
+  })
+
   it('schliesst den Lauf, wenn die Systemaktion die letzte Stufe ist', async () => {
     await alsAnna(async (c) => {
       const { definitionId, stufenIds } = await definitionAnlegen(c, [

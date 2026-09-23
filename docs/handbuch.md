@@ -921,8 +921,9 @@ Rechnung vergehen Wochen.
 geht eine Vorlage aus dem Postausgang hinaus — die Abtretungserklärung an die
 Versicherung, die Erfassungsmeldung an die Technik-Datenbank — und der Lauf
 rückt selbst weiter. Angelegt werden sie im Ablaufeditor wie jede Stufe, mit
-Art *Systemaktion*, der Vorlage und dem Empfänger: eine feste Adresse oder
-die Objektverantwortliche. Der Nachweis ist der Eintrag im Ausgangsbuch, nicht
+Art *Systemaktion*, der Vorlage und dem Empfänger: eine feste Adresse, die
+Objektverantwortliche oder der Kreditor des Belegs (über die E-Mail-Adresse
+im Stammdatum). Der Nachweis ist der Eintrag im Ausgangsbuch, nicht
 ein Stempel — die Stempelkette hält Entscheidungen von Menschen fest.
 
 Ein Lauf hält **nie** an einer Mail: Fehlt die Vorlage oder der Empfänger,
@@ -930,8 +931,7 @@ steht das mit Grund im Fehlerkorb, und der Beleg läuft weiter. Eine Rechnung,
 die wegen einer fehlenden Adresse nie zur sachlichen Prüfung käme, wäre der
 schlechtere Fehler.
 
-> Noch nicht da: der Kreditor als Empfänger — das Stammdatum trägt keine
-> E-Mail-Adresse. Und die Fristüberschreitung führt noch nicht selbsttätig ins
+> Noch nicht da: Die Fristüberschreitung führt noch nicht selbsttätig ins
 > Klärungspostfach; die Liste zeigt sie, den Eintrag setzt ein Mensch.
 
 ---

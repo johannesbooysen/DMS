@@ -32,6 +32,7 @@ import {
   kontoAnlegenAktion,
   kontoUmschaltenAktion,
   kreditorAnlegenAktion,
+  kreditorEmailAktion,
   objektAnlegenAktion,
   ordnungsgruppeAnlegenAktion,
   ordnungsgruppeUmschaltenAktion,
@@ -233,6 +234,32 @@ export default async function Stammdaten({
                       <Marke text={k.status} farbe="var(--farbe-rot)" />
                     </>
                   )}
+                  {/* Die Adresse steht am Kreditor, weil Systemaktionen sie
+                      brauchen (Abtretungserklaerung). Ohne sie ist er als
+                      Empfaenger nicht erreichbar -- das steht hier, nicht
+                      erst im Fehlerkorb. */}
+                  <div className="leise winzig" style={{ marginTop: '0.2rem' }}>
+                    {k.email ?? 'keine E-Mail-Adresse'}
+                  </div>
+                  {darf.stammdaten && (
+                    <form action={kreditorEmailAktion} className="reihe" style={{ marginTop: '0.25rem' }}>
+                      <input type="hidden" name="id" value={k.id} />
+                      <input type="hidden" name="zurueck" value={HIER} />
+                      <input
+                        name="email"
+                        type="email"
+                        maxLength={200}
+                        defaultValue={k.email ?? ''}
+                        aria-label={`E-Mail-Adresse von ${k.name}`}
+                        placeholder="name@domain"
+                        className="winzig"
+                        style={{ width: '13rem' }}
+                      />
+                      <button type="submit" className="winzig">
+                        übernehmen
+                      </button>
+                    </form>
+                  )}
                 </td>
                 <td style={zelle}>
                   {k.banken.length === 0 && <span className="leise">keine</span>}
@@ -278,6 +305,7 @@ export default async function Stammdaten({
           <>
             <Anlegen aktion={kreditorAnlegenAktion} zurueck={HIER} beschriftung="Kreditor anlegen">
               <Eingabe name="name" label="Name" breite="18rem" pflicht />
+              <Eingabe name="email" label="E-Mail (für Systemaktionen)" breite="16rem" typ="email" />
             </Anlegen>
             {kreditoren.length > 0 && (
               <Anlegen

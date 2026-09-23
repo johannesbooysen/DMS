@@ -22,6 +22,7 @@ import {
   bankverbindungEntscheiden,
   kontenLaden,
   kreditorAnlegen,
+  kreditorEmailSetzen,
   kreditorenLaden,
   NichtErlaubt,
   NichtMoeglich,
@@ -117,6 +118,18 @@ describe('Die geschlossene Luecke', () => {
     await kreditorAnlegen(BERND, { name: 'TEST-Dachdecker' })
     const alle = await kreditorenLaden(BERND)
     expect(alle.some((k) => k.name === 'TEST-Dachdecker')).toBe(true)
+  })
+
+  it('haelt die E-Mail-Adresse des Kreditors und prueft ihre Form', async () => {
+    await kreditorAnlegen(BERND, { name: 'TEST-Dachdecker', email: 'dach@example.invalid' })
+    const k = (await kreditorenLaden(BERND)).find((x) => x.name === 'TEST-Dachdecker')!
+    expect(k.email).toBe('dach@example.invalid')
+
+    await expect(kreditorEmailSetzen(BERND, { id: k.id, email: 'keine adresse' })).rejects.toThrow(/name@domain/)
+    await kreditorEmailSetzen(BERND, { id: k.id, email: '' })
+    expect((await kreditorenLaden(BERND)).find((x) => x.id === k.id)!.email).toBeNull()
+    // Eine Objektbearbeiterin darf sie nicht setzen -- dasselbe Recht wie der Name.
+    await expect(kreditorEmailSetzen(ANNA, { id: k.id, email: 'x@example.invalid' })).rejects.toBeInstanceOf(NichtErlaubt)
   })
 })
 
