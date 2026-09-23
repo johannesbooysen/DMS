@@ -54,7 +54,7 @@ export default async function Vertretungen({
 
   return (
     <Seitenrahmen titel="Vertretung">
-      <p style={{ color: '#555', maxWidth: '46rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', maxWidth: '46rem' }}>
         Eine Vertretung lenkt <strong>neue Aufgaben</strong> um. Sie überträgt keine
         Rechte: Wer vertritt, darf nur, was seine eigenen Rollen hergeben — sonst
         wäre später nicht mehr feststellbar, wer wann was entscheiden durfte.
@@ -62,7 +62,7 @@ export default async function Vertretungen({
       </p>
 
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
@@ -113,7 +113,7 @@ export default async function Vertretungen({
       <section style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1rem' }}>Von mir abgegeben ({abgegeben.length})</h2>
         {abgegeben.length === 0 ? (
-          <p style={{ color: '#666' }}>Keine Vertretung eingerichtet.</p>
+          <p style={{ color: 'var(--farbe-text-leise)' }}>Keine Vertretung eingerichtet.</p>
         ) : (
           <ul>
             {abgegeben.map((v) => (
@@ -121,10 +121,10 @@ export default async function Vertretungen({
                 <strong>{v.anName}</strong> · <Umfang v={v} /> · <Zeitraum v={v} />
                 {v.grund !== null && ` · ${v.grund}`}
                 {v.widerrufenAm !== null ? (
-                  <span style={{ color: '#666' }}> · widerrufen</span>
+                  <span style={{ color: 'var(--farbe-text-leise)' }}> · widerrufen</span>
                 ) : (
                   <>
-                    {!v.gilt && <span style={{ color: '#666' }}> · noch nicht aktiv</span>}
+                    {!v.gilt && <span style={{ color: 'var(--farbe-text-leise)' }}> · noch nicht aktiv</span>}
                     <form action={vertretungWiderrufenAktion} style={{ display: 'inline' }}>
                       <input type="hidden" name="vertretungId" value={v.id} />
                       <button type="submit" style={{ marginLeft: '0.5rem' }}>
@@ -142,13 +142,13 @@ export default async function Vertretungen({
       <section>
         <h2 style={{ fontSize: '1rem' }}>Für andere übernommen ({uebernommen.length})</h2>
         {uebernommen.length === 0 ? (
-          <p style={{ color: '#666' }}>Sie vertreten derzeit niemanden.</p>
+          <p style={{ color: 'var(--farbe-text-leise)' }}>Sie vertreten derzeit niemanden.</p>
         ) : (
           <ul>
             {uebernommen.map((v) => (
               <li key={v.id}>
                 <strong>{v.vonName}</strong> · <Umfang v={v} /> · <Zeitraum v={v} />
-                {v.widerrufenAm !== null && <span style={{ color: '#666' }}> · widerrufen</span>}
+                {v.widerrufenAm !== null && <span style={{ color: 'var(--farbe-text-leise)' }}> · widerrufen</span>}
               </li>
             ))}
           </ul>

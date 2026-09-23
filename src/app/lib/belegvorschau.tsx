@@ -83,7 +83,7 @@ export function Belegvorschau({
           +
         </button>
 
-        <span style={{ color: '#555', fontSize: '0.8rem', minWidth: '3rem' }}>{zoom} %</span>
+        <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', minWidth: '3rem' }}>{zoom} %</span>
 
         <button type="button" onClick={() => setZoom(100)} style={{ ...knopf, width: 'auto' }}>
           Zurücksetzen
@@ -92,8 +92,8 @@ export function Belegvorschau({
 
       <div
         style={{
-          background: '#f6f6f6',
-          border: '1px solid #ddd',
+          background: 'var(--farbe-flaeche-leise)',
+          border: '1px solid var(--farbe-linie)',
           maxHeight: '78vh',
           overflow: 'auto',
           padding: '0.5rem',
@@ -119,7 +119,7 @@ export function Belegvorschau({
 }
 
 const knopf: React.CSSProperties = {
-  border: '1px solid #bbb',
+  border: '1px solid var(--farbe-linie-stark)',
   borderRadius: '0.2rem',
   cursor: 'pointer',
   fontSize: '1rem',

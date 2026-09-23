@@ -38,7 +38,8 @@ const BELEGARTEN = [
   ['sonstiges', 'Sonstiges'],
 ] as const
 
-const zelle = { borderBottom: '1px solid #eee', padding: '0.45rem 0.5rem' } as const
+// Zellen bekommen ihr Aussehen aus globals.css; der Name bleibt fuer die Ausrichtung.
+const zelle = {} as const
 
 function Marke({ name, farbe }: { name: string; farbe: string | null }) {
   return (
@@ -84,19 +85,19 @@ export default async function Belegübersicht({
   const aktuelleAbfrage = alsAbfrage(aktuell)
 
   const feld = { display: 'block', fontSize: '0.75rem' } as const
-  const eingabe = { display: 'block', padding: '0.3rem' } as const
+  const eingabe = { display: 'block', marginTop: '0.15rem' } as const
 
   return (
     <Seitenrahmen titel="Belege">
       {s['fehler'] !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {s['fehler']}
         </p>
       )}
 
       {gespeichert.length > 0 && (
         <nav aria-label="Gespeicherte Suchen" style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-          <span style={{ color: '#555' }}>Meine Suchen: </span>
+          <span style={{ color: 'var(--farbe-text-leise)' }}>Meine Suchen: </span>
           {gespeichert.map((g, i) => {
             const abfrage = alsAbfrage(g.filter)
             const aktiv = abfrage === aktuelleAbfrage
@@ -116,7 +117,7 @@ export default async function Belegübersicht({
                     <button
                       type="submit"
                       aria-label={`Gespeicherte Suche „${g.name}“ löschen`}
-                      style={{ background: 'none', border: 0, color: '#A33', cursor: 'pointer', padding: '0 0.3rem' }}
+                      style={{ background: 'none', border: 0, color: 'var(--farbe-rot)', cursor: 'pointer', padding: '0 0.3rem' }}
                     >
                       ×
                     </button>
@@ -237,7 +238,7 @@ export default async function Belegübersicht({
         </form>
       )}
 
-      <p style={{ color: '#555', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
         {uebersicht.gefiltert
           ? `${uebersicht.treffer} Treffer${
               (uebersicht.treffer ?? 0) > uebersicht.zeilen.length
@@ -252,7 +253,7 @@ export default async function Belegübersicht({
       ) : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Beleg</th>
               <th style={zelle}>Objekt</th>
               <th style={zelle}>Marken</th>
@@ -270,7 +271,7 @@ export default async function Belegübersicht({
                     {belegBezeichnung(z)}
                   </a>
                   {z.fundstelle !== null && (
-                    <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                       Seite {z.fundstelle.seite}:{' '}
                       {/* ts_headline liefert <b>-Auszeichnung. Sie wird hier
                           bewusst als Text gezeigt statt als HTML eingesetzt --
@@ -293,7 +294,7 @@ export default async function Belegübersicht({
                   {z.brutto === null ? '—' : euro.format(z.brutto)}
                 </td>
                 <td style={zelle}>{datum.format(new Date(z.eingangAm))}</td>
-                <td style={{ ...zelle, color: '#666' }}>{z.status}</td>
+                <td style={{ ...zelle, color: 'var(--farbe-text-leise)' }}>{z.status}</td>
               </tr>
             ))}
           </tbody>

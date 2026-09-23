@@ -61,13 +61,13 @@ export default async function Kategorien({
     <Seitenrahmen titel="Kategorien und ihre Steuerung">
       <Fehler text={fehler} />
 
-      <p style={{ color: '#444', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
         Eine Kategorie sagt an <strong>einer</strong> Stelle, was mit ihren Belegen
         geschieht: wer sie bearbeitet, welchen Ablauf sie nehmen und worauf sie
         gebucht werden. Es gibt keine Filter, die man nebeneinanderlegen muss, um
         das herauszufinden.
       </p>
-      <p style={{ color: '#444', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
         Bedingungen wie <em>„ab 5.000 € zusätzlich die Geschäftsleitung“</em> gehören
         nicht hierher, sondern als Verzweigung in den{' '}
         <Link href="/konfiguration">Ablauf</Link> selbst — dort stehen sie an einer
@@ -75,7 +75,7 @@ export default async function Kategorien({
       </p>
 
       {kategorien.length === 0 && (
-        <p style={{ color: '#6F6F6F' }}>
+        <p style={{ color: 'var(--farbe-text-leise)' }}>
           Noch keine Kategorien. Sie werden unter{' '}
           <Link href="/stammdaten">Stammdaten</Link> angelegt.
         </p>
@@ -85,7 +85,7 @@ export default async function Kategorien({
         <section
           key={k.id}
           style={{
-            border: '1px solid #ddd',
+            border: '1px solid var(--farbe-linie)',
             borderRadius: '0.3rem',
             marginBottom: '1.25rem',
             opacity: k.aktiv ? 1 : 0.6,
@@ -94,7 +94,7 @@ export default async function Kategorien({
         >
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.15rem' }}>
             {k.name}{' '}
-            <span style={{ color: '#6F6F6F', fontSize: '0.8rem', fontWeight: 'normal' }}>
+            <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', fontWeight: 'normal' }}>
               {k.kurzcode}
               {k.aktiv ? '' : ' · deaktiviert'}
             </span>
@@ -112,11 +112,11 @@ export default async function Kategorien({
                 Bearbeitet von <strong>{k.bearbeiter.join(', ')}</strong>
               </>
             ) : k.spezialgebiet === null ? (
-              <span style={{ color: '#6F6F6F' }}>
+              <span style={{ color: 'var(--farbe-text-leise)' }}>
                 Kein Spezialgebiet — die Zuständigkeit ergibt sich aus dem Objekt.
               </span>
             ) : (
-              <span style={{ color: '#A33' }}>
+              <span style={{ color: 'var(--farbe-rot)' }}>
                 Für „{k.spezialgebiet}“ ist niemand zuständig — Belege dieser
                 Kategorie erreichen kein Postfach.
               </span>
@@ -170,7 +170,7 @@ export default async function Kategorien({
               />
             </Anlegen>
           ) : (
-            <p style={{ color: '#6F6F6F', fontSize: '0.8rem', marginTop: '0.75rem' }}>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', marginTop: '0.75rem' }}>
               Ablauf: {k.ablauf ?? 'nach Belegart wie bisher'} — änderbar nur mit dem
               Recht, Abläufe zu konfigurieren.
             </p>
@@ -182,7 +182,7 @@ export default async function Kategorien({
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>
           Übliche Kategorie je Lieferant
         </h2>
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem', maxWidth: '46rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem', maxWidth: '46rem' }}>
           Die stärkste Quelle der automatischen Zuordnung: Was hier steht, schlägt
           jede Ableitung — es ist die Angabe eines Menschen. Ein Vorschlag bleibt
           es trotzdem; ein Versorger schickt auch einmal eine Reparaturrechnung,
@@ -230,7 +230,7 @@ export default async function Kategorien({
                         style={{
                           alignSelf: 'flex-end',
                           background: '#fff',
-                          border: '1px solid #bbb',
+                          border: '1px solid var(--farbe-linie-stark)',
                           borderRadius: '0.2rem',
                           cursor: 'pointer',
                           fontSize: '0.8rem',

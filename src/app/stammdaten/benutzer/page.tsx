@@ -88,7 +88,7 @@ export default async function BenutzerUndRollen({
       <Fehler text={fehler} />
       {!darf.benutzer && <NurLesend was="Benutzer und Rollen" />}
 
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         Die übrigen Stammdaten stehen unter <Link href="/stammdaten">Stammdaten</Link>. Wer
         hier ändern darf, kann sich jedes andere Recht selbst geben — deshalb ist es ein
         eigenes.
@@ -108,7 +108,7 @@ export default async function BenutzerUndRollen({
           </thead>
           <tbody>
             {benutzer.map((b) => (
-              <tr key={b.id} style={b.aktiv ? undefined : { color: '#999' }}>
+              <tr key={b.id} style={b.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={zelle}>
                   {b.name}
                   {!b.aktiv && (
@@ -121,7 +121,7 @@ export default async function BenutzerUndRollen({
                 <td style={zelle}>{b.email}</td>
                 <td style={zelle}>
                   {b.rollen.length === 0 ? (
-                    <span style={{ color: '#B3271E' }}>keine</span>
+                    <span style={{ color: 'var(--farbe-rot)' }}>keine</span>
                   ) : (
                     b.rollen.join(', ')
                   )}
@@ -155,7 +155,7 @@ export default async function BenutzerUndRollen({
             <Eingabe name="email" label="Kennung (E-Mail)" breite="18rem" pflicht typ="email" />
           </Anlegen>
         )}
-        <p style={{ color: '#555', fontSize: '0.8rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
           Angelegt wird die Kennung, nicht der Zugang: Ob jemand hereinkommt, entscheidet die
           Anmeldung über Entra ID. Ein Benutzer ohne Rolle sieht nichts — das ist die richtige
           Vorgabe, aber sie fällt sonst erst beim ersten Anmelden auf.
@@ -171,7 +171,7 @@ export default async function BenutzerUndRollen({
       {darf.benutzer && (
         <section style={{ marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Berechtigungs-Presets</h2>
-          <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
             Ein Startwert für die Ersteinrichtung, keine Bindung: Angewendet entstehen
             gewöhnliche Rollen und Rechte, und nichts verweist zurück. Ein Preset{' '}
             <strong>ergänzt und nimmt nichts weg</strong> — eine vorhandene Rolle mit
@@ -180,11 +180,11 @@ export default async function BenutzerUndRollen({
           <table style={tabelle}>
             <tbody>
               {PRESETS.map((preset) => (
-                <tr key={preset.id} style={{ borderTop: '1px solid #ddd' }}>
+                <tr key={preset.id} style={{ borderTop: '1px solid var(--farbe-linie)' }}>
                   <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
                     <strong>{preset.name}</strong>
-                    <div style={{ color: '#555', fontSize: '0.85rem' }}>{preset.beschreibung}</div>
-                    <div style={{ color: '#555', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>{preset.beschreibung}</div>
+                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                       {preset.rollen.map((r) => `${r.kurzcode} ${r.name}`).join(' · ')}
                     </div>
                   </td>
@@ -203,7 +203,7 @@ export default async function BenutzerUndRollen({
 
       <section style={{ marginBottom: '2.5rem' }}>
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Rollen und ihre Rechte</h2>
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
           Rechte sind additiv: Eine zweite Rolle kann ein Recht nur hinzufügen, nie entziehen.
           Deshalb ist &bdquo;warum durfte er das nicht&ldquo; immer an einer Stelle zu beantworten.
         </p>
@@ -217,9 +217,9 @@ export default async function BenutzerUndRollen({
           </thead>
           <tbody>
             {rollen.map((r) => (
-              <tr key={r.id} style={r.aktiv ? undefined : { color: '#999' }}>
+              <tr key={r.id} style={r.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={{ ...zelle, whiteSpace: 'nowrap' }}>
-                  {r.name} <span style={{ color: '#6F6F6F' }}>{r.kurzcode}</span>
+                  {r.name} <span style={{ color: 'var(--farbe-text-leise)' }}>{r.kurzcode}</span>
                 </td>
                 <td style={zelle}>
                   <span style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
@@ -243,7 +243,7 @@ export default async function BenutzerUndRollen({
             ))}
           </tbody>
         </table>
-        <p style={{ color: '#555', fontSize: '0.8rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
           Rot markiert sind die beiden weitreichenden Rechte: Wer Benutzer verwalten darf, kann
           sich jedes andere geben; wer Abläufe ändern darf, bestimmt, wer freigeben muss. Eine
           Rolle mit null Trägern ist kein Fehler, aber ein Recht, das niemand mehr hat, fällt
@@ -254,7 +254,7 @@ export default async function BenutzerUndRollen({
       {darf.benutzer && (
         <section style={{ marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Rolle zuweisen</h2>
-          <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
             Ohne Objekt gilt die Rolle mandantenweit. Entzogen wird sie nicht gelöscht, sondern
             beendet — wer wann welche Rolle trug, ist die Antwort auf &bdquo;wer durfte das damals&ldquo;.
           </p>
@@ -303,7 +303,7 @@ export default async function BenutzerUndRollen({
       {darf.benutzer && (
         <section>
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Objektzuständigkeit</h2>
-          <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
             Die zweite, unabhängige Quelle der Sichtbarkeit neben der Rolle. Wer für ein Objekt
             zuständig ist, sieht dessen Belege — auch ohne mandantenweite Rolle.
           </p>

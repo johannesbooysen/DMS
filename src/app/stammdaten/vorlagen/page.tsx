@@ -55,7 +55,7 @@ export default async function Vorlagen({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die Vorlagen" />}
 
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         Betreff und Text der Mails, die das Haus verlassen.{' '}
         <Link href="/stammdaten">Zurück zu den Stammdaten</Link>
       </p>
@@ -64,7 +64,7 @@ export default async function Vorlagen({
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>
           Diese Platzhalter gibt es
         </h2>
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
           Und nur diese. Was hier nicht steht, lässt sich nicht einsetzen — eine freie
           Vorlagensprache könnte den ganzen Belegtext in eine Mail schreiben, an einen
           Empfänger, den ein Stammdatum bestimmt.
@@ -84,12 +84,12 @@ export default async function Vorlagen({
                   <code>{`{{${p.name}}}`}</code>
                 </td>
                 <td style={zelle}>{p.anzeige}</td>
-                <td style={{ ...zelle, color: '#555' }}>{p.hinweis}</td>
+                <td style={{ ...zelle, color: 'var(--farbe-text-leise)' }}>{p.hinweis}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p style={{ color: '#555', fontSize: '0.8rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
           Ein bekannter Platzhalter ohne Wert wird zu einem Strich — dann fehlt die Angabe am
           Beleg, nicht in der Vorlage.
         </p>
@@ -103,14 +103,14 @@ export default async function Vorlagen({
         <section
           key={v.id}
           style={{
-            border: '1px solid #ddd',
+            border: '1px solid var(--farbe-linie)',
             marginBottom: '1.5rem',
             padding: '1rem 1.25rem',
           }}
         >
           <h2 style={{ alignItems: 'baseline', display: 'flex', fontSize: '1rem', gap: '0.6rem', margin: '0 0 0.5rem' }}>
             {v.name}
-            <code style={{ color: '#6F6F6F', fontSize: '0.8rem' }}>{v.schluessel}</code>
+            <code style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>{v.schluessel}</code>
             {!v.aktiv && <Marke text="inaktiv" farbe="#B3271E" />}
             {v.unbekannt.length > 0 && (
               <Marke text={`${v.unbekannt.length} unbekannt`} farbe="#B3271E" />
@@ -118,7 +118,7 @@ export default async function Vorlagen({
           </h2>
 
           {v.geaendertVon !== null && (
-            <p style={{ color: '#6F6F6F', fontSize: '0.78rem', margin: '0 0 0.75rem' }}>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', margin: '0 0 0.75rem' }}>
               Zuletzt geändert von {v.geaendertVon} am {v.geaendertAm}
             </p>
           )}
@@ -130,7 +130,7 @@ export default async function Vorlagen({
               <label
                 style={{ display: 'block', fontSize: '0.75rem', marginBottom: '0.6rem' }}
               >
-                <span style={{ color: '#555' }}>Betreff</span>
+                <span style={{ color: 'var(--farbe-text-leise)' }}>Betreff</span>
                 <input
                   name="betreff"
                   defaultValue={v.betreff}
@@ -139,7 +139,7 @@ export default async function Vorlagen({
                 />
               </label>
               <label style={{ display: 'block', fontSize: '0.75rem' }}>
-                <span style={{ color: '#555' }}>Text</span>
+                <span style={{ color: 'var(--farbe-text-leise)' }}>Text</span>
                 <textarea
                   name="text"
                   defaultValue={v.text}
@@ -150,7 +150,7 @@ export default async function Vorlagen({
               </label>
               <button
                 type="submit"
-                style={{ ...feld, background: '#3B4A80', color: '#fff', marginTop: '0.6rem' }}
+                style={{ ...feld, background: 'var(--farbe-akzent)', color: '#fff', marginTop: '0.6rem' }}
               >
                 Speichern
               </button>

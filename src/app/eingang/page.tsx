@@ -33,7 +33,7 @@ export const dynamic = 'force-dynamic'
 const HIER = '/eingang'
 
 const zelle = {
-  borderBottom: '1px solid #eee',
+  borderBottom: '1px solid var(--farbe-linie)',
   padding: '0.45rem 0.5rem',
   verticalAlign: 'top',
 } as const
@@ -69,7 +69,7 @@ export default async function Eingangsquellen({
     <Seitenrahmen titel="Eingangsquellen">
       <Fehler text={fehler} />
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         Woher Belege von selbst hereinkommen. Was hier ankommt, geht durch
         denselben Eingang wie ein Upload — dieselbe Dublettenprüfung, dieselbe
         Aufbereitung.
@@ -80,7 +80,7 @@ export default async function Eingangsquellen({
       ) : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Quelle</th>
               <th style={zelle}>Nachgesehen</th>
               <th style={zelle}>Zuletzt etwas bekommen</th>
@@ -96,7 +96,7 @@ export default async function Eingangsquellen({
                 <tr key={q.id}>
                   <td style={zelle}>
                     <strong>{q.bezeichnung}</strong>
-                    <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                       {ART[q.art] ?? q.art} · alle {Math.round(q.taktSekunden / 60) || 1} min
                       {e?.traeger != null && <> · getragen von {e.traeger}</>}
                     </div>
@@ -120,15 +120,15 @@ export default async function Eingangsquellen({
                   <td style={{ ...zelle, fontSize: '0.85rem' }}>{q.aufgenommen}</td>
                   <td style={zelle}>
                     {!q.aktiv ? (
-                      <span style={{ color: '#666' }}>abgeschaltet</span>
+                      <span style={{ color: 'var(--farbe-text-leise)' }}>abgeschaltet</span>
                     ) : e?.traegerAktiv === false ? (
-                      <span style={{ color: '#B3271E' }}>
+                      <span style={{ color: 'var(--farbe-rot)' }}>
                         Träger gesperrt — die Quelle steht still
                       </span>
                     ) : q.letzterFehler !== null ? (
-                      <span style={{ color: '#B3271E' }}>{q.letzterFehler}</span>
+                      <span style={{ color: 'var(--farbe-rot)' }}>{q.letzterFehler}</span>
                     ) : (
-                      <span style={{ color: '#2F6F4E' }}>läuft</span>
+                      <span style={{ color: 'var(--farbe-gruen)' }}>läuft</span>
                     )}
                   </td>
                   <td style={zelle}>
@@ -148,7 +148,7 @@ export default async function Eingangsquellen({
       )}
 
       <h2 style={{ fontSize: '1.05rem', margin: '2rem 0 0.25rem' }}>Quelle einrichten</h2>
-      <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
         <Link href="?art=ordner">Überwachter Ordner</Link>
         {' · '}
         <Link href="?art=mail">Mailpostfach</Link>
@@ -184,7 +184,7 @@ export default async function Eingangsquellen({
               optionen={gruppen.map((g) => ({ wert: g.id, text: g.name }))}
             />
           </Anlegen>
-          <p style={{ color: '#555', fontSize: '0.8rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
             <strong>Hier gibt es kein Passwortfeld, und das ist Absicht.</strong> Eingetragen
             wird der <em>Name</em> einer Umgebungsvariablen; das Geheimnis selbst liegt auf dem
             Rechner, auf dem der Worker läuft. Ein Datenbankauszug gibt damit keinen
@@ -219,7 +219,7 @@ export default async function Eingangsquellen({
         </Anlegen>
       )}
 
-      <p style={{ color: '#666', fontSize: '0.8rem', marginTop: '1.5rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', marginTop: '1.5rem' }}>
         Eine Quelle arbeitet unter den Rechten dessen, der sie einrichtet — kein technisches
         Konto. Am Beleg steht dadurch ein Name, den man fragen kann. Einrichten darf, wer
         Abläufe konfigurieren darf: Eine Eingangsquelle bestimmt, welche Belege überhaupt

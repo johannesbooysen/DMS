@@ -51,12 +51,12 @@ export default async function Stapelpruefung({
   return (
     <Seitenrahmen titel={`Belegtrennung — ${kopf.dateiname}`}>
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         {kopf.seitenzahl} Seiten · {kopf.belege}{' '}
         {kopf.belege === 1 ? 'erkannter Beleg' : 'erkannte Belege'} · Eingang{' '}
         {datum.format(new Date(kopf.eingangAm))}
@@ -69,7 +69,7 @@ export default async function Stapelpruefung({
           Worker, nicht diese Seite. Bitte in einem Moment neu laden.
         </p>
       ) : uebernommen ? (
-        <p style={{ background: '#EEF3EE', color: '#2F6F4E', padding: '0.75rem' }}>
+        <p style={{ background: '#EEF3EE', color: 'var(--farbe-gruen)', padding: '0.75rem' }}>
           Dieser Stapel ist übernommen. Die Belege stehen unter{' '}
           <a href="/belege">Belege</a>; Änderungen laufen ab hier über den
           einzelnen Beleg.
@@ -116,7 +116,7 @@ export default async function Stapelpruefung({
           <section key={nr} style={{ margin: '1.2rem 0' }}>
             <h2 style={{ fontSize: '0.95rem' }}>
               Beleg {nr}{' '}
-              <span style={{ color: '#666', fontWeight: 400 }}>
+              <span style={{ color: 'var(--farbe-text-leise)', fontWeight: 400 }}>
                 — Seite{gruppe.length === 1 ? '' : 'n'}{' '}
                 {gruppe.map((s) => s.seite).join(', ')}
               </span>
@@ -131,7 +131,7 @@ export default async function Stapelpruefung({
 
       {seiten.some((s) => s.trenner) && (
         <section style={{ margin: '1.2rem 0' }}>
-          <h2 style={{ fontSize: '0.95rem', color: '#666' }}>Trennblätter</h2>
+          <h2 style={{ fontSize: '0.95rem', color: 'var(--farbe-text-leise)' }}>Trennblätter</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
             {seiten
               .filter((s) => s.trenner)
@@ -160,14 +160,14 @@ function Seitenkachel({
         src={`/api/stapel/${stapelId}/seite/${seite.seite}`}
         alt={`Seite ${seite.seite}`}
         style={{
-          border: seite.trenner ? '2px solid #B5741A' : '1px solid #ddd',
+          border: seite.trenner ? '2px solid #B5741A' : '1px solid var(--farbe-linie)',
           width: '100%',
         }}
       />
       <figcaption style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
         Seite {seite.seite}
         {seite.quelle === 'mensch' && (
-          <span style={{ color: '#666' }}> · von Hand</span>
+          <span style={{ color: 'var(--farbe-text-leise)' }}> · von Hand</span>
         )}
         {!gesperrt && (
           <form action={trennungAendernAktion}>

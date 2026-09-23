@@ -28,32 +28,30 @@ const BELEGART: Record<string, string> = {
 
 function Belegliste({ zeilen }: { zeilen: Postfachzeile[] }) {
   return (
-    <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: '100%' }}>
+    <table>
       <thead>
-        <tr style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>
-          <th style={{ padding: '0.4rem 0.5rem' }}></th>
-          <th style={{ padding: '0.4rem 0.5rem' }}>Beleg</th>
-          <th style={{ padding: '0.4rem 0.5rem' }}>Objekt</th>
-          <th style={{ padding: '0.4rem 0.5rem', textAlign: 'right' }}>Betrag</th>
-          <th style={{ padding: '0.4rem 0.5rem' }}>Fällig</th>
+        <tr>
+          <th></th>
+          <th>Beleg</th>
+          <th>Objekt</th>
+          <th style={{ textAlign: 'right' }}>Betrag</th>
+          <th>Fällig</th>
         </tr>
       </thead>
       <tbody>
         {zeilen.map((z) => {
           const ueberfaellig = z.faelligAm !== null && new Date(z.faelligAm) < new Date()
           return (
-            <tr key={z.aufgabeId} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '0.4rem 0.5rem' }}>
+            <tr key={z.aufgabeId}>
+              <td>
                 <Ampel wert={z.ampel} />
               </td>
-              <td style={{ padding: '0.4rem 0.5rem' }}>
+              <td>
                 <a href={`/aufgabe/${z.aufgabeId}`}>{belegBezeichnung(z)}</a>
               </td>
-              <td style={{ padding: '0.4rem 0.5rem' }}>{z.objektnummer ?? '—'}</td>
-              <td style={{ padding: '0.4rem 0.5rem', textAlign: 'right' }}>
-                {z.brutto === null ? '—' : euro.format(z.brutto)}
-              </td>
-              <td style={{ color: ueberfaellig ? '#A33' : undefined, padding: '0.4rem 0.5rem' }}>
+              <td>{z.objektnummer ?? '—'}</td>
+              <td style={{ textAlign: 'right' }}>{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+              <td style={{ color: ueberfaellig ? 'var(--farbe-rot)' : undefined }}>
                 {z.faelligAm === null ? '—' : datum.format(new Date(z.faelligAm))}
               </td>
             </tr>
@@ -86,55 +84,46 @@ export default async function Stufen({
 
   return (
     <Seitenrahmen titel="Wo steht was">
-      <p style={{ color: '#444', margin: '0 0 1.25rem' }}>
-        {gesamt === 0
-          ? 'Kein Beleg ist gerade unterwegs.'
-          : `${gesamt} Belege unterwegs` +
-            (ueberfaellig > 0 ? `, davon ${ueberfaellig} überfällig.` : '.')}
-      </p>
+      <div className="kennzahlen">
+        <div className="kennzahl">
+          <strong>{gesamt}</strong>
+          <span>Belege unterwegs</span>
+        </div>
+        <div className="kennzahl">
+          <strong style={{ color: ueberfaellig > 0 ? 'var(--farbe-rot)' : undefined }}>{ueberfaellig}</strong>
+          <span>überfällig</span>
+        </div>
+      </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+      <div className="zweispaltig">
         {/* Die Stufen -- der „Ordnerbaum". */}
-        <nav aria-label="Stufen" style={{ flex: '1 1 18rem', minWidth: 0 }}>
+        <nav aria-label="Stufen" className="stufenbaum">
           {belegarten.map((art) => (
             <section key={art} style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem' }}>
-                {BELEGART[art] ?? art}
-              </h2>
+              <h2>{BELEGART[art] ?? art}</h2>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {zaehler
                   .filter((z) => z.belegart === art)
                   .map((z) => {
                     const aktiv = gewaehlt?.belegart === art && gewaehlt.stufe === z.stufe
                     return (
-                      <li key={z.stufe} style={{ marginBottom: '0.15rem' }}>
+                      <li key={z.stufe}>
                         <Link
                           href={`/stufen?belegart=${encodeURIComponent(art)}&stufe=${encodeURIComponent(z.stufe)}`}
                           aria-current={aktiv ? 'page' : undefined}
-                          style={{
-                            alignItems: 'baseline',
-                            background: aktiv ? '#EEF1F8' : undefined,
-                            borderRadius: '0.2rem',
-                            color: 'inherit',
-                            display: 'flex',
-                            gap: '0.5rem',
-                            justifyContent: 'space-between',
-                            padding: '0.3rem 0.5rem',
-                            textDecoration: 'none',
-                          }}
                         >
                           <span>{z.stufe}</span>
                           <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                             <strong>{z.offen}</strong>
                             {z.ueberfaellig > 0 && (
-                              <span style={{ color: '#A33', marginLeft: '0.4rem' }}>
+                              <span style={{ color: 'var(--farbe-rot)', marginLeft: '0.4rem' }}>
                                 {z.ueberfaellig} überfällig
                               </span>
                             )}
                           </span>
                         </Link>
                         {z.aeltesteFaelligkeit !== null && z.ueberfaellig > 0 && (
-                          <div style={{ color: '#6F6F6F', fontSize: '0.75rem', padding: '0 0.5rem' }}>
+                          <div className="leise" style={{ fontSize: '0.75rem', padding: '0 0.5rem' }}>
                             älteste Fälligkeit {datum.format(new Date(z.aeltesteFaelligkeit))}
                           </div>
                         )}
@@ -147,21 +136,19 @@ export default async function Stufen({
         </nav>
 
         {/* Die Belege der gewählten Stufe -- der Klick auf den „Ordner". */}
-        <section style={{ flex: '3 1 28rem', minWidth: 0 }}>
+        <section>
           {gewaehlt === undefined ? (
-            <p style={{ color: '#6F6F6F' }}>
-              {gesamt === 0 ? '' : 'Eine Stufe links wählen, um ihre Belege zu sehen.'}
-            </p>
+            <p className="leise">{gesamt === 0 ? '' : 'Eine Stufe links wählen, um ihre Belege zu sehen.'}</p>
           ) : (
             <>
-              <h2 style={{ fontSize: '1rem', margin: '0 0 0.5rem' }}>
+              <h2>
                 {gewaehlt.stufe}{' '}
-                <span style={{ color: '#6F6F6F', fontWeight: 'normal' }}>
+                <span className="leise" style={{ fontWeight: 'normal' }}>
                   · {BELEGART[gewaehlt.belegart] ?? gewaehlt.belegart}
                 </span>
               </h2>
               {zeilen.length === 0 ? (
-                <p style={{ color: '#6F6F6F' }}>Keine Belege in dieser Stufe.</p>
+                <p className="leise">Keine Belege in dieser Stufe.</p>
               ) : (
                 <Belegliste zeilen={zeilen} />
               )}

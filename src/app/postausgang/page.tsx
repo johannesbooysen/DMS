@@ -20,7 +20,7 @@ import { datum, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
-const zelle = { borderBottom: '1px solid #eee', padding: '0.45rem 0.5rem', verticalAlign: 'top' } as const
+const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.45rem 0.5rem', verticalAlign: 'top' } as const
 
 const FARBE: Record<string, string> = {
   offen: '#B5741A',
@@ -47,7 +47,7 @@ export default async function Postausgang({
   return (
     <Seitenrahmen titel="Postausgang">
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
@@ -60,7 +60,7 @@ export default async function Postausgang({
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         {eintraege.length === 0
           ? 'Das Ausgangsbuch ist leer.'
           : `${eintraege.length} Einträge, davon ${offen.length} noch nicht hinaus.`}
@@ -69,7 +69,7 @@ export default async function Postausgang({
       {eintraege.length > 0 && (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Empfänger</th>
               <th style={zelle}>Betreff</th>
               <th style={zelle}>Anlass</th>
@@ -92,13 +92,13 @@ export default async function Postausgang({
                 <td style={{ ...zelle, color: FARBE[e.status] ?? '#333' }}>
                   {e.status}
                   {e.versuche > 0 && (
-                    <span style={{ color: '#666', fontSize: '0.78rem' }}>
+                    <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                       {' '}
                       · {e.versuche} Versuch{e.versuche === 1 ? '' : 'e'}
                     </span>
                   )}
                   {e.gesendetAm !== null && (
-                    <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                       {datum.format(new Date(e.gesendetAm))}
                     </div>
                   )}
@@ -115,7 +115,7 @@ export default async function Postausgang({
                         style={{
                           background: 'none',
                           border: 0,
-                          color: '#3B4A80',
+                          color: 'var(--farbe-akzent)',
                           cursor: 'pointer',
                         }}
                       >
@@ -131,7 +131,7 @@ export default async function Postausgang({
       )}
 
       <h2 style={{ fontSize: '1rem', marginTop: '2rem' }}>Vorlagen</h2>
-      <p style={{ color: '#555', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
         Platzhalter in doppelten geschweiften Klammern. Verfügbar sind:{' '}
         {Object.keys(PLATZHALTER)
           .map((k) => `{{${k}}}`)
@@ -146,7 +146,7 @@ export default async function Postausgang({
             <tr key={v.id}>
               <td style={zelle}>
                 <strong>{v.name}</strong>
-                <div style={{ color: '#666', fontSize: '0.78rem' }}>{v.schluessel}</div>
+                <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>{v.schluessel}</div>
               </td>
               <td style={zelle}>
                 {bearbeitet?.id === v.id ? (
@@ -178,7 +178,7 @@ export default async function Postausgang({
                     <div>{v.betreff}</div>
                     <pre
                       style={{
-                        color: '#555',
+                        color: 'var(--farbe-text-leise)',
                         fontFamily: 'inherit',
                         fontSize: '0.82rem',
                         margin: '0.3rem 0 0',

@@ -65,7 +65,7 @@ function Baustein({
         </span>
 
         {knoten.knotentyp === 'stufe' && knoten.stufe !== null && (
-          <span style={{ color: '#666', fontSize: '0.8rem' }}>
+          <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
             {[
               knoten.stufe.zustaendigkeitTyp,
               knoten.stufe.betragVon !== null && `ab ${knoten.stufe.betragVon} EUR`,
@@ -177,7 +177,7 @@ export default async function Fassung({
 
   return (
     <Seitenrahmen titel={`${fassung.belegart}, Version ${fassung.version}`}>
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         {fassung.status === 'entwurf'
           ? `Entwurf${fassung.entwurfVonName === null ? '' : ` von ${fassung.entwurfVonName}`}`
           : fassung.status === 'aktiv'
@@ -187,7 +187,7 @@ export default async function Fassung({
       </p>
 
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
@@ -196,7 +196,7 @@ export default async function Fassung({
         <section style={{ flex: 1, minWidth: '20rem' }}>
           <h2 style={{ fontSize: '1rem' }}>Ablauf</h2>
           {wurzel === null ? (
-            <p style={{ color: '#666' }}>Kein Ablauf hinterlegt.</p>
+            <p style={{ color: 'var(--farbe-text-leise)' }}>Kein Ablauf hinterlegt.</p>
           ) : (
             <ul style={{ margin: 0, padding: 0 }}>
               <Baustein knoten={wurzel} definitionId={id} bearbeitbar={bearbeitbar} />
@@ -207,7 +207,7 @@ export default async function Fassung({
         <aside style={{ flex: '0 0 22rem' }}>
           <h2 style={{ fontSize: '1rem' }}>Prüfung</h2>
           {befunde.length === 0 ? (
-            <p style={{ color: '#2F6F4E' }}>Keine Befunde — der Ablauf ist gültig.</p>
+            <p style={{ color: 'var(--farbe-gruen)' }}>Keine Befunde — der Ablauf ist gültig.</p>
           ) : (
             <ul>
               {befunde.map((b) => (
@@ -226,7 +226,7 @@ export default async function Fassung({
           )}
 
           <h2 style={{ fontSize: '1rem' }}>Simulation</h2>
-          <p style={{ color: '#666', fontSize: '0.85rem', marginTop: 0 }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
             Die Kette, die sich für einen gedachten Beleg ergibt.
           </p>
           <form method="get" style={{ marginBottom: '0.5rem' }}>

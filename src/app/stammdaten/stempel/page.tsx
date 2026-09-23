@@ -71,12 +71,12 @@ export default async function Stempeldesigner({
     <Seitenrahmen titel="Stempel gestalten">
       <Fehler text={fehler} />
 
-      <p style={{ color: '#444', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
         Je Stempeltyp: was auf dem Stempel steht und wie er aussieht. Der Stempeltext
         steht immer zuerst — er ist die Entscheidung; alles andere ist Beleg dafür.
         Die Vorschau zeigt, was auf dem Beleg erscheint.
       </p>
-      <p style={{ color: '#444', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
         <strong>Gilt für die nächsten Stempel.</strong> Ein gesetzter Stempel ändert sich
         nicht — sein Text entstand beim Stempeln und bleibt, wie er war. Wohin der Beleg
         nach einem Stempel geht, steht nicht hier, sondern im{' '}
@@ -87,7 +87,7 @@ export default async function Stempeldesigner({
         <section
           key={t.id}
           style={{
-            border: '1px solid #ddd',
+            border: '1px solid var(--farbe-linie)',
             borderRadius: '0.3rem',
             display: 'flex',
             flexWrap: 'wrap',
@@ -100,12 +100,12 @@ export default async function Stempeldesigner({
           <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
             <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.15rem' }}>
               {t.name}{' '}
-              <span style={{ color: '#6F6F6F', fontSize: '0.8rem', fontWeight: 'normal' }}>
+              <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', fontWeight: 'normal' }}>
                 {t.kurzcode} · {ENTSCHEIDUNG[t.entscheidung] ?? t.entscheidung}
                 {t.aktiv ? '' : ' · deaktiviert'}
               </span>
             </h2>
-            <p style={{ color: '#6F6F6F', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>
               {t.stufen === 0
                 ? 'An keiner Stufe eingehängt — wird nie gesetzt.'
                 : `An ${t.stufen} Stufe${t.stufen === 1 ? '' : 'n'} eingehängt.`}
@@ -137,8 +137,8 @@ export default async function Stempeldesigner({
                 <input type="hidden" name="zurueck" value={HIER} />
                 <input type="hidden" name="id" value={t.id} />
 
-                <fieldset style={{ border: '1px solid #ddd', borderRadius: '0.2rem', padding: '0.5rem 0.75rem' }}>
-                  <legend style={{ fontSize: '0.8rem', color: '#555' }}>Was auf dem Stempel steht</legend>
+                <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: '0.2rem', padding: '0.5rem 0.75rem' }}>
+                  <legend style={{ fontSize: '0.8rem', color: 'var(--farbe-text-leise)' }}>Was auf dem Stempel steht</legend>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1rem' }}>
                     {FELDER.map((f) => (
                       <label key={f} style={{ fontSize: '0.85rem' }}>
@@ -197,7 +197,7 @@ export default async function Stempeldesigner({
                   <button
                     type="submit"
                     style={{
-                      background: '#3B4A80',
+                      background: 'var(--farbe-akzent)',
                       border: 0,
                       borderRadius: '0.2rem',
                       color: '#fff',
@@ -219,7 +219,7 @@ export default async function Stempeldesigner({
       {darf && (
         <section style={{ marginTop: '2rem' }}>
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Neuer Stempeltyp</h2>
-          <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.5rem', maxWidth: '46rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.5rem', maxWidth: '46rem' }}>
             Ein neuer Typ steht zunächst an keiner Stufe — eingehängt wird er im Ablauf, und
             wer ihn setzen darf, unter <Link href="/stammdaten/benutzer">Benutzer und Rollen</Link>.
           </p>

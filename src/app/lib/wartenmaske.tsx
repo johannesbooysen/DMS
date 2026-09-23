@@ -65,7 +65,7 @@ export function Warten({
           <summary style={{ cursor: 'pointer', fontSize: '0.85rem' }}>
             {erledigt.length} abgeschlossen
           </summary>
-          <ul style={{ color: '#555', fontSize: '0.85rem', paddingLeft: '1.1rem' }}>
+          <ul style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', paddingLeft: '1.1rem' }}>
             {erledigt.map((w) => (
               <li key={w.containerId}>
                 {w.art}: {w.ergebnis}

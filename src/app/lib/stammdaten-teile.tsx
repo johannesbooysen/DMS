@@ -13,32 +13,18 @@
 
 import type { ReactNode } from 'react'
 
-export const tabelle = {
-  borderCollapse: 'collapse',
-  fontSize: '0.875rem',
-  width: '100%',
-} as const
+/*
+ * Die Stilkonstanten sind seit dem Stilsystem (`globals.css`) leer: Tabelle,
+ * Zelle, Kopfzelle und Feld bekommen ihr Aussehen von dort. Sie bleiben als
+ * Namen bestehen, damit die sieben Masken nicht angefasst werden muessen --
+ * `style={zelle}` ist jetzt ein Nichts, und das ist der Sinn.
+ */
+import type { CSSProperties } from 'react'
 
-export const zelle = {
-  borderBottom: '1px solid #eee',
-  padding: '0.45rem 0.5rem',
-  verticalAlign: 'top',
-} as const
-
-export const kopfzelle = {
-  ...zelle,
-  borderBottom: '1px solid #ccc',
-  color: '#555',
-  fontWeight: 600,
-  textAlign: 'left',
-} as const
-
-export const feld = {
-  border: '1px solid #bbb',
-  borderRadius: '2px',
-  font: 'inherit',
-  padding: '0.3rem 0.4rem',
-} as const
+export const tabelle: CSSProperties = {}
+export const zelle: CSSProperties = {}
+export const kopfzelle: CSSProperties = {}
+export const feld: CSSProperties = {}
 
 /**
  * Sichtbar fuer Vorleseprogramme, unsichtbar auf dem Bildschirm.
@@ -62,7 +48,7 @@ export const nurFuerVorleser = {
 export const knopf = {
   background: 'none',
   border: 0,
-  color: '#3B4A80',
+  color: 'var(--farbe-akzent)',
   cursor: 'pointer',
   font: 'inherit',
   fontSize: '0.85rem',
@@ -85,21 +71,14 @@ export function Anlegen({
   return (
     <form
       action={aktion}
-      style={{
-        alignItems: 'flex-end',
-        borderTop: '1px solid #ddd',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '0.5rem',
-        marginTop: '0.75rem',
-        paddingTop: '0.75rem',
-      }}
+      className="filterzeile"
+      style={{ borderTop: '1px solid var(--farbe-linie)', marginTop: '0.75rem', paddingTop: '0.75rem' }}
     >
       {/* Wohin nach dem Absenden -- damit dieselbe Aktion von mehreren
           Unterseiten aus benutzt werden kann. */}
       <input type="hidden" name="zurueck" value={zurueck} />
       {children}
-      <button type="submit" style={{ ...feld, background: '#3B4A80', color: '#fff' }}>
+      <button type="submit" className="knopf-primaer">
         {beschriftung}
       </button>
     </form>
@@ -123,7 +102,7 @@ export function Eingabe({
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
-      <span style={{ color: '#555' }}>{label}</span>
+      <span style={{ color: 'var(--farbe-text-leise)' }}>{label}</span>
       <input
         type={typ}
         name={name}
@@ -169,7 +148,7 @@ export function Auswahl({
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
-      <span style={labelVerbergen === true ? nurFuerVorleser : { color: '#555' }}>{label}</span>
+      <span style={labelVerbergen === true ? nurFuerVorleser : { color: 'var(--farbe-text-leise)' }}>{label}</span>
       <select name={name} defaultValue={wert ?? ''} style={{ ...feld, width: breite }}>
         {leer !== undefined && <option value="">{leer}</option>}
         {optionen.map((o) => (
@@ -213,16 +192,7 @@ export function Handlung({
 export function Fehler({ text }: { text?: string }) {
   if (text === undefined || text === '') return null
   return (
-    <p
-      role="alert"
-      style={{
-        background: '#F6DCD9',
-        color: '#6B1D15',
-        fontSize: '0.9rem',
-        margin: '0 0 1rem',
-        padding: '0.75rem',
-      }}
-    >
+    <p role="alert" className="meldung-fehler">
       {text}
     </p>
   )
@@ -237,15 +207,7 @@ export function Fehler({ text }: { text?: string }) {
  */
 export function NurLesend({ was }: { was: string }) {
   return (
-    <p
-      style={{
-        background: '#F3EDDC',
-        color: '#6B551A',
-        fontSize: '0.85rem',
-        margin: '0 0 1rem',
-        padding: '0.6rem 0.75rem',
-      }}
-    >
+    <p className="meldung-hinweis klein">
       Sie sehen {was}, dürfen sie aber nicht ändern — dafür fehlt das Recht.
     </p>
   )

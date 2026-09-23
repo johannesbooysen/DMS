@@ -26,7 +26,7 @@ import { seit, Seitenrahmen } from '@/app/lib/darstellung'
 export const dynamic = 'force-dynamic'
 
 const zelle = {
-  borderBottom: '1px solid #eee',
+  borderBottom: '1px solid var(--farbe-linie)',
   padding: '0.45rem 0.5rem',
   verticalAlign: 'top',
 } as const
@@ -34,7 +34,7 @@ const zelle = {
 const knopf = {
   background: 'none',
   border: 0,
-  color: '#3B4A80',
+  color: 'var(--farbe-akzent)',
   cursor: 'pointer',
   fontSize: '0.85rem',
   padding: 0,
@@ -68,12 +68,12 @@ export default async function Fehlerkorb({
   return (
     <Seitenrahmen titel="Fehlerkorb">
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         Ein Beleg, dessen Aufbereitung scheitert, ist <strong>nicht verloren</strong> — sein
         Lauf startete beim Eingang, die Aufgabe liegt im Postfach. Was fehlt, sind
         Vorschau, Seitentext und erkannte Felder. Hier steht, warum.
@@ -88,7 +88,7 @@ export default async function Fehlerkorb({
       ) : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Eingang</th>
               <th style={zelle}>Grund</th>
               <th style={zelle}>Seit</th>
@@ -104,15 +104,15 @@ export default async function Fehlerkorb({
                   ) : (
                     <a href={`/beleg/${z.dokumentId}`}>{kennung(z)}</a>
                   )}
-                  <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                     {z.stapelId === null ? 'Beleg' : 'Stapel'}
                     {z.eingangskanal !== null && ` · ${z.eingangskanal}`}
                     {z.versuche > 0 && ` · ${z.versuche} Versuche`}
                   </div>
                 </td>
-                <td style={{ ...zelle, color: '#B3271E', maxWidth: '26rem' }}>
+                <td style={{ ...zelle, color: 'var(--farbe-rot)', maxWidth: '26rem' }}>
                   <div style={{ overflowWrap: 'anywhere' }}>{z.grund}</div>
-                  <div style={{ color: '#666', fontSize: '0.78rem' }}>{z.warteschlange}</div>
+                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>{z.warteschlange}</div>
                 </td>
                 <td style={{ ...zelle, fontSize: '0.85rem' }}>
                   {seit(z.aufgetretenAm)}
@@ -143,7 +143,7 @@ export default async function Fehlerkorb({
                       required
                       style={{ fontSize: '0.8rem', padding: '0.2rem', width: '11rem' }}
                     />{' '}
-                    <button type="submit" style={{ ...knopf, color: '#B3271E' }}>
+                    <button type="submit" style={{ ...knopf, color: 'var(--farbe-rot)' }}>
                       verwerfen
                     </button>
                   </form>
@@ -157,7 +157,7 @@ export default async function Fehlerkorb({
       <h2 style={{ fontSize: '1rem', marginTop: '2rem' }}>
         Hängt{haenger.length > 0 && ` (${haenger.length})`}
       </h2>
-      <p style={{ color: '#555', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
         Seit mehr als einer halben Stunde in Aufbereitung, ohne dass die
         Warteschlange etwas gemeldet hat. Der häufigste Grund ist ein Worker,
         der zwischendurch beendet wurde.
@@ -168,7 +168,7 @@ export default async function Fehlerkorb({
       ) : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Eingang</th>
               <th style={zelle}>Kanal</th>
               <th style={zelle}>Seit</th>

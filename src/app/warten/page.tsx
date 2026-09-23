@@ -26,7 +26,7 @@ const EREIGNIS: Record<string, string> = {
   gewaehrleistungsantwort: 'Antwort zur Gewährleistung',
 }
 
-const zelle = { borderBottom: '1px solid #eee', padding: '0.5rem', verticalAlign: 'top' } as const
+const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.5rem', verticalAlign: 'top' } as const
 
 export default async function Wartende({
   searchParams,
@@ -40,12 +40,12 @@ export default async function Wartende({
   return (
     <Seitenrahmen titel="Warten auf ein externes Ereignis">
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         {zeilen.length === 0
           ? 'Kein Beleg wartet.'
           : `${zeilen.length === 1 ? 'Ein Beleg wartet' : `${zeilen.length} Belege warten`}${
@@ -56,7 +56,7 @@ export default async function Wartende({
       {zeilen.length > 0 && (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Beleg</th>
               <th style={zelle}>Wartet auf</th>
               <th style={zelle}>Wiedervorlage</th>
@@ -70,7 +70,7 @@ export default async function Wartende({
                   <a href={`/beleg/${z.dokumentId}`}>
                     {z.kreditor ?? 'Ohne Kreditor'}
                   </a>
-                  <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                     {[
                       z.objektnummer !== null && `Objekt ${z.objektnummer}`,
                       z.brutto !== null && euro.format(z.brutto),
@@ -81,7 +81,7 @@ export default async function Wartende({
                 </td>
                 <td style={zelle}>
                   {z.art}
-                  <div style={{ color: '#666', fontSize: '0.78rem' }}>
+                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                     {EREIGNIS[z.erwartetesEreignis] ?? z.erwartetesEreignis}
                     {z.erwarteterBetrag !== null && ` · ${euro.format(z.erwarteterBetrag)}`}
                   </div>

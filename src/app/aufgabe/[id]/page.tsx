@@ -67,12 +67,12 @@ export default async function Aufgabenansicht({
   return (
     <Seitenrahmen titel={zeile.stufe}>
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         <Ampel wert={zeile.ampel} />{' '}
         {[
           // Ueber den gemeinsamen Helfer -- die fuenfte Anzeigestelle. Ein
@@ -132,7 +132,7 @@ export default async function Aufgabenansicht({
 
         <div style={{ flex: '2 1 20rem', minWidth: 0 }}>
           {rechts.length === 0 ? (
-            <p style={{ color: '#666' }}>
+            <p style={{ color: 'var(--farbe-text-leise)' }}>
               {abschluss === null
                 ? 'An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.'
                 : 'Der Stempel steht oben bei der Kontierung.'}

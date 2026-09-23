@@ -93,7 +93,7 @@ function Abschnitt({ titel, hinweis, children }: {
     <section style={{ marginBottom: '2.5rem' }}>
       <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>{titel}</h2>
       {hinweis !== undefined && (
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>{hinweis}</p>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>{hinweis}</p>
       )}
       {children}
     </section>
@@ -123,12 +123,12 @@ export default async function Stammdaten({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die Stammdaten" />}
 
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         Was das Haus verlässt, steht unter{' '}
         <Link href="/stammdaten/vorlagen">Vorlagen</Link>; woher Belege von selbst
         hereinkommen, unter <Link href="/eingang">Eingangsquellen</Link>.
       </p>
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         {/* Der Verweis auf Benutzer und Rollen steht nur da, wenn er zu etwas
             führt -- sonst wäre er eine Einladung in eine Seite, auf der man
             nichts tun kann. Der Satz daneben erklärt trotzdem, warum. */}
@@ -171,7 +171,7 @@ export default async function Stammdaten({
                 <td style={zelle}>
                   {o.bezeichnung}
                   {o.adresse !== null && (
-                    <span style={{ color: '#6F6F6F' }}> · {o.adresse}</span>
+                    <span style={{ color: 'var(--farbe-text-leise)' }}> · {o.adresse}</span>
                   )}
                 </td>
                 <td style={zelle}>
@@ -183,7 +183,7 @@ export default async function Stammdaten({
                 </td>
                 <td style={zelle}>
                   {o.zustaendige.length === 0 ? (
-                    <span style={{ color: '#B3271E' }}>niemand</span>
+                    <span style={{ color: 'var(--farbe-rot)' }}>niemand</span>
                   ) : (
                     o.zustaendige.join(', ')
                   )}
@@ -235,14 +235,14 @@ export default async function Stammdaten({
                   )}
                 </td>
                 <td style={zelle}>
-                  {k.banken.length === 0 && <span style={{ color: '#6F6F6F' }}>keine</span>}
+                  {k.banken.length === 0 && <span style={{ color: 'var(--farbe-text-leise)' }}>keine</span>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     {k.banken.map((b) => (
                       <div key={b.id} style={{ alignItems: 'baseline', display: 'flex', gap: '0.6rem' }}>
                         <code style={{ fontSize: '0.82rem' }}>{b.iban}</code>
                         <Marke text={b.status} farbe={IBAN_MARKE[b.status] ?? '#555'} />
                         {b.bestaetigtVon !== null && (
-                          <span style={{ color: '#6F6F6F', fontSize: '0.75rem' }}>
+                          <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.75rem' }}>
                             {b.bestaetigtVon}, {b.bestaetigtAm}
                           </span>
                         )}
@@ -314,7 +314,7 @@ export default async function Stammdaten({
           </thead>
           <tbody>
             {konten.map((k) => (
-              <tr key={k.id} style={k.aktiv ? undefined : { color: '#999' }}>
+              <tr key={k.id} style={k.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={zelle}>{k.nummer}</td>
                 <td style={zelle}>{k.bezeichnung}</td>
                 <td style={zelle}>{k.umlagefaehig ? 'ja' : 'nein'}</td>
@@ -365,7 +365,7 @@ export default async function Stammdaten({
           </thead>
           <tbody>
             {wege.map((w) => (
-              <tr key={w.id} style={w.aktiv ? undefined : { color: '#999' }}>
+              <tr key={w.id} style={w.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={zelle}>{w.name}</td>
                 <td style={zelle}>
                   {ZAHLUNGSART.find((a) => a.wert === w.art)?.text ?? w.art}
@@ -414,7 +414,7 @@ export default async function Stammdaten({
           </thead>
           <tbody>
             {gruppen.map((g) => (
-              <tr key={g.id} style={g.aktiv ? undefined : { color: '#999' }}>
+              <tr key={g.id} style={g.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={zelle}>{g.name}</td>
                 <td style={zelle}>
                   {g.farbe === null ? (

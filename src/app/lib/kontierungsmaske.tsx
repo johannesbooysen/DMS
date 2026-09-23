@@ -23,7 +23,7 @@ import type { Kontierungsmaske } from '@/app/lib/kontierung-daten'
 const STEUERSAETZE = [19, 7, 0]
 
 const zelle = {
-  borderBottom: '1px solid #eee',
+  borderBottom: '1px solid var(--farbe-linie)',
   padding: '0.4rem 0.5rem',
   textAlign: 'left',
 } as const
@@ -59,7 +59,7 @@ export function Kontierung({
     return (
       <section style={{ margin: '1rem 0' }}>
         <h2 style={{ fontSize: '1rem' }}>Kontierung</h2>
-        <p style={{ color: '#B3271E' }}>
+        <p style={{ color: 'var(--farbe-rot)' }}>
           Für dieses Objekt ist kein Kontenrahmen hinterlegt — ohne ihn lässt sich nicht
           kontieren. Das ist eine Frage der Stammdaten, nicht des Belegs.
         </p>
@@ -81,7 +81,7 @@ export function Kontierung({
 
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
-          <tr style={{ color: '#555', fontSize: '0.8rem' }}>
+          <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
             <th style={zelle}>Konto</th>
             <th style={rechts}>Steuer</th>
             <th style={rechts}>Netto</th>
@@ -96,7 +96,7 @@ export function Kontierung({
               <td style={zelle}>
                 {z.kontonummer} {z.kontobezeichnung}
                 {z.ruecklageEntnahme && (
-                  <span style={{ color: '#B5741A', fontSize: '0.8rem' }}> · aus Rücklage</span>
+                  <span style={{ color: 'var(--farbe-orange)', fontSize: '0.8rem' }}> · aus Rücklage</span>
                 )}
               </td>
               <td style={rechts}>{z.steuersatz.toFixed(0)} %</td>
@@ -126,7 +126,7 @@ export function Kontierung({
                     verteilen. Das fällt erst bei der Abrechnung auf --
                     deshalb steht es hier. */}
                 {z.umlagefaehig && z.umlageschluessel === null && (
-                  <div style={{ color: '#B5741A', fontSize: '0.75rem' }}>ohne Schlüssel</div>
+                  <div style={{ color: 'var(--farbe-orange)', fontSize: '0.75rem' }}>ohne Schlüssel</div>
                 )}
               </td>
               <td style={rechts}>
@@ -135,7 +135,7 @@ export function Kontierung({
                   <input type="hidden" name="zeileId" value={z.id} />
                   <button
                     type="submit"
-                    style={{ background: 'none', border: 0, color: '#B3271E', cursor: 'pointer' }}
+                    style={{ background: 'none', border: 0, color: 'var(--farbe-rot)', cursor: 'pointer' }}
                   >
                     entfernen
                   </button>
@@ -205,7 +205,7 @@ export function Kontierung({
               </button>
             </form>
           ) : (
-            <span style={{ color: '#B3271E', fontSize: '0.9rem' }}>
+            <span style={{ color: 'var(--farbe-rot)', fontSize: '0.9rem' }}>
               {stand.rechnungsbetrag === null
                 ? 'Ohne Rechnungsbetrag lässt sich der Summenzwang nicht prüfen.'
                 : `Noch nicht stempelbar — es ${stand.offen < 0 ? 'sind' : 'fehlen'} ${euro.format(Math.abs(stand.offen))}${stand.offen < 0 ? ' zu viel' : ''}.`}
@@ -245,7 +245,7 @@ export function Kontierung({
             <strong>Vorschlag:</strong> {vorschlag.kontonummer} {vorschlag.kontobezeichnung}
             {' · '}
             {vorschlag.steuersatz} %{vorschlag.umlagefaehig ? ' · umlagefähig' : ''}
-            <span style={{ color: '#555', display: 'block', fontSize: '0.8rem' }}>
+            <span style={{ color: 'var(--farbe-text-leise)', display: 'block', fontSize: '0.8rem' }}>
               {vorschlag.begruendung}
             </span>
           </span>

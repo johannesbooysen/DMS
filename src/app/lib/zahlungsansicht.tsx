@@ -19,7 +19,7 @@ const WEGTEXT: Record<string, string> = {
   lastschrift: 'Lastschrift',
 }
 
-const zelle = { borderBottom: '1px solid #eee', padding: '0.4rem 0.5rem' } as const
+const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.4rem 0.5rem' } as const
 
 export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
   const { weg, zahlungen } = ansicht
@@ -29,7 +29,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       <h2 style={{ fontSize: '1rem' }}>Zahlung</h2>
 
       {ansicht.verfallen > 0 && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {ansicht.verfallen === 1 ? 'Eine Freigabe ist' : `${ansicht.verfallen} Freigaben sind`}{' '}
           verfallen, weil sich die Rechnungsdaten danach geändert haben. Der Beleg
           ist auf die betroffene Stufe zurückgesprungen.
@@ -51,10 +51,10 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
             margin: '0 0 1rem',
           }}
         >
-          <dt style={{ color: '#555' }}>Weg</dt>
+          <dt style={{ color: 'var(--farbe-text-leise)' }}>Weg</dt>
           <dd style={{ margin: 0 }}>
             {weg === null ? (
-              <span style={{ color: '#B3271E' }}>am Objekt nicht hinterlegt</span>
+              <span style={{ color: 'var(--farbe-rot)' }}>am Objekt nicht hinterlegt</span>
             ) : (
               <>
                 {weg.name} — {WEGTEXT[weg.art] ?? weg.art}
@@ -63,19 +63,19 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
             )}
           </dd>
 
-          <dt style={{ color: '#555' }}>Empfänger</dt>
+          <dt style={{ color: 'var(--farbe-text-leise)' }}>Empfänger</dt>
           <dd style={{ margin: 0 }}>
             {ansicht.empfaenger ?? '—'}
             {ansicht.iban !== null && (
-              <span style={{ color: '#666' }}> · IBAN {ansicht.iban}</span>
+              <span style={{ color: 'var(--farbe-text-leise)' }}> · IBAN {ansicht.iban}</span>
             )}
           </dd>
 
-          <dt style={{ color: '#555' }}>Betrag</dt>
+          <dt style={{ color: 'var(--farbe-text-leise)' }}>Betrag</dt>
           <dd style={{ margin: 0 }}>
             {ansicht.betrag === null ? '—' : euro.format(ansicht.betrag)}
             {ansicht.faelligAm !== null && (
-              <span style={{ color: '#666' }}> · fällig {datum.format(new Date(ansicht.faelligAm))}</span>
+              <span style={{ color: 'var(--farbe-text-leise)' }}> · fällig {datum.format(new Date(ansicht.faelligAm))}</span>
             )}
           </dd>
         </dl>
@@ -99,7 +99,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       {zahlungen.length > 0 && (
         <table style={{ borderCollapse: 'collapse', marginTop: '1rem', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.8rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', textAlign: 'left' }}>
               <th style={zelle}>Art</th>
               <th style={zelle}>Betrag</th>
               <th style={zelle}>Stand</th>
@@ -112,7 +112,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
                 <td style={zelle}>{z.art}</td>
                 <td style={zelle}>{euro.format(z.betrag)}</td>
                 <td style={zelle}>{z.status}</td>
-                <td style={{ ...zelle, color: '#666' }}>{z.protokoll ?? '—'}</td>
+                <td style={{ ...zelle, color: 'var(--farbe-text-leise)' }}>{z.protokoll ?? '—'}</td>
               </tr>
             ))}
           </tbody>

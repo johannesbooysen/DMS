@@ -23,7 +23,7 @@ const EMPFAENGER: Record<string, string> = {
   mieter: 'Mieter',
 }
 
-const zelle = { borderBottom: '1px solid #ddd', padding: '0.5rem 0.6rem' } as const
+const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.5rem 0.6rem' } as const
 
 export default async function Einsichtsliste({
   params,
@@ -49,7 +49,7 @@ export default async function Einsichtsliste({
       <h1 style={{ fontSize: '1.25rem', margin: 0 }}>
         Belegeinsicht — {gewaehrung.objektnummer} {gewaehrung.objektName}
       </h1>
-      <p style={{ color: '#555', marginTop: '0.35rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', marginTop: '0.35rem' }}>
         Für {gewaehrung.personName} ({EMPFAENGER[gewaehrung.empfaengerTyp] ?? gewaehrung.empfaengerTyp}).
         Gültig bis {datum.format(new Date(gewaehrung.gueltigBis))}.
       </p>
@@ -67,7 +67,7 @@ export default async function Einsichtsliste({
       ) : (
         <table style={{ borderCollapse: 'collapse', marginTop: '1rem', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.8rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', textAlign: 'left' }}>
               <th style={zelle}>Beleg</th>
               <th style={zelle}>Leistungszeitraum</th>
               <th style={{ ...zelle, textAlign: 'right' }}>Betrag</th>
@@ -102,8 +102,8 @@ export default async function Einsichtsliste({
 
       <footer
         style={{
-          borderTop: '1px solid #ddd',
-          color: '#666',
+          borderTop: '1px solid var(--farbe-linie)',
+          color: 'var(--farbe-text-leise)',
           fontSize: '0.8rem',
           marginTop: '2rem',
           paddingTop: '0.8rem',

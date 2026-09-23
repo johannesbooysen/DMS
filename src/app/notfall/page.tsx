@@ -39,7 +39,7 @@ export default async function Seite({
   return (
     <Seitenrahmen titel="Notfallzugriff">
       {fehler !== undefined && (
-        <p role="alert" style={{ color: '#B3271E' }}>
+        <p role="alert" style={{ color: 'var(--farbe-rot)' }}>
           {fehler}
         </p>
       )}
@@ -67,7 +67,7 @@ export default async function Seite({
           </thead>
           <tbody>
             {zugriffe.map((z) => (
-              <tr key={z.id} style={{ borderTop: '1px solid #ddd' }}>
+              <tr key={z.id} style={{ borderTop: '1px solid var(--farbe-linie)' }}>
                 <td style={{ padding: '0.25rem 0.5rem' }}>
                   {z.benutzer}
                   {z.eigener && ' (Sie)'}

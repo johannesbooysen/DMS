@@ -21,7 +21,7 @@ import { datum, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
-const zelle = { borderBottom: '1px solid #eee', padding: '0.45rem 0.5rem' } as const
+const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.45rem 0.5rem' } as const
 
 export default async function Einsichtsverwaltung({
   searchParams,
@@ -49,7 +49,7 @@ export default async function Einsichtsverwaltung({
   return (
     <Seitenrahmen titel="Belegeinsicht">
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
@@ -72,7 +72,7 @@ export default async function Einsichtsverwaltung({
           <code
             style={{
               background: '#fff',
-              border: '1px solid #ccc',
+              border: '1px solid var(--farbe-linie-stark)',
               display: 'block',
               overflowWrap: 'anywhere',
               padding: '0.5rem',
@@ -174,7 +174,7 @@ export default async function Einsichtsverwaltung({
       ) : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ color: '#555', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
               <th style={zelle}>Empfänger</th>
               <th style={zelle}>Objekt</th>
               <th style={zelle}>Umfang</th>
@@ -189,20 +189,20 @@ export default async function Einsichtsverwaltung({
               <tr key={g.id}>
                 <td style={zelle}>
                   {g.personName}{' '}
-                  <span style={{ color: '#666', fontSize: '0.8rem' }}>· {g.empfaengerTyp}</span>
+                  <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>· {g.empfaengerTyp}</span>
                 </td>
                 <td style={zelle}>{g.objektnummer}</td>
                 <td style={zelle}>
                   {g.umfang}
                   {g.rechte.includes('download') && (
-                    <span style={{ color: '#B5741A', fontSize: '0.78rem' }}> · Download</span>
+                    <span style={{ color: 'var(--farbe-orange)', fontSize: '0.78rem' }}> · Download</span>
                   )}
                 </td>
                 <td style={zelle}>{datum.format(new Date(g.gueltigBis))}</td>
                 <td style={zelle}>
                   {g.zugriffe}
                   {g.letzterZugriff !== null && (
-                    <span style={{ color: '#666', fontSize: '0.78rem' }}>
+                    <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
                       {' '}
                       · zuletzt {datum.format(new Date(g.letzterZugriff))}
                     </span>
@@ -210,11 +210,11 @@ export default async function Einsichtsverwaltung({
                 </td>
                 <td style={zelle}>
                   {g.widerrufen ? (
-                    <span style={{ color: '#B3271E' }}>widerrufen</span>
+                    <span style={{ color: 'var(--farbe-rot)' }}>widerrufen</span>
                   ) : g.abgelaufen ? (
-                    <span style={{ color: '#666' }}>abgelaufen</span>
+                    <span style={{ color: 'var(--farbe-text-leise)' }}>abgelaufen</span>
                   ) : (
-                    <span style={{ color: '#2F6F4E' }}>gültig</span>
+                    <span style={{ color: 'var(--farbe-gruen)' }}>gültig</span>
                   )}
                 </td>
                 <td style={zelle}>
@@ -226,7 +226,7 @@ export default async function Einsichtsverwaltung({
                         style={{
                           background: 'none',
                           border: 0,
-                          color: '#B3271E',
+                          color: 'var(--farbe-rot)',
                           cursor: 'pointer',
                         }}
                       >

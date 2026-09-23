@@ -22,12 +22,12 @@ import { datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 export const dynamic = 'force-dynamic'
 
 const zelle = {
-  borderBottom: '1px solid #eee',
+  borderBottom: '1px solid var(--farbe-linie)',
   padding: '0.45rem 0.5rem',
   verticalAlign: 'top',
 } as const
 
-const kopfzelle = { ...zelle, color: '#555', fontWeight: 600 } as const
+const kopfzelle = { ...zelle, color: 'var(--farbe-text-leise)', fontWeight: 600 } as const
 const zahl = { ...zelle, textAlign: 'right' } as const
 const zahlkopf = { ...kopfzelle, textAlign: 'right' } as const
 
@@ -72,7 +72,7 @@ export default async function Auswertungen({
 
   return (
     <Seitenrahmen titel="Auswertungen">
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         {von == null && bis == null
           ? 'Durchlaufzeiten der letzten 90 Tage. Skonti und offene Belege über den gesamten Bestand.'
           : `Zeitraum ${von ?? '…'} bis ${bis ?? '…'}.`}
@@ -80,7 +80,7 @@ export default async function Auswertungen({
 
       <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Verfallene Skonti</h2>
       {geld.summe.length === 0 ? (
-        <p style={{ color: '#555', fontSize: '0.9rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
           Kein Skonto verfallen. Entweder wird zügig gezahlt oder es ist keines
           vereinbart — beides steht am Beleg.
         </p>
@@ -89,7 +89,7 @@ export default async function Auswertungen({
           <p style={{ fontSize: '0.9rem', margin: '0 0 0.5rem' }}>
             Zusammen <strong>{euro.format(gesamtverlust)}</strong>
             {geld.summe.map((z) => (
-              <span key={z.lage} style={{ color: '#555' }}>
+              <span key={z.lage} style={{ color: 'var(--farbe-text-leise)' }}>
                 {' · '}
                 {z.anzahl}× {LAGE[z.lage] ?? z.lage}: {euro.format(z.verlust)}
               </span>
@@ -126,7 +126,7 @@ export default async function Auswertungen({
             </tbody>
           </table>
           {geld.faelle.length === 50 && (
-            <p style={{ color: '#555', fontSize: '0.8rem' }}>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
               Die 50 größten Einzelfälle. Die Summe oben zählt alle.
             </p>
           )}
@@ -137,7 +137,7 @@ export default async function Auswertungen({
         Durchlaufzeiten je Stufe
       </h2>
       {zeiten.length === 0 ? (
-        <p style={{ color: '#555', fontSize: '0.9rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
           Im Zeitraum wurde keine Stufe abgeschlossen.
         </p>
       ) : (
@@ -157,20 +157,20 @@ export default async function Auswertungen({
                 <tr key={z.stufeId}>
                   <td style={zelle}>
                     {z.bezeichnung}
-                    <span style={{ color: '#6F6F6F' }}> · {z.stufentyp}</span>
+                    <span style={{ color: 'var(--farbe-text-leise)' }}> · {z.stufentyp}</span>
                   </td>
                   <td style={zahl}>{z.anzahl}</td>
                   {/* Der Median steht **vor** dem Mittel und fett: Ein
                       einzelner Beleg über dem Jahreswechsel zieht das Mittel
                       so weit hoch, dass es nichts mehr aussagt. */}
                   <td style={{ ...zahl, fontWeight: 600 }}>{dauer(z.medianStunden)}</td>
-                  <td style={{ ...zahl, color: '#6F6F6F' }}>{dauer(z.mittelStunden)}</td>
+                  <td style={{ ...zahl, color: 'var(--farbe-text-leise)' }}>{dauer(z.mittelStunden)}</td>
                   <td style={zahl}>{dauer(z.p90Stunden)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p style={{ color: '#555', fontSize: '0.8rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
             Gemessen vom Eintritt in die Stufe bis zum Stempel, der sie beendet.
             Klärung und Rückgabe halten die Stufe an, statt sie zu beenden — die
             Wartezeit läuft weiter und erscheint beim nächsten Stempel.
@@ -182,7 +182,7 @@ export default async function Auswertungen({
         Älteste offene Belege
       </h2>
       {offene.length === 0 ? (
-        <p style={{ color: '#555', fontSize: '0.9rem' }}>Kein Beleg ist offen.</p>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>Kein Beleg ist offen.</p>
       ) : (
         <table style={{ borderCollapse: 'collapse', fontSize: '0.85rem', width: '100%' }}>
           <thead>
@@ -216,7 +216,7 @@ export default async function Auswertungen({
           </tbody>
         </table>
       )}
-      <p style={{ color: '#555', fontSize: '0.8rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
         Gerechnet ab Eingang im Haus, nicht ab Start des Ablaufs — danach fragt
         der Lieferant. Belege in Klärung zählen als offen: Sie sind nicht
         erledigt, sie sind nur woanders.

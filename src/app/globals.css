@@ -786,3 +786,184 @@ kbd {
     min-height: 70vh;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Inhaltsseiten: Karte, Tabellen, Filterzeilen, Meldungen
+ *
+ * Diese Regeln greifen ueberall dort, wo eine Seite keine Inline-Stile
+ * mehr setzt -- und genau darauf laeuft der Umbau hinaus: Seite fuer Seite
+ * werden die Inline-Stile entfernt, und das Aussehen kommt von hier.
+ * ------------------------------------------------------------------------ */
+
+.inhalt:not(.inhalt--breit) {
+  background: var(--farbe-flaeche);
+  border: 1px solid var(--farbe-linie);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten);
+  margin: 1.5rem auto;
+  padding: 1.5rem 2rem 2rem;
+  width: calc(100% - 3rem);
+}
+
+.inhalt h2 {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.inhalt h2:first-child {
+  margin-top: 0;
+}
+
+.inhalt table {
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.inhalt th,
+.inhalt td {
+  border-bottom: 1px solid var(--farbe-linie);
+  padding: 0.45rem 0.5rem;
+  vertical-align: top;
+}
+
+.inhalt thead th {
+  border-bottom-color: var(--farbe-linie-stark);
+}
+
+.inhalt tbody tr:hover {
+  background: var(--farbe-flaeche-leise);
+}
+
+.inhalt tfoot td {
+  border-bottom: 0;
+  font-weight: 600;
+}
+
+.leise {
+  color: var(--farbe-text-leise);
+}
+
+.klein {
+  font-size: 0.85rem;
+}
+
+.filterzeile {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.feld {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.feld > input,
+.feld > select,
+.feld > textarea {
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.karte {
+  background: var(--farbe-flaeche-leise);
+  border: 1px solid var(--farbe-linie);
+  border-radius: var(--radius);
+  margin: 1rem 0;
+  padding: 1rem;
+}
+
+.meldung-hinweis {
+  background: var(--farbe-orange-hell);
+  border-radius: var(--radius);
+  color: #6b4a15;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.knopf-link {
+  background: none;
+  border: 0;
+  color: var(--farbe-akzent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.knopf-link:hover {
+  color: var(--farbe-akzent-dunkel);
+}
+
+.kennzahlen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+}
+
+.kennzahl {
+  background: var(--farbe-flaeche-leise);
+  border: 1px solid var(--farbe-linie);
+  border-radius: var(--radius);
+  min-width: 9rem;
+  padding: 0.6rem 0.9rem;
+}
+
+.kennzahl strong {
+  display: block;
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.kennzahl span {
+  color: var(--farbe-text-leise);
+  font-size: 0.78rem;
+}
+
+.stufenbaum a {
+  align-items: baseline;
+  border-radius: var(--radius);
+  color: inherit;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  text-decoration: none;
+}
+
+.stufenbaum a:hover {
+  background: var(--farbe-flaeche-leise);
+}
+
+.stufenbaum a[aria-current='page'] {
+  background: var(--farbe-akzent-hell);
+  font-weight: 600;
+}
+
+.zweispaltig {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.zweispaltig > :first-child {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.zweispaltig > :last-child {
+  flex: 3 1 28rem;
+  min-width: 0;
+}
+
+.marke {
+  border-radius: 0.2rem;
+  color: #fff;
+  font-size: 0.7rem;
+  margin-right: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  white-space: nowrap;
+}

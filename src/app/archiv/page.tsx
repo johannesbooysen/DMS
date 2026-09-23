@@ -65,7 +65,7 @@ export default async function Archiv({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die fälligen Belege" />}
 
-      <p style={{ color: '#555', fontSize: '0.85rem', marginTop: 0 }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
         Belege, deren Aufbewahrungsfrist abgelaufen ist. Sie <em>dürfen</em> nicht länger
         liegen — wer aufbewahren muss, muss danach löschen. Eine Löschsperre hält einen Beleg
         darüber hinaus; solche stehen hier nicht.
@@ -76,13 +76,13 @@ export default async function Archiv({
           Fällig zum Löschen ({faellige.length})
         </h2>
         {ansprueche > 0 && (
-          <p style={{ color: '#B3271E', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--farbe-rot)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
             Davon {ansprueche} mit Löschanspruch — dort wartet jemand auf eine Antwort.
           </p>
         )}
 
         {faellige.length === 0 ? (
-          <p style={{ color: '#555', fontSize: '0.9rem' }}>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
             Nichts fällig. Kein Beleg im Archiv hat seine Aufbewahrungsfrist hinter sich.
           </p>
         ) : (
@@ -126,7 +126,7 @@ export default async function Archiv({
                 ))}
               </tbody>
             </table>
-            <p style={{ color: '#555', fontSize: '0.8rem' }}>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
               Je Beleg, mit Absicht. Ein Knopf „alle löschen“ wird irgendwann versehentlich
               gedrückt — und danach gibt es nichts, worauf man zurückgreifen könnte. Der
               Belegtext ist hier nicht zu sehen: Wer löschen darf, muss den Inhalt nicht noch
@@ -138,7 +138,7 @@ export default async function Archiv({
 
       <section>
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Gelöscht</h2>
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
           Was bleibt, wenn ein Beleg geht: dass es ihn gab, wann seine Frist ablief und dass er
           gelöscht wurde — ohne personenbezogene Daten. Ohne dieses Protokoll wäre eine Lücke im
           Archiv nicht von einem Verlust zu unterscheiden.
@@ -152,7 +152,7 @@ export default async function Archiv({
         )}
 
         {protokoll.length === 0 ? (
-          <p style={{ color: '#555', fontSize: '0.9rem' }}>Es wurde noch nichts gelöscht.</p>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>Es wurde noch nichts gelöscht.</p>
         ) : (
           <table style={tabelle}>
             <thead>
@@ -177,7 +177,7 @@ export default async function Archiv({
                     {p.dateiOffen ? (
                       <span style={{ color: '#8A6D1F' }}>liegt noch</span>
                     ) : (
-                      <span style={{ color: '#2F6F4E' }}>abgeräumt</span>
+                      <span style={{ color: 'var(--farbe-gruen)' }}>abgeräumt</span>
                     )}
                   </td>
                 </tr>

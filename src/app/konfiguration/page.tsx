@@ -21,12 +21,12 @@ const ZUSTAND: Record<string, string> = {
 }
 
 function Fassungstabelle({ zeilen }: { zeilen: Definitionszeile[] }) {
-  if (zeilen.length === 0) return <p style={{ color: '#666' }}>Nichts vorhanden.</p>
+  if (zeilen.length === 0) return <p style={{ color: 'var(--farbe-text-leise)' }}>Nichts vorhanden.</p>
 
   return (
     <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: '100%' }}>
       <thead>
-        <tr style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>
+        <tr style={{ borderBottom: '1px solid var(--farbe-linie-stark)', textAlign: 'left' }}>
           <th style={{ padding: '0.4rem 0.5rem' }}>Belegart</th>
           <th style={{ padding: '0.4rem 0.5rem' }}>Ordnungsgruppe</th>
           <th style={{ padding: '0.4rem 0.5rem' }}>Fassung</th>
@@ -37,7 +37,7 @@ function Fassungstabelle({ zeilen }: { zeilen: Definitionszeile[] }) {
       </thead>
       <tbody>
         {zeilen.map((f) => (
-          <tr key={f.id} style={{ borderBottom: '1px solid #eee' }}>
+          <tr key={f.id} style={{ borderBottom: '1px solid var(--farbe-linie)' }}>
             <td style={{ padding: '0.4rem 0.5rem' }}>{f.belegart}</td>
             <td style={{ padding: '0.4rem 0.5rem' }}>{f.ordnungsgruppe ?? 'alle'}</td>
             <td style={{ padding: '0.4rem 0.5rem' }}>
@@ -76,13 +76,13 @@ export default async function Konfiguration({
   return (
     <Seitenrahmen titel="Abläufe">
       {fehler !== undefined && (
-        <p role="alert" style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}>
+        <p role="alert" className="meldung-fehler">
           {fehler}
         </p>
       )}
 
       {fassungen.length === 0 ? (
-        <p style={{ color: '#666' }}>Keine Prozessdefinition vorhanden.</p>
+        <p style={{ color: 'var(--farbe-text-leise)' }}>Keine Prozessdefinition vorhanden.</p>
       ) : (
         <>
           <Fassungstabelle zeilen={laufend} />
@@ -106,7 +106,7 @@ export default async function Konfiguration({
         </>
       )}
 
-      <p style={{ color: '#666', marginTop: '1.5rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', marginTop: '1.5rem' }}>
         Eine Fassung wird nie überschrieben. Wer etwas ändert, legt einen Entwurf an;
         laufende Belege behalten ihre Fassung bis zum Abschluss.
       </p>
