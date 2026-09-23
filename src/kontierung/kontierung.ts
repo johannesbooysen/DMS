@@ -19,6 +19,27 @@ import type { PoolClient } from 'pg'
 
 export class KontierungAbgelehnt extends Error {}
 
+/**
+ * Paragraf 35a EStG: haushaltsnahe Dienstleistung oder Handwerkerleistung.
+ * Steuerlich zaehlt nur der Lohn- und Fahrtanteil, nie das Material -- und
+ * nur, was unbar gezahlt wurde. Die Angaben haengen an der Zeile, weil ein
+ * Beleg gemischt sein kann (Material auf ein Konto, Arbeit auf ein anderes).
+ */
+export const ARTEN_35A = ['haushaltsnah', 'handwerkerleistung'] as const
+export type Art35a = (typeof ARTEN_35A)[number]
+export const ART_35A_NAMEN: Record<Art35a, string> = {
+  haushaltsnah: 'haushaltsnahe Dienstleistung',
+  handwerkerleistung: 'Handwerkerleistung',
+}
+
+export interface Angaben35a {
+  art: Art35a
+  lohnanteil: number | null
+  fahrtMaschinenkosten: number | null
+  materialanteil: number | null
+  unbarGezahlt: boolean
+}
+
 export interface Kontierungszeile {
   id: string
   zeileNr: number
@@ -33,6 +54,8 @@ export interface Kontierungszeile {
   umlageschluessel: string | null
   ruecklageEntnahme: boolean
   quelle: string
+  /** Angaben nach Paragraf 35a EStG, wenn erfasst. */
+  angaben35a: Angaben35a | null
 }
 
 export interface Kontierungsstand {
@@ -59,10 +82,13 @@ export async function kontierungLaden(
             k.betrag_brutto, k.umlagefaehig, k.umlageschluessel_id,
             k.ruecklage_entnahme, k.quelle,
             ko.kontonummer, ko.bezeichnung as kontobezeichnung,
-            u.name as umlageschluessel
+            u.name as umlageschluessel,
+            a.art as art_35a, a.lohnanteil, a.fahrt_maschinenkosten, a.materialanteil,
+            a.unbar_gezahlt
        from kontierung k
        join konto ko on ko.id = k.konto_id
        left join umlageschluessel u on u.id = k.umlageschluessel_id
+       left join kontierung_35a a on a.kontierung_id = k.id
       where k.dokument_id = $1
       order by k.zeile_nr`,
     [dokumentId],
@@ -87,6 +113,17 @@ export async function kontierungLaden(
     umlageschluessel: z['umlageschluessel'] == null ? null : String(z['umlageschluessel']),
     ruecklageEntnahme: Boolean(z['ruecklage_entnahme']),
     quelle: String(z['quelle']),
+    angaben35a:
+      z['art_35a'] == null
+        ? null
+        : {
+            art: String(z['art_35a']) as Art35a,
+            lohnanteil: z['lohnanteil'] == null ? null : zahl(z['lohnanteil']),
+            fahrtMaschinenkosten:
+              z['fahrt_maschinenkosten'] == null ? null : zahl(z['fahrt_maschinenkosten']),
+            materialanteil: z['materialanteil'] == null ? null : zahl(z['materialanteil']),
+            unbarGezahlt: Boolean(z['unbar_gezahlt']),
+          },
   }))
 
   const rechnungsbetrag = fakten[0]?.brutto == null ? null : Number(fakten[0].brutto)
@@ -199,6 +236,60 @@ export async function zeileEntfernen(
     zeileId,
     dokumentId,
   ])
+}
+
+/**
+ * Setzt oder entfernt die Angaben nach Paragraf 35a an einer Zeile.
+ *
+ * Geprueft wird gegen den Bruttobetrag der Zeile: Die Anteile duerfen ihn
+ * zusammen nicht uebersteigen -- ein Lohnanteil ueber dem Rechnungsbetrag
+ * ist ein Tippfehler, und der faellt sonst erst in der Abrechnung auf. Die
+ * Zeile wird unter der RLS gelesen; eine fremde Zeile gibt es hier nicht.
+ */
+export async function angaben35aSetzen(
+  c: PoolClient,
+  dokumentId: string,
+  zeileId: string,
+  angaben: Angaben35a | null,
+): Promise<void> {
+  const { rows } = await c.query<{ betrag_brutto: string }>(
+    'select betrag_brutto from kontierung where id = $1 and dokument_id = $2',
+    [zeileId, dokumentId],
+  )
+  const zeile = rows[0]
+  if (zeile === undefined) throw new KontierungAbgelehnt('Die Kontierungszeile gibt es nicht.')
+
+  if (angaben === null) {
+    await c.query('delete from kontierung_35a where kontierung_id = $1', [zeileId])
+    return
+  }
+  if (!(ARTEN_35A as readonly string[]).includes(angaben.art)) {
+    throw new KontierungAbgelehnt('Unbekannte Art nach Paragraf 35a.')
+  }
+  const anteil = (wert: number | null, name: string): number | null => {
+    if (wert === null) return null
+    if (!Number.isFinite(wert) || wert < 0) throw new KontierungAbgelehnt(`${name} muss ein Betrag ab 0 sein.`)
+    return Number(wert.toFixed(2))
+  }
+  const lohn = anteil(angaben.lohnanteil, 'Der Lohnanteil')
+  const fahrt = anteil(angaben.fahrtMaschinenkosten, 'Fahrt- und Maschinenkosten')
+  const material = anteil(angaben.materialanteil, 'Der Materialanteil')
+  const summe = (lohn ?? 0) + (fahrt ?? 0) + (material ?? 0)
+  if (summe > Number(zeile.betrag_brutto) + 0.01) {
+    throw new KontierungAbgelehnt(
+      'Lohn, Fahrt und Material zusammen übersteigen den Betrag der Zeile.',
+    )
+  }
+  await c.query(
+    `insert into kontierung_35a (kontierung_id, art, lohnanteil, fahrt_maschinenkosten,
+                                 materialanteil, unbar_gezahlt)
+     values ($1, $2, $3, $4, $5, $6)
+     on conflict (kontierung_id) do update
+       set art = excluded.art, lohnanteil = excluded.lohnanteil,
+           fahrt_maschinenkosten = excluded.fahrt_maschinenkosten,
+           materialanteil = excluded.materialanteil, unbar_gezahlt = excluded.unbar_gezahlt`,
+    [zeileId, angaben.art, lohn, fahrt, material, angaben.unbarGezahlt],
+  )
 }
 
 export async function umlagefaehigkeitAendern(

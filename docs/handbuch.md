@@ -793,8 +793,19 @@ Kreditor und Objekt ein Muster gibt — mit Sicherheit (grün oder orange) und
 einem Knopf, der ihn übernimmt und gleich stempelt. Er wird nie still
 angewendet.
 
-> Noch nicht da: die Angaben nach § 35a EStG in der Maske — das Schema trägt
-> sie (`kontierung_35a`), die Erfassung nicht.
+### § 35a EStG
+
+An jeder Kontierungszeile lässt sich unter *§ 35a erfassen* eintragen, ob es
+eine **haushaltsnahe Dienstleistung** oder eine **Handwerkerleistung** ist,
+mit Lohnanteil, Fahrt- und Maschinenkosten, Materialanteil und ob unbar
+gezahlt wurde. An der Zeile und nicht am Beleg, weil ein Beleg gemischt sein
+kann: Material auf ein Konto, Arbeit auf ein anderes. Die Anteile dürfen
+zusammen den Betrag der Zeile nicht übersteigen; nach der Archivierung sind
+sie fest wie die Zeile selbst.
+
+Steuerlich zählt nur der Lohn- und Fahrtanteil, nie das Material — und nur,
+was unbar gezahlt wurde. Was hier erfasst ist, steht der Abrechnung zur
+Verfügung; eine eigene Auswertung dafür gibt es noch nicht.
 
 ---
 

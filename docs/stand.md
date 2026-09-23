@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-115 Module, 973 Testfaelle in 56 Dateien,
+115 Module, 977 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -511,6 +511,13 @@ Policies: 2
 Systemaktionen (Konzept 8.4, 10, 11): eine Stufe, die niemand stempelt
 
 
+### `supabase/migrations/20260926110000_kontierung_35a_schutz.sql`
+
+Die Angaben nach Paragraf 35a EStG (Konzept 6, 13): Erfassung an der
+
+Funktionen: `app.archiv_35a_schutz`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -660,7 +667,7 @@ Systemaktionen (Konzept 8.4, 10, 11): eine Stufe, die niemand stempelt
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
 | [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 27 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
-| [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
+| [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 34 | Kontierungsstand, Paragraf 35a, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |
 | [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |

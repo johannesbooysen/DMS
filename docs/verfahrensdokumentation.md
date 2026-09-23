@@ -324,6 +324,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `aaa_stempel_ereignis_vier_augen` | `stempel_ereignis` | before insert | [`20260922140000_vier_augen.sql`](../supabase/migrations/20260922140000_vier_augen.sql) |
 | `sicherungs_probe_unveraenderlich` | `sicherungs_probe` | before update or delete | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 | `uebernahme_eintrag_unveraenderlich` | `uebernahme_eintrag` | before update or delete | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
+| `kontierung_35a_archiv_schutz` | `kontierung_35a` | before insert or update or delete | [`20260926110000_kontierung_35a_schutz.sql`](../supabase/migrations/20260926110000_kontierung_35a_schutz.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -1078,6 +1079,10 @@ belegt.
 - stimmt, sobald die Zeilen den Rechnungsbetrag ergeben
 - stimmt auch bei einem Split ueber mehrere Konten
 - meldet eine Ueberverteilung als negativen Rest
+- haengt die Angaben an die Zeile und liest sie mit
+- weist Anteile ab, die zusammen ueber dem Betrag der Zeile liegen
+- entfernt die Angaben mit null
+- findet fuer einen fremden Mandanten keine Zeile
 - uebernimmt Umlagefaehigkeit und Umlageschluessel des Kontos
 - uebernimmt auch ein nicht umlagefaehiges Konto richtig
 - laesst einen ausdruecklich gewaehlten Umlageschluessel gewinnen

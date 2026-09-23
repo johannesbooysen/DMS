@@ -20,6 +20,7 @@ import { belegEntfernen } from './hilfe/aufraeumen'
 import { VERWALTER } from './hilfe/kennungen'
 import { alsBenutzer, poolSchliessen } from '../src/db'
 import {
+  angaben35aSetzen,
   KontierungAbgelehnt,
   kontenFuerBeleg,
   kontierungLaden,
@@ -207,6 +208,62 @@ describe('Kontierungsstand', () => {
     const s = await stand()
     expect(s.offen).toBe(-10)
     expect(s.stimmt).toBe(false)
+  })
+})
+
+describe('Paragraf 35a', () => {
+  it('haengt die Angaben an die Zeile und liest sie mit', async () => {
+    const id = await zeile(KONTO_HAUSREINIGUNG, BRUTTO)
+    await alsBenutzer(ANNA, (c) =>
+      angaben35aSetzen(c, beleg, id, {
+        art: 'handwerkerleistung',
+        lohnanteil: 800,
+        fahrtMaschinenkosten: 90,
+        materialanteil: 300,
+        unbarGezahlt: true,
+      }),
+    )
+    const s = await stand()
+    expect(s.zeilen[0].angaben35a).toEqual({
+      art: 'handwerkerleistung',
+      lohnanteil: 800,
+      fahrtMaschinenkosten: 90,
+      materialanteil: 300,
+      unbarGezahlt: true,
+    })
+  })
+
+  it('weist Anteile ab, die zusammen ueber dem Betrag der Zeile liegen', async () => {
+    const id = await zeile(KONTO_HAUSREINIGUNG, BRUTTO)
+    await expect(
+      alsBenutzer(ANNA, (c) =>
+        angaben35aSetzen(c, beleg, id, {
+          art: 'haushaltsnah',
+          lohnanteil: 1000,
+          fahrtMaschinenkosten: 100,
+          materialanteil: 100,
+          unbarGezahlt: false,
+        }),
+      ),
+    ).rejects.toThrow(KontierungAbgelehnt)
+  })
+
+  it('entfernt die Angaben mit null', async () => {
+    const id = await zeile(KONTO_HAUSREINIGUNG, BRUTTO)
+    await alsBenutzer(ANNA, (c) =>
+      angaben35aSetzen(c, beleg, id, { art: 'haushaltsnah', lohnanteil: 100, fahrtMaschinenkosten: null, materialanteil: null, unbarGezahlt: false }),
+    )
+    await alsBenutzer(ANNA, (c) => angaben35aSetzen(c, beleg, id, null))
+    expect((await stand()).zeilen[0].angaben35a).toBeNull()
+  })
+
+  it('findet fuer einen fremden Mandanten keine Zeile', async () => {
+    const id = await zeile(KONTO_HAUSREINIGUNG, BRUTTO)
+    await expect(
+      alsBenutzer(DORIS, (c) =>
+        angaben35aSetzen(c, beleg, id, { art: 'haushaltsnah', lohnanteil: 10, fahrtMaschinenkosten: null, materialanteil: null, unbarGezahlt: false }),
+      ),
+    ).rejects.toThrow(/gibt es nicht/)
   })
 })
 

@@ -13,6 +13,8 @@ import { redirect } from 'next/navigation'
 import { alsBenutzer } from '@/db'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import {
+  angaben35aSetzen,
+  type Art35a,
   KontierungAbgelehnt,
   restVerteilen,
   umlagefaehigkeitAendern,
@@ -81,6 +83,43 @@ export async function zeileEntfernenAktion(formular: FormData): Promise<void> {
   const zeileId = String(formular.get('zeileId') ?? '')
 
   await alsBenutzer(await angemeldeterBenutzer(), (c) => zeileEntfernen(c, dokumentId, zeileId))
+  zurueck(formular)
+}
+
+/** Angaben nach Paragraf 35a an einer Zeile setzen -- leere Art heisst: entfernen. */
+export async function angaben35aAktion(formular: FormData): Promise<void> {
+  const dokumentId = String(formular.get('dokumentId') ?? '')
+  const zeileId = String(formular.get('zeileId') ?? '')
+  const art = String(formular.get('art') ?? '')
+  const betrag = (name: string): number | null => {
+    const roh = String(formular.get(name) ?? '').trim()
+    if (roh === '') return null
+    const wert = betragLesen(roh)
+    if (wert === null) throw new KontierungAbgelehnt(`Der Betrag „${roh}“ ist nicht lesbar.`)
+    return wert
+  }
+
+  try {
+    await alsBenutzer(await angemeldeterBenutzer(), (c) =>
+      angaben35aSetzen(
+        c,
+        dokumentId,
+        zeileId,
+        art === ''
+          ? null
+          : {
+              art: art as Art35a,
+              lohnanteil: betrag('lohnanteil'),
+              fahrtMaschinenkosten: betrag('fahrtMaschinenkosten'),
+              materialanteil: betrag('materialanteil'),
+              unbarGezahlt: formular.get('unbarGezahlt') === 'ja',
+            },
+      ),
+    )
+  } catch (fehler) {
+    if (fehler instanceof KontierungAbgelehnt) zurueck(formular, fehler.message)
+    throw fehler
+  }
   zurueck(formular)
 }
 

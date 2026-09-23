@@ -11,6 +11,7 @@
  */
 
 import {
+  angaben35aAktion,
   kontiertStempelnAktion,
   umlageUmschaltenAktion,
   vorschlagUndStempelAktion,
@@ -18,6 +19,7 @@ import {
   zeileHinzufuegenAktion,
 } from '@/app/lib/kontierung-aktionen'
 import { euro } from '@/app/lib/darstellung'
+import { ART_35A_NAMEN, ARTEN_35A } from '@/kontierung/kontierung'
 import type { Kontierungsmaske } from '@/app/lib/kontierung-daten'
 
 const STEUERSAETZE = [19, 7, 0]
@@ -98,6 +100,58 @@ export function Kontierung({
                 {z.ruecklageEntnahme && (
                   <span style={{ color: 'var(--farbe-orange)', fontSize: '0.8rem' }}> · aus Rücklage</span>
                 )}
+                {/*
+                  Paragraf 35a an der Zeile, nicht am Beleg: Ein Beleg kann
+                  gemischt sein. Zusammengeklappt, weil die meisten Zeilen
+                  keine Angaben brauchen -- und aufgeklappt ein Formular,
+                  das alles auf einmal setzt.
+                */}
+                {z.angaben35a !== null && (
+                  <div className="gruen winzig">
+                    § 35a {ART_35A_NAMEN[z.angaben35a.art]}
+                    {z.angaben35a.lohnanteil !== null && ` · Lohn ${euro.format(z.angaben35a.lohnanteil)}`}
+                    {z.angaben35a.fahrtMaschinenkosten !== null &&
+                      ` · Fahrt/Maschine ${euro.format(z.angaben35a.fahrtMaschinenkosten)}`}
+                    {z.angaben35a.materialanteil !== null && ` · Material ${euro.format(z.angaben35a.materialanteil)}`}
+                    {z.angaben35a.unbarGezahlt ? ' · unbar' : ' · Zahlungsweg offen'}
+                  </div>
+                )}
+                <details className="winzig">
+                  <summary className="leise">§ 35a {z.angaben35a === null ? 'erfassen' : 'ändern'}</summary>
+                  <form action={angaben35aAktion} className="reihe" style={{ marginTop: '0.3rem' }}>
+                    {verstecktesZiel}
+                    <input type="hidden" name="zeileId" value={z.id} />
+                    <label className="feld">
+                      Art
+                      <select name="art" defaultValue={z.angaben35a?.art ?? ''}>
+                        <option value="">keine</option>
+                        {ARTEN_35A.map((art) => (
+                          <option key={art} value={art}>
+                            {ART_35A_NAMEN[art]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="feld">
+                      Lohn
+                      <input name="lohnanteil" inputMode="decimal" defaultValue={z.angaben35a?.lohnanteil ?? ''} style={{ width: '6rem' }} />
+                    </label>
+                    <label className="feld">
+                      Fahrt/Maschine
+                      <input name="fahrtMaschinenkosten" inputMode="decimal" defaultValue={z.angaben35a?.fahrtMaschinenkosten ?? ''} style={{ width: '6rem' }} />
+                    </label>
+                    <label className="feld">
+                      Material
+                      <input name="materialanteil" inputMode="decimal" defaultValue={z.angaben35a?.materialanteil ?? ''} style={{ width: '6rem' }} />
+                    </label>
+                    <label className="winzig">
+                      <input type="checkbox" name="unbarGezahlt" value="ja" defaultChecked={z.angaben35a?.unbarGezahlt ?? false} /> unbar gezahlt
+                    </label>
+                    <button type="submit" className="winzig">
+                      Übernehmen
+                    </button>
+                  </form>
+                </details>
               </td>
               <td style={rechts}>{z.steuersatz.toFixed(0)} %</td>
               <td style={rechts}>{euro.format(z.betragNetto)}</td>
