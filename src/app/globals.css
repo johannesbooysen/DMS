@@ -1357,3 +1357,53 @@ kbd {
   flex-wrap: wrap;
   gap: 0.4rem 0.8rem;
 }
+
+/* ---------------------------------------------------------------------------
+ * Die Kontierungsmaske in der schmalen Spalte des Arbeitsplatzes
+ *
+ * Dieselbe Tabelle wie auf der Aufgabenseite, nur dass hier 25rem zur
+ * Verfuegung stehen: enger gesetzt, und die Nettospalte faellt weg -- der
+ * Summenzwang rechnet brutto, und der bleibt sichtbar.
+ * ------------------------------------------------------------------------ */
+
+.arbeitsplatz-entscheidung {
+  container-type: inline-size;
+}
+
+@container (max-width: 32rem) {
+  .kontierung {
+    font-size: 0.8rem;
+  }
+
+  .kontierung th,
+  .kontierung td {
+    padding: 0.35rem 0.3rem;
+  }
+
+  .kontierung .spalte-netto {
+    display: none;
+  }
+
+  /* Feste Spalten, damit die Umlage umbricht statt die Spalte zu sprengen. */
+  .kontierung {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  /* Auch der Steuersatz faellt weg -- er steht am Beleg und aendert sich
+     zeilenweise selten; was bleibt, ist, was der Summenzwang braucht. */
+  .kontierung .spalte-steuer {
+    display: none;
+  }
+
+  .kontierung th:nth-child(1) { width: 32%; }
+  .kontierung th:nth-child(4) { width: 22%; }
+  .kontierung th:nth-child(5) { width: 26%; }
+  .kontierung th:nth-child(6) { width: 20%; }
+
+  .kontierung td button {
+    font-size: 0.75rem;
+    text-align: left;
+    white-space: normal;
+  }
+}

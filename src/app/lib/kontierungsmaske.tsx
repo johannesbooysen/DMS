@@ -81,12 +81,16 @@ export function Kontierung({
     <section style={{ margin: '1rem 0' }}>
       <h2>Kontierung</h2>
 
-      <table>
+      {/* Die Tabelle traegt eine Klasse, weil sie in zwei Breiten steht:
+          auf der Aufgabenseite mit Platz, am Arbeitsplatz in einer Spalte
+          von 25rem. Dort faellt Netto weg (globals.css, Container-Abfrage) --
+          gestempelt wird der Bruttobetrag, und der bleibt. */}
+      <table className="kontierung">
         <thead>
           <tr className="leise winzig">
             <th style={zelle}>Konto</th>
-            <th style={rechts}>Steuer</th>
-            <th style={rechts}>Netto</th>
+            <th style={rechts} className="spalte-steuer">Steuer</th>
+            <th style={rechts} className="spalte-netto">Netto</th>
             <th style={rechts}>Brutto</th>
             <th style={zelle}>Umlage</th>
             <th style={zelle} />
@@ -153,8 +157,8 @@ export function Kontierung({
                   </form>
                 </details>
               </td>
-              <td style={rechts}>{z.steuersatz.toFixed(0)} %</td>
-              <td style={rechts}>{euro.format(z.betragNetto)}</td>
+              <td style={rechts} className="spalte-steuer">{z.steuersatz.toFixed(0)} %</td>
+              <td style={rechts} className="spalte-netto">{euro.format(z.betragNetto)}</td>
               <td style={rechts}>{euro.format(z.betragBrutto)}</td>
               <td style={zelle}>
                 <form action={umlageUmschaltenAktion} className="inline">
