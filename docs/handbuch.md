@@ -155,8 +155,32 @@ Aufgabe.
 Nach einem Stempel öffnet sich die **nächste** Aufgabe, nicht das Postfach.
 Ist nichts mehr offen, sagt die Seite das.
 
-Die Belegansicht (*Belege* → Beleg) und die einzelne Aufgabenseite bleiben
-bestehen; sie zeigen dasselbe, nur nicht nebeneinander.
+Die einzelne Aufgabenseite bleibt bestehen; sie zeigt dasselbe, nur nicht
+nebeneinander.
+
+### Die Belegansicht
+
+Dieselbe Dreiteilung, anderer Inhalt — der Ort, an dem man einen Beleg
+**ansieht**, statt über ihn zu entscheiden:
+
+- **Links** die Seiten als Miniaturen. Ein Klick springt zur Seite; mit
+  **→** und **←** (oder Bild ab/auf) blättert man.
+- **In der Mitte** der Beleg mit allen Seiten, Stempeln, Notizen und
+  Schwärzungen. Der eigene, noch nicht festgelegte Stempel lässt sich hier
+  verschieben und in der Größe ändern; Notizen stehen unter der Seite und
+  lassen sich ausblenden.
+- **Rechts** Objekt, Gruppe, Betrag, Eingang, der Archivstand, die
+  Prüfhinweise, *Warum hier* (Objekt, Kategorie, Ablauf, Stufe mit Grund),
+  offene Gewährleistungen, Wartecontainer — und drei Werkzeuge: **Im Beleg
+  suchen**, **Notizen und Schwärzungen** anlegen, **Ausgabe** (Original-PDF
+  und die drei Varianten mit Layern).
+
+**Im Beleg suchen** durchsucht den Text, den die Aufbereitung aus dem PDF
+gewonnen hat. Gefunden wird je Seite: Die Treffer stehen rechts mit einem
+Auszug, die Seite trägt eine Marke, die Miniatur links die Trefferzahl.
+Markiert wird die Seite, nicht die Stelle im Bild — das System speichert
+je Seite nur, wo Text steht, nicht welches Wort in welcher Zeile. Der
+Auszug sagt, wonach man auf der Seite sucht.
 
 ---
 

@@ -1,33 +1,82 @@
 /**
- * Belegansicht.
+ * Belegansicht: Seitenleiste, Beleg, Angaben -- nebeneinander.
  *
  * Die erste Seite kommt als fertiges Bild aus der Ablage. Kein Rendern beim
  * Oeffnen, kein PDF im Hintergrund -- das PDF holt der Browser erst, wenn
  * jemand es ausdruecklich anfordert (Konzept 23).
+ *
+ * Dieselbe Dreiteilung wie am Arbeitsplatz, nur mit anderem Inhalt: links
+ * die Seiten als Miniaturen zum Anspringen, in der Mitte der Beleg mit
+ * allen Layern (hier auch anfassbar, ADR 0008), rechts alles, was man ueber
+ * den Beleg wissen will -- Kopf, Archivstand, Pruefhinweise, warum er hier
+ * ist, Suche im Text, Notizen, Ausgabe.
  */
 
 import { notFound } from 'next/navigation'
+import { Belegbetrachter } from '@/app/lib/belegbetrachter'
 import { befundeLaden, belegkopfLaden, seitentextLaden } from '@/app/lib/belege'
-import { zuordnungErklaeren } from '@/belege/erklaerung'
-import { stempelVerschiebenAktion } from '@/app/lib/layer-aktionen'
-import { Layerformular, Layerschicht, Notizliste } from '@/app/lib/layerschicht'
-import { layerLaden, textkaestenLaden, verschiebbareStempel } from '@/layer'
-import { Befunde, belegBezeichnung, Seitenrahmen } from '@/app/lib/darstellung'
+import { Befunde, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Layerformular } from '@/app/lib/layerschicht'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { alsBenutzer } from '@/db'
-import { archivstandLaden } from '@/archiv'
-import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
 import { Warten } from '@/app/lib/wartenmaske'
+import { archivstandLaden } from '@/archiv'
+import { zuordnungErklaeren } from '@/belege/erklaerung'
+import { alsBenutzer } from '@/db'
+import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
 
-const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
-const datum = new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' })
+export const dynamic = 'force-dynamic'
+
+/**
+ * Suche im Seitentext -- je Seite die Fundstellen mit einem Auszug.
+ *
+ * Gesucht wird im Text, den die Aufbereitung aus dem PDF gewonnen hat; die
+ * Ansicht selbst ist ein Bild. Markiert wird deshalb die **Seite**, nicht
+ * die Stelle im Bild: Der Worker speichert Zeilenkaesten ohne ihren Text
+ * (rund ein Zehntel der Groesse, siehe `textkaesten`), also weiss niemand,
+ * in welcher Zeile das Wort steht. Der Auszug rechts und die Marke an der
+ * Seite sagen, wo man hinsehen muss -- und das ist die Frage, die jemand
+ * mit einem Suchwort stellt.
+ */
+function suchen(
+  seiten: Array<{ seite: number; text: string }>,
+  begriff: string,
+): Array<{ seite: number; anzahl: number; vorher: string; wort: string; nachher: string }> {
+  const gesucht = begriff.trim().toLowerCase()
+  if (gesucht.length < 2) return []
+  const treffer: Array<{ seite: number; anzahl: number; vorher: string; wort: string; nachher: string }> = []
+  for (const s of seiten) {
+    const text = s.text.replace(/\s+/g, ' ')
+    const klein = text.toLowerCase()
+    let anzahl = 0
+    let stelle = klein.indexOf(gesucht)
+    const erste = stelle
+    while (stelle >= 0) {
+      anzahl += 1
+      stelle = klein.indexOf(gesucht, stelle + gesucht.length)
+    }
+    if (anzahl === 0) continue
+    const von = Math.max(0, erste - 60)
+    const bis = Math.min(text.length, erste + gesucht.length + 60)
+    treffer.push({
+      seite: s.seite,
+      anzahl,
+      vorher: `${von > 0 ? '…' : ''}${text.slice(von, erste)}`,
+      wort: text.slice(erste, erste + gesucht.length),
+      nachher: `${text.slice(erste + gesucht.length, bis)}${bis < text.length ? '…' : ''}`,
+    })
+  }
+  return treffer
+}
 
 export default async function Belegansicht({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ suche?: string }>
 }) {
   const { id } = await params
+  const { suche = '' } = await searchParams
   const benutzer = await angemeldeterBenutzer()
 
   const kopf = await belegkopfLaden(benutzer, id)
@@ -35,17 +84,13 @@ export default async function Belegansicht({
   // next/navigation nicht als "never" weitergereicht.
   if (kopf === null) return notFound()
 
-  const seiten = await seitentextLaden(benutzer, id)
-  const layer = await layerLaden(benutzer, id)
-  // Welche Stempel der Betrachter jetzt anfassen darf, und wo auf jeder
-  // Seite Text steht -- beides nur Rueckmeldung; die Grenze zieht der
-  // Trigger (ADR 0008).
-  const beweglich = [...(await verschiebbareStempel(benutzer, id))]
-  const textkaesten = await textkaestenLaden(benutzer, id)
-  const befunde = await befundeLaden(benutzer, id)
-  const archiv = await alsBenutzer(benutzer, (c) => archivstandLaden(c, id))
-  const erklaerung = await zuordnungErklaeren(benutzer, id)
-  const warten = await alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id))
+  const [seiten, befunde, archiv, erklaerung, warten] = await Promise.all([
+    seitentextLaden(benutzer, id),
+    befundeLaden(benutzer, id),
+    alsBenutzer(benutzer, (c) => archivstandLaden(c, id)),
+    zuordnungErklaeren(benutzer, id),
+    alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id)),
+  ])
   // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
   // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
   const gewaehrleistung =
@@ -53,6 +98,8 @@ export default async function Belegansicht({
       ? []
       : await gewaehrleistungOffen(benutzer, kopf.objektId)
   const seitenzahl = kopf.seitenzahl ?? seiten.length
+  const treffer = suchen(seiten, suche)
+  const trefferSeiten = treffer.map((t) => t.seite)
 
   // Ueber den gemeinsamen Helfer: Ein Schriftstueck hat keinen Kreditor und
   // keine Rechnungsnummer, aber einen Korrespondenten und einen Betreff.
@@ -67,251 +114,212 @@ export default async function Belegansicht({
      * wieder weg. Aufgefallen ist es, als ein Test sich von hier abmelden
      * wollte und die Schaltflaeche nicht fand.
      */
-    <Seitenrahmen titel={titel}>
-      <header style={{ marginBottom: '1.5rem' }}>
-        <p style={{ color: '#555', margin: '0.25rem 0 0' }}>
-          {[
-            kopf.objektnummer !== null && `Objekt ${kopf.objektnummer}`,
-            kopf.ordnungsgruppe,
-            kopf.brutto !== null && euro.format(kopf.brutto),
-            `Eingang ${datum.format(new Date(kopf.eingangAm))}`,
-            `${seitenzahl} Seite${seitenzahl === 1 ? '' : 'n'}`,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-      </header>
+    <Seitenrahmen titel={titel} breit>
+      <div className="belegansicht">
+        {/* Die Seiten als Miniaturen. Dasselbe Bild wie im Stapel, nur
+            klein: Es ist ohnehin geladen, eine zweite Datei je Seite waere
+            Speicher fuer nichts. `alt=""`, damit nur der Stapel "Seite 1"
+            heisst -- ein Vorleseprogramm soll jede Seite einmal hoeren. */}
+        <nav aria-label="Seiten" className="seitenrail">
+          {seitenzahl === 0 ? (
+            <p style={{ fontSize: '0.75rem', textAlign: 'center' }}>keine Seiten</p>
+          ) : (
+            Array.from({ length: seitenzahl }, (_, i) => i + 1).map((nr) => (
+              <a key={nr} href={`#seite-${nr}`} aria-label={`Zu Seite ${nr}`}>
+                <img src={`/api/beleg/${id}/seite/${nr}`} alt="" loading="lazy" />
+                {nr}
+                {trefferSeiten.includes(nr) && <span className="seitenrail-marke">{treffer.find((t) => t.seite === nr)?.anzahl}</span>}
+              </a>
+            ))
+          )}
+        </nav>
 
-      {archiv !== null && (
-        <p
-          style={{
-            background: '#EEF1F6',
-            borderLeft: '3px solid #3B4A80',
-            color: '#33405C',
-            margin: '1rem 0',
-            padding: '0.6rem 0.9rem',
-          }}
-        >
-          <strong>Archiviert</strong>
-          {archiv.archiviertAm !== null &&
-            ` am ${datum.format(new Date(archiv.archiviertAm))}`}
-          . Aufbewahrung bis{' '}
-          {archiv.aufbewahrungBis === null
-            ? '—'
-            : datum.format(new Date(archiv.aufbewahrungBis))}
-          {archiv.aufbewahrungsgrund !== null && ` (${archiv.aufbewahrungsgrund})`}.
-          {' '}Änderungen laufen ab hier über Storno und Neuerfassung.
-          {archiv.loeschsperre && ' Eine Löschsperre steht.'}
-        </p>
-      )}
+        <section className="spalte-beleg" aria-label="Beleg">
+          <Belegbetrachter
+            benutzer={benutzer}
+            dokumentId={id}
+            seitenzahl={seitenzahl}
+            bearbeitbar
+            treffer={trefferSeiten}
+            verweis={false}
+          />
+        </section>
 
-      <Befunde befunde={befunde} />
+        <aside className="spalte-angaben" aria-label="Angaben zum Beleg">
+          <h2>Beleg</h2>
+          <dl>
+            {kopf.objektnummer !== null && (
+              <>
+                <dt>Objekt</dt>
+                <dd>{kopf.objektnummer}</dd>
+              </>
+            )}
+            {kopf.ordnungsgruppe !== null && (
+              <>
+                <dt>Gruppe</dt>
+                <dd>{kopf.ordnungsgruppe}</dd>
+              </>
+            )}
+            {kopf.brutto !== null && (
+              <>
+                <dt>Betrag</dt>
+                <dd>{euro.format(kopf.brutto)}</dd>
+              </>
+            )}
+            <dt>Eingang</dt>
+            <dd>{datum.format(new Date(kopf.eingangAm))}</dd>
+            <dt>Umfang</dt>
+            <dd>
+              {seitenzahl} Seite{seitenzahl === 1 ? '' : 'n'}
+            </dd>
+          </dl>
 
-      {/*
-        Warum ist dieser Beleg hier? Vier Saetze mit Grund -- die Auskunft,
-        fuer die man im abzuloesenden System alle Magneten gleichzeitig lesen
-        muss. Objekt und Kategorie stehen mit dem Grund, der im Moment der
-        Zuordnung aufgeschrieben wurde; Ablauf und Bearbeiter mit dem, der
-        heute gilt.
-      */}
-      {erklaerung !== null && (
-        <section
-          id="warum"
-          aria-labelledby="warum-titel"
-          style={{
-            border: '1px solid #ddd',
-            borderRadius: '0.3rem',
-            fontSize: '0.9rem',
-            margin: '1rem 0',
-            padding: '0.75rem 1rem',
-          }}
-        >
-          <h2 id="warum-titel" style={{ fontSize: '1rem', margin: '0 0 0.5rem' }}>
-            Warum hier
-          </h2>
-          <dl style={{ display: 'grid', gap: '0.35rem 1rem', gridTemplateColumns: 'max-content 1fr', margin: 0 }}>
+          {archiv !== null && (
+            <p className="hinweis">
+              <strong>Archiviert</strong>
+              {archiv.archiviertAm !== null && ` am ${datum.format(new Date(archiv.archiviertAm))}`}
+              . Aufbewahrung bis{' '}
+              {archiv.aufbewahrungBis === null ? '—' : datum.format(new Date(archiv.aufbewahrungBis))}
+              {archiv.aufbewahrungsgrund !== null && ` (${archiv.aufbewahrungsgrund})`}. Änderungen
+              laufen ab hier über Storno und Neuerfassung.
+              {archiv.loeschsperre && ' Eine Löschsperre steht.'}
+            </p>
+          )}
+
+          <Befunde befunde={befunde} />
+
+          {/*
+            Warum ist dieser Beleg hier? Vier Saetze mit Grund -- die Auskunft,
+            fuer die man im abzuloesenden System alle Magneten gleichzeitig
+            lesen muss. Objekt und Kategorie stehen mit dem Grund, der im
+            Moment der Zuordnung aufgeschrieben wurde; Ablauf und Bearbeiter
+            mit dem, der heute gilt.
+          */}
+          {erklaerung !== null && (
+            <section id="warum" aria-labelledby="warum-titel">
+              <h2 id="warum-titel">Warum hier</h2>
+              <dl>
+                {(
+                  [
+                    ['Objekt', erklaerung.objekt],
+                    ['Kategorie', erklaerung.kategorie],
+                    ['Ablauf', erklaerung.ablauf],
+                    ['Stufe', erklaerung.stufe],
+                  ] as const
+                ).map(([name, zeile]) => (
+                  <div key={name} style={{ display: 'contents' }}>
+                    <dt>{name}</dt>
+                    <dd>
+                      {zeile === null ? (
+                        <span style={{ color: 'var(--farbe-text-leise)' }}>—</span>
+                      ) : (
+                        <>
+                          <strong>{zeile.was}</strong>
+                          <span style={{ color: 'var(--farbe-text-leise)' }}> — {zeile.warum}</span>
+                          {'personen' in zeile && zeile.personen.length > 0 && (
+                            <span style={{ color: 'var(--farbe-text-leise)' }}>
+                              {' '}
+                              Das können: {zeile.personen.join(', ')}.
+                            </span>
+                          )}
+                          {'personen' in zeile && zeile.personen.length === 0 && (
+                            <span style={{ color: 'var(--farbe-rot)' }}> Niemand kann das derzeit.</span>
+                          )}
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          {gewaehrleistung.length > 0 && (
+            <section className="hinweis hinweis--warnung">
+              <strong>Gewährleistung offen</strong> — an diesem Objekt stehen{' '}
+              {gewaehrleistung.length === 1 ? 'ein Bauteil' : `${gewaehrleistung.length} Bauteile`}{' '}
+              noch unter Gewährleistung:{' '}
+              {gewaehrleistung.map((b) => `${b.bezeichnung} (bis ${b.gewaehrleistungBis})`).join(', ')}.
+              Bei einer Reparaturrechnung ist zu prüfen, ob sie zulasten des Lieferanten geht.
+            </section>
+          )}
+
+          <Warten container={warten} dokumentId={id} />
+
+          {seitenzahl > 0 && (
+            <section aria-labelledby="suche-titel">
+              <h2 id="suche-titel">Im Beleg suchen</h2>
+              {/* Ein GET-Formular: Das Suchwort steht in der Adresse, die
+                  Seite rendert die Treffer -- kein Zustand im Browser, und
+                  ein Verweis auf die Suche laesst sich weitergeben. */}
+              <form method="get" className="suchfeld">
+                <input
+                  type="search"
+                  name="suche"
+                  defaultValue={suche}
+                  placeholder="Wort im Belegtext"
+                  aria-label="Suchwort"
+                />
+                <button type="submit">Suchen</button>
+              </form>
+              {suche.trim().length >= 2 && (
+                <ul className="suchtreffer" aria-label="Treffer">
+                  {treffer.length === 0 ? (
+                    <li style={{ color: 'var(--farbe-text-leise)' }}>Nichts gefunden.</li>
+                  ) : (
+                    treffer.map((t) => (
+                      <li key={t.seite}>
+                        <a href={`#seite-${t.seite}`}>
+                          Seite {t.seite}
+                          {t.anzahl > 1 && ` (${t.anzahl}×)`}
+                        </a>
+                        <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.82rem' }}>
+                          {t.vorher}
+                          <mark>{t.wort}</mark>
+                          {t.nachher}
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {seitenzahl > 0 && (
+            <section>
+              <h2>Notizen und Schwärzungen</h2>
+              <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.82rem', margin: '0 0 0.5rem' }}>
+                Vorhandene Notizen stehen unter der jeweiligen Seite.
+              </p>
+              <Layerformular dokumentId={id} seiten={Array.from({ length: seitenzahl }, (_, i) => i + 1)} />
+            </section>
+          )}
+
+          <section className="ausgabe">
+            <h2>Ausgabe</h2>
+            <a href={`/api/beleg/${id}/pdf`}>Original-PDF öffnen</a>
+            {/* Die vier Varianten aus Konzept 16. Das Archivoriginal steht
+                schon oben -- hier die drei, die Layer tragen. */}
             {(
               [
-                ['Objekt', erklaerung.objekt],
-                ['Kategorie', erklaerung.kategorie],
-                ['Ablauf', erklaerung.ablauf],
-                ['Stufe', erklaerung.stufe],
+                ['stempel', 'Beleg mit Stempeln'],
+                ['extern', 'Belegeinsicht'],
+                ['intern', 'interne Akte'],
               ] as const
-            ).map(([name, zeile]) => (
-              <div key={name} style={{ display: 'contents' }}>
-                <dt style={{ color: '#555' }}>{name}</dt>
-                <dd style={{ margin: 0 }}>
-                  {zeile === null ? (
-                    <span style={{ color: '#6F6F6F' }}>—</span>
-                  ) : (
-                    <>
-                      <strong>{zeile.was}</strong>
-                      <span style={{ color: '#555' }}> — {zeile.warum}</span>
-                      {'personen' in zeile && zeile.personen.length > 0 && (
-                        <span style={{ color: '#555' }}>
-                          {' '}
-                          Das können: {zeile.personen.join(', ')}.
-                        </span>
-                      )}
-                      {'personen' in zeile && zeile.personen.length === 0 && (
-                        <span style={{ color: '#A33' }}> Niemand kann das derzeit.</span>
-                      )}
-                    </>
-                  )}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      )}
-
-      {gewaehrleistung.length > 0 && (
-        <section
-          style={{
-            background: '#FDF3E3',
-            borderLeft: '3px solid #B5741A',
-            color: '#6B4A15',
-            margin: '1rem 0',
-            padding: '0.6rem 0.9rem',
-          }}
-        >
-          <strong>Gewährleistung offen</strong> — an diesem Objekt stehen{' '}
-          {gewaehrleistung.length === 1 ? 'ein Bauteil' : `${gewaehrleistung.length} Bauteile`}{' '}
-          noch unter Gewährleistung:{' '}
-          {gewaehrleistung
-            .map((b) => `${b.bezeichnung} (bis ${b.gewaehrleistungBis})`)
-            .join(', ')}
-          . Bei einer Reparaturrechnung ist zu prüfen, ob sie zulasten des
-          Lieferanten geht.
-        </section>
-      )}
-
-      <Warten container={warten} dokumentId={id} />
-
-      {seitenzahl === 0 ? (
-        <p>Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.</p>
-      ) : (
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-          <nav aria-label="Seiten" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {Array.from({ length: seitenzahl }, (_, i) => i + 1).map((nr) => (
-              <a key={nr} href={`#seite-${nr}`} style={{ fontSize: '0.875rem' }}>
-                Seite {nr}
+            ).map(([variante, name]) => (
+              <a key={variante} href={`/api/beleg/${id}/export?variante=${variante}`}>
+                {name}
               </a>
             ))}
-          </nav>
-
-          <div style={{ flex: 1 }}>
-            {Array.from({ length: seitenzahl }, (_, i) => i + 1).map((nr) => {
-              const masse = seiten.find((s) => s.seite === nr)
-              const aufSeite = layer.filter((l) => l.seite === nr)
-              return (
-                <figure key={nr} id={`seite-${nr}`} style={{ margin: '0 0 1.5rem' }}>
-                  {/* Bewusst ein einfaches img: das Bild liegt fertig vor, es
-                      gibt nichts zu optimieren, was nicht schon optimiert waere.
-                      Die Layer liegen als Überlagerung darüber -- nie im Bild,
-                      denn dann müssten sie beim Rendern schon feststehen. */}
-                  <div style={{ position: 'relative' }}>
-                    <img
-                      src={`/api/beleg/${id}/seite/${nr}`}
-                      alt={`Seite ${nr}`}
-                      loading={nr === 1 ? 'eager' : 'lazy'}
-                      style={{ width: '100%', border: '1px solid #ddd', display: 'block' }}
-                    />
-                    <Layerschicht
-                      layer={aufSeite}
-                      breite={masse?.breite ?? 0}
-                      hoehe={masse?.hoehe ?? 0}
-                      beweglich={beweglich}
-                      textkaesten={textkaesten.get(nr) ?? []}
-                      seitenzahl={seitenzahl}
-                      dokumentId={id}
-                    />
-                  </div>
-                  <figcaption>
-                    <Notizliste layer={aufSeite} dokumentId={id} />
-                  </figcaption>
-                </figure>
-              )
-            })}
-
-            {/* Stempel, für die auf Seite 1 kein Platz mehr war. Im Export
-                stehen sie auf einer angehängten Leerseite (Konzept 16); in
-                der Ansicht hier als Liste, weil es keine solche Seite gibt. */}
-            {layer.some((l) => l.seite === 0) && (
-              <aside style={{ border: '1px dashed #B5741A', padding: '0.75rem' }}>
-                <strong style={{ fontSize: '0.9rem' }}>Ohne Platz auf der Seite</strong>
-                <ul style={{ fontSize: '0.85rem', margin: '0.4rem 0 0', paddingLeft: '1.1rem' }}>
-                  {layer
-                    .filter((l) => l.seite === 0)
-                    .map((l) => (
-                      <li key={l.id}>
-                        {l.text}
-                        {/* Der eigene, noch nicht festgelegte Stempel darf
-                            von der Leerseite auf eine echte Seite -- oben
-                            links; der Trigger weist ab, wenn dort Text steht,
-                            und dann sagt die Meldung das. Feinschliff danach
-                            auf der Seite selbst. */}
-                        {beweglich.includes(l.id) && (
-                          <form
-                            action={stempelVerschiebenAktion}
-                            style={{ display: 'inline', marginLeft: '0.5rem' }}
-                          >
-                            <input type="hidden" name="dokumentId" value={id} />
-                            <input type="hidden" name="layerId" value={l.id} />
-                            <input type="hidden" name="seite" value={1} />
-                            <input type="hidden" name="x" value={40} />
-                            <input type="hidden" name="y" value={40} />
-                            <input type="hidden" name="breite" value={l.breite} />
-                            <input type="hidden" name="hoehe" value={l.hoehe} />
-                            <button type="submit" style={{ cursor: 'pointer', font: 'inherit' }}>
-                              Auf Seite 1 legen
-                            </button>
-                          </form>
-                        )}
-                      </li>
-                    ))}
-                </ul>
-              </aside>
-            )}
-          </div>
-        </div>
-      )}
-
-      {seitenzahl > 0 && (
-        <Layerformular
-          dokumentId={id}
-          seiten={Array.from({ length: seitenzahl }, (_, i) => i + 1)}
-        />
-      )}
-
-      <footer style={{ borderTop: '1px solid #ddd', marginTop: '1rem', paddingTop: '1rem' }}>
-        <a href={`/api/beleg/${id}/pdf`}>Original-PDF öffnen</a>
-
-        {/* Die vier Varianten aus Konzept 16. Das Archivoriginal steht schon
-            oben als „Original-PDF" -- hier die drei, die Layer tragen. */}
-        <p style={{ color: '#555', fontSize: '0.85rem', margin: '0.6rem 0 0' }}>
-          Ausgeben als{' '}
-          {(
-            [
-              ['stempel', 'Beleg mit Stempeln'],
-              ['extern', 'Belegeinsicht'],
-              ['intern', 'interne Akte'],
-            ] as const
-          ).map(([variante, name], i) => (
-            <span key={variante}>
-              {i > 0 && ' · '}
-              <a href={`/api/beleg/${id}/export?variante=${variante}`}>{name}</a>
-            </span>
-          ))}
-        </p>
-
-        <p style={{ color: '#666', fontSize: '0.78rem', margin: '0.3rem 0 0' }}>
-          Ist der Beleg geschwärzt, entstehen diese Ausgaben aus den
-          Seitenbildern — dann ist das Geschwärzte wirklich weg, dafür der Text
-          nicht mehr durchsuchbar. Das Archivoriginal bleibt in jedem Fall
-          unverändert.
-        </p>
-      </footer>
+            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', margin: '0.5rem 0 0' }}>
+              Ist der Beleg geschwärzt, entstehen diese Ausgaben aus den Seitenbildern — dann ist das
+              Geschwärzte wirklich weg, dafür der Text nicht mehr durchsuchbar. Das Archivoriginal
+              bleibt in jedem Fall unverändert.
+            </p>
+          </section>
+        </aside>
+      </div>
     </Seitenrahmen>
   )
 }
