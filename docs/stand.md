@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 78 Tabellen, 194 Policies,
-112 Module, 944 Testfaelle in 55 Dateien,
+Auf einen Blick: 79 Tabellen, 196 Policies,
+113 Module, 954 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -44,6 +44,7 @@ Auf einen Blick: 78 Tabellen, 194 Policies,
 | `npm run e2e:ui` | `playwright test --ui` |
 | `npm run betrieb:pruefen` | `tsx scripts/lebenszeichen-pruefen.ts` |
 | `npm run inbetriebnahme` | `tsx scripts/inbetriebnahme.ts` |
+| `npm run uebernahme` | `tsx scripts/uebernahme.ts` |
 | `npm run verzeichnis` | `node scripts/verzeichnis-erzeugen.mjs` |
 | `npm run einrichten` | `tsx scripts/einrichten.ts` |
 | `npm run vorschau` | `node scripts/vorschau.mjs` |
@@ -495,6 +496,16 @@ Funktionen: `app.letzte_sicherungsprobe`, `app.schutz_pruefen`
 
 Policies: 1
 
+### `supabase/migrations/20260925100000_uebernahme.sql`
+
+===========================================================================
+
+Tabellen: `uebernahme_eintrag`
+
+Funktionen: `app.schutz_pruefen`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -599,6 +610,7 @@ Policies: 1
 | [`src/stammdaten/stempel.ts`](../src/stammdaten/stempel.ts) | Stempeltypen und ihre Gestaltung -- die Fachschicht des Stempel-Designers |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
 | [`src/stapel/trennung.ts`](../src/stapel/trennung.ts) | Trennblätter erkennen |
+| [`src/uebernahme/index.ts`](../src/uebernahme/index.ts) | Bestandsuebernahme aus dem abzuloesenden System (Konzept 24.12) |
 | [`src/verfahrensdoku/index.ts`](../src/verfahrensdoku/index.ts) | Verfahrensdokumentation — welche Fassung wann galt |
 | [`src/worker/aufbereitung.ts`](../src/worker/aufbereitung.ts) | Aufbereitung eines eingegangenen Dokuments |
 | [`src/worker/index.ts`](../src/worker/index.ts) | Worker-Prozess |
@@ -666,6 +678,7 @@ Policies: 1
 | [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
+| [`tests/uebernahme.test.ts`](../tests/uebernahme.test.ts) | 10 | Die Zuordnung, Die Probe, Die Uebernahme |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/vier-augen.test.ts`](../tests/vier-augen.test.ts) | 7 | An der Stufe, Am Stempeltyp, Die Pruefung des Ablaufs |

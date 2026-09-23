@@ -21,6 +21,8 @@ const SCHUTZ: Array<[string, string]> = [
   // Das Protokoll der Stempelverschiebungen faengt auch die Kaskade ab --
   // derselbe Schutz wie bei den Stempelereignissen, aus demselben Grund.
   ['layer_position_ereignis', 'layer_position_ereignis_unveraenderlich'],
+  // Das Protokoll der Bestandsuebernahme haengt per Kaskade am Beleg.
+  ['uebernahme_eintrag', 'uebernahme_eintrag_unveraenderlich'],
 ]
 
 export async function belegEntfernen(dokumentId: string): Promise<void> {

@@ -36,6 +36,7 @@
     "e2e:ui": "playwright test --ui",
     "betrieb:pruefen": "tsx scripts/lebenszeichen-pruefen.ts",
     "inbetriebnahme": "tsx scripts/inbetriebnahme.ts",
+    "uebernahme": "tsx scripts/uebernahme.ts",
     "verzeichnis": "node scripts/verzeichnis-erzeugen.mjs",
     "einrichten": "tsx scripts/einrichten.ts",
     "vorschau": "node scripts/vorschau.mjs",

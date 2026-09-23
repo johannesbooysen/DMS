@@ -410,6 +410,12 @@ describe('Recht an der Ablaufsteuerung', () => {
       c.query('update ordnungsgruppe set farbe = $2 where id = $1', [BETRIEBSKOSTEN, '#123456']),
     )
     expect(rowCount).toBe(1)
+    // Und zurueck: Die Tests teilen sich eine Datenbank, und Vitest ordnet
+    // die Dateien nach Laufzeit, nicht nach Namen -- die Belegliste prueft
+    // die Seed-Farbe und lief einmal nach dieser Datei.
+    await alsBenutzer(BERND, (c) =>
+      c.query('update ordnungsgruppe set farbe = $2 where id = $1', [BETRIEBSKOSTEN, '#2F6F4E']),
+    )
   })
 
   it('laesst Eva die Steuerung setzen', async () => {

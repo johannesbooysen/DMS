@@ -118,6 +118,15 @@ Die Probe holt in eine eigene, danach verworfene Datenbank zurück und prüft, w
 
 **Die Probe vermerkt sich selbst** (`sicherungs_probe`, append-only, ohne Befundtexte): Zeitpunkt, Alter der Sicherung, Ausgang `getragen | befunde | leer`, Zählwerte. Vorher stand „Datum und Ergebnis sind hier zu führen" als Auftrag an einen Menschen im organisatorischen Teil — ein Auftrag, der beim dritten Mal vergessen wird. Geschrieben wird nur als Eigentümer; unter `dms_app` gibt es keine Schreibpolicy, weil ein zweiter Weg, eine Probe zu vermerken, ein Weg wäre, eine vorzutäuschen. Kann sie sich nicht vermerken, gibt sie 1 zurück, auch wenn die Sicherung getragen hätte.
 
+Bestandsübernahme aus Amagno (Konzept §24.12) — Dateien plus CSV aus dem Amagno-Export, die Spaltenzuordnung in `uebernahme.json` neben dem Export:
+
+```bash
+DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner> --probe   # prüfen, nichts schreiben
+DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner>           # übernehmen
+```
+
+**Übernommen wird archiviert, nie als neuer Eingang.** Ein Beleg von 2019 läuft nicht noch einmal durch die sachliche Prüfung. Er nimmt denselben `dokumentAufnehmen` wie jeder Eingang — mit `bestand: true`: Hash, Dublettenprüfung, Ablage wie immer, aber **kein** Lauf und **kein** Auftrag in der Warteschlange; die Aufbereitung fährt die Übernahme selbst, weil danach archiviert wird und ein archivierter Beleg vom Worker nicht mehr beschrieben werden darf. Reihenfolge in einer Transaktion: aufnehmen → aufbereiten → Fakten und altes Eingangsdatum setzen → archivieren → vermerken. Der Eingangskanal `uebernahme` sagt am Beleg für immer, dass er so kam. Das Protokoll `uebernahme_eintrag` (append-only, Mandant-RLS) trägt je Altbeleg Kennung, Datei, neuen Beleg und Ausgang; der eindeutige Index auf `(quelle, alt_kennung)` macht einen zweiten Lauf über denselben Export idempotent. **Erst die Probe:** Sie meldet fehlende Dateien, unbekannte Objekte und Ordnungsgruppen als Fehler (werden nicht übernommen), unbekannte Kreditoren als Hinweis (werden angelegt, wenn der Übernehmende Stammdaten pflegen darf). Die Zuordnung wird streng gegen die CSV-Kopfzeile geprüft, bevor eine Zeile gelesen wird. Was den echten Amagno-Export betrifft, ist die `uebernahme.json` der einzige Ort, der angepasst werden muss.
+
 Objektakte für den Verwalterwechsel (Konzept §19) — läuft unter der Kennung eines Benutzers und damit unter dessen Rechten:
 
 ```bash

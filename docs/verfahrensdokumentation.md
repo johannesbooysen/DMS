@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-78 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+79 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -285,6 +285,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `layer_position_ereignis` | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `gespeicherte_suche` | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
 | `sicherungs_probe` | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
+| `uebernahme_eintrag` | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -322,6 +323,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `dokument_layer_position_protokoll` | `dokument_layer` | after update | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `aaa_stempel_ereignis_vier_augen` | `stempel_ereignis` | before insert | [`20260922140000_vier_augen.sql`](../supabase/migrations/20260922140000_vier_augen.sql) |
 | `sicherungs_probe_unveraenderlich` | `sicherungs_probe` | before update or delete | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
+| `uebernahme_eintrag_unveraenderlich` | `uebernahme_eintrag` | before update or delete | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -329,7 +331,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (72): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (73): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -516,6 +518,8 @@ Tabellen mit Policies (72): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `prozess_override_schreiben` | `prozess_override` | all | [`20260909100000_konfigurationsrechte.sql`](../supabase/migrations/20260909100000_konfigurationsrechte.sql) |
 | `layer_position_ereignis_lesen` | `layer_position_ereignis` | select | [`20260922120000_stempel_verschieben.sql`](../supabase/migrations/20260922120000_stempel_verschieben.sql) |
 | `gespeicherte_suche_eigene` | `gespeicherte_suche` | all | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
+| `uebernahme_eintrag_lesen` | `uebernahme_eintrag` | select | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
+| `uebernahme_eintrag_anlegen` | `uebernahme_eintrag` | insert | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -535,6 +539,7 @@ des Ausgangsbuchs (`postAnlegen`).
 | Eingang | Schleuse | [`src/ingest/aufnehmen.ts`](../src/ingest/aufnehmen.ts) |
 | Ausgang | Schleuse | [`src/postausgang/index.ts`](../src/postausgang/index.ts) |
 | Eingang | nutzt sie | [`src/stapel/index.ts`](../src/stapel/index.ts) |
+| Eingang | nutzt sie | [`src/uebernahme/index.ts`](../src/uebernahme/index.ts) |
 
 ## 6. Nachweis der Wirksamkeit
 
@@ -1553,6 +1558,19 @@ belegt.
 - zaehlt ueberfaellig, was faellig war
 - zeigt einem fremden Mandanten nichts -- weder Zahl noch Zeile
 - zaehlt fuer den Objektverantwortlichen nur seine Objekte
+
+### [`tests/uebernahme.test.ts`](../tests/uebernahme.test.ts)
+
+- liest CSV mit Semikolon, Anfuehrungszeichen, Zeilenumbruch im Feld und BOM
+- erkennt das Trennzeichen an der Kopfzeile
+- macht aus einer Zeile einen Altbeleg -- Datum und Betrag deutsch
+- weist eine Zuordnung mit unbekannter Spalte ab -- bevor eine Zeile gelesen wird
+- meldet fehlende Datei, unbekanntes Objekt und unbekannten Kreditor -- ohne zu schreiben
+- macht aus dem Altbeleg einen archivierten Beleg mit Fakten und altem Eingangsdatum
+- uebernimmt dieselbe Datei kein zweites Mal -- die Dublette steht im Protokoll
+- legt einen unbekannten Kreditor an, wenn der Uebernehmende Stammdaten pflegen darf -- sonst Fehler mit Grund
+- zeigt das Protokoll nur dem eigenen Mandanten
+- laesst das Protokoll nicht aendern
 
 ### [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts)
 

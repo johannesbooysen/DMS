@@ -78,6 +78,9 @@ export const TAETIGKEITEN = [
       'stapel',
       'stapel_seite',
       'stempel_ereignis',
+      // Protokoll der Bestandsuebernahme: Kennung im alten System, Dateiname,
+      // wer uebernommen hat -- dieselbe Taetigkeit wie der Beleg selbst.
+      'uebernahme_eintrag',
       'verarbeitungsfehler',
       'vorgang',
       'wartecontainer',

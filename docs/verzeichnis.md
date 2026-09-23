@@ -115,9 +115,9 @@ Eingangsrechnungen und Schriftverkehr aufnehmen, sachlich und rechnerisch pruefe
 
 Aufbewahrungspflichtige Belege nach `aufbewahrungsfrist`, gerechnet ab Jahresende (§147 AO). Ohne Eintrag zehn Jahre. Danach Loeschung nach §24.5.
 
-**Wo die Daten liegen** (28 Tabellen)
+**Wo die Daten liegen** (29 Tabellen)
 
-`aufgabe`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_layer`, `layer_position_ereignis`, `gespeicherte_suche`, `dokument_merkmal`, `dokument_seite`, `extraktion_feld`, `klaerung`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `korrektur_ereignis`, `plausibilitaet_befund`, `rechnung_fakten`, `schriftverkehr_fakten`, `stapel`, `stapel_seite`, `stempel_ereignis`, `verarbeitungsfehler`, `vorgang`, `wartecontainer`, `zahlung`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+`aufgabe`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_layer`, `layer_position_ereignis`, `gespeicherte_suche`, `dokument_merkmal`, `dokument_seite`, `extraktion_feld`, `klaerung`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `korrektur_ereignis`, `plausibilitaet_befund`, `rechnung_fakten`, `schriftverkehr_fakten`, `stapel`, `stapel_seite`, `stempel_ereignis`, `uebernahme_eintrag`, `verarbeitungsfehler`, `vorgang`, `wartecontainer`, `zahlung`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 ### Eigentuemer- und Mieterdaten
 
@@ -305,7 +305,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 ## Vollständigkeit
 
-Das Schema hat **78 Tabellen**. Jede ist genau einmal
+Das Schema hat **79 Tabellen**. Jede ist genau einmal
 eingeordnet — entweder in einer Tätigkeit oder in der Liste ohne
 Personenbezug. Geprüft beim Erzeugen gegen die `create table`-Anweisungen
 der Migrationen; fehlt eine, bricht `npm run verzeichnis` ab.

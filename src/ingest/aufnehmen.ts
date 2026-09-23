@@ -15,7 +15,7 @@ import { aufbereitungEinreihen } from '../queue'
 import { laufStarten } from '../workflow/engine'
 import { dubletteSuchen, type Dublettenbefund } from './dublette'
 
-export type Eingangskanal = 'mail' | 'scan' | 'upload' | 'ftp'
+export type Eingangskanal = 'mail' | 'scan' | 'upload' | 'ftp' | 'uebernahme'
 
 export interface Eingang {
   mandantId: string
@@ -39,6 +39,18 @@ export async function dokumentAufnehmen(
   ablage: Ablage,
   eingang: Eingang,
   erfasstVon: string,
+  /**
+   * `bestand: true` fuer die Bestandsuebernahme (Konzept 24.12): Hash,
+   * Dublettenpruefung, Ablage und Dokument wie immer -- aber **kein** Lauf
+   * und **kein** Auftrag in der Warteschlange. Ein Beleg von 2019 geht nicht
+   * noch einmal durch die sachliche Pruefung, und die Aufbereitung faehrt
+   * der Aufrufer selbst, weil er danach archiviert und ein archivierter
+   * Beleg vom Worker nicht mehr beschrieben werden darf.
+   *
+   * Als Schalter hier und nicht als zweiter Eingangsweg: Ein zweiter liefe
+   * frueher oder spaeter vom ersten auseinander.
+   */
+  optionen: { bestand?: boolean } = {},
 ): Promise<Aufnahmeergebnis> {
   const hash = inhaltHash(eingang.inhalt)
 
@@ -91,6 +103,10 @@ export async function dokumentAufnehmen(
         where id = $1`,
       [dokumentId],
     )
+    return { dokumentId, hash, dublette, laufGestartet: false }
+  }
+
+  if (optionen.bestand === true) {
     return { dokumentId, hash, dublette, laufGestartet: false }
   }
 

@@ -1465,6 +1465,95 @@ zweiter Zugang zu allen Daten.
 
 ---
 
+## Bestandsübernahme aus Amagno
+
+Zehn Jahre Belege liegen im alten System. Sie kommen hierher als
+**archivierte** Belege mit ihren Fakten und dem Eingangsdatum von damals —
+nicht als neue Eingänge. Ein Beleg von 2019 läuft nicht noch einmal durch
+die sachliche Prüfung. Am Beleg steht für immer der Eingangskanal
+*Übernahme*: Eine Betriebsprüfung fragt genau das.
+
+### Der Export aus Amagno
+
+In Amagno unter *Exportieren*: die Dateien im **PDF-Format** (das
+Archivoriginal, ohne Anmerkungen) und die Eigenschaften als **CSV, alle
+Spalten**. Ob mit oder ohne Ordnerstruktur ist gleich — die Zuordnung
+geschieht über die CSV, nicht über Ordner.
+
+### Die Zuordnung
+
+Neben den Export gehört eine Datei `uebernahme.json`. Sie sagt, welche
+Spalte der CSV was bedeutet. Welche Spalte der Kreditor ist, weiß nur, wer
+den Export gemacht hat — deshalb steht das hier und nicht im Programm:
+
+```json
+{
+  "quelle": "amagno",
+  "index": "eigenschaften.csv",
+  "dateibasis": "dateien",
+  "datumsformat": "DD.MM.YYYY",
+  "belegart": "rechnung",
+  "spalten": {
+    "datei": "Dateiname",
+    "altKennung": "Dokument-ID",
+    "kreditor": "Lieferant",
+    "rechnungsnummer": "Rechnungsnummer",
+    "rechnungsdatum": "Rechnungsdatum",
+    "brutto": "Bruttobetrag",
+    "objektnummer": "Objekt",
+    "ordnungsgruppe": "Fachgebiet",
+    "eingangAm": "Erstellt am"
+  }
+}
+```
+
+Pflicht sind `datei` und `altKennung`; alles andere ist so gut, wie der
+Export es hergibt. Beträge dürfen deutsch geschrieben sein (`1.240,00`),
+Datumsangaben mit Uhrzeit. Hat der Export eine Spalte für die Belegart,
+ordnet `belegarten` ihre Werte zu (`"Gutschrift": "gutschrift"`).
+
+### Erst die Probe, dann der Lauf
+
+```bash
+DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner> --probe
+```
+
+Die Probe liest alles und schreibt nichts. Sie meldet je Zeile, was fehlt:
+eine Datei, die nicht da ist, ein Objekt oder eine Ordnungsgruppe, die es
+im System nicht gibt — das sind **Fehler**, solche Zeilen werden nicht
+übernommen, bis die Stammdaten stehen. Ein unbekannter Kreditor ist nur
+ein **Hinweis**: Er wird beim Übernehmen angelegt, sofern die übernehmende
+Person Stammdaten pflegen darf. Die Zuordnung selbst wird gegen die
+Kopfzeile der CSV geprüft, bevor eine Zeile gelesen wird; ein Tippfehler im
+Spaltennamen fällt hier auf, nicht in Zeile 4.000.
+
+```bash
+DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner>
+```
+
+Der Lauf übernimmt Zeile für Zeile, jede in ihrer eigenen Transaktion. Was
+scheitert, steht mit Grund im Protokoll, der Rest geht weiter. Ein zweiter
+Lauf über denselben Export überspringt, was schon übernommen ist; dieselbe
+Datei ein zweites Mal ist eine Dublette und bleibt als solche stehen.
+
+Jeder übernommene Beleg ist sofort archiviert; die Objektsperre setzt der
+Worker im nächsten Durchgang. Die Aufbereitung — Seitenbilder, Text,
+Suche — läuft für Altbelege genauso wie für neue, nur im Lauf selbst statt
+im Hintergrund.
+
+### Das Protokoll
+
+Zu jedem Altbeleg steht, welche Kennung er im alten System hatte, welche
+Datei, welcher Beleg daraus wurde und mit welchem Ausgang. Es lässt sich
+weder ändern noch löschen. Über die alte Kennung findet ein Prüfer vom
+alten zum neuen Beleg — das ist der Grund, warum sie Pflicht ist.
+
+**Was nicht übernommen wird:** die Stempelhistorie aus Amagno. Sie liegt
+dort in den Anmerkungen der PDF, nicht in der CSV, und ein nachgebauter
+Stempel wäre eine Behauptung über eine Entscheidung, die hier niemand
+getroffen hat. Wer sie braucht, hält Amagno als Altarchiv lesend vor oder
+exportiert zusätzlich die PDF *mit Anmerkungen* in einen eigenen Ordner.
+
 ## Verzeichnis von Verarbeitungstätigkeiten
 
 Jedes Unternehmen, das personenbezogene Daten verarbeitet, muss ein
