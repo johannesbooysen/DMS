@@ -318,3 +318,26 @@ async function erledigen(
   )
   return rows[0]?.verarbeitungsfehler_erledigen === true
 }
+
+/**
+ * Alles noch einmal versuchen -- die Sammelaktion fuer den einen Fall, in
+ * dem der Korb sich von selbst fuellt: Viele Scans kommen herein, waehrend
+ * keine Texterkennung eingerichtet ist. Danach steht je Beleg ein Eintrag,
+ * und niemand soll zwanzigmal klicken.
+ *
+ * Je Eintrag eine eigene Transaktion, ueber `fehlerWiederholen`: Ein Eintrag,
+ * der inzwischen erledigt ist, wird uebersprungen und haelt die anderen nicht
+ * auf. Was zurueckkommt, ist die Zahl der neu eingereihten. Die Auswahl
+ * laeuft unter der RLS -- gesehen und wiederholt wird nur der eigene Korb.
+ *
+ * Bewusst **nur** wiederholen: Verwerfen im Rundumschlag braucht je Beleg
+ * eine Begruendung, und "von Hand" ist eine Entscheidung je Beleg.
+ */
+export async function alleWiederholen(benutzerId: string): Promise<number> {
+  const offen = await fehlerkorbLaden(benutzerId)
+  let eingereiht = 0
+  for (const eintrag of offen) {
+    if (await fehlerWiederholen(benutzerId, eintrag.id)) eingereiht += 1
+  }
+  return eingereiht
+}

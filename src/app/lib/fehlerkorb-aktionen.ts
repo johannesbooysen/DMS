@@ -11,6 +11,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import {
+  alleWiederholen,
   FehlerkorbAbgelehnt,
   fehlerManuell,
   fehlerVerwerfen,
@@ -63,4 +64,14 @@ export async function haengerWiederholenAktion(formular: FormData): Promise<void
   )
   revalidatePath('/fehlerkorb')
   zurueck()
+}
+
+export async function alleWiederholenAktion(): Promise<void> {
+  const anzahl = await alleWiederholen(await angemeldeterBenutzer())
+  revalidatePath('/fehlerkorb')
+  redirect(
+    `/fehlerkorb?hinweis=${encodeURIComponent(
+      anzahl === 0 ? 'Nichts zu wiederholen.' : `${anzahl} ${anzahl === 1 ? 'Eintrag' : 'Einträge'} neu eingereiht.`,
+    )}`,
+  )
 }

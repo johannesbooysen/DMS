@@ -15,6 +15,7 @@
 
 import { fehlerkorbLaden, haengendeLaden } from '@/fehlerkorb'
 import {
+  alleWiederholenAktion,
   fehlerManuellAktion,
   fehlerVerwerfenAktion,
   fehlerWiederholenAktion,
@@ -55,9 +56,9 @@ function kennung(zeile: {
 export default async function Fehlerkorb({
   searchParams,
 }: {
-  searchParams: Promise<{ fehler?: string }>
+  searchParams: Promise<{ fehler?: string; hinweis?: string }>
 }) {
-  const { fehler } = await searchParams
+  const { fehler, hinweis } = await searchParams
   const benutzer = await angemeldeterBenutzer()
 
   const [korb, haenger] = await Promise.all([
@@ -73,6 +74,12 @@ export default async function Fehlerkorb({
         </p>
       )}
 
+      {hinweis !== undefined && (
+        <p role="status" className="meldung-hinweis">
+          {hinweis}
+        </p>
+      )}
+
       <p className="leise">
         Ein Beleg, dessen Aufbereitung scheitert, ist <strong>nicht verloren</strong> — sein
         Lauf startete beim Eingang, die Aufgabe liegt im Postfach. Was fehlt, sind
@@ -82,6 +89,17 @@ export default async function Fehlerkorb({
       <h2 style={{ fontSize: '1rem', marginTop: '1.5rem' }}>
         Aufgegeben{korb.length > 0 && ` (${korb.length})`}
       </h2>
+
+      {/* Die eine Sammelaktion: Kommen viele Scans ohne Texterkennung herein,
+          steht je Beleg ein Eintrag -- und nach dem Einrichten sollen sie alle
+          noch einmal, nicht zwanzigmal einzeln. Verwerfen gibt es nicht im
+          Rundumschlag: Das braucht je Beleg eine Begruendung. */}
+      {korb.length > 1 && (
+        <form action={alleWiederholenAktion} className="reihe" style={{ marginBottom: '0.75rem' }}>
+          <button type="submit">Alle wiederholen ({korb.length})</button>
+          <span className="leise klein">Reiht jeden Eintrag neu ein; verwerfen bleibt eine Entscheidung je Beleg.</span>
+        </form>
+      )}
 
       {korb.length === 0 ? (
         <p>Nichts aufgegeben.</p>

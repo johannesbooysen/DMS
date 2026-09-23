@@ -939,6 +939,9 @@ belegt.
 - verwerfen storniert, statt zu loeschen
 - verlangt fuer das Verwerfen eine Begruendung
 - erledigt einen Eintrag nicht zweimal
+- reiht jeden offenen Eintrag neu ein und schliesst ihn
+- wiederholt fuer Doris nichts -- der Korb ist mandantengetrennt
+- ist beim zweiten Mal leer, statt doppelt einzureihen
 - findet einen Beleg, den niemand gemeldet hat
 - schweigt, solange der Beleg im Korb steht
 - schweigt bei einem frisch eingegangenen Beleg

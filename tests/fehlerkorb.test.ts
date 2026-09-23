@@ -18,6 +18,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
 import { poolSchliessen, verbindungspool } from '../src/db'
 import {
+  alleWiederholen,
   FehlerkorbAbgelehnt,
   fehlerkorbLaden,
   fehlerManuell,
@@ -210,6 +211,49 @@ describe('Ausgaenge', () => {
 
     expect(await fehlerManuell(ANNA, korb.id)).toBe(true)
     expect(await fehlerManuell(ANNA, korb.id)).toBe(false)
+  })
+})
+
+describe('Alle wiederholen', () => {
+  /** Ein zweiter Beleg, damit die Sammelaktion etwas zu sammeln hat. */
+  let zweiter = ''
+
+  beforeEach(async () => {
+    const [z] = await direkt<{ id: string }>(
+      `insert into dokument (mandant_id, belegart, eingangskanal, inhalt_hash,
+                             storage_praefix, status, eingang_am)
+       values ($1, 'rechnung', 'upload', 'hash-fehlerkorb-zweiter',
+               'test/fehlerkorb-2', 'in_aufbereitung', now() - interval '2 hours')
+       returning id`,
+      [MANDANT],
+    )
+    zweiter = z.id
+    await fehlerMelden(ANNA, { dokumentId, warteschlange: 'q', grund: 'kein OCR' })
+    await fehlerMelden(ANNA, { dokumentId: zweiter, warteschlange: 'q', grund: 'kein OCR' })
+  })
+
+  afterEach(async () => {
+    await direkt('delete from verarbeitungsfehler')
+    await belegEntfernen(zweiter)
+  })
+
+  it('reiht jeden offenen Eintrag neu ein und schliesst ihn', async () => {
+    expect(await alleWiederholen(BERND)).toBe(2)
+    expect(await fehlerkorbLaden(BERND)).toHaveLength(0)
+    const [{ n }] = await direkt<{ n: string }>(
+      "select count(*)::text as n from verarbeitungsfehler where erledigung = 'wiederholt'",
+    )
+    expect(Number(n)).toBe(2)
+  })
+
+  it('wiederholt fuer Doris nichts -- der Korb ist mandantengetrennt', async () => {
+    expect(await alleWiederholen(DORIS)).toBe(0)
+    expect(await fehlerkorbLaden(BERND)).toHaveLength(2)
+  })
+
+  it('ist beim zweiten Mal leer, statt doppelt einzureihen', async () => {
+    await alleWiederholen(BERND)
+    expect(await alleWiederholen(BERND)).toBe(0)
   })
 })
 

@@ -287,9 +287,10 @@ nur für Belege, die durch die Erkennung gingen.
 wäre: Beides änderte die Seitengeometrie, und die Vorschaubilder entstehen aus
 dem Original. Vorschau und PDF lägen dann nicht mehr übereinander.
 
-> Noch nicht da: Kommen viele Scans herein, während keine Erkennung
-> eingerichtet ist, füllt sich der Fehlerkorb mit einem Eintrag je Beleg. Sie
-> lassen sich danach nur einzeln wiederholen — eine Sammelaktion fehlt.
+Kommen viele Scans herein, während keine Erkennung eingerichtet ist, füllt
+sich der Fehlerkorb mit einem Eintrag je Beleg. Nach dem Einrichten reiht
+**Alle wiederholen** im Fehlerkorb sie in einem Zug neu ein. Verwerfen gibt
+es bewusst nicht als Sammelaktion: Das braucht je Beleg eine Begründung.
 
 ---
 
