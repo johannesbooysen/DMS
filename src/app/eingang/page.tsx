@@ -69,7 +69,7 @@ export default async function Eingangsquellen({
     <Seitenrahmen titel="Eingangsquellen">
       <Fehler text={fehler} />
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         Woher Belege von selbst hereinkommen. Was hier ankommt, geht durch
         denselben Eingang wie ein Upload — dieselbe Dublettenprüfung, dieselbe
         Aufbereitung.
@@ -78,9 +78,9 @@ export default async function Eingangsquellen({
       {quellen.length === 0 ? (
         <p>Es ist keine Quelle eingerichtet. Belege kommen nur über Upload und Scan herein.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Quelle</th>
               <th style={zelle}>Nachgesehen</th>
               <th style={zelle}>Zuletzt etwas bekommen</th>
@@ -96,7 +96,7 @@ export default async function Eingangsquellen({
                 <tr key={q.id}>
                   <td style={zelle}>
                     <strong>{q.bezeichnung}</strong>
-                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                    <div className="leise winzig">
                       {ART[q.art] ?? q.art} · alle {Math.round(q.taktSekunden / 60) || 1} min
                       {e?.traeger != null && <> · getragen von {e.traeger}</>}
                     </div>
@@ -111,24 +111,24 @@ export default async function Eingangsquellen({
                       </div>
                     )}
                   </td>
-                  <td style={{ ...zelle, fontSize: '0.85rem' }}>
+                  <td className="klein">
                     {q.zuletztGeprueft === null ? 'noch nie' : seit(q.zuletztGeprueft)}
                   </td>
-                  <td style={{ ...zelle, fontSize: '0.85rem' }}>
+                  <td className="klein">
                     {q.zuletztErfolg === null ? '—' : seit(q.zuletztErfolg)}
                   </td>
-                  <td style={{ ...zelle, fontSize: '0.85rem' }}>{q.aufgenommen}</td>
+                  <td className="klein">{q.aufgenommen}</td>
                   <td style={zelle}>
                     {!q.aktiv ? (
-                      <span style={{ color: 'var(--farbe-text-leise)' }}>abgeschaltet</span>
+                      <span className="leise">abgeschaltet</span>
                     ) : e?.traegerAktiv === false ? (
-                      <span style={{ color: 'var(--farbe-rot)' }}>
+                      <span className="rot">
                         Träger gesperrt — die Quelle steht still
                       </span>
                     ) : q.letzterFehler !== null ? (
-                      <span style={{ color: 'var(--farbe-rot)' }}>{q.letzterFehler}</span>
+                      <span className="rot">{q.letzterFehler}</span>
                     ) : (
-                      <span style={{ color: 'var(--farbe-gruen)' }}>läuft</span>
+                      <span className="gruen">läuft</span>
                     )}
                   </td>
                   <td style={zelle}>
@@ -148,7 +148,7 @@ export default async function Eingangsquellen({
       )}
 
       <h2 style={{ fontSize: '1.05rem', margin: '2rem 0 0.25rem' }}>Quelle einrichten</h2>
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+      <p className="absatz-leise">
         <Link href="?art=ordner">Überwachter Ordner</Link>
         {' · '}
         <Link href="?art=mail">Mailpostfach</Link>
@@ -184,7 +184,7 @@ export default async function Eingangsquellen({
               optionen={gruppen.map((g) => ({ wert: g.id, text: g.name }))}
             />
           </Anlegen>
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+          <p className="leise winzig">
             <strong>Hier gibt es kein Passwortfeld, und das ist Absicht.</strong> Eingetragen
             wird der <em>Name</em> einer Umgebungsvariablen; das Geheimnis selbst liegt auf dem
             Rechner, auf dem der Worker läuft. Ein Datenbankauszug gibt damit keinen

@@ -67,8 +67,8 @@ export default async function Vertretungen({
         </p>
       )}
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1rem' }}>Neue Vertretung</h2>
+      <section className="abschnitt">
+        <h2>Neue Vertretung</h2>
         <form action={vertretungAnlegenAktion} style={{ display: 'grid', gap: '0.6rem', maxWidth: '32rem' }}>
           <label>
             Meine Aufgaben übernimmt{' '}
@@ -110,10 +110,10 @@ export default async function Vertretungen({
         </form>
       </section>
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1rem' }}>Von mir abgegeben ({abgegeben.length})</h2>
+      <section className="abschnitt">
+        <h2>Von mir abgegeben ({abgegeben.length})</h2>
         {abgegeben.length === 0 ? (
-          <p style={{ color: 'var(--farbe-text-leise)' }}>Keine Vertretung eingerichtet.</p>
+          <p className="leise">Keine Vertretung eingerichtet.</p>
         ) : (
           <ul>
             {abgegeben.map((v) => (
@@ -121,11 +121,11 @@ export default async function Vertretungen({
                 <strong>{v.anName}</strong> · <Umfang v={v} /> · <Zeitraum v={v} />
                 {v.grund !== null && ` · ${v.grund}`}
                 {v.widerrufenAm !== null ? (
-                  <span style={{ color: 'var(--farbe-text-leise)' }}> · widerrufen</span>
+                  <span className="leise"> · widerrufen</span>
                 ) : (
                   <>
-                    {!v.gilt && <span style={{ color: 'var(--farbe-text-leise)' }}> · noch nicht aktiv</span>}
-                    <form action={vertretungWiderrufenAktion} style={{ display: 'inline' }}>
+                    {!v.gilt && <span className="leise"> · noch nicht aktiv</span>}
+                    <form action={vertretungWiderrufenAktion} className="inline">
                       <input type="hidden" name="vertretungId" value={v.id} />
                       <button type="submit" style={{ marginLeft: '0.5rem' }}>
                         widerrufen
@@ -140,15 +140,15 @@ export default async function Vertretungen({
       </section>
 
       <section>
-        <h2 style={{ fontSize: '1rem' }}>Für andere übernommen ({uebernommen.length})</h2>
+        <h2>Für andere übernommen ({uebernommen.length})</h2>
         {uebernommen.length === 0 ? (
-          <p style={{ color: 'var(--farbe-text-leise)' }}>Sie vertreten derzeit niemanden.</p>
+          <p className="leise">Sie vertreten derzeit niemanden.</p>
         ) : (
           <ul>
             {uebernommen.map((v) => (
               <li key={v.id}>
                 <strong>{v.vonName}</strong> · <Umfang v={v} /> · <Zeitraum v={v} />
-                {v.widerrufenAm !== null && <span style={{ color: 'var(--farbe-text-leise)' }}> · widerrufen</span>}
+                {v.widerrufenAm !== null && <span className="leise"> · widerrufen</span>}
               </li>
             ))}
           </ul>

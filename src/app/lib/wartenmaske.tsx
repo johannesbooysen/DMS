@@ -46,7 +46,7 @@ export function Warten({
   return (
     <section style={{ margin: '1rem 0' }}>
       {offen.length > 0 && (
-        <h2 style={{ fontSize: '1rem' }}>Warten auf ein externes Ereignis</h2>
+        <h2>Warten auf ein externes Ereignis</h2>
       )}
 
       {offen.length > 0 && (
@@ -62,7 +62,7 @@ export function Warten({
 
       {erledigt.length > 0 && (
         <details style={{ margin: '0.5rem 0' }}>
-          <summary style={{ cursor: 'pointer', fontSize: '0.85rem' }}>
+          <summary className="klein">
             {erledigt.length} abgeschlossen
           </summary>
           <ul style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', paddingLeft: '1.1rem' }}>
@@ -76,7 +76,7 @@ export function Warten({
       )}
 
       <details style={{ margin: '0.5rem 0' }}>
-        <summary style={{ cursor: 'pointer', fontSize: '0.85rem' }}>
+        <summary className="klein">
           Warten auf ein externes Ereignis beginnen
         </summary>
       <form
@@ -91,7 +91,7 @@ export function Warten({
       >
         <input type="hidden" name="dokumentId" value={dokumentId} />
 
-        <label style={{ display: 'block', fontSize: '0.75rem' }}>
+        <label className="feld">
           Bezeichnung
           <input
             name="art"
@@ -101,7 +101,7 @@ export function Warten({
           />
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.75rem' }}>
+        <label className="feld">
           Erwartet
           <select name="ereignis" style={{ display: 'block', padding: '0.3rem' }}>
             <option value="erstattung">Erstattung</option>
@@ -110,7 +110,7 @@ export function Warten({
           </select>
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.75rem' }}>
+        <label className="feld">
           Betrag
           <input
             name="erwarteterBetrag"
@@ -119,7 +119,7 @@ export function Warten({
           />
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.75rem' }}>
+        <label className="feld">
           Wiedervorlage
           <input
             type="date"

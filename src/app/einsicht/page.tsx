@@ -150,7 +150,7 @@ export default async function Einsichtsverwaltung({
           />
         </label>
 
-        <label style={{ fontSize: '0.8rem' }}>
+        <label className="winzig">
           <input type="checkbox" name="download" value="ja" /> Download erlauben
         </label>
 
@@ -172,9 +172,9 @@ export default async function Einsichtsverwaltung({
       {gewaehrungen.length === 0 ? (
         <p>Es besteht keine Einsicht.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Empfänger</th>
               <th style={zelle}>Objekt</th>
               <th style={zelle}>Umfang</th>
@@ -189,7 +189,7 @@ export default async function Einsichtsverwaltung({
               <tr key={g.id}>
                 <td style={zelle}>
                   {g.personName}{' '}
-                  <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>· {g.empfaengerTyp}</span>
+                  <span className="leise winzig">· {g.empfaengerTyp}</span>
                 </td>
                 <td style={zelle}>{g.objektnummer}</td>
                 <td style={zelle}>
@@ -202,7 +202,7 @@ export default async function Einsichtsverwaltung({
                 <td style={zelle}>
                   {g.zugriffe}
                   {g.letzterZugriff !== null && (
-                    <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                    <span className="leise winzig">
                       {' '}
                       · zuletzt {datum.format(new Date(g.letzterZugriff))}
                     </span>
@@ -210,11 +210,11 @@ export default async function Einsichtsverwaltung({
                 </td>
                 <td style={zelle}>
                   {g.widerrufen ? (
-                    <span style={{ color: 'var(--farbe-rot)' }}>widerrufen</span>
+                    <span className="rot">widerrufen</span>
                   ) : g.abgelaufen ? (
-                    <span style={{ color: 'var(--farbe-text-leise)' }}>abgelaufen</span>
+                    <span className="leise">abgelaufen</span>
                   ) : (
-                    <span style={{ color: 'var(--farbe-gruen)' }}>gültig</span>
+                    <span className="gruen">gültig</span>
                   )}
                 </td>
                 <td style={zelle}>

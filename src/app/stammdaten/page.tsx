@@ -90,10 +90,10 @@ function Abschnitt({ titel, hinweis, children }: {
   children: React.ReactNode
 }) {
   return (
-    <section style={{ marginBottom: '2.5rem' }}>
-      <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>{titel}</h2>
+    <section className="abschnitt">
+      <h2>{titel}</h2>
       {hinweis !== undefined && (
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>{hinweis}</p>
+        <p className="absatz-leise">{hinweis}</p>
       )}
       {children}
     </section>
@@ -123,12 +123,12 @@ export default async function Stammdaten({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die Stammdaten" />}
 
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         Was das Haus verlässt, steht unter{' '}
         <Link href="/stammdaten/vorlagen">Vorlagen</Link>; woher Belege von selbst
         hereinkommen, unter <Link href="/eingang">Eingangsquellen</Link>.
       </p>
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         {/* Der Verweis auf Benutzer und Rollen steht nur da, wenn er zu etwas
             führt -- sonst wäre er eine Einladung in eine Seite, auf der man
             nichts tun kann. Der Satz daneben erklärt trotzdem, warum. */}
@@ -171,7 +171,7 @@ export default async function Stammdaten({
                 <td style={zelle}>
                   {o.bezeichnung}
                   {o.adresse !== null && (
-                    <span style={{ color: 'var(--farbe-text-leise)' }}> · {o.adresse}</span>
+                    <span className="leise"> · {o.adresse}</span>
                   )}
                 </td>
                 <td style={zelle}>
@@ -183,7 +183,7 @@ export default async function Stammdaten({
                 </td>
                 <td style={zelle}>
                   {o.zustaendige.length === 0 ? (
-                    <span style={{ color: 'var(--farbe-rot)' }}>niemand</span>
+                    <span className="rot">niemand</span>
                   ) : (
                     o.zustaendige.join(', ')
                   )}
@@ -235,7 +235,7 @@ export default async function Stammdaten({
                   )}
                 </td>
                 <td style={zelle}>
-                  {k.banken.length === 0 && <span style={{ color: 'var(--farbe-text-leise)' }}>keine</span>}
+                  {k.banken.length === 0 && <span className="leise">keine</span>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     {k.banken.map((b) => (
                       <div key={b.id} style={{ alignItems: 'baseline', display: 'flex', gap: '0.6rem' }}>

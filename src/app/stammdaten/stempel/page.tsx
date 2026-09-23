@@ -71,12 +71,12 @@ export default async function Stempeldesigner({
     <Seitenrahmen titel="Stempel gestalten">
       <Fehler text={fehler} />
 
-      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
+      <p className="einleitung">
         Je Stempeltyp: was auf dem Stempel steht und wie er aussieht. Der Stempeltext
         steht immer zuerst — er ist die Entscheidung; alles andere ist Beleg dafür.
         Die Vorschau zeigt, was auf dem Beleg erscheint.
       </p>
-      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
+      <p className="einleitung">
         <strong>Gilt für die nächsten Stempel.</strong> Ein gesetzter Stempel ändert sich
         nicht — sein Text entstand beim Stempeln und bleibt, wie er war. Wohin der Beleg
         nach einem Stempel geht, steht nicht hier, sondern im{' '}
@@ -98,9 +98,9 @@ export default async function Stempeldesigner({
           }}
         >
           <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
-            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.15rem' }}>
+            <h2>
               {t.name}{' '}
-              <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', fontWeight: 'normal' }}>
+              <span className="leise winzig normal">
                 {t.kurzcode} · {ENTSCHEIDUNG[t.entscheidung] ?? t.entscheidung}
                 {t.aktiv ? '' : ' · deaktiviert'}
               </span>
@@ -139,9 +139,9 @@ export default async function Stempeldesigner({
 
                 <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: '0.2rem', padding: '0.5rem 0.75rem' }}>
                   <legend style={{ fontSize: '0.8rem', color: 'var(--farbe-text-leise)' }}>Was auf dem Stempel steht</legend>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1rem' }}>
+                  <div className="reihe">
                     {FELDER.map((f) => (
-                      <label key={f} style={{ fontSize: '0.85rem' }}>
+                      <label key={f} className="klein">
                         <input
                           type="checkbox"
                           name="feld"
@@ -187,7 +187,7 @@ export default async function Stempeldesigner({
                     breite="5rem"
                   />
                   <Eingabe name="farbe" label="Farbe" typ="color" wert={t.farbe} breite="4rem" />
-                  <label style={{ fontSize: '0.8rem' }}>
+                  <label className="winzig">
                     <input type="checkbox" name="sichtbar" value="ja" defaultChecked={t.sichtbarAufBeleg} /> auf dem
                     Beleg sichtbar
                   </label>
@@ -218,7 +218,7 @@ export default async function Stempeldesigner({
 
       {darf && (
         <section style={{ marginTop: '2rem' }}>
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Neuer Stempeltyp</h2>
+          <h2>Neuer Stempeltyp</h2>
           <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.5rem', maxWidth: '46rem' }}>
             Ein neuer Typ steht zunächst an keiner Stufe — eingehängt wird er im Ablauf, und
             wer ihn setzen darf, unter <Link href="/stammdaten/benutzer">Benutzer und Rollen</Link>.

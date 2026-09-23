@@ -73,7 +73,7 @@ export default async function Fehlerkorb({
         </p>
       )}
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         Ein Beleg, dessen Aufbereitung scheitert, ist <strong>nicht verloren</strong> — sein
         Lauf startete beim Eingang, die Aufgabe liegt im Postfach. Was fehlt, sind
         Vorschau, Seitentext und erkannte Felder. Hier steht, warum.
@@ -86,9 +86,9 @@ export default async function Fehlerkorb({
       {korb.length === 0 ? (
         <p>Nichts aufgegeben.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Eingang</th>
               <th style={zelle}>Grund</th>
               <th style={zelle}>Seit</th>
@@ -104,7 +104,7 @@ export default async function Fehlerkorb({
                   ) : (
                     <a href={`/beleg/${z.dokumentId}`}>{kennung(z)}</a>
                   )}
-                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                  <div className="leise winzig">
                     {z.stapelId === null ? 'Beleg' : 'Stapel'}
                     {z.eingangskanal !== null && ` · ${z.eingangskanal}`}
                     {z.versuche > 0 && ` · ${z.versuche} Versuche`}
@@ -112,13 +112,13 @@ export default async function Fehlerkorb({
                 </td>
                 <td style={{ ...zelle, color: 'var(--farbe-rot)', maxWidth: '26rem' }}>
                   <div style={{ overflowWrap: 'anywhere' }}>{z.grund}</div>
-                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>{z.warteschlange}</div>
+                  <div className="leise winzig">{z.warteschlange}</div>
                 </td>
-                <td style={{ ...zelle, fontSize: '0.85rem' }}>
+                <td className="klein">
                   {seit(z.aufgetretenAm)}
                 </td>
                 <td style={zelle}>
-                  <form action={fehlerWiederholenAktion} style={{ display: 'inline' }}>
+                  <form action={fehlerWiederholenAktion} className="inline">
                     <input type="hidden" name="fehlerId" value={z.id} />
                     <button type="submit" style={knopf}>
                       wiederholen
@@ -127,7 +127,7 @@ export default async function Fehlerkorb({
                   {z.dokumentId !== null && (
                     <>
                       {' · '}
-                      <form action={fehlerManuellAktion} style={{ display: 'inline' }}>
+                      <form action={fehlerManuellAktion} className="inline">
                         <input type="hidden" name="fehlerId" value={z.id} />
                         <button type="submit" style={knopf} title="Ohne Aufbereitung weiter, Erfassung von Hand">
                           von Hand
@@ -154,10 +154,10 @@ export default async function Fehlerkorb({
         </table>
       )}
 
-      <h2 style={{ fontSize: '1rem', marginTop: '2rem' }}>
+      <h2>
         Hängt{haenger.length > 0 && ` (${haenger.length})`}
       </h2>
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
+      <p className="leise klein">
         Seit mehr als einer halben Stunde in Aufbereitung, ohne dass die
         Warteschlange etwas gemeldet hat. Der häufigste Grund ist ein Worker,
         der zwischendurch beendet wurde.
@@ -166,9 +166,9 @@ export default async function Fehlerkorb({
       {haenger.length === 0 ? (
         <p>Nichts hängt.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Eingang</th>
               <th style={zelle}>Kanal</th>
               <th style={zelle}>Seit</th>
@@ -182,7 +182,7 @@ export default async function Fehlerkorb({
                   <a href={`/beleg/${h.dokumentId}`}>{h.storagePraefix}</a>
                 </td>
                 <td style={zelle}>{h.eingangskanal}</td>
-                <td style={{ ...zelle, fontSize: '0.85rem' }}>
+                <td className="klein">
                   {seit(h.eingangAm)}
                 </td>
                 <td style={zelle}>

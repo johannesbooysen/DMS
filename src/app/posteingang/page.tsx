@@ -86,7 +86,7 @@ export default async function Posteingang({
             <tr>
               <th>Beleg</th>
               <th>Objekt</th>
-              <th style={{ textAlign: 'right' }}>Betrag</th>
+              <th className="rechts">Betrag</th>
               <th>Eingang</th>
               <th>Stand</th>
             </tr>
@@ -98,7 +98,7 @@ export default async function Posteingang({
                   <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
                 </td>
                 <td>{z.objektnummer ?? '—'}</td>
-                <td style={{ textAlign: 'right' }}>{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+                <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
                 <td>{datum.format(new Date(z.eingangAm))}</td>
                 <td>
                   <span className={`eingangsstand eingangsstand--${z.status}`}>{STAND[z.status] ?? z.status}</span>

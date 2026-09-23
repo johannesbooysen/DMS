@@ -72,7 +72,7 @@ export default async function Aufgabenansicht({
         </p>
       )}
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         <Ampel wert={zeile.ampel} />{' '}
         {[
           // Ueber den gemeinsamen Helfer -- die fuenfte Anzeigestelle. Ein
@@ -132,7 +132,7 @@ export default async function Aufgabenansicht({
 
         <div style={{ flex: '2 1 20rem', minWidth: 0 }}>
           {rechts.length === 0 ? (
-            <p style={{ color: 'var(--farbe-text-leise)' }}>
+            <p className="leise">
               {abschluss === null
                 ? 'An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.'
                 : 'Der Stempel steht oben bei der Kontierung.'}

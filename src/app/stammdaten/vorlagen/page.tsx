@@ -55,16 +55,16 @@ export default async function Vorlagen({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die Vorlagen" />}
 
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         Betreff und Text der Mails, die das Haus verlassen.{' '}
         <Link href="/stammdaten">Zurück zu den Stammdaten</Link>
       </p>
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>
+      <section className="abschnitt">
+        <h2>
           Diese Platzhalter gibt es
         </h2>
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <p className="absatz-leise">
           Und nur diese. Was hier nicht steht, lässt sich nicht einsetzen — eine freie
           Vorlagensprache könnte den ganzen Belegtext in eine Mail schreiben, an einen
           Empfänger, den ein Stammdatum bestimmt.
@@ -89,7 +89,7 @@ export default async function Vorlagen({
             ))}
           </tbody>
         </table>
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+        <p className="leise winzig">
           Ein bekannter Platzhalter ohne Wert wird zu einem Strich — dann fehlt die Angabe am
           Beleg, nicht in der Vorlage.
         </p>
@@ -110,7 +110,7 @@ export default async function Vorlagen({
         >
           <h2 style={{ alignItems: 'baseline', display: 'flex', fontSize: '1rem', gap: '0.6rem', margin: '0 0 0.5rem' }}>
             {v.name}
-            <code style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>{v.schluessel}</code>
+            <code className="leise winzig">{v.schluessel}</code>
             {!v.aktiv && <Marke text="inaktiv" farbe="var(--farbe-rot)" />}
             {v.unbekannt.length > 0 && (
               <Marke text={`${v.unbekannt.length} unbekannt`} farbe="var(--farbe-rot)" />
@@ -130,7 +130,7 @@ export default async function Vorlagen({
               <label
                 style={{ display: 'block', fontSize: '0.75rem', marginBottom: '0.6rem' }}
               >
-                <span style={{ color: 'var(--farbe-text-leise)' }}>Betreff</span>
+                <span className="leise">Betreff</span>
                 <input
                   name="betreff"
                   defaultValue={v.betreff}
@@ -138,8 +138,8 @@ export default async function Vorlagen({
                   style={{ ...feld, display: 'block', width: '100%' }}
                 />
               </label>
-              <label style={{ display: 'block', fontSize: '0.75rem' }}>
-                <span style={{ color: 'var(--farbe-text-leise)' }}>Text</span>
+              <label className="feld">
+                <span className="leise">Text</span>
                 <textarea
                   name="text"
                   defaultValue={v.text}

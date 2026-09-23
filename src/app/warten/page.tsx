@@ -45,7 +45,7 @@ export default async function Wartende({
         </p>
       )}
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         {zeilen.length === 0
           ? 'Kein Beleg wartet.'
           : `${zeilen.length === 1 ? 'Ein Beleg wartet' : `${zeilen.length} Belege warten`}${
@@ -54,9 +54,9 @@ export default async function Wartende({
       </p>
 
       {zeilen.length > 0 && (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Beleg</th>
               <th style={zelle}>Wartet auf</th>
               <th style={zelle}>Wiedervorlage</th>
@@ -70,7 +70,7 @@ export default async function Wartende({
                   <a href={`/beleg/${z.dokumentId}`}>
                     {z.kreditor ?? 'Ohne Kreditor'}
                   </a>
-                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                  <div className="leise winzig">
                     {[
                       z.objektnummer !== null && `Objekt ${z.objektnummer}`,
                       z.brutto !== null && euro.format(z.brutto),
@@ -81,7 +81,7 @@ export default async function Wartende({
                 </td>
                 <td style={zelle}>
                   {z.art}
-                  <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                  <div className="leise winzig">
                     {EREIGNIS[z.erwartetesEreignis] ?? z.erwartetesEreignis}
                     {z.erwarteterBetrag !== null && ` · ${euro.format(z.erwarteterBetrag)}`}
                   </div>
@@ -89,7 +89,7 @@ export default async function Wartende({
                 <td style={{ ...zelle, color: z.ueberfaellig ? 'var(--farbe-rot)' : 'var(--farbe-text)' }}>
                   {datum.format(new Date(z.wiedervorlageAm))}
                   {z.ueberfaellig && (
-                    <div style={{ fontSize: '0.78rem' }}>
+                    <div className="winzig">
                       {z.ueberfaelligTage === 0
                         ? 'heute fällig'
                         : `${z.ueberfaelligTage} Tage überfällig`}
@@ -99,7 +99,7 @@ export default async function Wartende({
                 <td style={zelle}>
                   <form
                     action={wartenBeendenAktion}
-                    style={{ display: 'flex', gap: '0.4rem' }}
+                    className="reihe"
                   >
                     <input type="hidden" name="containerId" value={z.containerId} />
                     <input

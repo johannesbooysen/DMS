@@ -127,7 +127,7 @@ function Baustein({
           Ob es die zwei gibt, meldet die Pruefung unten.
         */}
         {bearbeitbar && stufe !== null && (
-          <form action={vierAugenAktion} style={{ display: 'inline' }}>
+          <form action={vierAugenAktion} className="inline">
             <input type="hidden" name="definitionId" value={definitionId} />
             <input type="hidden" name="stufeId" value={stufe.id} />
             <input type="hidden" name="wert" value={stufe.vierAugenPflicht ? 'nein' : 'ja'} />
@@ -135,7 +135,7 @@ function Baustein({
               type="submit"
               aria-pressed={stufe.vierAugenPflicht}
               title="Nicht dieselbe Person wie an der vorherigen Stufe"
-              style={{ fontSize: '0.75rem' }}
+              className="winzig"
             >
               {stufe.vierAugenPflicht ? 'Vier Augen aus' : 'Vier Augen an'}
             </button>
@@ -149,7 +149,7 @@ function Baustein({
                 <input type="hidden" name="definitionId" value={definitionId} />
                 <input type="hidden" name="knotenId" value={knoten.id} />
                 <input type="hidden" name="richtung" value={richtung} />
-                <button type="submit" aria-label={`Baustein nach ${richtung}`} style={{ fontSize: '0.75rem' }}>
+                <button type="submit" aria-label={`Baustein nach ${richtung}`} className="winzig">
                   {richtung === 'hoch' ? 'hoch' : 'runter'}
                 </button>
               </form>
@@ -160,7 +160,7 @@ function Baustein({
               <form action={stufeEntfernenAktion}>
                 <input type="hidden" name="definitionId" value={definitionId} />
                 <input type="hidden" name="stufeId" value={stufe.id} />
-                <button type="submit" aria-label={`Stufe ${stufe.bezeichnung} entfernen`} style={{ fontSize: '0.75rem' }}>
+                <button type="submit" aria-label={`Stufe ${stufe.bezeichnung} entfernen`} className="winzig">
                   entfernen
                 </button>
               </form>
@@ -168,7 +168,7 @@ function Baustein({
               <form action={bausteinEntfernenAktion}>
                 <input type="hidden" name="definitionId" value={definitionId} />
                 <input type="hidden" name="knotenId" value={knoten.id} />
-                <button type="submit" aria-label="Baustein entfernen" style={{ fontSize: '0.75rem' }}>
+                <button type="submit" aria-label="Baustein entfernen" className="winzig">
                   entfernen
                 </button>
               </form>
@@ -184,7 +184,7 @@ function Baustein({
               <option value="nacheinander">Nacheinander</option>
               <option value="gleichzeitig">Gleichzeitig</option>
             </select>
-            <button type="submit" style={{ fontSize: '0.75rem' }}>
+            <button type="submit" className="winzig">
               Behälter einfügen
             </button>
           </form>
@@ -316,7 +316,7 @@ export default async function Fassung({
         <aside style={{ flex: '1 1 20rem' }}>
           <h2>Prüfung</h2>
           {befunde.length === 0 ? (
-            <p style={{ color: 'var(--farbe-gruen)' }}>Keine Befunde — der Ablauf ist gültig.</p>
+            <p className="gruen">Keine Befunde — der Ablauf ist gültig.</p>
           ) : (
             <ul>
               {befunde.map((b) => (

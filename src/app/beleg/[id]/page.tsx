@@ -211,19 +211,19 @@ export default async function Belegansicht({
                     <dt>{name}</dt>
                     <dd>
                       {zeile === null ? (
-                        <span style={{ color: 'var(--farbe-text-leise)' }}>—</span>
+                        <span className="leise">—</span>
                       ) : (
                         <>
                           <strong>{zeile.was}</strong>
-                          <span style={{ color: 'var(--farbe-text-leise)' }}> — {zeile.warum}</span>
+                          <span className="leise"> — {zeile.warum}</span>
                           {'personen' in zeile && zeile.personen.length > 0 && (
-                            <span style={{ color: 'var(--farbe-text-leise)' }}>
+                            <span className="leise">
                               {' '}
                               Das können: {zeile.personen.join(', ')}.
                             </span>
                           )}
                           {'personen' in zeile && zeile.personen.length === 0 && (
-                            <span style={{ color: 'var(--farbe-rot)' }}> Niemand kann das derzeit.</span>
+                            <span className="rot"> Niemand kann das derzeit.</span>
                           )}
                         </>
                       )}
@@ -265,7 +265,7 @@ export default async function Belegansicht({
               {suche.trim().length >= 2 && (
                 <ul className="suchtreffer" aria-label="Treffer">
                   {treffer.length === 0 ? (
-                    <li style={{ color: 'var(--farbe-text-leise)' }}>Nichts gefunden.</li>
+                    <li className="leise">Nichts gefunden.</li>
                   ) : (
                     treffer.map((t) => (
                       <li key={t.seite}>

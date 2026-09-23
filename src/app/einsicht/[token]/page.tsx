@@ -67,7 +67,7 @@ export default async function Einsichtsliste({
       ) : (
         <table style={{ borderCollapse: 'collapse', marginTop: '1rem', width: '100%' }}>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Beleg</th>
               <th style={zelle}>Leistungszeitraum</th>
               <th style={{ ...zelle, textAlign: 'right' }}>Betrag</th>

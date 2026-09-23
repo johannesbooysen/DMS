@@ -226,7 +226,7 @@ export default async function Belegsuche({
                       {g.name}
                     </a>
                     {aktiv && (
-                      <form action={sucheLoeschenAktion} style={{ display: 'inline' }}>
+                      <form action={sucheLoeschenAktion} className="inline">
                         <input type="hidden" name="id" value={g.id} />
                         <button
                           type="submit"

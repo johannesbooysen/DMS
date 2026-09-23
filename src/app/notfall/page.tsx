@@ -39,7 +39,7 @@ export default async function Seite({
   return (
     <Seitenrahmen titel="Notfallzugriff">
       {fehler !== undefined && (
-        <p role="alert" style={{ color: 'var(--farbe-rot)' }}>
+        <p role="alert" className="rot">
           {fehler}
         </p>
       )}
@@ -55,31 +55,31 @@ export default async function Seite({
       {zugriffe.length === 0 ? (
         <p>Zurzeit läuft kein Notfallzugriff.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
             <tr style={{ textAlign: 'left' }}>
-              <th style={{ padding: '0.25rem 0.5rem' }}>Wer</th>
-              <th style={{ padding: '0.25rem 0.5rem' }}>Objekt</th>
-              <th style={{ padding: '0.25rem 0.5rem' }}>Grund</th>
-              <th style={{ padding: '0.25rem 0.5rem' }}>Bis</th>
-              <th style={{ padding: '0.25rem 0.5rem' }} />
+              <th>Wer</th>
+              <th>Objekt</th>
+              <th>Grund</th>
+              <th>Bis</th>
+              <th />
             </tr>
           </thead>
           <tbody>
             {zugriffe.map((z) => (
               <tr key={z.id} style={{ borderTop: '1px solid var(--farbe-linie)' }}>
-                <td style={{ padding: '0.25rem 0.5rem' }}>
+                <td>
                   {z.benutzer}
                   {z.eigener && ' (Sie)'}
                 </td>
-                <td style={{ padding: '0.25rem 0.5rem' }}>
+                <td>
                   {z.objektnummer} — {z.objektname}
                 </td>
-                <td style={{ padding: '0.25rem 0.5rem' }}>{z.grund}</td>
-                <td style={{ padding: '0.25rem 0.5rem' }}>
+                <td>{z.grund}</td>
+                <td>
                   {z.ende.toLocaleDateString('de-DE')}
                 </td>
-                <td style={{ padding: '0.25rem 0.5rem' }}>
+                <td>
                   {/* Beenden darf, wer einrichten darf, und der Betroffene
                       selbst -- Anna soll nach ihrer Rueckkehr nicht warten
                       muessen. Die Policy entscheidet, nicht diese Bedingung. */}

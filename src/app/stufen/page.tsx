@@ -34,7 +34,7 @@ function Belegliste({ zeilen }: { zeilen: Postfachzeile[] }) {
           <th></th>
           <th>Beleg</th>
           <th>Objekt</th>
-          <th style={{ textAlign: 'right' }}>Betrag</th>
+          <th className="rechts">Betrag</th>
           <th>Fällig</th>
         </tr>
       </thead>
@@ -50,7 +50,7 @@ function Belegliste({ zeilen }: { zeilen: Postfachzeile[] }) {
                 <a href={`/aufgabe/${z.aufgabeId}`}>{belegBezeichnung(z)}</a>
               </td>
               <td>{z.objektnummer ?? '—'}</td>
-              <td style={{ textAlign: 'right' }}>{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+              <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
               <td style={{ color: ueberfaellig ? 'var(--farbe-rot)' : undefined }}>
                 {z.faelligAm === null ? '—' : datum.format(new Date(z.faelligAm))}
               </td>

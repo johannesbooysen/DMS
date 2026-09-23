@@ -56,7 +56,7 @@ export default async function Stapelpruefung({
         </p>
       )}
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         {kopf.seitenzahl} Seiten · {kopf.belege}{' '}
         {kopf.belege === 1 ? 'erkannter Beleg' : 'erkannte Belege'} · Eingang{' '}
         {datum.format(new Date(kopf.eingangAm))}
@@ -64,7 +64,7 @@ export default async function Stapelpruefung({
       </p>
 
       {kopf.status === 'aufbereitung' ? (
-        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
+        <p className="meldung-hinweis">
           Der Stapel wird gerade gelesen und gerendert — das übernimmt der
           Worker, nicht diese Seite. Bitte in einem Moment neu laden.
         </p>
@@ -95,7 +95,7 @@ export default async function Stapelpruefung({
             </button>
           </form>
 
-          <form action={stapelVerwerfenAktion} style={{ display: 'flex', gap: '0.4rem' }}>
+          <form action={stapelVerwerfenAktion} className="reihe">
             <input type="hidden" name="stapelId" value={id} />
             <input
               name="grund"
@@ -121,7 +121,7 @@ export default async function Stapelpruefung({
                 {gruppe.map((s) => s.seite).join(', ')}
               </span>
             </h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+            <div className="reihe">
               {gruppe.map((s) => (
                 <Seitenkachel key={s.seite} stapelId={id} seite={s} gesperrt={uebernommen} />
               ))}
@@ -132,7 +132,7 @@ export default async function Stapelpruefung({
       {seiten.some((s) => s.trenner) && (
         <section style={{ margin: '1.2rem 0' }}>
           <h2 style={{ fontSize: '0.95rem', color: 'var(--farbe-text-leise)' }}>Trennblätter</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+          <div className="reihe">
             {seiten
               .filter((s) => s.trenner)
               .map((s) => (
@@ -167,7 +167,7 @@ function Seitenkachel({
       <figcaption style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
         Seite {seite.seite}
         {seite.quelle === 'mensch' && (
-          <span style={{ color: 'var(--farbe-text-leise)' }}> · von Hand</span>
+          <span className="leise"> · von Hand</span>
         )}
         {!gesperrt && (
           <form action={trennungAendernAktion}>

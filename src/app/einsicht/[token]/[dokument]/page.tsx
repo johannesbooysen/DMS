@@ -51,7 +51,7 @@ export default async function Einsichtsbeleg({
         padding: '2rem 1.5rem',
       }}
     >
-      <p style={{ fontSize: '0.85rem' }}>
+      <p className="klein">
         <a href={`/einsicht/${token}`}>← Zurück zur Liste</a>
       </p>
 
@@ -89,7 +89,7 @@ export default async function Einsichtsbeleg({
           <a href={`/api/einsicht/${token}/${dokument}/pdf`}>Original als PDF laden</a>
         </p>
       ) : (
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
+        <p className="leise klein">
           Für diesen Zugang ist kein Download vorgesehen.
         </p>
       )}

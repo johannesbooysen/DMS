@@ -65,14 +65,14 @@ export default async function Archiv({
       <Fehler text={fehler} />
       {!darf.stammdaten && <NurLesend was="die fälligen Belege" />}
 
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         Belege, deren Aufbewahrungsfrist abgelaufen ist. Sie <em>dürfen</em> nicht länger
         liegen — wer aufbewahren muss, muss danach löschen. Eine Löschsperre hält einen Beleg
         darüber hinaus; solche stehen hier nicht.
       </p>
 
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>
+      <section className="abschnitt">
+        <h2>
           Fällig zum Löschen ({faellige.length})
         </h2>
         {ansprueche > 0 && (
@@ -82,7 +82,7 @@ export default async function Archiv({
         )}
 
         {faellige.length === 0 ? (
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
+          <p className="leise klein">
             Nichts fällig. Kein Beleg im Archiv hat seine Aufbewahrungsfrist hinter sich.
           </p>
         ) : (
@@ -126,7 +126,7 @@ export default async function Archiv({
                 ))}
               </tbody>
             </table>
-            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+            <p className="leise winzig">
               Je Beleg, mit Absicht. Ein Knopf „alle löschen“ wird irgendwann versehentlich
               gedrückt — und danach gibt es nichts, worauf man zurückgreifen könnte. Der
               Belegtext ist hier nicht zu sehen: Wer löschen darf, muss den Inhalt nicht noch
@@ -137,8 +137,8 @@ export default async function Archiv({
       </section>
 
       <section>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Gelöscht</h2>
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <h2>Gelöscht</h2>
+        <p className="absatz-leise">
           Was bleibt, wenn ein Beleg geht: dass es ihn gab, wann seine Frist ablief und dass er
           gelöscht wurde — ohne personenbezogene Daten. Ohne dieses Protokoll wäre eine Lücke im
           Archiv nicht von einem Verlust zu unterscheiden.
@@ -152,7 +152,7 @@ export default async function Archiv({
         )}
 
         {protokoll.length === 0 ? (
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>Es wurde noch nichts gelöscht.</p>
+          <p className="leise klein">Es wurde noch nichts gelöscht.</p>
         ) : (
           <table style={tabelle}>
             <thead>
@@ -175,9 +175,9 @@ export default async function Archiv({
                   <td style={zelle}>{p.geloeschtVon ?? '—'}</td>
                   <td style={zelle}>
                     {p.dateiOffen ? (
-                      <span style={{ color: 'var(--farbe-orange)' }}>liegt noch</span>
+                      <span className="orange">liegt noch</span>
                     ) : (
-                      <span style={{ color: 'var(--farbe-gruen)' }}>abgeräumt</span>
+                      <span className="gruen">abgeräumt</span>
                     )}
                   </td>
                 </tr>

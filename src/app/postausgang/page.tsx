@@ -53,23 +53,23 @@ export default async function Postausgang({
       )}
 
       {!versandEingerichtet() && (
-        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
+        <p className="meldung-hinweis">
           <strong>Kein Mailversand eingerichtet.</strong> Was hier steht, bleibt
           liegen, bis <code>SMTP_URL</code> und <code>DMS_ABSENDER</code> gesetzt
           sind. Nichts geht verloren — es geht nur nichts hinaus.
         </p>
       )}
 
-      <p style={{ color: 'var(--farbe-text-leise)' }}>
+      <p className="leise">
         {eintraege.length === 0
           ? 'Das Ausgangsbuch ist leer.'
           : `${eintraege.length} Einträge, davon ${offen.length} noch nicht hinaus.`}
       </p>
 
       {eintraege.length > 0 && (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Empfänger</th>
               <th style={zelle}>Betreff</th>
               <th style={zelle}>Anlass</th>
@@ -92,18 +92,18 @@ export default async function Postausgang({
                 <td style={{ ...zelle, color: FARBE[e.status] ?? 'var(--farbe-text)' }}>
                   {e.status}
                   {e.versuche > 0 && (
-                    <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                    <span className="leise winzig">
                       {' '}
                       · {e.versuche} Versuch{e.versuche === 1 ? '' : 'e'}
                     </span>
                   )}
                   {e.gesendetAm !== null && (
-                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
+                    <div className="leise winzig">
                       {datum.format(new Date(e.gesendetAm))}
                     </div>
                   )}
                   {e.fehler !== null && (
-                    <div style={{ fontSize: '0.78rem' }}>{e.fehler}</div>
+                    <div className="winzig">{e.fehler}</div>
                   )}
                 </td>
                 <td style={zelle}>
@@ -130,8 +130,8 @@ export default async function Postausgang({
         </table>
       )}
 
-      <h2 style={{ fontSize: '1rem', marginTop: '2rem' }}>Vorlagen</h2>
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
+      <h2>Vorlagen</h2>
+      <p className="leise klein">
         Platzhalter in doppelten geschweiften Klammern. Verfügbar sind:{' '}
         {Object.keys(PLATZHALTER)
           .map((k) => `{{${k}}}`)
@@ -140,13 +140,13 @@ export default async function Postausgang({
         Tippfehler auf, bevor die Mail hinausgeht.
       </p>
 
-      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+      <table>
         <tbody>
           {vorlagen.map((v) => (
             <tr key={v.id}>
               <td style={zelle}>
                 <strong>{v.name}</strong>
-                <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>{v.schluessel}</div>
+                <div className="leise winzig">{v.schluessel}</div>
               </td>
               <td style={zelle}>
                 {bearbeitet?.id === v.id ? (
@@ -169,7 +169,7 @@ export default async function Postausgang({
                     >
                       Speichern
                     </button>{' '}
-                    <a href="/postausgang" style={{ fontSize: '0.85rem' }}>
+                    <a href="/postausgang" className="klein">
                       abbrechen
                     </a>
                   </form>
@@ -187,7 +187,7 @@ export default async function Postausgang({
                     >
                       {v.text}
                     </pre>
-                    <a href={`/postausgang?vorlage=${v.id}`} style={{ fontSize: '0.85rem' }}>
+                    <a href={`/postausgang?vorlage=${v.id}`} className="klein">
                       ändern
                     </a>
                   </>

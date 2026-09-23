@@ -127,7 +127,7 @@ export default async function Aufgabe({
 
         <h3>Entscheidung</h3>
         {knoepfe.length === 0 ? (
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
+          <p className="leise klein">
             {abschluss === null
               ? 'An dieser Stufe stehen Ihnen keine Stempel zu. Die Aufgabe bleibt offen.'
               : 'Der Stempel steht oben bei der Kontierung.'}

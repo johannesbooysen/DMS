@@ -88,13 +88,13 @@ export default async function BenutzerUndRollen({
       <Fehler text={fehler} />
       {!darf.benutzer && <NurLesend was="Benutzer und Rollen" />}
 
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         Die übrigen Stammdaten stehen unter <Link href="/stammdaten">Stammdaten</Link>. Wer
         hier ändern darf, kann sich jedes andere Recht selbst geben — deshalb ist es ein
         eigenes.
       </p>
 
-      <section style={{ marginBottom: '2.5rem' }}>
+      <section className="abschnitt">
         <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem' }}>Benutzer</h2>
         <table style={tabelle}>
           <thead>
@@ -121,7 +121,7 @@ export default async function BenutzerUndRollen({
                 <td style={zelle}>{b.email}</td>
                 <td style={zelle}>
                   {b.rollen.length === 0 ? (
-                    <span style={{ color: 'var(--farbe-rot)' }}>keine</span>
+                    <span className="rot">keine</span>
                   ) : (
                     b.rollen.join(', ')
                   )}
@@ -155,7 +155,7 @@ export default async function BenutzerUndRollen({
             <Eingabe name="email" label="Kennung (E-Mail)" breite="18rem" pflicht typ="email" />
           </Anlegen>
         )}
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+        <p className="leise winzig">
           Angelegt wird die Kennung, nicht der Zugang: Ob jemand hereinkommt, entscheidet die
           Anmeldung über Entra ID. Ein Benutzer ohne Rolle sieht nichts — das ist die richtige
           Vorgabe, aber sie fällt sonst erst beim ersten Anmelden auf.
@@ -163,15 +163,15 @@ export default async function BenutzerUndRollen({
       </section>
 
       {hinweis !== undefined && (
-        <p role="status" style={{ color: 'var(--farbe-gruen)' }}>
+        <p role="status" className="gruen">
           {hinweis}
         </p>
       )}
 
       {darf.benutzer && (
-        <section style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Berechtigungs-Presets</h2>
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <section className="abschnitt">
+          <h2>Berechtigungs-Presets</h2>
+          <p className="absatz-leise">
             Ein Startwert für die Ersteinrichtung, keine Bindung: Angewendet entstehen
             gewöhnliche Rollen und Rechte, und nichts verweist zurück. Ein Preset{' '}
             <strong>ergänzt und nimmt nichts weg</strong> — eine vorhandene Rolle mit
@@ -181,14 +181,14 @@ export default async function BenutzerUndRollen({
             <tbody>
               {PRESETS.map((preset) => (
                 <tr key={preset.id} style={{ borderTop: '1px solid var(--farbe-linie)' }}>
-                  <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
+                  <td>
                     <strong>{preset.name}</strong>
-                    <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>{preset.beschreibung}</div>
+                    <div className="leise klein">{preset.beschreibung}</div>
                     <div style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                       {preset.rollen.map((r) => `${r.kurzcode} ${r.name}`).join(' · ')}
                     </div>
                   </td>
-                  <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
+                  <td>
                     <form action={presetAnwendenAktion}>
                       <input type="hidden" name="preset" value={preset.id} />
                       <button type="submit">Anwenden</button>
@@ -201,9 +201,9 @@ export default async function BenutzerUndRollen({
         </section>
       )}
 
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Rollen und ihre Rechte</h2>
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+      <section className="abschnitt">
+        <h2>Rollen und ihre Rechte</h2>
+        <p className="absatz-leise">
           Rechte sind additiv: Eine zweite Rolle kann ein Recht nur hinzufügen, nie entziehen.
           Deshalb ist &bdquo;warum durfte er das nicht&ldquo; immer an einer Stelle zu beantworten.
         </p>
@@ -219,7 +219,7 @@ export default async function BenutzerUndRollen({
             {rollen.map((r) => (
               <tr key={r.id} style={r.aktiv ? undefined : { color: 'var(--farbe-text-leise)' }}>
                 <td style={{ ...zelle, whiteSpace: 'nowrap' }}>
-                  {r.name} <span style={{ color: 'var(--farbe-text-leise)' }}>{r.kurzcode}</span>
+                  {r.name} <span className="leise">{r.kurzcode}</span>
                 </td>
                 <td style={zelle}>
                   <span style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
@@ -234,7 +234,7 @@ export default async function BenutzerUndRollen({
                 </td>
                 <td style={zelle}>
                   {r.traeger === 0 ? (
-                    <span style={{ color: 'var(--farbe-orange)' }}>niemand</span>
+                    <span className="orange">niemand</span>
                   ) : (
                     r.traeger
                   )}
@@ -243,7 +243,7 @@ export default async function BenutzerUndRollen({
             ))}
           </tbody>
         </table>
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+        <p className="leise winzig">
           Rot markiert sind die beiden weitreichenden Rechte: Wer Benutzer verwalten darf, kann
           sich jedes andere geben; wer Abläufe ändern darf, bestimmt, wer freigeben muss. Eine
           Rolle mit null Trägern ist kein Fehler, aber ein Recht, das niemand mehr hat, fällt
@@ -252,9 +252,9 @@ export default async function BenutzerUndRollen({
       </section>
 
       {darf.benutzer && (
-        <section style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Rolle zuweisen</h2>
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+        <section className="abschnitt">
+          <h2>Rolle zuweisen</h2>
+          <p className="absatz-leise">
             Ohne Objekt gilt die Rolle mandantenweit. Entzogen wird sie nicht gelöscht, sondern
             beendet — wer wann welche Rolle trug, ist die Antwort auf &bdquo;wer durfte das damals&ldquo;.
           </p>
@@ -302,8 +302,8 @@ export default async function BenutzerUndRollen({
 
       {darf.benutzer && (
         <section>
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>Objektzuständigkeit</h2>
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <h2>Objektzuständigkeit</h2>
+          <p className="absatz-leise">
             Die zweite, unabhängige Quelle der Sichtbarkeit neben der Rolle. Wer für ein Objekt
             zuständig ist, sieht dessen Belege — auch ohne mandantenweite Rolle.
           </p>

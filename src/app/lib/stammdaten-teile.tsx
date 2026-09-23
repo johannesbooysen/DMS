@@ -102,7 +102,7 @@ export function Eingabe({
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
-      <span style={{ color: 'var(--farbe-text-leise)' }}>{label}</span>
+      <span className="leise">{label}</span>
       <input
         type={typ}
         name={name}
@@ -176,7 +176,7 @@ export function Handlung({
   farbe?: string
 }) {
   return (
-    <form action={aktion} style={{ display: 'inline' }}>
+    <form action={aktion} className="inline">
       <input type="hidden" name="zurueck" value={zurueck} />
       {Object.entries(felder).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />

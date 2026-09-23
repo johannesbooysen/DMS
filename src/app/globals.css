@@ -1284,3 +1284,76 @@ kbd {
   background: var(--farbe-gruen-hell);
   color: var(--farbe-gruen);
 }
+
+/* ---------------------------------------------------------------------------
+ * Kleine Helfer fuer die Inhaltsseiten -- Ersatz fuer die Inline-Stile,
+ * die dort bis hierher standen. Farbe und Grad, nie Layout: Wo eine Seite
+ * eine eigene Anordnung braucht, steht sie an der Seite.
+ * ------------------------------------------------------------------------ */
+
+.inhalt thead tr {
+  color: var(--farbe-text-leise);
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.inhalt h3 {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.35rem;
+}
+
+.abschnitt {
+  margin-bottom: 2rem;
+}
+
+.abschnitt > h2 {
+  margin-top: 0;
+}
+
+.absatz-leise {
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.einleitung {
+  color: var(--farbe-text-leise);
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+  max-width: 46rem;
+}
+
+.winzig {
+  font-size: 0.78rem;
+}
+
+.normal {
+  font-weight: normal;
+}
+
+.rot {
+  color: var(--farbe-rot);
+}
+
+.gruen {
+  color: var(--farbe-gruen);
+}
+
+.orange {
+  color: var(--farbe-orange);
+}
+
+.rechts {
+  text-align: right;
+}
+
+.inline {
+  display: inline;
+}
+
+.reihe {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+}

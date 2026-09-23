@@ -72,7 +72,7 @@ export default async function Auswertungen({
 
   return (
     <Seitenrahmen titel="Auswertungen">
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', marginTop: 0 }}>
+      <p className="absatz-leise">
         {von == null && bis == null
           ? 'Durchlaufzeiten der letzten 90 Tage. Skonti und offene Belege über den gesamten Bestand.'
           : `Zeitraum ${von ?? '…'} bis ${bis ?? '…'}.`}
@@ -80,7 +80,7 @@ export default async function Auswertungen({
 
       <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Verfallene Skonti</h2>
       {geld.summe.length === 0 ? (
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
+        <p className="leise klein">
           Kein Skonto verfallen. Entweder wird zügig gezahlt oder es ist keines
           vereinbart — beides steht am Beleg.
         </p>
@@ -89,13 +89,13 @@ export default async function Auswertungen({
           <p style={{ fontSize: '0.9rem', margin: '0 0 0.5rem' }}>
             Zusammen <strong>{euro.format(gesamtverlust)}</strong>
             {geld.summe.map((z) => (
-              <span key={z.lage} style={{ color: 'var(--farbe-text-leise)' }}>
+              <span key={z.lage} className="leise">
                 {' · '}
                 {z.anzahl}× {LAGE[z.lage] ?? z.lage}: {euro.format(z.verlust)}
               </span>
             ))}
           </p>
-          <table style={{ borderCollapse: 'collapse', fontSize: '0.85rem', width: '100%' }}>
+          <table className="klein">
             <thead>
               <tr>
                 <th style={kopfzelle}>Kreditor</th>
@@ -126,23 +126,23 @@ export default async function Auswertungen({
             </tbody>
           </table>
           {geld.faelle.length === 50 && (
-            <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+            <p className="leise winzig">
               Die 50 größten Einzelfälle. Die Summe oben zählt alle.
             </p>
           )}
         </>
       )}
 
-      <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem', marginTop: '2rem' }}>
+      <h2>
         Durchlaufzeiten je Stufe
       </h2>
       {zeiten.length === 0 ? (
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>
+        <p className="leise klein">
           Im Zeitraum wurde keine Stufe abgeschlossen.
         </p>
       ) : (
         <>
-          <table style={{ borderCollapse: 'collapse', fontSize: '0.85rem', width: '100%' }}>
+          <table className="klein">
             <thead>
               <tr>
                 <th style={kopfzelle}>Stufe</th>
@@ -157,7 +157,7 @@ export default async function Auswertungen({
                 <tr key={z.stufeId}>
                   <td style={zelle}>
                     {z.bezeichnung}
-                    <span style={{ color: 'var(--farbe-text-leise)' }}> · {z.stufentyp}</span>
+                    <span className="leise"> · {z.stufentyp}</span>
                   </td>
                   <td style={zahl}>{z.anzahl}</td>
                   {/* Der Median steht **vor** dem Mittel und fett: Ein
@@ -170,7 +170,7 @@ export default async function Auswertungen({
               ))}
             </tbody>
           </table>
-          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+          <p className="leise winzig">
             Gemessen vom Eintritt in die Stufe bis zum Stempel, der sie beendet.
             Klärung und Rückgabe halten die Stufe an, statt sie zu beenden — die
             Wartezeit läuft weiter und erscheint beim nächsten Stempel.
@@ -178,13 +178,13 @@ export default async function Auswertungen({
         </>
       )}
 
-      <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem', marginTop: '2rem' }}>
+      <h2>
         Älteste offene Belege
       </h2>
       {offene.length === 0 ? (
-        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.9rem' }}>Kein Beleg ist offen.</p>
+        <p className="leise klein">Kein Beleg ist offen.</p>
       ) : (
-        <table style={{ borderCollapse: 'collapse', fontSize: '0.85rem', width: '100%' }}>
+        <table className="klein">
           <thead>
             <tr>
               <th style={zahlkopf}>Tage</th>
@@ -208,7 +208,7 @@ export default async function Auswertungen({
                 <td style={zelle}>
                   {o.stufe ?? '—'}
                   {o.laufStatus === 'klaerung' && (
-                    <span style={{ color: 'var(--farbe-orange)' }}> · in Klärung</span>
+                    <span className="orange"> · in Klärung</span>
                   )}
                 </td>
               </tr>
@@ -216,7 +216,7 @@ export default async function Auswertungen({
           </tbody>
         </table>
       )}
-      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+      <p className="leise winzig">
         Gerechnet ab Eingang im Haus, nicht ab Start des Ablaufs — danach fragt
         der Lieferant. Belege in Klärung zählen als offen: Sie sind nicht
         erledigt, sie sind nur woanders.

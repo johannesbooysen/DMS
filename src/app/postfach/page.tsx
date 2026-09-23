@@ -33,7 +33,7 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
           <th>Beleg</th>
           <th>Objekt</th>
           <th>Stufe</th>
-          <th style={{ textAlign: 'right' }}>Betrag</th>
+          <th className="rechts">Betrag</th>
           <th>Fällig</th>
           <th></th>
         </tr>
@@ -49,7 +49,7 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
             </td>
             <td>{z.objektnummer ?? '—'}</td>
             <td>{z.stufe}</td>
-            <td style={{ textAlign: 'right' }}>{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+            <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
             <td>{z.faelligAm === null ? '—' : datum.format(new Date(z.faelligAm))}</td>
             <td className="klein">
               <Link href={`/arbeitsplatz/${z.aufgabeId}`}>am Arbeitsplatz</Link>
@@ -106,7 +106,7 @@ export default async function Postfaecher() {
             <thead>
               <tr>
                 <th>Beleg</th>
-                <th style={{ textAlign: 'right' }}>Betrag</th>
+                <th className="rechts">Betrag</th>
                 <th>Wiedervorlage</th>
                 <th>Kommentar</th>
               </tr>
@@ -117,7 +117,7 @@ export default async function Postfaecher() {
                   <td>
                     <a href={`/beleg/${k.dokumentId}`}>{belegBezeichnung(k)}</a>
                   </td>
-                  <td style={{ textAlign: 'right' }}>{k.brutto === null ? '—' : euro.format(k.brutto)}</td>
+                  <td className="rechts">{k.brutto === null ? '—' : euro.format(k.brutto)}</td>
                   <td>{datum.format(new Date(k.wiedervorlageAm))}</td>
                   <td className="leise">{k.kommentar}</td>
                 </tr>

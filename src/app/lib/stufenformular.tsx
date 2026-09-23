@@ -122,7 +122,7 @@ export function Stufenformular({
 
       <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: 'var(--radius)', margin: '0 0 0.5rem', padding: '0.5rem 0.75rem' }}>
         <legend className="klein leise">Stempel an dieser Stufe</legend>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1rem' }}>
+        <div className="reihe">
           {auswahl.stempeltypen.map((t) => (
             <label key={t.id} className="klein">
               <input type="checkbox" name="stempeltypId" value={t.id} defaultChecked={stempel.includes(t.id)} /> {t.name}

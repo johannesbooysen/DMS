@@ -58,8 +58,8 @@ export function Kontierung({
   if (konten.length === 0) {
     return (
       <section style={{ margin: '1rem 0' }}>
-        <h2 style={{ fontSize: '1rem' }}>Kontierung</h2>
-        <p style={{ color: 'var(--farbe-rot)' }}>
+        <h2>Kontierung</h2>
+        <p className="rot">
           Für dieses Objekt ist kein Kontenrahmen hinterlegt — ohne ihn lässt sich nicht
           kontieren. Das ist eine Frage der Stammdaten, nicht des Belegs.
         </p>
@@ -77,11 +77,11 @@ export function Kontierung({
 
   return (
     <section style={{ margin: '1rem 0' }}>
-      <h2 style={{ fontSize: '1rem' }}>Kontierung</h2>
+      <h2>Kontierung</h2>
 
-      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+      <table>
         <thead>
-          <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>
+          <tr className="leise winzig">
             <th style={zelle}>Konto</th>
             <th style={rechts}>Steuer</th>
             <th style={rechts}>Netto</th>
@@ -103,7 +103,7 @@ export function Kontierung({
               <td style={rechts}>{euro.format(z.betragNetto)}</td>
               <td style={rechts}>{euro.format(z.betragBrutto)}</td>
               <td style={zelle}>
-                <form action={umlageUmschaltenAktion} style={{ display: 'inline' }}>
+                <form action={umlageUmschaltenAktion} className="inline">
                   {verstecktesZiel}
                   <input type="hidden" name="zeileId" value={z.id} />
                   <input type="hidden" name="umlagefaehig" value={z.umlagefaehig ? 'nein' : 'ja'} />
@@ -130,7 +130,7 @@ export function Kontierung({
                 )}
               </td>
               <td style={rechts}>
-                <form action={zeileEntfernenAktion} style={{ display: 'inline' }}>
+                <form action={zeileEntfernenAktion} className="inline">
                   {verstecktesZiel}
                   <input type="hidden" name="zeileId" value={z.id} />
                   <button
@@ -186,7 +186,7 @@ export function Kontierung({
           }}
         >
           {stand.stimmt ? (
-            <form action={kontiertStempelnAktion} style={{ display: 'inline' }}>
+            <form action={kontiertStempelnAktion} className="inline">
               {verstecktesZiel}
               <input type="hidden" name="stempeltypId" value={abschluss.stempeltypId} />
               <button
@@ -253,7 +253,6 @@ export function Kontierung({
             type="submit"
             name="rest"
             value="ja"
-            style={{ cursor: 'pointer', padding: '0.45rem 0.9rem' }}
           >
             Vorschlag übernehmen ({euro.format(stand.offen)})
           </button>
@@ -305,7 +304,7 @@ export function Kontierung({
       >
         {verstecktesZiel}
 
-        <label style={{ display: 'block', fontSize: '0.8rem' }}>
+        <label className="feld">
           Konto
           <select
             name="kontoId"
@@ -321,7 +320,7 @@ export function Kontierung({
           </select>
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.8rem' }}>
+        <label className="feld">
           Steuersatz
           <select name="steuersatz" style={{ display: 'block', padding: '0.35rem' }}>
             {STEUERSAETZE.map((s) => (
@@ -332,7 +331,7 @@ export function Kontierung({
           </select>
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.8rem' }}>
+        <label className="feld">
           Umlageschlüssel
           <select name="umlageschluesselId" style={{ display: 'block', padding: '0.35rem' }}>
             {/* Leer heißt: den Vorschlag des Kontos nehmen. Das ist der
@@ -346,7 +345,7 @@ export function Kontierung({
           </select>
         </label>
 
-        <label style={{ display: 'block', fontSize: '0.8rem' }}>
+        <label className="feld">
           Brutto
           <input
             name="betragBrutto"
@@ -356,11 +355,11 @@ export function Kontierung({
           />
         </label>
 
-        <label style={{ fontSize: '0.8rem' }}>
+        <label className="winzig">
           <input type="checkbox" name="ruecklageEntnahme" value="ja" /> aus Rücklage
         </label>
 
-        <button type="submit" style={{ cursor: 'pointer', padding: '0.45rem 0.9rem' }}>
+        <button type="submit">
           Zeile hinzufügen
         </button>
 
@@ -369,7 +368,6 @@ export function Kontierung({
             type="submit"
             name="rest"
             value="ja"
-            style={{ cursor: 'pointer', padding: '0.45rem 0.9rem' }}
           >
             Rest übernehmen ({euro.format(stand.offen)})
           </button>

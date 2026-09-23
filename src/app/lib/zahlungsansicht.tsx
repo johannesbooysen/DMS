@@ -26,7 +26,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
 
   return (
     <section style={{ margin: '1rem 0' }}>
-      <h2 style={{ fontSize: '1rem' }}>Zahlung</h2>
+      <h2>Zahlung</h2>
 
       {ansicht.verfallen > 0 && (
         <p role="alert" className="meldung-fehler">
@@ -37,7 +37,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       )}
 
       {ansicht.lastschrift ? (
-        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
+        <p className="meldung-hinweis">
           <strong>Lastschrift.</strong> Der Kreditor zieht selbst ein — es wird
           nichts übergeben. Vermerkt wird nur die Fälligkeit
           {ansicht.faelligAm !== null && ` zum ${datum.format(new Date(ansicht.faelligAm))}`}.
@@ -51,10 +51,10 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
             margin: '0 0 1rem',
           }}
         >
-          <dt style={{ color: 'var(--farbe-text-leise)' }}>Weg</dt>
+          <dt className="leise">Weg</dt>
           <dd style={{ margin: 0 }}>
             {weg === null ? (
-              <span style={{ color: 'var(--farbe-rot)' }}>am Objekt nicht hinterlegt</span>
+              <span className="rot">am Objekt nicht hinterlegt</span>
             ) : (
               <>
                 {weg.name} — {WEGTEXT[weg.art] ?? weg.art}
@@ -63,19 +63,19 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
             )}
           </dd>
 
-          <dt style={{ color: 'var(--farbe-text-leise)' }}>Empfänger</dt>
+          <dt className="leise">Empfänger</dt>
           <dd style={{ margin: 0 }}>
             {ansicht.empfaenger ?? '—'}
             {ansicht.iban !== null && (
-              <span style={{ color: 'var(--farbe-text-leise)' }}> · IBAN {ansicht.iban}</span>
+              <span className="leise"> · IBAN {ansicht.iban}</span>
             )}
           </dd>
 
-          <dt style={{ color: 'var(--farbe-text-leise)' }}>Betrag</dt>
+          <dt className="leise">Betrag</dt>
           <dd style={{ margin: 0 }}>
             {ansicht.betrag === null ? '—' : euro.format(ansicht.betrag)}
             {ansicht.faelligAm !== null && (
-              <span style={{ color: 'var(--farbe-text-leise)' }}> · fällig {datum.format(new Date(ansicht.faelligAm))}</span>
+              <span className="leise"> · fällig {datum.format(new Date(ansicht.faelligAm))}</span>
             )}
           </dd>
         </dl>
@@ -99,7 +99,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       {zahlungen.length > 0 && (
         <table style={{ borderCollapse: 'collapse', marginTop: '1rem', width: '100%' }}>
           <thead>
-            <tr style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', textAlign: 'left' }}>
+            <tr>
               <th style={zelle}>Art</th>
               <th style={zelle}>Betrag</th>
               <th style={zelle}>Stand</th>

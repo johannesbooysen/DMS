@@ -61,13 +61,13 @@ export default async function Kategorien({
     <Seitenrahmen titel="Kategorien und ihre Steuerung">
       <Fehler text={fehler} />
 
-      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 0.5rem', maxWidth: '46rem' }}>
+      <p className="einleitung">
         Eine Kategorie sagt an <strong>einer</strong> Stelle, was mit ihren Belegen
         geschieht: wer sie bearbeitet, welchen Ablauf sie nehmen und worauf sie
         gebucht werden. Es gibt keine Filter, die man nebeneinanderlegen muss, um
         das herauszufinden.
       </p>
-      <p style={{ color: 'var(--farbe-text-leise)', lineHeight: 1.5, margin: '0 0 1.5rem', maxWidth: '46rem' }}>
+      <p className="einleitung">
         Bedingungen wie <em>„ab 5.000 € zusätzlich die Geschäftsleitung“</em> gehören
         nicht hierher, sondern als Verzweigung in den{' '}
         <Link href="/konfiguration">Ablauf</Link> selbst — dort stehen sie an einer
@@ -75,7 +75,7 @@ export default async function Kategorien({
       </p>
 
       {kategorien.length === 0 && (
-        <p style={{ color: 'var(--farbe-text-leise)' }}>
+        <p className="leise">
           Noch keine Kategorien. Sie werden unter{' '}
           <Link href="/stammdaten">Stammdaten</Link> angelegt.
         </p>
@@ -92,9 +92,9 @@ export default async function Kategorien({
             padding: '1rem',
           }}
         >
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.15rem' }}>
+          <h2>
             {k.name}{' '}
-            <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem', fontWeight: 'normal' }}>
+            <span className="leise winzig normal">
               {k.kurzcode}
               {k.aktiv ? '' : ' · deaktiviert'}
             </span>
@@ -112,11 +112,11 @@ export default async function Kategorien({
                 Bearbeitet von <strong>{k.bearbeiter.join(', ')}</strong>
               </>
             ) : k.spezialgebiet === null ? (
-              <span style={{ color: 'var(--farbe-text-leise)' }}>
+              <span className="leise">
                 Kein Spezialgebiet — die Zuständigkeit ergibt sich aus dem Objekt.
               </span>
             ) : (
-              <span style={{ color: 'var(--farbe-rot)' }}>
+              <span className="rot">
                 Für „{k.spezialgebiet}“ ist niemand zuständig — Belege dieser
                 Kategorie erreichen kein Postfach.
               </span>
@@ -179,7 +179,7 @@ export default async function Kategorien({
       ))}
 
       <section style={{ marginTop: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem' }}>
+        <h2>
           Übliche Kategorie je Lieferant
         </h2>
         <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem', maxWidth: '46rem' }}>
@@ -210,7 +210,7 @@ export default async function Kategorien({
                 <td style={zelle}>{kr.standard ?? '—'}</td>
                 <td style={zelle}>
                   {darf.stammdaten && (
-                    <form action={kreditorStandardAktion} style={{ display: 'flex', gap: '0.4rem' }}>
+                    <form action={kreditorStandardAktion} className="reihe">
                       <input type="hidden" name="zurueck" value={HIER} />
                       <input type="hidden" name="id" value={kr.id} />
                       <Auswahl
