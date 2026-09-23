@@ -78,3 +78,37 @@ for (const [pfad, name] of SEITEN) {
     expect(schwer.map((v) => `${v.impact}: ${v.id}`)).toEqual([])
   })
 }
+
+/**
+ * Derselbe Massstab im Dunkelmodus.
+ *
+ * Der Dunkelmodus ist eine zweite Wertezeile derselben Token -- und genau
+ * deshalb kann er still kaputtgehen: Ein Kontrast, der hell 7:1 hat, kann
+ * dunkel bei 2:1 liegen, ohne dass eine Regel sich geaendert hat. Drei
+ * Seiten, die alle Grundformen tragen, gemessen unter `prefers-color-scheme:
+ * dark`.
+ */
+test.describe('Dunkelmodus', () => {
+  test.use({ colorScheme: 'dark' })
+
+  for (const [pfad, name] of SEITEN.filter(([p]) => ['/postfach', '/belege', '/stammdaten/benutzer'].includes(p))) {
+    test(`${name} (${pfad}) hat auch dunkel keine schweren Befunde`, async ({ page }) => {
+      await anmelden(page, BENUTZER.eva)
+      await page.goto(pfad)
+      const ergebnis = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+      const schwer = ergebnis.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+      if (schwer.length > 0) {
+        mkdirSync('test-results', { recursive: true })
+        appendFileSync(
+          BERICHT,
+          schwer
+            .map((v) => `== dunkel ${name} (${pfad}) [${v.impact}] ${v.id}\n   ${v.help}\n` + v.nodes.slice(0, 4).map((k) => `   -> ${k.target.join(' ')}\n      ${(k.failureSummary ?? '').replace(/\s+/g, ' ')}`).join('\n'))
+            .join('\n') + '\n',
+        )
+      }
+      expect(schwer.map((v) => `${v.impact}: ${v.id}`)).toEqual([])
+    })
+  }
+})

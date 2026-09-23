@@ -64,12 +64,12 @@ export default async function Stapelpruefung({
       </p>
 
       {kopf.status === 'aufbereitung' ? (
-        <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.75rem' }}>
+        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
           Der Stapel wird gerade gelesen und gerendert — das übernimmt der
           Worker, nicht diese Seite. Bitte in einem Moment neu laden.
         </p>
       ) : uebernommen ? (
-        <p style={{ background: '#EEF3EE', color: 'var(--farbe-gruen)', padding: '0.75rem' }}>
+        <p style={{ background: 'var(--farbe-gruen-hell)', color: 'var(--farbe-gruen)', padding: '0.75rem' }}>
           Dieser Stapel ist übernommen. Die Belege stehen unter{' '}
           <a href="/belege">Belege</a>; Änderungen laufen ab hier über den
           einzelnen Beleg.
@@ -81,10 +81,10 @@ export default async function Stapelpruefung({
             <button
               type="submit"
               style={{
-                background: '#2F6F4E',
+                background: 'var(--farbe-gruen)',
                 border: 0,
                 borderRadius: '0.25rem',
-                color: '#fff',
+                color: 'var(--farbe-marke-text)',
                 cursor: 'pointer',
                 padding: '0.5rem 1rem',
               }}
@@ -160,7 +160,7 @@ function Seitenkachel({
         src={`/api/stapel/${stapelId}/seite/${seite.seite}`}
         alt={`Seite ${seite.seite}`}
         style={{
-          border: seite.trenner ? '2px solid #B5741A' : '1px solid var(--farbe-linie)',
+          border: seite.trenner ? '2px solid var(--farbe-orange)' : '1px solid var(--farbe-linie)',
           width: '100%',
         }}
       />
@@ -179,7 +179,7 @@ function Seitenkachel({
               style={{
                 background: 'none',
                 border: 0,
-                color: seite.trenner ? '#B3271E' : '#3B4A80',
+                color: seite.trenner ? 'var(--farbe-rot)' : 'var(--farbe-akzent)',
                 cursor: 'pointer',
                 padding: '0.15rem 0',
               }}

@@ -55,7 +55,7 @@ export default async function Einsichtsliste({
       </p>
 
       {gewaehrung.empfaengerTyp === 'mieter' && (
-        <p style={{ background: '#F3F5F9', color: '#33405C', padding: '0.7rem 0.9rem' }}>
+        <p style={{ background: 'var(--farbe-flaeche-leise)', color: 'var(--farbe-text)', padding: '0.7rem 0.9rem' }}>
           Gezeigt werden die Belege mit umlagefähigen Kosten aus Ihrer Mietzeit.
           Die Auswahl wird berechnet — sie ändert sich mit den Daten, nicht durch
           eine Freigabe.

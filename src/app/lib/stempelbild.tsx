@@ -36,7 +36,7 @@ export function rahmenStil(g: Gestaltung, farbe: string): string {
  * Die Farbe, in der der Text steht -- dunkel genug, um lesbar zu sein.
  *
  * Der Rahmen traegt die Stempelfarbe unveraendert; der Text nicht immer:
- * Ein Orange wie `#B5741A` erreicht auf fast weissem Grund 3,8:1, und die
+ * Ein Orange wie `var(--farbe-orange)` erreicht auf fast weissem Grund 3,8:1, und die
  * Barrierefreiheitspruefung verlangt 4,5:1 (WCAG AA). Statt die Farbe des
  * Stempeltyps zu verbieten, wird der Text schrittweise abgedunkelt, bis er
  * das Mass erreicht. Gruen und Rot aus dem Seed bleiben, wie sie sind.

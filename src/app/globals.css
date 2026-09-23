@@ -7,12 +7,19 @@
  * Tabellen, Marken) und die Farbtoken. Inline-Stile, die noch stehen,
  * ueberschreiben die Grundformen nur dort, wo sie es ausdruecklich tun.
  *
- * **Bewusst nur hell.** Ohne festen Hintergrund zeichnete der Browser die
- * Seiten im Dunkelmodus schwarz mit dunkelblauen Links -- ein Fehler, keine
- * Geschmacksfrage. Ein echter Dunkelmodus kommt erst, wenn die Inline-Farben
- * aus den Seiten heraus sind; bis dahin ist "hell, immer" die ehrliche
- * Antwort. Die Token sind so benannt, dass er dann eine zweite Wertezeile
- * ist und kein Umbau.
+ * **Zwei Wertezeilen, ein Regelwerk.** Der Dunkelmodus folgt der
+ * Systemeinstellung (`prefers-color-scheme`) und besteht ausschliesslich
+ * aus anderen Werten fuer dieselben Token -- keine zweite Regel, kein
+ * Schalter. Das geht nur, weil keine Seite mehr eine Farbe als Hexwert
+ * traegt (die Ampel und die Stempelfarben aus den Stammdaten ausgenommen:
+ * die sind Bedeutung, nicht Gestaltung). Wer eine Farbe braucht, nimmt ein
+ * Token; ein neuer Hexwert in einer Seite ist im Dunkelmodus ein Fleck.
+ *
+ * Marken mit farbigem Grund (rot, gruen, orange, akzent) tragen
+ * `--farbe-marke-text`: hell auf dunklen Grundfarben, dunkel auf den
+ * aufgehellten Grundfarben des Dunkelmodus. Ein festes Weiss waere dort
+ * unlesbar. Die Seiten eines Belegs bleiben weiss -- ein Beleg ist ein
+ * Blatt Papier, auch nachts.
  */
 
 :root {
@@ -33,10 +40,17 @@
 
   --farbe-rot: #b3271e;
   --farbe-rot-hell: #f6dcd9;
+  --farbe-rot-text: #6b1d15;
   --farbe-orange: #b5741a;
   --farbe-orange-hell: #fdf3e3;
+  --farbe-orange-text: #6b4a15;
   --farbe-gruen: #2f6f4e;
   --farbe-gruen-hell: #e4f1ea;
+  --farbe-gruen-text: #1d4a33;
+  --farbe-marke-text: #ffffff;
+  --farbe-beleggrund: #e9ebef;
+  --farbe-markierung: #ffe28a;
+  --farbe-notfall-linie: #e0a458;
 
   --leiste-hintergrund: #22294a;
   --leiste-text: #e6e9f2;
@@ -48,6 +62,46 @@
 
   --leiste-breite: 14.5rem;
   --kopf-hoehe: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --farbe-hintergrund: #14171d;
+    --farbe-flaeche: #1d2129;
+    --farbe-flaeche-leise: #232834;
+    --farbe-text: #e6e8ee;
+    --farbe-text-leise: #a4abb9;
+    --farbe-linie: #333a48;
+    --farbe-linie-stark: #4b5467;
+
+    --farbe-akzent: #9fb0ee;
+    --farbe-akzent-dunkel: #b7c4f3;
+    --farbe-akzent-hell: #2a3352;
+    --farbe-akzent-text: #101529;
+
+    --farbe-rot: #f39d95;
+    --farbe-rot-hell: #48221f;
+    --farbe-rot-text: #ffd6d2;
+    --farbe-orange: #e9b467;
+    --farbe-orange-hell: #3f2f14;
+    --farbe-orange-text: #ffe3b5;
+    --farbe-gruen: #8ccfa9;
+    --farbe-gruen-hell: #1e3a2d;
+    --farbe-gruen-text: #cfeedd;
+    --farbe-marke-text: #101318;
+    --farbe-beleggrund: #0f1115;
+    --farbe-markierung: #7a5d00;
+    --farbe-notfall-linie: #8a6420;
+
+    --leiste-hintergrund: #171b2e;
+    --leiste-text: #e6e9f2;
+    --leiste-text-leise: #aab2cc;
+    --leiste-aktiv: rgba(255, 255, 255, 0.14);
+
+    --schatten: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 6px rgba(0, 0, 0, 0.3);
+  }
 }
 
 * {
@@ -238,7 +292,7 @@ th {
 .zaehler {
   background: var(--farbe-akzent);
   border-radius: 999px;
-  color: #fff;
+  color: var(--farbe-marke-text);
   font-size: 0.7rem;
   font-weight: 600;
   line-height: 1.4;
@@ -294,7 +348,7 @@ th {
 
 .notfallband {
   background: var(--farbe-orange-hell);
-  border-bottom: 1px solid #e0a458;
+  border-bottom: 1px solid var(--farbe-notfall-linie);
   font-size: 0.875rem;
   padding: 0.5rem 1.5rem;
 }
@@ -414,7 +468,7 @@ kbd {
 }
 
 .arbeitsplatz-beleg {
-  background: #e9ebef;
+  background: var(--farbe-beleggrund);
   display: flex;
   flex-direction: column;
 }
@@ -456,6 +510,7 @@ kbd {
 
 .betrachter-seite {
   background: #fff;
+  color: #1f2430;
   box-shadow: var(--schatten);
   margin: 0 auto 1rem;
   position: relative;
@@ -523,6 +578,7 @@ kbd {
 .stempelknoepfe button {
   border: 0;
   border-radius: var(--radius);
+  /* Der Grund ist die Stempelfarbe aus den Stammdaten -- dunkel, auch im Dunkelmodus. */
   color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
@@ -550,7 +606,7 @@ kbd {
 .meldung-fehler {
   background: var(--farbe-rot-hell);
   border-radius: var(--radius);
-  color: #6b1d15;
+  color: var(--farbe-rot-text);
   margin: 0 0 0.75rem;
   padding: 0.6rem 0.75rem;
 }
@@ -645,13 +701,13 @@ kbd {
 .seitenrail-marke {
   background: var(--farbe-orange);
   border-radius: 999px;
-  color: #fff;
+  color: var(--farbe-marke-text);
   font-size: 0.65rem;
   padding: 0 0.35rem;
 }
 
 .spalte-beleg {
-  background: #e9ebef;
+  background: var(--farbe-beleggrund);
   display: flex;
   flex-direction: column;
 }
@@ -712,7 +768,7 @@ kbd {
 .betrachter-treffer {
   background: var(--farbe-orange);
   border-radius: 999px;
-  color: #fff;
+  color: var(--farbe-marke-text);
   font-size: 0.7rem;
   padding: 0.1rem 0.5rem;
   position: absolute;
@@ -760,7 +816,7 @@ kbd {
 }
 
 .suchtreffer mark {
-  background: #ffe28a;
+  background: var(--farbe-markierung);
   border-radius: 2px;
   padding: 0 0.1rem;
 }
@@ -878,7 +934,7 @@ kbd {
 .meldung-hinweis {
   background: var(--farbe-orange-hell);
   border-radius: var(--radius);
-  color: #6b4a15;
+  color: var(--farbe-orange-text);
   margin: 0 0 1rem;
   padding: 0.6rem 0.75rem;
 }
@@ -961,6 +1017,7 @@ kbd {
 
 .marke {
   border-radius: 0.2rem;
+  /* Der Grund ist die Gruppenfarbe aus den Stammdaten -- dunkel, auch im Dunkelmodus. */
   color: #fff;
   font-size: 0.7rem;
   margin-right: 0.3rem;
@@ -1123,7 +1180,7 @@ kbd {
 }
 
 .belegsuche-vorschau {
-  background: #e9ebef;
+  background: var(--farbe-beleggrund);
   display: flex;
   flex-direction: column;
 }
@@ -1208,7 +1265,7 @@ kbd {
 
 .eingangsstand--in_aufbereitung {
   background: var(--farbe-orange-hell);
-  color: #6b4a15;
+  color: var(--farbe-orange-text);
 }
 
 .eingangsstand--laufend,
@@ -1218,12 +1275,12 @@ kbd {
 }
 
 .eingangsstand--abgelehnt {
-  background: #f8e1df;
+  background: var(--farbe-rot-hell);
   color: var(--farbe-rot);
 }
 
 .eingangsstand--abgeschlossen,
 .eingangsstand--archiviert {
-  background: #e3efe8;
+  background: var(--farbe-gruen-hell);
   color: var(--farbe-gruen);
 }

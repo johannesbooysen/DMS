@@ -229,7 +229,7 @@ export default async function Kategorien({
                         aria-label={`Übliche Kategorie für ${kr.name} setzen`}
                         style={{
                           alignSelf: 'flex-end',
-                          background: '#fff',
+                          background: 'var(--farbe-flaeche)',
                           border: '1px solid var(--farbe-linie-stark)',
                           borderRadius: '0.2rem',
                           cursor: 'pointer',

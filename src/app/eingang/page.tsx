@@ -104,9 +104,9 @@ export default async function Eingangsquellen({
                       <div style={{ fontSize: '0.75rem', marginTop: '0.2rem' }}>
                         <code>{e.passwortVariable}</code>{' '}
                         {e.passwortVorhanden ? (
-                          <Marke text="gesetzt" farbe="#2F6F4E" />
+                          <Marke text="gesetzt" farbe="var(--farbe-gruen)" />
                         ) : (
-                          <Marke text="fehlt auf diesem Server" farbe="#B3271E" />
+                          <Marke text="fehlt auf diesem Server" farbe="var(--farbe-rot)" />
                         )}
                       </div>
                     )}

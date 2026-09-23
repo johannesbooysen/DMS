@@ -94,7 +94,7 @@ export function Befunde({
     <section
       style={{
         background: 'var(--farbe-flaeche-leise, #FAFAF8)',
-        border: '1px solid var(--farbe-linie, #ddd)',
+        border: '1px solid var(--farbe-linie, var(--farbe-linie))',
         borderRadius: 'var(--radius, 0.25rem)',
         margin: '1rem 0',
         padding: '0.75rem 1rem',
@@ -104,7 +104,7 @@ export function Befunde({
       <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
         {befunde.map((b) => (
           <li key={b.pruefung} style={{ marginBottom: '0.4rem' }}>
-            <strong style={{ color: b.schwere === 'hart' ? '#B3271E' : '#B5741A' }}>
+            <strong style={{ color: b.schwere === 'hart' ? 'var(--farbe-rot)' : 'var(--farbe-orange)' }}>
               {b.schwere === 'hart' ? 'Bearbeitung angehalten' : 'Zu prüfen'}
             </strong>{' '}
             — {b.hinweis}

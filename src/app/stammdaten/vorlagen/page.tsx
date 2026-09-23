@@ -29,8 +29,8 @@ export const dynamic = 'force-dynamic'
 const HIER = '/stammdaten/vorlagen'
 
 const vorschau = {
-  background: '#F5F6F9',
-  borderLeft: '3px solid #3B4A80',
+  background: 'var(--farbe-flaeche-leise)',
+  borderLeft: '3px solid var(--farbe-akzent)',
   fontSize: '0.85rem',
   padding: '0.6rem 0.8rem',
   whiteSpace: 'pre-wrap',
@@ -111,9 +111,9 @@ export default async function Vorlagen({
           <h2 style={{ alignItems: 'baseline', display: 'flex', fontSize: '1rem', gap: '0.6rem', margin: '0 0 0.5rem' }}>
             {v.name}
             <code style={{ color: 'var(--farbe-text-leise)', fontSize: '0.8rem' }}>{v.schluessel}</code>
-            {!v.aktiv && <Marke text="inaktiv" farbe="#B3271E" />}
+            {!v.aktiv && <Marke text="inaktiv" farbe="var(--farbe-rot)" />}
             {v.unbekannt.length > 0 && (
-              <Marke text={`${v.unbekannt.length} unbekannt`} farbe="#B3271E" />
+              <Marke text={`${v.unbekannt.length} unbekannt`} farbe="var(--farbe-rot)" />
             )}
           </h2>
 
@@ -150,7 +150,7 @@ export default async function Vorlagen({
               </label>
               <button
                 type="submit"
-                style={{ ...feld, background: 'var(--farbe-akzent)', color: '#fff', marginTop: '0.6rem' }}
+                style={{ ...feld, background: 'var(--farbe-akzent)', color: 'var(--farbe-marke-text)', marginTop: '0.6rem' }}
               >
                 Speichern
               </button>
@@ -176,8 +176,8 @@ export default async function Vorlagen({
             <p
               role="alert"
               style={{
-                background: '#F6DCD9',
-                color: '#6B1D15',
+                background: 'var(--farbe-rot-hell)',
+                color: 'var(--farbe-rot-text)',
                 fontSize: '0.85rem',
                 marginTop: '0.75rem',
                 padding: '0.6rem 0.75rem',

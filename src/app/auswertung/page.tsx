@@ -208,7 +208,7 @@ export default async function Auswertungen({
                 <td style={zelle}>
                   {o.stufe ?? '—'}
                   {o.laufStatus === 'klaerung' && (
-                    <span style={{ color: '#8a6d1f' }}> · in Klärung</span>
+                    <span style={{ color: 'var(--farbe-orange)' }}> · in Klärung</span>
                   )}
                 </td>
               </tr>

@@ -59,7 +59,7 @@ export default async function Einsichtsbeleg({
         {beleg?.kreditor ?? 'Beleg'}
         {beleg?.rechnungsnummer != null && ` · ${beleg.rechnungsnummer}`}
       </h1>
-      <p style={{ color: '#555', marginTop: '0.3rem' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', marginTop: '0.3rem' }}>
         {[
           beleg?.brutto != null && euro.format(beleg.brutto),
           beleg?.leistungVon != null &&
@@ -79,7 +79,7 @@ export default async function Einsichtsbeleg({
           <img
             src={`/api/einsicht/${token}/${dokument}/1`}
             alt="Beleg, Seite 1"
-            style={{ border: '1px solid #ddd', width: '100%' }}
+            style={{ border: '1px solid var(--farbe-linie)', width: '100%' }}
           />
         </figure>
       )}
@@ -89,7 +89,7 @@ export default async function Einsichtsbeleg({
           <a href={`/api/einsicht/${token}/${dokument}/pdf`}>Original als PDF laden</a>
         </p>
       ) : (
-        <p style={{ color: '#666', fontSize: '0.85rem' }}>
+        <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>
           Für diesen Zugang ist kein Download vorgesehen.
         </p>
       )}

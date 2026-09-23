@@ -69,7 +69,7 @@ export default async function Benutzerauswahl({
       }}
     >
       <h1 style={{ fontSize: '1.375rem' }}>Anmelden als</h1>
-      <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.75rem' }}>
+      <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
         Entwicklungsanmeldung. Es wird nichts geprüft — im Betrieb steht hier
         Microsoft.
       </p>
@@ -85,7 +85,7 @@ export default async function Benutzerauswahl({
             >
               {b.name}
             </a>{' '}
-            <span style={{ color: '#666', fontSize: '0.85rem' }}>· {b.mandant}</span>
+            <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem' }}>· {b.mandant}</span>
           </li>
         ))}
       </ul>

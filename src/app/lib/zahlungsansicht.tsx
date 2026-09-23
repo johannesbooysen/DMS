@@ -37,7 +37,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       )}
 
       {ansicht.lastschrift ? (
-        <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.75rem' }}>
+        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
           <strong>Lastschrift.</strong> Der Kreditor zieht selbst ein — es wird
           nichts übergeben. Vermerkt wird nur die Fälligkeit
           {ansicht.faelligAm !== null && ` zum ${datum.format(new Date(ansicht.faelligAm))}`}.
@@ -82,7 +82,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       )}
 
       {ansicht.versandfehlt !== null && (
-        <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.7rem 0.9rem' }}>
+        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.7rem 0.9rem' }}>
           {ansicht.versandfehlt}
         </p>
       )}
@@ -90,7 +90,7 @@ export function Zahlung({ ansicht }: { ansicht: Zahlungsansicht }) {
       {!ansicht.moeglich && ansicht.hindernis !== null && (
         <p
           role="alert"
-          style={{ background: '#F6DCD9', color: '#6B1D15', padding: '0.75rem' }}
+          style={{ background: 'var(--farbe-rot-hell)', color: 'var(--farbe-rot-text)', padding: '0.75rem' }}
         >
           <strong>Übergabe gesperrt.</strong> {ansicht.hindernis}
         </p>

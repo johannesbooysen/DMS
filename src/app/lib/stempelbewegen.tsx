@@ -222,8 +222,8 @@ export function Stempelbewegen({
           left: prozent.left,
           top: `calc(${prozent.top} + ${prozent.height} + 0.3rem)`,
           alignItems: 'center',
-          background: '#fff',
-          border: '1px solid #bbb',
+          background: 'var(--farbe-flaeche)',
+          border: '1px solid var(--farbe-linie-stark)',
           borderRadius: '0.2rem',
           display: 'flex',
           fontSize: '0.75rem',
@@ -265,7 +265,7 @@ export function Stempelbewegen({
         >
           Übernehmen
         </button>
-        {hinweis !== null && <span style={{ color: '#B3271E' }}>{hinweis}</span>}
+        {hinweis !== null && <span style={{ color: 'var(--farbe-rot)' }}>{hinweis}</span>}
       </form>
     </>
   )

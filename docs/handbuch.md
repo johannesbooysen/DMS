@@ -663,6 +663,16 @@ Er hätte den Korb geleert und das Problem stehen lassen.
 
 ---
 
+## Hell und dunkel
+
+Die Oberfläche folgt der Einstellung des Betriebssystems: Wer sein System
+dunkel eingestellt hat, sieht das DMS dunkel. Ein eigener Schalter fehlt
+bewusst — eine Einstellung, die sich an zwei Stellen ändern lässt, ist an
+einer davon immer falsch. Die Belegseiten selbst bleiben weiß: Ein Beleg ist
+ein Blatt Papier, auch nachts.
+
+---
+
 ## Belege finden
 
 Unter *Belege* steht die Suche. Sie ist der Weg zu jedem Beleg, der

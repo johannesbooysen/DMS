@@ -113,7 +113,7 @@ export function Kontierung({
                     style={{
                       background: 'none',
                       border: 0,
-                      color: z.umlagefaehig ? '#2F6F4E' : '#888',
+                      color: z.umlagefaehig ? 'var(--farbe-gruen)' : 'var(--farbe-text-leise)',
                       cursor: 'pointer',
                       padding: 0,
                     }}
@@ -152,7 +152,7 @@ export function Kontierung({
             <td style={rechts}>{euro.format(stand.summe)}</td>
             <td style={zelle} colSpan={2} />
           </tr>
-          <tr style={{ color: stand.stimmt ? '#2F6F4E' : '#B3271E', fontWeight: 600 }}>
+          <tr style={{ color: stand.stimmt ? 'var(--farbe-gruen)' : 'var(--farbe-rot)', fontWeight: 600 }}>
             <td style={zelle} colSpan={3}>
               {stand.rechnungsbetrag === null
                 ? 'Am Beleg fehlt der Rechnungsbetrag'
@@ -226,8 +226,8 @@ export function Kontierung({
           action={zeileHinzufuegenAktion}
           style={{
             alignItems: 'center',
-            background: vorschlag.sicherheit === 'gruen' ? '#EEF6EE' : '#FFF6E5',
-            border: `1px solid ${vorschlag.sicherheit === 'gruen' ? '#8DBB8D' : '#E3B85C'}`,
+            background: vorschlag.sicherheit === 'gruen' ? 'var(--farbe-gruen-hell)' : 'var(--farbe-orange-hell)',
+            border: `1px solid ${vorschlag.sicherheit === 'gruen' ? 'var(--farbe-gruen)' : 'var(--farbe-orange)'}`,
             borderRadius: '0.3rem',
             display: 'flex',
             flexWrap: 'wrap',

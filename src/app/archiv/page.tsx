@@ -39,8 +39,8 @@ export const dynamic = 'force-dynamic'
 const HIER = '/archiv'
 
 const GRUND: Record<Loeschgrund, { text: string; farbe: string }> = {
-  loeschanspruch: { text: 'Löschanspruch', farbe: '#B3271E' },
-  fristablauf: { text: 'Frist abgelaufen', farbe: '#8A6D1F' },
+  loeschanspruch: { text: 'Löschanspruch', farbe: 'var(--farbe-rot)' },
+  fristablauf: { text: 'Frist abgelaufen', farbe: 'var(--farbe-orange)' },
 }
 
 export default async function Archiv({
@@ -116,7 +116,7 @@ export default async function Archiv({
                           aktion={loeschenAktion}
                           zurueck={HIER}
                           felder={{ id: f.dokumentId }}
-                          farbe="#B3271E"
+                          farbe="var(--farbe-rot)"
                         >
                           endgültig löschen
                         </Handlung>
@@ -145,7 +145,7 @@ export default async function Archiv({
         </p>
 
         {offeneDateien > 0 && (
-          <p style={{ color: '#8A6D1F', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--farbe-orange)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
             Bei {offeneDateien} davon liegt die Datei noch im Objektspeicher. Der Worker räumt
             sie ab; bis dahin ist der Beleg gelöscht, die Datei aber noch da.
           </p>
@@ -175,7 +175,7 @@ export default async function Archiv({
                   <td style={zelle}>{p.geloeschtVon ?? '—'}</td>
                   <td style={zelle}>
                     {p.dateiOffen ? (
-                      <span style={{ color: '#8A6D1F' }}>liegt noch</span>
+                      <span style={{ color: 'var(--farbe-orange)' }}>liegt noch</span>
                     ) : (
                       <span style={{ color: 'var(--farbe-gruen)' }}>abgeräumt</span>
                     )}

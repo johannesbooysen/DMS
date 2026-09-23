@@ -200,7 +200,7 @@ export default async function Stempeldesigner({
                       background: 'var(--farbe-akzent)',
                       border: 0,
                       borderRadius: '0.2rem',
-                      color: '#fff',
+                      color: 'var(--farbe-marke-text)',
                       cursor: 'pointer',
                       padding: '0.4rem 0.9rem',
                     }}

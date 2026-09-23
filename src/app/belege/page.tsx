@@ -63,7 +63,7 @@ const STAND: Record<string, string> = {
 
 function Marke({ name, farbe }: { name: string; farbe: string | null }) {
   return (
-    <span className="marke" style={{ background: farbe ?? '#888' }}>
+    <span className="marke" style={{ background: farbe ?? 'var(--farbe-text-leise)' }}>
       {name}
     </span>
   )

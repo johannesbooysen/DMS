@@ -57,8 +57,8 @@ export default async function Einsichtsverwaltung({
       {neu !== undefined && (
         <section
           style={{
-            background: '#EEF3EE',
-            border: '1px solid #2F6F4E',
+            background: 'var(--farbe-gruen-hell)',
+            border: '1px solid var(--farbe-gruen)',
             borderRadius: '0.25rem',
             margin: '1rem 0',
             padding: '0.9rem',
@@ -71,7 +71,7 @@ export default async function Einsichtsverwaltung({
           </p>
           <code
             style={{
-              background: '#fff',
+              background: 'var(--farbe-flaeche)',
               border: '1px solid var(--farbe-linie-stark)',
               display: 'block',
               overflowWrap: 'anywhere',

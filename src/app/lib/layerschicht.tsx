@@ -138,7 +138,7 @@ export function Layerschicht({
             style={{
               ...prozent(l),
               background: FARBE[l.typ] ?? 'transparent',
-              border: l.typ === 'notiz' ? '1px dashed #3B4A80' : 'none',
+              border: l.typ === 'notiz' ? '1px dashed var(--farbe-akzent)' : 'none',
               position: 'absolute',
             }}
           />
@@ -169,8 +169,8 @@ export function Notizliste({
   return (
     <ul style={{ fontSize: '0.85rem', listStyle: 'none', margin: '0.4rem 0 0', paddingLeft: 0 }}>
       {eigene.map((n) => (
-        <li key={n.id} style={{ color: '#444', marginBottom: '0.2rem' }}>
-          <span style={{ color: '#666' }}>
+        <li key={n.id} style={{ color: 'var(--farbe-text)', marginBottom: '0.2rem' }}>
+          <span style={{ color: 'var(--farbe-text-leise)' }}>
             {BEZEICHNUNG[n.typ] ?? n.typ} · {n.erstelltVon ?? 'unbekannt'}
             {n.typ !== 'schwaerzung' && n.sichtbarkeit !== 'intern' && ' · geht nach draußen'}
           </span>
@@ -183,7 +183,7 @@ export function Notizliste({
               style={{
                 background: 'none',
                 border: 0,
-                color: '#3B4A80',
+                color: 'var(--farbe-akzent)',
                 cursor: 'pointer',
                 fontSize: '0.8rem',
                 padding: 0,
@@ -278,7 +278,7 @@ export function Layerformular({
           Anlegen
         </button>
       </form>
-      <p style={{ color: '#666', fontSize: '0.78rem', margin: '0.4rem 0 0' }}>
+      <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem', margin: '0.4rem 0 0' }}>
         Angaben in PDF-Punkten, Ursprung oben links. Eine A4-Seite ist 595 × 842.
         Eine Schwärzung ist immer auch nach außen sichtbar — und sperrt dort den
         PDF-Download, weil ein schwarzes Rechteck im PDF den Text nur verdeckt,

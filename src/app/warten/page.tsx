@@ -86,7 +86,7 @@ export default async function Wartende({
                     {z.erwarteterBetrag !== null && ` · ${euro.format(z.erwarteterBetrag)}`}
                   </div>
                 </td>
-                <td style={{ ...zelle, color: z.ueberfaellig ? '#B3271E' : '#333' }}>
+                <td style={{ ...zelle, color: z.ueberfaellig ? 'var(--farbe-rot)' : 'var(--farbe-text)' }}>
                   {datum.format(new Date(z.wiedervorlageAm))}
                   {z.ueberfaellig && (
                     <div style={{ fontSize: '0.78rem' }}>

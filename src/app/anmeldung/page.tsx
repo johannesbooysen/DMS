@@ -57,8 +57,8 @@ export default async function Anmeldeseite({
         <p
           role="alert"
           style={{
-            background: grund === 'abgemeldet' ? '#EEF3EE' : '#F6DCD9',
-            color: grund === 'abgemeldet' ? '#2F6F4E' : '#6B1D15',
+            background: grund === 'abgemeldet' ? 'var(--farbe-gruen-hell)' : 'var(--farbe-rot-hell)',
+            color: grund === 'abgemeldet' ? 'var(--farbe-gruen)' : 'var(--farbe-rot-text)',
             padding: '0.75rem',
           }}
         >
@@ -66,7 +66,7 @@ export default async function Anmeldeseite({
         </p>
       )}
 
-      <p style={{ color: '#555' }}>
+      <p style={{ color: 'var(--farbe-text-leise)' }}>
         Die Anmeldung läuft über Ihr Geschäftskonto. Das DMS kennt kein eigenes
         Passwort.
       </p>
@@ -76,10 +76,10 @@ export default async function Anmeldeseite({
         <button
           type="submit"
           style={{
-            background: '#3B4A80',
+            background: 'var(--farbe-akzent)',
             border: 0,
             borderRadius: '0.25rem',
-            color: '#fff',
+            color: 'var(--farbe-marke-text)',
             cursor: 'pointer',
             fontSize: '1rem',
             padding: '0.7rem 1.2rem',

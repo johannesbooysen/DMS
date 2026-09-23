@@ -79,9 +79,9 @@ const BELEGART = [
 ]
 
 const IBAN_MARKE: Record<string, string> = {
-  verifiziert: '#2F6F4E',
-  neu: '#8A6D1F',
-  gesperrt: '#B3271E',
+  verifiziert: 'var(--farbe-gruen)',
+  neu: 'var(--farbe-orange)',
+  gesperrt: 'var(--farbe-rot)',
 }
 
 function Abschnitt({ titel, hinweis, children }: {
@@ -230,7 +230,7 @@ export default async function Stammdaten({
                   {k.status !== 'aktiv' && (
                     <>
                       {' '}
-                      <Marke text={k.status} farbe="#B3271E" />
+                      <Marke text={k.status} farbe="var(--farbe-rot)" />
                     </>
                   )}
                 </td>
@@ -240,7 +240,7 @@ export default async function Stammdaten({
                     {k.banken.map((b) => (
                       <div key={b.id} style={{ alignItems: 'baseline', display: 'flex', gap: '0.6rem' }}>
                         <code style={{ fontSize: '0.82rem' }}>{b.iban}</code>
-                        <Marke text={b.status} farbe={IBAN_MARKE[b.status] ?? '#555'} />
+                        <Marke text={b.status} farbe={IBAN_MARKE[b.status] ?? 'var(--farbe-text-leise)'} />
                         {b.bestaetigtVon !== null && (
                           <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.75rem' }}>
                             {b.bestaetigtVon}, {b.bestaetigtAm}
@@ -251,7 +251,7 @@ export default async function Stammdaten({
                             aktion={bankverbindungEntscheidenAktion}
                             zurueck={HIER}
                             felder={{ id: b.id, entscheidung: 'verifizieren' }}
-                            farbe="#2F6F4E"
+                            farbe="var(--farbe-gruen)"
                           >
                             bestätigen
                           </Handlung>
@@ -261,7 +261,7 @@ export default async function Stammdaten({
                             aktion={bankverbindungEntscheidenAktion}
                             zurueck={HIER}
                             felder={{ id: b.id, entscheidung: 'sperren' }}
-                            farbe="#B3271E"
+                            farbe="var(--farbe-rot)"
                           >
                             sperren
                           </Handlung>

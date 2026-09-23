@@ -114,7 +114,7 @@ export default async function BenutzerUndRollen({
                   {!b.aktiv && (
                     <>
                       {' '}
-                      <Marke text="gesperrt" farbe="#B3271E" />
+                      <Marke text="gesperrt" farbe="var(--farbe-rot)" />
                     </>
                   )}
                 </td>
@@ -139,7 +139,7 @@ export default async function BenutzerUndRollen({
                       aktion={benutzerUmschaltenAktion}
                       zurueck={HIER}
                       felder={{ id: b.id }}
-                      farbe={b.aktiv ? '#B3271E' : undefined}
+                      farbe={b.aktiv ? 'var(--farbe-rot)' : undefined}
                     >
                       {b.aktiv ? 'sperren' : 'entsperren'}
                     </Handlung>
@@ -163,7 +163,7 @@ export default async function BenutzerUndRollen({
       </section>
 
       {hinweis !== undefined && (
-        <p role="status" style={{ color: '#1B5E20' }}>
+        <p role="status" style={{ color: 'var(--farbe-gruen)' }}>
           {hinweis}
         </p>
       )}
@@ -227,14 +227,14 @@ export default async function BenutzerUndRollen({
                       <Marke
                         key={a}
                         text={RECHT[a] ?? a}
-                        farbe={WEITREICHEND.has(a) ? '#B3271E' : '#3B4A80'}
+                        farbe={WEITREICHEND.has(a) ? 'var(--farbe-rot)' : 'var(--farbe-akzent)'}
                       />
                     ))}
                   </span>
                 </td>
                 <td style={zelle}>
                   {r.traeger === 0 ? (
-                    <span style={{ color: '#8A6D1F' }}>niemand</span>
+                    <span style={{ color: 'var(--farbe-orange)' }}>niemand</span>
                   ) : (
                     r.traeger
                   )}

@@ -217,7 +217,7 @@ export function Marke({ text, farbe }: { text: string; farbe: string }) {
   return (
     <span
       style={{
-        background: `${farbe}22`,
+        background: `color-mix(in srgb, ${farbe} 14%, transparent)`,
         borderRadius: '2px',
         color: farbe,
         fontSize: '0.72rem',

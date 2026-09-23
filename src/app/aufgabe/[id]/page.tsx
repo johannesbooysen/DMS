@@ -170,6 +170,7 @@ export default async function Aufgabenansicht({
                       background: s.farbe ?? '#333',
                       border: 0,
                       borderRadius: '0.25rem',
+                      // Stempelfarbe aus den Stammdaten: dunkel, Schrift fest weiss.
                       color: '#fff',
                       cursor: 'pointer',
                       fontSize: '0.95rem',

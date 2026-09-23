@@ -23,9 +23,9 @@ export const dynamic = 'force-dynamic'
 const zelle = { borderBottom: '1px solid var(--farbe-linie)', padding: '0.45rem 0.5rem', verticalAlign: 'top' } as const
 
 const FARBE: Record<string, string> = {
-  offen: '#B5741A',
-  gesendet: '#2F6F4E',
-  fehlgeschlagen: '#B3271E',
+  offen: 'var(--farbe-orange)',
+  gesendet: 'var(--farbe-gruen)',
+  fehlgeschlagen: 'var(--farbe-rot)',
 }
 
 export default async function Postausgang({
@@ -53,7 +53,7 @@ export default async function Postausgang({
       )}
 
       {!versandEingerichtet() && (
-        <p style={{ background: '#FDF3E3', color: '#6B4A15', padding: '0.75rem' }}>
+        <p style={{ background: 'var(--farbe-orange-hell)', color: 'var(--farbe-orange-text)', padding: '0.75rem' }}>
           <strong>Kein Mailversand eingerichtet.</strong> Was hier steht, bleibt
           liegen, bis <code>SMTP_URL</code> und <code>DMS_ABSENDER</code> gesetzt
           sind. Nichts geht verloren — es geht nur nichts hinaus.
@@ -89,7 +89,7 @@ export default async function Postausgang({
                   )}
                 </td>
                 <td style={zelle}>{e.anlass}</td>
-                <td style={{ ...zelle, color: FARBE[e.status] ?? '#333' }}>
+                <td style={{ ...zelle, color: FARBE[e.status] ?? 'var(--farbe-text)' }}>
                   {e.status}
                   {e.versuche > 0 && (
                     <span style={{ color: 'var(--farbe-text-leise)', fontSize: '0.78rem' }}>
