@@ -121,6 +121,26 @@ export function Stufenformular({
         </label>
       </div>
 
+      {/* Eskalation: Spanne ueber der Frist und die Person, die die Aufgabe
+          dann bekommt -- beides oder nichts. Rechte wandern nicht mit. */}
+      <div className="filterzeile" style={{ marginBottom: '0.5rem' }}>
+        <label className="feld">
+          Eskalation nach (Stunden über der Frist)
+          <input name="eskalationNachStunden" type="number" step="1" min="1" defaultValue={stufe?.eskalationNachStunden ?? ''} style={{ width: '6rem' }} />
+        </label>
+        <label className="feld">
+          Eskalation an
+          <select name="eskalationAn" defaultValue={stufe?.eskalationAn ?? ''}>
+            <option value="">— niemand —</option>
+            {auswahl.benutzer.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       {/* Nur fuer die Art "Systemaktion" gelesen; steht trotzdem immer da,
           weil es kein Skript gibt, das Felder ein- und ausblendet. */}
       <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: 'var(--radius)', margin: '0 0 0.5rem', padding: '0.5rem 0.75rem' }}>

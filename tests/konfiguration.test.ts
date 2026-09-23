@@ -345,6 +345,8 @@ describe('Stufen als Liste', () => {
     slaStunden: 48,
     stempeltypIds: [],
     systemaktion: null,
+    eskalationNachStunden: null,
+    eskalationAn: null,
     ...teil,
   })
 
@@ -423,6 +425,21 @@ describe('Stufen als Liste', () => {
       stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'systemaktion', systemaktion: { vorlage: 'technikmeldung', empfaenger: 'adresse', adresse: 'keine adresse' } })),
     ).rejects.toThrow(/E-Mail-Adresse/)
     await expect(stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'systemaktion', systemaktion: null }))).rejects.toThrow(/Vorlage und Empfänger/)
+  })
+
+  it('haelt die Eskalation an der Stufe -- beides oder nichts, die Person unter der RLS', async () => {
+    const { entwurf, rolle } = await vorbereiten()
+    const auswahl = await auswahlLaden(EVA)
+    const eva = auswahl.benutzer.find((b) => b.name === 'Eva Ebert')!.id
+    const stufeId = await stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, eskalationNachStunden: 24, eskalationAn: eva }))
+    const stufe = alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!).find((b) => b.stufe?.id === stufeId)!.stufe!
+    expect(stufe.eskalationNachStunden).toBe(24)
+    expect(stufe.eskalationAn).toBe(eva)
+
+    await expect(stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, eskalationNachStunden: 24 }))).rejects.toThrow(/beides/)
+    await expect(
+      stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, eskalationNachStunden: 24, eskalationAn: '20000000-0000-0000-0000-000000000004' })),
+    ).rejects.toThrow(/gibt es nicht/)
   })
 
   it('weist ab, was nicht zusammenpasst -- und sagt, was fehlt', async () => {

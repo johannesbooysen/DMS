@@ -931,8 +931,10 @@ steht das mit Grund im Fehlerkorb, und der Beleg läuft weiter. Eine Rechnung,
 die wegen einer fehlenden Adresse nie zur sachlichen Prüfung käme, wäre der
 schlechtere Fehler.
 
-> Noch nicht da: Die Fristüberschreitung führt noch nicht selbsttätig ins
-> Klärungspostfach; die Liste zeigt sie, den Eintrag setzt ein Mensch.
+Die Fristüberschreitung führt nicht in die Klärung, sondern zur
+**Eskalation** (siehe *Eskalation: die Aufgabe wandert, die Rolle bleibt*):
+Klärung ist eine Entscheidung mit Grund und Wiedervorlage, kein Zustand, in
+den ein Zeitablauf jemanden versetzt.
 
 ---
 
@@ -2268,6 +2270,19 @@ Rauschen, und Rauschen macht die eine Zahl unsichtbar, auf die es ankommt.
 
 Dieselbe Form neben **Fehlerkorb**, immer rot: Was dort liegt, ist
 liegengeblieben, und dafür gibt es keine Frist, die noch laufen könnte.
+
+### Eskalation: die Aufgabe wandert, die Rolle bleibt
+
+An einer Stufe lässt sich hinterlegen, nach wie vielen Stunden **über der
+Frist** eine offene Aufgabe an welche Person geht (*Abläufe*, Zeile der
+Stufe: *Eskalation nach*, *Eskalation an*). Der Worker sieht alle zehn
+Minuten nach: Die Aufgabe erscheint dann persönlich bei dieser Person, bleibt
+aber auch im Pool der Gruppe oder Rolle stehen. Genau einmal, nie im Kreis,
+und mit Protokoll (Zuweisungsereignis mit Grund *Eskalation*).
+
+Rechte wandern nicht mit: Wer die Aufgabe bekommt, darf nur, was seine Rollen
+hergeben. Eine Geschäftsleitung, die über die Eskalation eine Kontierung
+bekommt, sieht sie — kontieren muss jemand mit dem Recht dafür.
 
 ### Die tägliche Sammelmail
 

@@ -23,6 +23,8 @@ const SCHUTZ: Array<[string, string]> = [
   ['layer_position_ereignis', 'layer_position_ereignis_unveraenderlich'],
   // Das Protokoll der Bestandsuebernahme haengt per Kaskade am Beleg.
   ['uebernahme_eintrag', 'uebernahme_eintrag_unveraenderlich'],
+  // Die Zuweisungsereignisse (Eskalation) ebenso.
+  ['zuweisung_ereignis', 'zuweisung_ereignis_unveraenderlich'],
 ]
 
 export async function belegEntfernen(dokumentId: string): Promise<void> {

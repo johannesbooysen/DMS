@@ -113,6 +113,9 @@ function Baustein({
               stufe.slaStunden !== null && `${stufe.slaStunden} h`,
               stufe.pflicht ? 'Pflicht' : 'freiwillig',
               stufe.vierAugenPflicht && 'Vier Augen',
+              stufe.eskalationNachStunden !== null &&
+                stufe.eskalationAn !== null &&
+                `Eskalation nach ${stufe.eskalationNachStunden} h an ${namen.get(stufe.eskalationAn) ?? 'eine Person'}`,
               stufe.systemaktion !== null &&
                 `Vorlage „${stufe.systemaktion.vorlage}“ an ${
                   stufe.systemaktion.empfaenger === 'adresse' ? stufe.systemaktion.adresse : 'Objektverantwortliche'

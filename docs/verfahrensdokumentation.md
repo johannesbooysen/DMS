@@ -864,6 +864,14 @@ belegt.
 - hat keine Stufe ohne Lauf
 - erklaert einem fremden Mandanten nichts
 
+### [`tests/eskalation.test.ts`](../tests/eskalation.test.ts)
+
+- laesst eine Aufgabe in der Frist, wo sie ist
+- laesst sie auch kurz nach der Frist -- die Spanne ist noch nicht um
+- gibt sie nach der Spanne der hinterlegten Person -- mit Protokoll
+- eskaliert genau einmal, nie im Kreis
+- sieht Eva die Aufgabe danach persoenlich
+
 ### [`tests/export.test.ts`](../tests/export.test.ts)
 
 - gibt die Datei unveraendert heraus
@@ -1056,6 +1064,7 @@ belegt.
 - aendert eine Stufe und ersetzt die Stempel als Ganzes
 - entfernt eine Stufe samt Blatt
 - legt eine Systemaktion an -- Zustaendigkeit System, Vorlage geprueft
+- haelt die Eskalation an der Stufe -- beides oder nichts, die Person unter der RLS
 - weist ab, was nicht zusammenpasst -- und sagt, was fehlt
 - nimmt keinen Stempel und keine Rolle aus einem anderen Haus
 - verlangt das Recht und einen Entwurf

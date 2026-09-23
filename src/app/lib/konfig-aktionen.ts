@@ -130,6 +130,8 @@ function stufeneingabe(formular: FormData): Stufeneingabe {
             adresse: String(formular.get('saAdresse') ?? '') || null,
           }
         : null,
+    eskalationNachStunden: zahl('eskalationNachStunden'),
+    eskalationAn: String(formular.get('eskalationAn') ?? '') || null,
   }
 }
 

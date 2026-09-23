@@ -30,6 +30,7 @@ import { texterkennung } from '../ocr'
 import { aufbereiten } from './aufbereitung'
 import { stapelAufbereiten } from './stapelaufbereitung'
 import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
+import { eskalationDurchgang } from '../workflow/eskalation'
 
 const ABLAGE_WURZEL = process.env.DMS_ABLAGE ?? '.ablage'
 
@@ -84,6 +85,8 @@ const MELDETAKT_MS = 3_600_000
  * selbst (`takt_sekunden`). Hier wird nur nachgesehen, ob eine faellig ist.
  */
 const EINGANGSTAKT_MS = 60_000
+/** Eskalation: alle zehn Minuten -- die Spanne ist in Stunden, feiner braechte nichts. */
+const ESKALATIONSTAKT_MS = 600_000
 
 /**
  * Zieht aus dem pg-boss-`output` eine lesbare Zeile.
@@ -294,6 +297,21 @@ async function start(): Promise<void> {
       })
     }, MELDETAKT_MS).unref()
   }
+
+  /*
+   * Eskalation (Konzept 17): Ueberfaellige Aufgaben wandern an die an der
+   * Stufe hinterlegte Person. Ein Durchgang, keine Warteschlange -- die
+   * Aufgabe selbst ist die Warteschlange, ihre Faelligkeit der Zeitpunkt.
+   */
+  setInterval(() => {
+    void eskalationDurchgang()
+      .then(({ eskaliert }) => {
+        if (eskaliert > 0) console.log('[worker] Eskalation:', eskaliert, 'Aufgaben umgelenkt')
+      })
+      .catch((fehler: unknown) => {
+        console.error('[worker] Eskalation gescheitert:', fehler instanceof Error ? fehler.message : fehler)
+      })
+  }, ESKALATIONSTAKT_MS).unref()
 
   /*
    * Das Lebenszeichen (ADR 0007).

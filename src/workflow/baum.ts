@@ -28,6 +28,10 @@ export interface Stufe {
   vierAugenPflicht: boolean
   /** Nur bei stufentyp = systemaktion (Migration 20260926100000). */
   systemaktion: Systemaktion | null
+  /** Nach so vielen Stunden ueber der Frist wandert die Aufgabe (Migration 20260926130000). */
+  eskalationNachStunden: number | null
+  /** ... an diese Person. */
+  eskalationAn: string | null
 }
 
 export interface Knoten {
@@ -57,6 +61,8 @@ interface Zeile {
   sla_stunden: number | null
   vier_augen_pflicht: boolean | null
   systemaktion: unknown
+  eskalation_nach_stunden: number | null
+  eskalation_an: string | null
 }
 
 export async function baumLaden(c: PoolClient, definitionId: string): Promise<Knoten | null> {
@@ -64,7 +70,7 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
     `select k.id, k.eltern_id, k.reihenfolge, k.knotentyp, k.bedingung, k.stufe_id,
             s.bezeichnung, s.stufentyp, s.pflicht, s.betrag_von, s.betrag_bis,
             s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden, s.vier_augen_pflicht,
-            s.systemaktion
+            s.systemaktion, s.eskalation_nach_stunden, s.eskalation_an
        from prozessknoten k
        left join prozessstufe s on s.id = k.stufe_id
       where k.definition_id = $1
@@ -94,6 +100,8 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
               slaStunden: z.sla_stunden,
               vierAugenPflicht: z.vier_augen_pflicht ?? false,
               systemaktion: systemaktionLesen(z.systemaktion),
+              eskalationNachStunden: z.eskalation_nach_stunden,
+              eskalationAn: z.eskalation_an,
             },
       kinder: [],
       eltern: null,

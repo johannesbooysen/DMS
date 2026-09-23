@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-115 Module, 979 Testfaelle in 56 Dateien,
+116 Module, 985 Testfaelle in 57 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -523,6 +523,13 @@ Funktionen: `app.archiv_35a_schutz`
 Der Kreditor bekommt eine E-Mail-Adresse -- damit die Systemaktion
 
 
+### `supabase/migrations/20260926130000_eskalation.sql`
+
+Eskalation (Konzept 8, 17): Eine Aufgabe, die ueber der Frist liegt,
+
+Funktionen: `app.eskalation_durchgang`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -635,6 +642,7 @@ Der Kreditor bekommt eine E-Mail-Adresse -- damit die Systemaktion
 | [`src/workflow/baum.ts`](../src/workflow/baum.ts) | Der Blockbaum: laden, ablaufen, simulieren |
 | [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
+| [`src/workflow/eskalation.ts`](../src/workflow/eskalation.ts) | Eskalation -- die Aufgabe wandert, die Rolle bleibt (Konzept 8, 17) |
 | [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
 | [`src/workflow/stufen.ts`](../src/workflow/stufen.ts) | Stufen als Liste -- der Normalfall des Baukastens (Konzept 8.8) |
 | [`src/workflow/systemaktion.ts`](../src/workflow/systemaktion.ts) | Systemaktionen -- die Stufe, die niemand stempelt |
@@ -660,6 +668,7 @@ Der Kreditor bekommt eine E-Mail-Adresse -- damit die Systemaktion
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 21 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
 | [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts) | 7 | Gelesene Gruende, Abgeleitete Gruende, Mandantentrennung |
+| [`tests/eskalation.test.ts`](../tests/eskalation.test.ts) | 5 | Eskalation |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
@@ -670,7 +679,7 @@ Der Kreditor bekommt eine E-Mail-Adresse -- damit die Systemaktion
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
-| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 27 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
+| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 28 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 34 | Kontierungsstand, Paragraf 35a, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |
