@@ -19,6 +19,7 @@ import {
   NichtMoeglich,
   stufeVierAugenSetzen,
 } from '@/workflow/konfiguration'
+import { stufeAendern, stufeAnlegen, stufeEntfernen, type Stufeneingabe } from '@/workflow/stufen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 /** Fuehrt eine Aktion aus und leitet mit lesbarem Grund zurueck, wenn sie scheitert. */
@@ -102,4 +103,48 @@ export async function vierAugenAktion(formular: FormData): Promise<void> {
   await versuchen(`/konfiguration/${definitionId}`, async () =>
     stufeVierAugenSetzen(await angemeldeterBenutzer(), definitionId, stufeId, wert),
   )
+}
+
+/** Liest das Stufenformular -- dieselben Felder beim Anlegen und beim Aendern. */
+function stufeneingabe(formular: FormData): Stufeneingabe {
+  const zahl = (name: string): number | null => {
+    const roh = String(formular.get(name) ?? '').trim().replace(',', '.')
+    return roh === '' ? null : Number(roh)
+  }
+  const stempel = formular.getAll('stempeltypId').map((s) => String(s))
+  return {
+    bezeichnung: String(formular.get('bezeichnung') ?? ''),
+    stufentyp: String(formular.get('stufentyp') ?? ''),
+    zustaendigkeitTyp: String(formular.get('zustaendigkeitTyp') ?? ''),
+    zustaendigkeitRef: String(formular.get('zustaendigkeitRef') ?? '') || null,
+    betragVon: zahl('betragVon'),
+    betragBis: zahl('betragBis'),
+    pflicht: formular.get('pflicht') === 'ja',
+    slaStunden: zahl('slaStunden'),
+    stempeltypIds: stempel,
+  }
+}
+
+export async function stufeAnlegenAktion(formular: FormData): Promise<void> {
+  const definitionId = String(formular.get('definitionId') ?? '')
+  const elternId = String(formular.get('elternId') ?? '')
+  await versuchen(`/konfiguration/${definitionId}`, async () => {
+    await stufeAnlegen(await angemeldeterBenutzer(), definitionId, stufeneingabe(formular), elternId === '' ? null : elternId)
+  })
+}
+
+export async function stufeAendernAktion(formular: FormData): Promise<void> {
+  const definitionId = String(formular.get('definitionId') ?? '')
+  const stufeId = String(formular.get('stufeId') ?? '')
+  await versuchen(`/konfiguration/${definitionId}`, async () => {
+    await stufeAendern(await angemeldeterBenutzer(), definitionId, stufeId, stufeneingabe(formular))
+  })
+}
+
+export async function stufeEntfernenAktion(formular: FormData): Promise<void> {
+  const definitionId = String(formular.get('definitionId') ?? '')
+  const stufeId = String(formular.get('stufeId') ?? '')
+  await versuchen(`/konfiguration/${definitionId}`, async () => {
+    await stufeEntfernen(await angemeldeterBenutzer(), definitionId, stufeId)
+  })
 }

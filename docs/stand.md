@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-113 Module, 954 Testfaelle in 56 Dateien,
+114 Module, 960 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -619,6 +619,7 @@ Policies: 2
 | [`src/workflow/bedingung.ts`](../src/workflow/bedingung.ts) | Bedingungen an Verzweigungen des Ablaufs |
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
 | [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
+| [`src/workflow/stufen.ts`](../src/workflow/stufen.ts) | Stufen als Liste -- der Normalfall des Baukastens (Konzept 8.8) |
 | [`src/workflow/vertretung.ts`](../src/workflow/vertretung.ts) | Vertretung anlegen, ansehen, widerrufen |
 | [`src/zahlung/index.ts`](../src/zahlung/index.ts) | Zahlungsübergabe |
 | [`src/zahlung/sperre.ts`](../src/zahlung/sperre.ts) | Die harte Sperre vor der Zahlung |
@@ -651,7 +652,7 @@ Policies: 2
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
-| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 20 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation |
+| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 26 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |

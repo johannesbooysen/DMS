@@ -20,8 +20,15 @@ import {
   knotenEntfernen,
   knotenVerschieben,
   NichtErlaubt,
-
 } from '../src/workflow/konfiguration'
+import {
+  auswahlLaden,
+  stempelJeStufe,
+  stufeAendern,
+  stufeAnlegen,
+  stufeEntfernen,
+  type Stufeneingabe,
+} from '../src/workflow/stufen'
 import { baumFuerAnzeige } from '../src/workflow/konfiguration'
 import { alleBlaetter } from '../src/workflow/baum'
 
@@ -323,5 +330,125 @@ describe('Simulation', () => {
     expect(gross.flatMap((s) => s.stufen.map((st) => st.bezeichnung))).toContain(
       'Freigabe Geschaeftsleitung',
     )
+  })
+})
+
+describe('Stufen als Liste', () => {
+  const STUFE = (teil: Partial<Stufeneingabe> = {}): Stufeneingabe => ({
+    bezeichnung: 'Beiratsfreigabe',
+    stufentyp: 'freigabe',
+    zustaendigkeitTyp: 'rolle',
+    zustaendigkeitRef: null,
+    betragVon: 1000,
+    betragBis: null,
+    pflicht: true,
+    slaStunden: 48,
+    stempeltypIds: [],
+    ...teil,
+  })
+
+  async function vorbereiten() {
+    const entwurf = await entwurfAnlegen(EVA, DEFINITION_AKTIV)
+    const auswahl = await auswahlLaden(EVA)
+    const rolle = auswahl.rollen.find((r) => r.name.match(/Gesch/))?.id ?? auswahl.rollen[0]!.id
+    const freigabe = auswahl.stempeltypen.find((t) => t.entscheidung === 'freigabe')!.id
+    const klaerung = auswahl.stempeltypen.find((t) => t.entscheidung === 'klaerung')!.id
+    return { entwurf, rolle, freigabe, klaerung }
+  }
+
+  it('legt eine Stufe an, haengt sie in den Baum und ordnet die Stempel zu', async () => {
+    const { entwurf, rolle, freigabe, klaerung } = await vorbereiten()
+    const vorher = alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!).length
+
+    const stufeId = await stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, stempeltypIds: [freigabe, klaerung] }))
+
+    const baum = (await baumFuerAnzeige(EVA, entwurf))!
+    const blaetter = alleBlaetter(baum)
+    expect(blaetter).toHaveLength(vorher + 1)
+    const neu = blaetter.at(-1)!.stufe!
+    expect(neu.id).toBe(stufeId)
+    expect(neu.bezeichnung).toBe('Beiratsfreigabe')
+    expect(neu.betragVon).toBe(1000)
+    expect(neu.zustaendigkeitRef).toBe(rolle)
+    expect((await stempelJeStufe(EVA, entwurf)).get(stufeId)?.map((s) => s.id)).toEqual([freigabe, klaerung])
+
+    // Und die Simulation kennt sie: Bei 3.000 EUR steht sie in der Kette, bei 500 nicht.
+    const gross = await fassungSimulieren(EVA, entwurf, { brutto: 3000, belegart: 'rechnung' })
+    expect(gross.flatMap((s) => s.stufen.map((x) => x.bezeichnung))).toContain('Beiratsfreigabe')
+    const klein = await fassungSimulieren(EVA, entwurf, { brutto: 500, belegart: 'rechnung' })
+    expect(klein.flatMap((s) => s.stufen.map((x) => x.bezeichnung))).not.toContain('Beiratsfreigabe')
+  })
+
+  it('aendert eine Stufe und ersetzt die Stempel als Ganzes', async () => {
+    const { entwurf, rolle, freigabe, klaerung } = await vorbereiten()
+    const stufeId = await stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, stempeltypIds: [freigabe, klaerung] }))
+
+    await stufeAendern(EVA, entwurf, stufeId, STUFE({ bezeichnung: 'Beirat', zustaendigkeitRef: rolle, betragVon: 2500, stempeltypIds: [freigabe] }))
+
+    const stufe = alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!).find((b) => b.stufe?.id === stufeId)!.stufe!
+    expect(stufe.bezeichnung).toBe('Beirat')
+    expect(stufe.betragVon).toBe(2500)
+    expect((await stempelJeStufe(EVA, entwurf)).get(stufeId)?.map((s) => s.id)).toEqual([freigabe])
+  })
+
+  it('entfernt eine Stufe samt Blatt', async () => {
+    const { entwurf, rolle } = await vorbereiten()
+    const vorher = alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!).length
+    const stufeId = await stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle }))
+    await stufeEntfernen(EVA, entwurf, stufeId)
+    expect(alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!)).toHaveLength(vorher)
+  })
+
+  it('weist ab, was nicht zusammenpasst -- und sagt, was fehlt', async () => {
+    const { entwurf, rolle } = await vorbereiten()
+    await expect(stufeAnlegen(EVA, entwurf, STUFE({ bezeichnung: '  ', zustaendigkeitRef: rolle }))).rejects.toThrow(/Bezeichnung/)
+    await expect(stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: null }))).rejects.toThrow(/braucht eine Auswahl/)
+    await expect(stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'zauber', zustaendigkeitRef: rolle }))).rejects.toThrow(/Stufentyp/)
+    await expect(
+      stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, betragVon: 1000, betragBis: 500 })),
+    ).rejects.toThrow(/Betrag bis/)
+  })
+
+  it('nimmt keinen Stempel und keine Rolle aus einem anderen Haus', async () => {
+    const { entwurf, rolle } = await vorbereiten()
+    // Doris' Haus: Was dort existiert, findet die Fremdschluesselpruefung --
+    // die Policy nicht. Genau das unterscheidet "gibt es" von "gehoert uns".
+    // Das Haus Sued hat im Seed weder Stempel noch Rollen; beides wird hier
+    // als Eigentuemer angelegt und danach wieder entfernt.
+    const c = await verbindungspool().connect()
+    const SUED = '10000000-0000-0000-0000-000000000002'
+    let fremderStempel = ''
+    let fremdeRolle = ''
+    try {
+      fremderStempel = (
+        await c.query<{ id: string }>(
+          `insert into stempeltyp (mandant_id, name, kurzcode, entscheidung)
+           values ($1, 'Fremdstempel', 'FREMD-TEST', 'freigabe') returning id`,
+          [SUED],
+        )
+      ).rows[0]!.id
+      fremdeRolle = (
+        await c.query<{ id: string }>(
+          `insert into rolle (mandant_id, name, kurzcode) values ($1, 'Fremdrolle', 'FREMD-TEST') returning id`,
+          [SUED],
+        )
+      ).rows[0]!.id
+      await expect(
+        stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle, stempeltypIds: [fremderStempel] })),
+      ).rejects.toThrow(/nicht zu diesem Haus/)
+      await expect(stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: fremdeRolle }))).rejects.toThrow(
+        /gibt es nicht/,
+      )
+    } finally {
+      await c.query('delete from stempeltyp where id = $1', [fremderStempel])
+      await c.query('delete from rolle where id = $1', [fremdeRolle])
+      c.release()
+    }
+  })
+
+  it('verlangt das Recht und einen Entwurf', async () => {
+    const { entwurf, rolle } = await vorbereiten()
+    await expect(stufeAnlegen(BERND, entwurf, STUFE({ zustaendigkeitRef: rolle }))).rejects.toThrow(NichtErlaubt)
+    await expect(stufeAnlegen(EVA, DEFINITION_AKTIV, STUFE({ zustaendigkeitRef: rolle }))).rejects.toThrow(/Entwurf/)
   })
 })

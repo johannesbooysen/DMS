@@ -33,7 +33,7 @@ export interface Definitionszeile {
   laufendeBelege: number
 }
 
-async function rechtPruefen(c: PoolClient): Promise<void> {
+export async function rechtPruefen(c: PoolClient): Promise<void> {
   const { rows } = await c.query<{ darf: boolean }>(
     `select app.darf('prozess_konfigurieren') as darf`,
   )
@@ -208,7 +208,7 @@ export async function entwurfAnlegen(benutzerId: string, vorlageId: string): Pro
   })
 }
 
-async function entwurfPruefen(c: PoolClient, definitionId: string): Promise<void> {
+export async function entwurfPruefen(c: PoolClient, definitionId: string): Promise<void> {
   const { rows } = await c.query<{ status: string; entwurf_von: string | null }>(
     'select status, entwurf_von from prozessdefinition where id = $1',
     [definitionId],

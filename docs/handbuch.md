@@ -2030,6 +2030,28 @@ Weil die Bausteine ineinander rasten, können die typischen Fehler nicht
 entstehen: Es gibt keine Aufspaltung ohne Zusammenführung, keine unerreichbare
 Stufe, keine Endlosschleife.
 
+### Stufen anlegen und ändern
+
+Im Normalfall ist ein Ablauf eine Liste von Stufen, und so wird er auch
+bearbeitet: Jede Stufe ist eine Zeile — Bezeichnung, Art (sachlich,
+rechnerisch, Freigabe, Kontierung, Zahlung …), wer zuständig ist
+(Objektverantwortliche, eine Rolle, eine Gruppe, ein Spezialgebiet), ab
+welchem Betrag sie greift, welche Frist gilt, ob sie Pflicht ist, und
+welche **Stempel** dort gesetzt werden dürfen. *Stufe ändern* klappt die
+Zeile zum Bearbeiten auf; *Stufe hinzufügen* steht unter dem Ablauf.
+
+Was in der Zeile **nicht** steht, ist ein Ziel. Wohin der Beleg nach dem
+Stempel geht, ergibt sich aus der Reihenfolge — hoch und runter verschieben
+die Stufe, und die Simulation rechts zeigt sofort die neue Kette. Das ist
+der Unterschied zum alten System, in dem jeder Stempel mit einem
+Zielmagneten verdrahtet war und eine eingeschobene Stufe dreißig Stempel
+umhängte.
+
+Die Auswahl der Rollen, Gruppen, Spezialgebiete und Stempel ist die des
+eigenen Hauses. Ein Stempel eines anderen Mandanten wird abgewiesen, auch
+wenn jemand seine Kennung kennt — die Prüfung läuft unter der
+Zugriffsregel, nicht nur gegen den Fremdschlüssel.
+
 Rechts stehen **Prüfung** und **Simulation**. Die Prüfung meldet, was die
 Bauart offen lässt — ein leerer Behälter etwa, oder eine Stufe, die nicht
 eingehängt ist. Die Simulation zeigt die Kette für einen gedachten Beleg;

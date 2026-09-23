@@ -1037,6 +1037,12 @@ belegt.
 - laesst das Protokoll nicht nachtraeglich aendern
 - zeigt die Kette fuer einen gedachten Beleg
 - zeigt dieselbe Fassung fuer verschiedene Belege verschieden
+- legt eine Stufe an, haengt sie in den Baum und ordnet die Stempel zu
+- aendert eine Stufe und ersetzt die Stempel als Ganzes
+- entfernt eine Stufe samt Blatt
+- weist ab, was nicht zusammenpasst -- und sagt, was fehlt
+- nimmt keinen Stempel und keine Rolle aus einem anderen Haus
+- verlangt das Recht und einen Entwurf
 
 ### [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts)
 
