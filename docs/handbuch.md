@@ -383,8 +383,10 @@ Der letzte Fall ist der übersehene: Eine Mahnung ohne auffindbare Rechnung ist
 oft der einzige Hinweis darauf, dass ein Beleg nie angekommen ist. Das fällt
 sonst erst auf, wenn die Frist längst abgelaufen ist.
 
-> Noch offen: Dass eine Mahnung **nie separat bezahlt** wird, ist bisher ein
-> Hinweistext und keine Sperre — das Zahlungsmodul gibt es noch nicht.
+> Noch offen: Dass eine Mahnung **nie separat bezahlt** wird, ist ein
+> Hinweistext und keine Sperre. Die Zahlungssperre prüft Freigaben,
+> Pflichtstufen, Summenzwang, harte Befunde, Zahlungsweg und Bankverbindung —
+> die Belegart nicht.
 
 ### Warum die Hinweise im Klartext stehen
 
@@ -447,8 +449,9 @@ Mal wird sein Microsoft-Konto über die E-Mail-Adresse mit dem Benutzer
 verknüpft; danach gilt die Verknüpfung, nicht mehr die Adresse. Ein
 Namenswechsel kostet deshalb keinen Zugang.
 
-> Noch nicht da: eine Benutzerverwaltung in der Oberfläche. Benutzer werden
-> derzeit in der Datenbank angelegt.
+Benutzer werden unter *Benutzer und Rollen* angelegt, gesperrt und mit
+Rollen versehen — siehe [Benutzer anlegen heißt nicht: Zugang
+geben](#benutzer-anlegen-heißt-nicht-zugang-geben).
 
 ---
 
@@ -599,10 +602,12 @@ eine, die gar nicht mehr läuft.
 Ein Fehler steht an der Quelle, nicht im Log: Ein falscher Pfad, ein
 abgelaufenes Passwort. Und er hält die anderen Quellen nicht auf.
 
-> Noch nicht da: die **Maske zum Einrichten** — Quellen werden derzeit in der
-> Datenbank angelegt. Der IMAP-Teil ist außerdem **nicht gegen einen echten
-> Mailserver geprüft**; getestet ist alles danach: was aus einer Nachricht
-> wird, die Merkliste, der Durchgang, die Fehlerbehandlung.
+Eingerichtet wird unter *Eingangsquellen* (Ordner oder Postfach, mit
+Vorbelegung von Objekt, Gruppe und Belegart).
+
+> Noch nicht da: Der IMAP-Teil ist **nicht gegen einen echten Mailserver
+> geprüft**; getestet ist alles danach: was aus einer Nachricht wird, die
+> Merkliste, der Durchgang, die Fehlerbehandlung.
 
 
 
@@ -781,10 +786,13 @@ Geprüft wird über die Kontierung, **nicht** über die Zahlungszeilen. Sonst
 würde der Eigenanteil bei einer Selbstbeteiligung die Prüfung verletzen,
 obwohl die Kontierung stimmt.
 
-> Noch nicht da: ein Vorschlag aus dem Lernspeicher. Die Tabelle
-> `kontierungs_muster` steht, aber es gibt noch keine Rechnungspositionen,
-> aus denen sich ein Positionstext lesen ließe. Ebenso fehlen die Angaben
-> nach § 35a EStG in der Maske — das Schema trägt sie, die Erfassung nicht.
+Der Vorschlag aus dem Lernspeicher steht über der Maske, sobald es für
+Kreditor und Objekt ein Muster gibt — mit Sicherheit (grün oder orange) und
+einem Knopf, der ihn übernimmt und gleich stempelt. Er wird nie still
+angewendet.
+
+> Noch nicht da: die Angaben nach § 35a EStG in der Maske — das Schema trägt
+> sie (`kontierung_35a`), die Erfassung nicht.
 
 ---
 
@@ -838,11 +846,12 @@ ist.
 Die Bankdaten werden **vor** der Wegewahl geprüft: Unvollständige Daten führen
 zur Sperre, nicht zu einer fehlgeschlagenen Übergabe.
 
-> Noch nicht da: der **Mailversand**. Damit ist scan2bank — der Weg aus dem
-> Bestand — derzeit nicht benutzbar; der Bildschirm sagt es vor dem Stempeln.
-> Das ist Absicht: Eine als übergeben vermerkte Zahlung, die nie jemanden
-> erreicht hat, lässt den Beleg aus allen Listen verschwinden, und das Geld
-> fließt nie. Dateiexport und die Übergabe an ein Fremdsystem laufen.
+Der Mailversand läuft über das Ausgangsbuch, sobald `SMTP_URL` und
+`DMS_ABSENDER` gesetzt sind. Ohne sie ist scan2bank — der Weg aus dem
+Bestand — nicht benutzbar; der Bildschirm sagt es vor dem Stempeln. Das ist
+Absicht: Eine als übergeben vermerkte Zahlung, die nie jemanden erreicht hat,
+lässt den Beleg aus allen Listen verschwinden, und das Geld fließt nie.
+Dateiexport und die Übergabe an ein Fremdsystem laufen unabhängig davon.
 
 > Ebenfalls offen: das Feld *Rückmeldung* bleibt leer. Endet die Verantwortung
 > mit der Übergabe, ist es ungenutzt; kommt später ein Kontoauszugsabgleich,
@@ -1472,9 +1481,11 @@ in der Liste der Löschkandidaten mit seinem Fälligkeitsdatum. Eine
 **Löschsperre** hält ihn darüber hinaus — laufendes Verfahren, Prüfung,
 Rechtsstreit; ohne Begründung ist sie nicht setzbar.
 
-> Noch nicht da: das eigentliche Löschen nach Fristablauf. Die Kandidatenliste
-> steht, die Ausführung ist bewusst eine eigene Handlung — eine Funktion, die
-> beides täte, würde irgendwann versehentlich aufgerufen.
+Das Löschen selbst ist eine eigene Handlung je Beleg unter *Archiv*, Abschnitt
+*Fällig zum Löschen* — nie eine Sammelaktion (siehe [Es gibt keinen Knopf
+„alle löschen"](#es-gibt-keinen-knopf-alle-löschen)). Erst entsteht das
+Löschprotokoll ohne Personenbezug, dann verschwindet der Beleg; die Datei im
+Objektspeicher räumt der Worker danach ab.
 
 ### Verwalterwechsel: die Objektakte
 

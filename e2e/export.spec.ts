@@ -72,12 +72,7 @@ test('Doris bekommt keinen Export aus dem fremden Mandanten', async ({ page }) =
     await page.getByRole('link', { name: 'Beleg mit Stempeln' }).getAttribute('href'),
   )
 
-  /*
-   * Ueber das Postfach abmelden: Die Belegansicht traegt keinen Rahmen und
-   * damit weder Navigation noch Abmelden -- man kommt von dort nur mit dem
-   * Zurueck-Knopf des Browsers weg.
-   */
-  await page.goto('/postfach')
+  // Abmelden geht von jeder Seite mit Rahmen -- die Belegansicht hat einen.
   await abmelden(page)
   await anmelden(page, BENUTZER.doris)
 
