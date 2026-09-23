@@ -96,3 +96,24 @@ export async function abmelden(seite: Page): Promise<void> {
   await seite.getByRole('button', { name: 'Abmelden' }).click()
   await expect(seite.getByRole('button', { name: 'Anmelden' })).toBeVisible()
 }
+
+/**
+ * Einen Beleg über die Suche in der **vollen** Belegansicht öffnen.
+ *
+ * Die Suche ist geteilt: Ein Klick auf den Treffer zeigt ihn rechts, mit
+ * Seiten und Stempeln — aber ohne Angaben, Notizen und Ausgabe. Wer die
+ * braucht, geht über „Belegansicht öffnen". Hier steht der Weg einmal, damit
+ * nicht jeder Test ihn nachbaut.
+ */
+export async function belegOeffnen(seite: Page, name: string): Promise<void> {
+  await navigiere(seite, 'Belege')
+  await seite
+    .getByRole('navigation', { name: 'Treffer' })
+    .getByRole('link', { name })
+    .first()
+    .click()
+  const vorschau = seite.getByRole('region', { name: 'Vorschau' })
+  await expect(vorschau.getByRole('heading', { name })).toBeVisible()
+  await vorschau.getByRole('link', { name: 'Belegansicht öffnen' }).click()
+  await expect(seite.getByRole('heading', { level: 1, name })).toBeVisible()
+}

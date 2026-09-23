@@ -652,9 +652,20 @@ Er hätte den Korb geleert und das Problem stehen lassen.
 
 ## Belege finden
 
-Unter *Belege* steht die Übersicht. Sie ist der Weg zu jedem Beleg, der
+Unter *Belege* steht die Suche. Sie ist der Weg zu jedem Beleg, der
 **nicht** gerade als Aufgabe im Postfach liegt — also zu allen abgeschlossenen
 und archivierten.
+
+Die Seite ist geteilt wie der Arbeitsplatz: **links** die Filter und die
+Treffer, **rechts** der gewählte Beleg mit allen Seiten und Stempeln. Ein
+Klick auf einen Treffer zeigt ihn rechts, die Liste bleibt stehen; mit
+**↓** und **↑** (oder j/k) geht es zum nächsten und vorigen Treffer. Ohne
+Wahl ist der erste Treffer offen. *Belegansicht öffnen* über dem Beleg
+führt in die volle Ansicht mit Angaben, Notizen und Ausgabe.
+
+Der gewählte Beleg steht mit in der Adresse (`beleg=`) — ein Verweis auf
+eine Suche mit offenem Beleg lässt sich weitergeben, und wer ihn nicht sehen
+darf, sieht rechts nur den Hinweis, dass es ihn nicht gibt.
 
 **Ohne Filter** zeigt sie das Neueste aus Ihren Objekten. **Sobald ein Filter
 gesetzt ist**, wird gesucht: nach Objekt, Ordnungsgruppe, Belegart, Ampel,
@@ -680,7 +691,8 @@ was Menschen von Suchfeldern erwarten:
 
 Unsinnige Eingaben führen nicht zu einem Fehler, sondern zu keinem Treffer.
 
-Zu jedem Volltexttreffer steht die **Seite** und ein Auszug mit der Fundstelle.
+Zu jedem Volltexttreffer steht die **Seite** und ein Auszug mit der Fundstelle;
+rechts trägt diese Seite die Marke *Treffer*.
 
 > Die Auszeichnung im Auszug wird als Text angezeigt, nicht als Formatierung:
 > Der Auszug stammt aus einem Belegtext, und der ist keine vertrauenswürdige

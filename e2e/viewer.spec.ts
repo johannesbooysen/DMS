@@ -12,7 +12,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { anmelden, BENUTZER, navigiere } from './anmeldung'
+import { anmelden, belegOeffnen, BENUTZER, navigiere } from './anmeldung'
 
 const BELEG = 'Musterreinigung GmbH · RE-2026-0001'
 
@@ -44,8 +44,7 @@ test('Die Seite kommt als Bild, das PDF bleibt liegen', async ({ page }) => {
 
 test('Das PDF kommt erst, wenn jemand es anfordert', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await navigiere(page, 'Belege')
-  await page.getByRole('link', { name: BELEG }).first().click()
+  await belegOeffnen(page, BELEG)
 
   const ziel = await page.getByRole('link', { name: 'Original-PDF öffnen' }).getAttribute('href')
   expect(ziel).not.toBeNull()

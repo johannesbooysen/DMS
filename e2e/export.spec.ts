@@ -9,7 +9,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { abmelden, anmelden, BENUTZER, navigiere } from './anmeldung'
+import { abmelden, anmelden, belegOeffnen, BENUTZER } from './anmeldung'
 
 const BELEG = 'Musterreinigung GmbH · RE-2026-0001'
 
@@ -17,8 +17,7 @@ test.setTimeout(90_000)
 
 test('Die Belegansicht bietet die drei Varianten an', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await navigiere(page, 'Belege')
-  await page.getByRole('link', { name: BELEG }).first().click()
+  await belegOeffnen(page, BELEG)
 
   for (const name of ['Beleg mit Stempeln', 'Belegeinsicht', 'interne Akte']) {
     await expect(page.getByRole('link', { name })).toBeVisible()
@@ -30,8 +29,7 @@ test('Die Belegansicht bietet die drei Varianten an', async ({ page }) => {
 
 test('Hinter jedem Link kommt ein PDF heraus', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await navigiere(page, 'Belege')
-  await page.getByRole('link', { name: BELEG }).first().click()
+  await belegOeffnen(page, BELEG)
 
   for (const name of ['Beleg mit Stempeln', 'Belegeinsicht', 'interne Akte']) {
     const ziel = await page.getByRole('link', { name }).getAttribute('href')
@@ -50,8 +48,7 @@ test('Hinter jedem Link kommt ein PDF heraus', async ({ page }) => {
 
 test('Eine erfundene Variante wird abgewiesen', async ({ page }) => {
   await anmelden(page, BENUTZER.anna)
-  await navigiere(page, 'Belege')
-  await page.getByRole('link', { name: BELEG }).first().click()
+  await belegOeffnen(page, BELEG)
 
   const ziel = await page.getByRole('link', { name: 'Beleg mit Stempeln' }).getAttribute('href')
   const basis = String(ziel).split('?')[0]
@@ -70,8 +67,7 @@ test('Eine erfundene Variante wird abgewiesen', async ({ page }) => {
 test('Doris bekommt keinen Export aus dem fremden Mandanten', async ({ page }) => {
   // Erst als Anna die Adresse holen, dann als Doris versuchen.
   await anmelden(page, BENUTZER.anna)
-  await navigiere(page, 'Belege')
-  await page.getByRole('link', { name: BELEG }).first().click()
+  await belegOeffnen(page, BELEG)
   const ziel = String(
     await page.getByRole('link', { name: 'Beleg mit Stempeln' }).getAttribute('href'),
   )

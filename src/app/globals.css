@@ -967,3 +967,213 @@ kbd {
   padding: 0.1rem 0.35rem;
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------------
+ * Die Belegsuche: Filter und Treffer | Vorschau
+ *
+ * Dieselbe Teilung wie am Arbeitsplatz, nur zwei Spalten: Links wird
+ * gesucht und gewaehlt, rechts steht der Beleg. Die Liste ist schmal, weil
+ * die Zeile alles traegt, was zum Waehlen noetig ist; lesen tut man rechts.
+ * ------------------------------------------------------------------------ */
+
+.belegsuche {
+  display: grid;
+  grid-template-columns: 26rem minmax(0, 1fr);
+  height: calc(100vh - var(--kopf-hoehe));
+}
+
+.belegsuche > * {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.belegsuche-liste {
+  background: var(--farbe-flaeche);
+  border-right: 1px solid var(--farbe-linie);
+  padding: 0.75rem 0 1rem;
+}
+
+.belegsuche-liste > * {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.belegsuche-filter {
+  display: grid;
+  gap: 0.5rem 0.75rem;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0.75rem;
+}
+
+.belegsuche-filter .feld > input,
+.belegsuche-filter .feld > select {
+  width: 100%;
+}
+
+.belegsuche-volltext,
+.belegsuche-zuruecksetzen {
+  grid-column: 1 / 3;
+}
+
+.belegsuche-volltext .suchfeld {
+  margin-top: 0.15rem;
+}
+
+.belegsuche-zuruecksetzen {
+  margin: 0;
+  text-align: right;
+}
+
+.belegsuche-gespeichert {
+  margin-bottom: 0.5rem;
+}
+
+.belegsuche-speichern {
+  margin-bottom: 0.5rem;
+}
+
+.belegsuche-speichern .suchfeld {
+  margin-top: 0.15rem;
+}
+
+.trefferliste-stand {
+  border-top: 1px solid var(--farbe-linie);
+  margin: 0 1rem;
+  padding: 0.6rem 0 0.2rem;
+}
+
+.trefferliste-leer {
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+}
+
+.trefferliste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.belegsuche-liste > nav[aria-label='Treffer'] {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.trefferliste a {
+  border-left: 3px solid transparent;
+  color: var(--farbe-text);
+  display: block;
+  padding: 0.55rem 1rem 0.55rem 0.85rem;
+  text-decoration: none;
+}
+
+.trefferliste a:hover {
+  background: var(--farbe-flaeche-leise);
+}
+
+.trefferliste a[aria-current='page'] {
+  background: var(--farbe-akzent-hell);
+  border-left-color: var(--farbe-akzent);
+}
+
+.trefferliste-titel {
+  align-items: center;
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 500;
+  gap: 0.4rem;
+  line-height: 1.25;
+}
+
+.trefferliste-titel > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trefferliste-zeile {
+  color: var(--farbe-text-leise);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin-top: 0.15rem;
+  padding-left: 1rem;
+}
+
+.trefferliste-marken {
+  display: block;
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+}
+
+.trefferliste-fundstelle {
+  color: var(--farbe-text-leise);
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+}
+
+.trefferliste-hinweis {
+  border-top: 1px solid var(--farbe-linie);
+  color: var(--farbe-text-leise);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.6rem 0 0;
+}
+
+.belegsuche-vorschau {
+  background: #e9ebef;
+  display: flex;
+  flex-direction: column;
+}
+
+.belegsuche-leer {
+  color: var(--farbe-text-leise);
+  padding: 3rem;
+  text-align: center;
+}
+
+.vorschau-kopf {
+  align-items: center;
+  background: var(--farbe-flaeche);
+  border-bottom: 1px solid var(--farbe-linie);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+}
+
+.vorschau-kopf h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.vorschau-kopf p {
+  margin: 0.15rem 0 0;
+}
+
+.vorschau-kopf a.knopf-primaer {
+  border: 1px solid var(--farbe-akzent);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.8rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .belegsuche {
+    grid-template-columns: 20rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .belegsuche {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .belegsuche-vorschau {
+    min-height: 70vh;
+  }
+}
