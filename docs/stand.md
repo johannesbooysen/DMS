@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-114 Module, 969 Testfaelle in 56 Dateien,
+115 Module, 973 Testfaelle in 56 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -506,6 +506,11 @@ Funktionen: `app.schutz_pruefen`
 
 Policies: 2
 
+### `supabase/migrations/20260926100000_systemaktion.sql`
+
+Systemaktionen (Konzept 8.4, 10, 11): eine Stufe, die niemand stempelt
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -620,6 +625,7 @@ Policies: 2
 | [`src/workflow/engine.ts`](../src/workflow/engine.ts) | Workflow-Engine |
 | [`src/workflow/konfiguration.ts`](../src/workflow/konfiguration.ts) | Konfiguration der Abläufe — der Baukasten |
 | [`src/workflow/stufen.ts`](../src/workflow/stufen.ts) | Stufen als Liste -- der Normalfall des Baukastens (Konzept 8.8) |
+| [`src/workflow/systemaktion.ts`](../src/workflow/systemaktion.ts) | Systemaktionen -- die Stufe, die niemand stempelt |
 | [`src/workflow/vertretung.ts`](../src/workflow/vertretung.ts) | Vertretung anlegen, ansehen, widerrufen |
 | [`src/zahlung/index.ts`](../src/zahlung/index.ts) | Zahlungsübergabe |
 | [`src/zahlung/sperre.ts`](../src/zahlung/sperre.ts) | Die harte Sperre vor der Zahlung |
@@ -640,7 +646,7 @@ Policies: 2
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
-| [`tests/engine.test.ts`](../tests/engine.test.ts) | 17 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
+| [`tests/engine.test.ts`](../tests/engine.test.ts) | 20 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
 | [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts) | 7 | Gelesene Gruende, Abgeleitete Gruende, Mandantentrennung |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
@@ -652,7 +658,7 @@ Policies: 2
 | [`tests/ingest.test.ts`](../tests/ingest.test.ts) | 8 | Aufnahme, Dublettenpruefung |
 | [`tests/kategorie.test.ts`](../tests/kategorie.test.ts) | 17 | Standard am Kreditor, Gelerntes Kontierungsmuster, Schluesselworte, Ohne jeden Anhaltspunkt, Mandantentrennung, Aus der Kategorie faellt das Spezialgebiet, Recht an der Ablaufsteuerung |
 | [`tests/kette.test.ts`](../tests/kette.test.ts) | 4 | Vom Eingang bis zur ersten Aufgabe |
-| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 26 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
+| [`tests/konfiguration.test.ts`](../tests/konfiguration.test.ts) | 27 | Recht am Baukasten, Entwurf, Bausteine bearbeiten, Aktivieren, Simulation, Stufen als Liste |
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 30 | Kontierungsstand, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |
@@ -704,5 +710,5 @@ Policies: 2
 | Fundstelle |
 |---|
 | [`src/worker/aufbereitung.ts:385`](../src/worker/aufbereitung.ts) |
-| [`src/workflow/engine.ts:92`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:194`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:93`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:195`](../src/workflow/engine.ts) |

@@ -344,6 +344,7 @@ describe('Stufen als Liste', () => {
     pflicht: true,
     slaStunden: 48,
     stempeltypIds: [],
+    systemaktion: null,
     ...teil,
   })
 
@@ -397,6 +398,31 @@ describe('Stufen als Liste', () => {
     const stufeId = await stufeAnlegen(EVA, entwurf, STUFE({ zustaendigkeitRef: rolle }))
     await stufeEntfernen(EVA, entwurf, stufeId)
     expect(alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!)).toHaveLength(vorher)
+  })
+
+  it('legt eine Systemaktion an -- Zustaendigkeit System, Vorlage geprueft', async () => {
+    const { entwurf } = await vorbereiten()
+    const stufeId = await stufeAnlegen(
+      EVA,
+      entwurf,
+      STUFE({
+        bezeichnung: 'Meldung an die Technik',
+        stufentyp: 'systemaktion',
+        zustaendigkeitTyp: 'rolle',
+        systemaktion: { vorlage: 'technikmeldung', empfaenger: 'adresse', adresse: 'technik@example.invalid' },
+      }),
+    )
+    const stufe = alleBlaetter((await baumFuerAnzeige(EVA, entwurf))!).find((b) => b.stufe?.id === stufeId)!.stufe!
+    expect(stufe.zustaendigkeitTyp).toBe('system')
+    expect(stufe.systemaktion).toEqual({ vorlage: 'technikmeldung', empfaenger: 'adresse', adresse: 'technik@example.invalid' })
+
+    await expect(
+      stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'systemaktion', systemaktion: { vorlage: 'gibt-es-nicht', empfaenger: 'adresse', adresse: 'a@b.de' } })),
+    ).rejects.toThrow(/Vorlage gibt es nicht/)
+    await expect(
+      stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'systemaktion', systemaktion: { vorlage: 'technikmeldung', empfaenger: 'adresse', adresse: 'keine adresse' } })),
+    ).rejects.toThrow(/E-Mail-Adresse/)
+    await expect(stufeAnlegen(EVA, entwurf, STUFE({ stufentyp: 'systemaktion', systemaktion: null }))).rejects.toThrow(/Vorlage und Empfänger/)
   })
 
   it('weist ab, was nicht zusammenpasst -- und sagt, was fehlt', async () => {

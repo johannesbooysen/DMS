@@ -113,6 +113,10 @@ function Baustein({
               stufe.slaStunden !== null && `${stufe.slaStunden} h`,
               stufe.pflicht ? 'Pflicht' : 'freiwillig',
               stufe.vierAugenPflicht && 'Vier Augen',
+              stufe.systemaktion !== null &&
+                `Vorlage „${stufe.systemaktion.vorlage}“ an ${
+                  stufe.systemaktion.empfaenger === 'adresse' ? stufe.systemaktion.adresse : 'Objektverantwortliche'
+                }`,
               eigeneStempel.length === 0 ? 'kein Stempel' : `Stempel: ${eigeneStempel.map((s) => s.name).join(', ')}`,
             ]
               .filter(Boolean)

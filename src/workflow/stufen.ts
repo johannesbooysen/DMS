@@ -14,6 +14,7 @@
 import type { PoolClient } from 'pg'
 import { alsBenutzer } from '@/db'
 import { entwurfPruefen, NichtMoeglich, rechtPruefen } from './konfiguration'
+import { systemaktionPruefen, SystemaktionUngueltig, type Systemaktion } from './systemaktion'
 
 export const STUFENTYPEN = [
   'zuordnung',
@@ -68,6 +69,8 @@ export interface Stufeneingabe {
   pflicht: boolean
   slaStunden: number | null
   stempeltypIds: string[]
+  /** Nur bei stufentyp = systemaktion: die Eingabe aus dem Formular. */
+  systemaktion: { vorlage: string; empfaenger: string; adresse: string | null } | null
 }
 
 export interface Auswahl {
@@ -75,6 +78,8 @@ export interface Auswahl {
   gruppen: Array<{ id: string; name: string }>
   spezialgebiete: Array<{ id: string; name: string }>
   stempeltypen: Array<{ id: string; name: string; entscheidung: string }>
+  /** Vorlagen des Postausgangs, fuer Systemaktionen -- id ist der Schluessel. */
+  vorlagen: Array<{ id: string; name: string }>
 }
 
 /** Die Listen fuer das Stufenformular -- alles, was der Mandant hat. */
@@ -90,6 +95,7 @@ export async function auswahlLaden(benutzerId: string): Promise<Auswahl> {
           'select id, name, entscheidung from stempeltyp where aktiv order by entscheidung, name',
         )
       ).rows,
+      vorlagen: await liste('select schluessel as id, name from vorlage where aktiv order by name'),
     }
   })
 }
@@ -110,7 +116,9 @@ const REF_TABELLE: Partial<Record<Zustaendigkeit, string>> = {
  * einem anderen Mandanten faende die Fremdschluesselpruefung -- die Policy
  * findet sie nicht, und dann ist sie hier ungueltig.
  */
-async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<Stufeneingabe> {
+type GepruefteStufe = Omit<Stufeneingabe, 'systemaktion'> & { systemaktion: Systemaktion | null }
+
+async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<GepruefteStufe> {
   const bezeichnung = e.bezeichnung.trim()
   if (bezeichnung === '' || bezeichnung.length > 80) {
     throw new NichtMoeglich('Eine Stufe braucht eine Bezeichnung (bis 80 Zeichen).')
@@ -121,7 +129,27 @@ async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<St
   if (!(ZUSTAENDIGKEITEN as readonly string[]).includes(e.zustaendigkeitTyp)) {
     throw new NichtMoeglich(`Unbekannte Zuständigkeit: ${e.zustaendigkeitTyp}`)
   }
-  const typ = e.zustaendigkeitTyp as Zustaendigkeit
+  /*
+   * Eine Systemaktion hat keinen Menschen als Zustaendigen und braucht ihre
+   * Aktion; alles andere hat keine. Die Vorlage wird unter der RLS
+   * nachgeschlagen -- ein Schluessel aus einem fremden Haus ist hier keiner.
+   */
+  let systemaktion: Systemaktion | null = null
+  if (e.stufentyp === 'systemaktion') {
+    if (e.systemaktion === null) throw new NichtMoeglich('Eine Systemaktion braucht Vorlage und Empfänger.')
+    try {
+      systemaktion = systemaktionPruefen(e.systemaktion)
+    } catch (fehler) {
+      if (fehler instanceof SystemaktionUngueltig) throw new NichtMoeglich(fehler.message)
+      throw fehler
+    }
+    const { rows } = await c.query<{ n: string }>(
+      'select count(*) as n from vorlage where schluessel = $1 and aktiv',
+      [systemaktion.vorlage],
+    )
+    if (Number(rows[0]?.n) !== 1) throw new NichtMoeglich('Die gewählte Vorlage gibt es nicht.')
+  }
+  const typ = (systemaktion !== null ? 'system' : e.zustaendigkeitTyp) as Zustaendigkeit
   const tabelle = REF_TABELLE[typ]
   let ref: string | null = null
   if (tabelle !== undefined) {
@@ -161,13 +189,14 @@ async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<St
   return {
     bezeichnung,
     stufentyp: e.stufentyp,
-    zustaendigkeitTyp: e.zustaendigkeitTyp,
+    zustaendigkeitTyp: typ,
     zustaendigkeitRef: ref,
     betragVon,
     betragBis,
     pflicht: e.pflicht,
     slaStunden: e.slaStunden,
     stempeltypIds: stempel,
+    systemaktion,
   }
 }
 
@@ -208,9 +237,10 @@ export async function stufeAnlegen(
 
     const { rows: stufe } = await c.query<{ id: string }>(
       `insert into prozessstufe (definition_id, reihenfolge, stufentyp, bezeichnung, pflicht,
-                                 betrag_von, betrag_bis, zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden)
+                                 betrag_von, betrag_bis, zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
+                                 systemaktion)
        values ($1, (select coalesce(max(reihenfolge), 0) + 1 from prozessstufe where definition_id = $1),
-               $2, $3, $4, $5, $6, $7, $8, $9)
+               $2, $3, $4, $5, $6, $7, $8, $9, $10)
        returning id`,
       [
         definitionId,
@@ -222,6 +252,7 @@ export async function stufeAnlegen(
         e.zustaendigkeitTyp,
         e.zustaendigkeitRef,
         e.slaStunden,
+        e.systemaktion === null ? null : JSON.stringify(e.systemaktion),
       ],
     )
     const stufeId = stufe[0]?.id
@@ -252,7 +283,7 @@ export async function stufeAendern(
     const { rowCount } = await c.query(
       `update prozessstufe
           set stufentyp = $3, bezeichnung = $4, pflicht = $5, betrag_von = $6, betrag_bis = $7,
-              zustaendigkeit_typ = $8, zustaendigkeit_ref = $9, sla_stunden = $10
+              zustaendigkeit_typ = $8, zustaendigkeit_ref = $9, sla_stunden = $10, systemaktion = $11
         where id = $1 and definition_id = $2`,
       [
         stufeId,
@@ -265,6 +296,7 @@ export async function stufeAendern(
         e.zustaendigkeitTyp,
         e.zustaendigkeitRef,
         e.slaStunden,
+        e.systemaktion === null ? null : JSON.stringify(e.systemaktion),
       ],
     )
     if (rowCount === 0) throw new NichtMoeglich('Stufe nicht gefunden')

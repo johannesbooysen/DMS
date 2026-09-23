@@ -10,6 +10,7 @@
 
 import type { PoolClient } from 'pg'
 import { bedingungAuswerten, type Bedingung, type Kontext } from './bedingung'
+import { systemaktionLesen, type Systemaktion } from './systemaktion'
 
 export type Knotentyp = 'nacheinander' | 'gleichzeitig' | 'verzweigung' | 'stufe'
 
@@ -25,6 +26,8 @@ export interface Stufe {
   slaStunden: number | null
   /** Nicht dieselbe Person wie an der vorherigen Stufe (Migration 20260922140000). */
   vierAugenPflicht: boolean
+  /** Nur bei stufentyp = systemaktion (Migration 20260926100000). */
+  systemaktion: Systemaktion | null
 }
 
 export interface Knoten {
@@ -53,13 +56,15 @@ interface Zeile {
   zustaendigkeit_ref: string | null
   sla_stunden: number | null
   vier_augen_pflicht: boolean | null
+  systemaktion: unknown
 }
 
 export async function baumLaden(c: PoolClient, definitionId: string): Promise<Knoten | null> {
   const { rows } = await c.query<Zeile>(
     `select k.id, k.eltern_id, k.reihenfolge, k.knotentyp, k.bedingung, k.stufe_id,
             s.bezeichnung, s.stufentyp, s.pflicht, s.betrag_von, s.betrag_bis,
-            s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden, s.vier_augen_pflicht
+            s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden, s.vier_augen_pflicht,
+            s.systemaktion
        from prozessknoten k
        left join prozessstufe s on s.id = k.stufe_id
       where k.definition_id = $1
@@ -88,6 +93,7 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
               zustaendigkeitRef: z.zustaendigkeit_ref,
               slaStunden: z.sla_stunden,
               vierAugenPflicht: z.vier_augen_pflicht ?? false,
+              systemaktion: systemaktionLesen(z.systemaktion),
             },
       kinder: [],
       eltern: null,

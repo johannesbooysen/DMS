@@ -906,13 +906,22 @@ Rechnung vergehen Wochen.
 > Reparatur gegen Erneuerung sind Stufen und Bedingungen unter *Abläufe*. Wer
 > sie im Code sucht, sucht falsch.
 
-> Noch nicht da: die **Systemaktionen** aus den Diagrammen — die Mail mit der
-> Abtretungserklärung, die Erfassungsmeldung an die Technik-Datenbank. Der
-> Weg nach draußen steht inzwischen (Postausgang), und die Vorlagen
-> `abtretung` und `technikmeldung` liegen im Grundbestand; was fehlt, ist die
-> Stelle im Ablauf, die sie auslöst. Und die Fristüberschreitung führt noch
-> nicht selbsttätig ins Klärungspostfach; die Liste zeigt sie, den Eintrag
-> setzt ein Mensch.
+**Systemaktionen** sind Stufen, die niemand stempelt: Erreicht der Beleg sie,
+geht eine Vorlage aus dem Postausgang hinaus — die Abtretungserklärung an die
+Versicherung, die Erfassungsmeldung an die Technik-Datenbank — und der Lauf
+rückt selbst weiter. Angelegt werden sie im Ablaufeditor wie jede Stufe, mit
+Art *Systemaktion*, der Vorlage und dem Empfänger: eine feste Adresse oder
+die Objektverantwortliche. Der Nachweis ist der Eintrag im Ausgangsbuch, nicht
+ein Stempel — die Stempelkette hält Entscheidungen von Menschen fest.
+
+Ein Lauf hält **nie** an einer Mail: Fehlt die Vorlage oder der Empfänger,
+steht das mit Grund im Fehlerkorb, und der Beleg läuft weiter. Eine Rechnung,
+die wegen einer fehlenden Adresse nie zur sachlichen Prüfung käme, wäre der
+schlechtere Fehler.
+
+> Noch nicht da: der Kreditor als Empfänger — das Stammdatum trägt keine
+> E-Mail-Adresse. Und die Fristüberschreitung führt noch nicht selbsttätig ins
+> Klärungspostfach; die Liste zeigt sie, den Eintrag setzt ein Mensch.
 
 ---
 

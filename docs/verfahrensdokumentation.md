@@ -540,6 +540,7 @@ des Ausgangsbuchs (`postAnlegen`).
 | Ausgang | Schleuse | [`src/postausgang/index.ts`](../src/postausgang/index.ts) |
 | Eingang | nutzt sie | [`src/stapel/index.ts`](../src/stapel/index.ts) |
 | Eingang | nutzt sie | [`src/uebernahme/index.ts`](../src/uebernahme/index.ts) |
+| Ausgang | nutzt sie | [`src/workflow/systemaktion.ts`](../src/workflow/systemaktion.ts) |
 
 ## 6. Nachweis der Wirksamkeit
 
@@ -840,6 +841,9 @@ belegt.
 - oeffnet beide Stufen gleichzeitig und wartet auf die zweite
 - nimmt den Dann-Zweig, wenn die Bedingung zutrifft
 - nimmt den Sonst-Zweig, wenn sie nicht zutrifft
+- fuehrt die Aktion beim Erreichen aus und rueckt selbst weiter
+- haelt den Lauf nicht an, wenn kein Empfaenger auffindbar ist -- meldet in den Fehlerkorb
+- schliesst den Lauf, wenn die Systemaktion die letzte Stufe ist
 - meldet die Pflichtstufen, die noch keinen Stempel haben
 - gibt frei, wenn jede Pflichtstufe erledigt ist
 - zeigt die Kette, die sich fuer einen gedachten Beleg ergibt
@@ -1049,6 +1053,7 @@ belegt.
 - legt eine Stufe an, haengt sie in den Baum und ordnet die Stempel zu
 - aendert eine Stufe und ersetzt die Stempel als Ganzes
 - entfernt eine Stufe samt Blatt
+- legt eine Systemaktion an -- Zustaendigkeit System, Vorlage geprueft
 - weist ab, was nicht zusammenpasst -- und sagt, was fehlt
 - nimmt keinen Stempel und keine Rolle aus einem anderen Haus
 - verlangt das Recht und einen Entwurf

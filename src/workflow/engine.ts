@@ -22,6 +22,7 @@ import {
   stufeGiltFuer,
   type Knoten,
 } from './baum'
+import { systemaktionAusfuehren } from './systemaktion'
 
 export interface Stempelvorgang {
   laufId: string
@@ -206,6 +207,7 @@ async function aufgabenAnlegen(
   c: PoolClient,
   laufId: string,
   dokumentId: string,
+  wurzel: Knoten,
   blaetter: Knoten[],
   kontext: Kontext,
 ): Promise<string[]> {
@@ -216,6 +218,27 @@ async function aufgabenAnlegen(
     if (stufe === null) continue
 
     const gilt = stufeGiltFuer(stufe, kontext)
+
+    /*
+     * Eine Systemaktion stempelt niemand: Die Aufgabe entsteht gleich als
+     * erledigt (damit der Lauf sie als begonnen und durch zaehlt), die Engine
+     * fuehrt die Aktion aus -- Ausgang im Ausgangsbuch oder Eintrag im
+     * Fehlerkorb -- und rueckt sofort weiter. Kein Ereignis in der
+     * Stempelkette: Die Kette haelt Entscheidungen von Menschen fest, und
+     * der Nachweis der Aktion ist der Ausgang selbst.
+     */
+    if (gilt && stufe.stufentyp === 'systemaktion') {
+      await c.query(
+        `insert into aufgabe (lauf_id, stufe_id, status, erledigt_am)
+         values ($1, $2, 'erledigt', now())`,
+        [laufId, stufe.id],
+      )
+      await systemaktionAusfuehren(c, dokumentId, stufe)
+      const folge = await vorruecken(c, laufId, dokumentId, wurzel, blatt, kontext)
+      angelegt.push(...folge.neueAufgaben)
+      continue
+    }
+
     const zustaendig = gilt ? await zustaendigkeitAufloesen(c, blatt, dokumentId) : LEER
     const traeger = gilt
       ? await vertretungAnwenden(c, zustaendig, dokumentId, stufe.stufentyp)
@@ -239,6 +262,64 @@ async function aufgabenAnlegen(
   }
 
   return angelegt
+}
+
+/**
+ * Rueckt den Lauf hinter einer erledigten Stufe vor: naechste Blaetter
+ * oeffnen, oder -- wenn nichts mehr kommt und alles Begonnene durch ist --
+ * den Lauf schliessen und archivieren. Aus `stempeln` herausgeloest, weil
+ * eine Systemaktion denselben Schritt geht, nur ohne Stempel.
+ */
+async function vorruecken(
+  c: PoolClient,
+  laufId: string,
+  dokumentId: string,
+  wurzel: Knoten,
+  blatt: Knoten,
+  kontext: Kontext,
+): Promise<Stempelergebnis> {
+  const stand = await standLaden(c, laufId)
+  const weiter = naechsteBlaetter(blatt, kontext, abschlussPruefer(stand.erledigt, stand.begonnen))
+
+  if (weiter.length === 0) {
+    const alleFertig = alleBlaetter(wurzel)
+      .filter((b) => b.stufe !== null && stand.begonnen.has(b.stufe.id))
+      .every((b) => b.stufe !== null && stand.erledigt.has(b.stufe.id))
+
+    if (alleFertig) {
+      await c.query(
+        `update dokument_lauf set status = 'abgeschlossen', beendet_am = now(),
+                                  aktuelle_stufe_id = null
+          where id = $1`,
+        [laufId],
+      )
+      // Der Lauf ist durch, also ist der Beleg fertig: archivieren
+      // (Konzept 19). Hier und nicht in einem Nachtlauf -- ein Beleg, der
+      // zwischen "letzter Freigabe" und "Archivierung" liegt, ist noch
+      // aenderbar, und niemand weiss, wie lange dieses Fenster ist.
+      await c.query('select app.dokument_archivieren($1)', [dokumentId])
+      return { laufAbgeschlossen: true, neueAufgaben: [] }
+    }
+    // Ein paralleler Block wartet noch auf seinen anderen Zweig.
+    return { laufAbgeschlossen: false, neueAufgaben: [] }
+  }
+
+  const neueAufgaben = await aufgabenAnlegen(c, laufId, dokumentId, wurzel, weiter, kontext)
+
+  // Eine Systemaktion unter den naechsten Blaettern kann den Lauf schon
+  // geschlossen haben (sie rueckt selbst vor, bis zum Ende). Dann gibt es
+  // keine aktuelle Stufe mehr, und der Aufrufer soll es erfahren.
+  const { rows: laufstand } = await c.query<{ status: string }>(
+    'select status from dokument_lauf where id = $1',
+    [laufId],
+  )
+  if (laufstand[0]?.status === 'abgeschlossen') return { laufAbgeschlossen: true, neueAufgaben }
+
+  await c.query(`update dokument_lauf set aktuelle_stufe_id = $2 where id = $1`, [
+    laufId,
+    weiter[0]?.stufe?.id ?? null,
+  ])
+  return { laufAbgeschlossen: false, neueAufgaben }
 }
 
 /** Ist der Teilbaum durch? Entfallene Stufen zählen als erledigt. */
@@ -342,7 +423,7 @@ export async function laufStarten(
   const laufId = rows[0]?.id
   if (laufId === undefined) return null
 
-  const aufgaben = await aufgabenAnlegen(c, laufId, dokumentId, blaetter, kontext)
+  const aufgaben = await aufgabenAnlegen(c, laufId, dokumentId, wurzel, blaetter, kontext)
   return { laufId, aufgaben }
 }
 
@@ -424,49 +505,7 @@ export async function stempeln(
   const blatt = alleBlaetter(wurzel).find((b) => b.stufe?.id === vorgang.stufeId)
   if (blatt === undefined) throw new Error('Stufe gehoert nicht zu diesem Ablauf')
 
-  const stand = await standLaden(c, vorgang.laufId)
-  const weiter = naechsteBlaetter(
-    blatt,
-    kontext,
-    abschlussPruefer(stand.erledigt, stand.begonnen),
-  )
-
-  if (weiter.length === 0) {
-    const alleFertig = alleBlaetter(wurzel)
-      .filter((b) => b.stufe !== null && stand.begonnen.has(b.stufe.id))
-      .every((b) => b.stufe !== null && stand.erledigt.has(b.stufe.id))
-
-    if (alleFertig) {
-      await c.query(
-        `update dokument_lauf set status = 'abgeschlossen', beendet_am = now(),
-                                  aktuelle_stufe_id = null
-          where id = $1`,
-        [vorgang.laufId],
-      )
-      // Der Lauf ist durch, also ist der Beleg fertig: archivieren
-      // (Konzept 19). Hier und nicht in einem Nachtlauf -- ein Beleg, der
-      // zwischen "letzter Freigabe" und "Archivierung" liegt, ist noch
-      // aenderbar, und niemand weiss, wie lange dieses Fenster ist.
-      await c.query('select app.dokument_archivieren($1)', [lauf.dokument_id])
-      return { laufAbgeschlossen: true, neueAufgaben: [] }
-    }
-    // Ein paralleler Block wartet noch auf seinen anderen Zweig.
-    return { laufAbgeschlossen: false, neueAufgaben: [] }
-  }
-
-  const neueAufgaben = await aufgabenAnlegen(
-    c,
-    vorgang.laufId,
-    lauf.dokument_id,
-    weiter,
-    kontext,
-  )
-  await c.query(`update dokument_lauf set aktuelle_stufe_id = $2 where id = $1`, [
-    vorgang.laufId,
-    weiter[0]?.stufe?.id ?? null,
-  ])
-
-  return { laufAbgeschlossen: false, neueAufgaben }
+  return vorruecken(c, vorgang.laufId, lauf.dokument_id, wurzel, blatt, kontext)
 }
 
 /**

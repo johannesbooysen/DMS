@@ -122,6 +122,14 @@ function stufeneingabe(formular: FormData): Stufeneingabe {
     pflicht: formular.get('pflicht') === 'ja',
     slaStunden: zahl('slaStunden'),
     stempeltypIds: stempel,
+    systemaktion:
+      String(formular.get('stufentyp') ?? '') === 'systemaktion'
+        ? {
+            vorlage: String(formular.get('saVorlage') ?? ''),
+            empfaenger: String(formular.get('saEmpfaenger') ?? ''),
+            adresse: String(formular.get('saAdresse') ?? '') || null,
+          }
+        : null,
   }
 }
 

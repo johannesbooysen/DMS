@@ -20,6 +20,7 @@ import {
   ZUSTAENDIGKEITEN,
   type Auswahl,
 } from '@/workflow/stufen'
+import { EMPFAENGERART_NAMEN, EMPFAENGERARTEN } from '@/workflow/systemaktion'
 
 const ENTSCHEIDUNG: Record<string, string> = {
   freigabe: 'schließt ab',
@@ -119,6 +120,39 @@ export function Stufenformular({
           <input type="checkbox" name="pflicht" value="ja" defaultChecked={stufe?.pflicht ?? true} /> Pflicht
         </label>
       </div>
+
+      {/* Nur fuer die Art "Systemaktion" gelesen; steht trotzdem immer da,
+          weil es kein Skript gibt, das Felder ein- und ausblendet. */}
+      <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: 'var(--radius)', margin: '0 0 0.5rem', padding: '0.5rem 0.75rem' }}>
+        <legend className="klein leise">Systemaktion — nur bei Art „Systemaktion“</legend>
+        <div className="filterzeile" style={{ marginBottom: 0 }}>
+          <label className="feld">
+            Vorlage
+            <select name="saVorlage" defaultValue={stufe?.systemaktion?.vorlage ?? ''}>
+              <option value="">— Vorlage wählen —</option>
+              {auswahl.vorlagen.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="feld">
+            Empfänger
+            <select name="saEmpfaenger" defaultValue={stufe?.systemaktion?.empfaenger ?? 'adresse'}>
+              {EMPFAENGERARTEN.map((e) => (
+                <option key={e} value={e}>
+                  {EMPFAENGERART_NAMEN[e]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="feld">
+            Feste Adresse
+            <input name="saAdresse" type="email" maxLength={200} defaultValue={stufe?.systemaktion?.adresse ?? ''} style={{ width: '16rem' }} />
+          </label>
+        </div>
+      </fieldset>
 
       <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: 'var(--radius)', margin: '0 0 0.5rem', padding: '0.5rem 0.75rem' }}>
         <legend className="klein leise">Stempel an dieser Stufe</legend>

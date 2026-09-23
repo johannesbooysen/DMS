@@ -103,6 +103,7 @@ async function definitionAnlegen(
     betragVon?: number | null
     pflicht?: boolean
     typ?: string
+    systemaktion?: unknown
   }>,
 ): Promise<{ definitionId: string; stufenIds: string[] }> {
   return konfigurierend(c, async () => {
@@ -117,11 +118,12 @@ async function definitionAnlegen(
   for (const [i, s] of stufen.entries()) {
     const { rows } = await c.query<{ id: string }>(
       `insert into prozessstufe (definition_id, reihenfolge, stufentyp, bezeichnung,
-                                 zustaendigkeit_typ, betrag_von, pflicht)
-       values ($1, $2, $3, $4, 'objektverantwortlich', $5, $6)
+                                 zustaendigkeit_typ, betrag_von, pflicht, systemaktion)
+       values ($1, $2, $3, $4, $7, $5, $6, $8)
        returning id`,
       [definitionId, i + 1, s.typ ?? 'sachlich', s.bezeichnung, s.betragVon ?? null,
-       s.pflicht ?? true],
+       s.pflicht ?? true, s.typ === 'systemaktion' ? 'system' : 'objektverantwortlich',
+       s.systemaktion === undefined ? null : JSON.stringify(s.systemaktion)],
     )
     stufenIds.push(rows[0].id)
   }
@@ -447,6 +449,97 @@ describe('Verzweigung', () => {
 
   it('nimmt den Sonst-Zweig, wenn sie nicht zutrifft', async () => {
     expect(await alsAnna((c) => laufMitVerzweigung(c, 900))).toEqual(['Freigabe Objekt'])
+  })
+})
+
+describe('Systemaktion', () => {
+  const TECHNIK = { vorlage: 'technikmeldung', empfaenger: 'adresse', adresse: 'technik@example.invalid' }
+
+  /** Kette: sachlich -> Systemaktion -> rechnerisch, verkettet, aktiv. */
+  async function kette(c: Client, aktion: unknown) {
+    const { definitionId, stufenIds } = await definitionAnlegen(c, [
+      { bezeichnung: 'Sachlich' },
+      { bezeichnung: 'Meldung an die Technik', typ: 'systemaktion', systemaktion: aktion },
+      { bezeichnung: 'Rechnerisch', typ: 'rechnerisch' },
+    ])
+    const wurzel = await knotenAnlegen(c, definitionId, null, 0, 'nacheinander')
+    for (const [i, id] of stufenIds.entries()) await knotenAnlegen(c, definitionId, wurzel, i, 'stufe', id)
+    await statusSetzen(c, definitionId, 'aktiv')
+    return { definitionId, stufenIds }
+  }
+
+  it('fuehrt die Aktion beim Erreichen aus und rueckt selbst weiter', async () => {
+    await alsAnna(async (c) => {
+      const { stufenIds } = await kette(c, TECHNIK)
+      const beleg = await belegAnlegen(c, 500)
+      const lauf = (await laufStarten(c as never, beleg))!
+      expect(await offeneAufgaben(c, lauf.laufId)).toEqual(['Sachlich'])
+
+      const ergebnis = await stempeln(c as never, {
+        laufId: lauf.laufId,
+        stufeId: stufenIds[0]!,
+        benutzerId: ANNA,
+        entscheidung: 'freigabe',
+      })
+      // Die Systemaktion ist durch, ohne dass jemand sie stempelte; offen ist die dritte.
+      expect(ergebnis.neueAufgaben).toHaveLength(1)
+      expect(await offeneAufgaben(c, lauf.laufId)).toEqual(['Rechnerisch'])
+
+      const { rows } = await c.query<{ anlass: string; empfaenger: string; betreff: string }>(
+        'select anlass, empfaenger, betreff from ausgang where dokument_id = $1',
+        [beleg],
+      )
+      expect(rows).toHaveLength(1)
+      expect(rows[0]!.empfaenger).toBe('technik@example.invalid')
+      expect(rows[0]!.anlass).toMatch(/Meldung an die Technik/)
+      expect(rows[0]!.betreff).toMatch(/RE-TEST/)
+
+      // Kein Ereignis in der Stempelkette fuer die Maschine.
+      const { rows: ereignisse } = await c.query<{ n: string }>(
+        'select count(*)::text as n from stempel_ereignis where lauf_id = $1',
+        [lauf.laufId],
+      )
+      expect(Number(ereignisse[0]!.n)).toBe(1)
+    })
+  })
+
+  it('haelt den Lauf nicht an, wenn kein Empfaenger auffindbar ist -- meldet in den Fehlerkorb', async () => {
+    await alsAnna(async (c) => {
+      const { stufenIds } = await kette(c, { vorlage: 'technikmeldung', empfaenger: 'objektverantwortlich' })
+      const beleg = await belegAnlegen(c, 500)
+      // Ohne Objekt gibt es keine Objektverantwortliche.
+      await c.query('update dokument set objekt_id = null where id = $1', [beleg])
+      const lauf = (await laufStarten(c as never, beleg))!
+      await stempeln(c as never, { laufId: lauf.laufId, stufeId: stufenIds[0]!, benutzerId: ANNA, entscheidung: 'freigabe' })
+
+      expect(await offeneAufgaben(c, lauf.laufId)).toEqual(['Rechnerisch'])
+      const { rows } = await c.query<{ n: string }>('select count(*)::text as n from ausgang where dokument_id = $1', [beleg])
+      expect(Number(rows[0]!.n)).toBe(0)
+      const { rows: fehler } = await c.query<{ grund: string }>(
+        'select grund from verarbeitungsfehler where dokument_id = $1 and erledigt_am is null',
+        [beleg],
+      )
+      expect(fehler).toHaveLength(1)
+      expect(fehler[0]!.grund).toMatch(/kein Objektverantwortlicher/)
+    })
+  })
+
+  it('schliesst den Lauf, wenn die Systemaktion die letzte Stufe ist', async () => {
+    await alsAnna(async (c) => {
+      const { definitionId, stufenIds } = await definitionAnlegen(c, [
+        { bezeichnung: 'Sachlich' },
+        { bezeichnung: 'Meldung', typ: 'systemaktion', systemaktion: TECHNIK },
+      ])
+      const wurzel = await knotenAnlegen(c, definitionId, null, 0, 'nacheinander')
+      for (const [i, id] of stufenIds.entries()) await knotenAnlegen(c, definitionId, wurzel, i, 'stufe', id)
+      await statusSetzen(c, definitionId, 'aktiv')
+      const beleg = await belegAnlegen(c, 500)
+      const lauf = (await laufStarten(c as never, beleg))!
+      const ergebnis = await stempeln(c as never, { laufId: lauf.laufId, stufeId: stufenIds[0]!, benutzerId: ANNA, entscheidung: 'freigabe' })
+      expect(ergebnis.laufAbgeschlossen).toBe(true)
+      const { rows } = await c.query<{ status: string }>('select status from dokument_lauf where id = $1', [lauf.laufId])
+      expect(rows[0]!.status).toBe('abgeschlossen')
+    })
   })
 })
 
