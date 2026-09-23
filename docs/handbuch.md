@@ -458,7 +458,20 @@ Unter *Posteingang* kommen Belege ins System. Zwei Wege, und welcher es ist,
 entscheidet ein Mensch — nicht eine Erkennung:
 
 **Einzelner Beleg.** Datei wählen, aufnehmen, fertig. Der Beleg geht sofort in
-den Ablauf.
+den Ablauf. Oder die Datei aus dem Explorer auf die gestrichelte Fläche
+ziehen — dann wird sie sofort aufgenommen, ohne Knopf.
+
+**Mehrere auf einmal.** Mehrere Dateien wählen oder ziehen: Jede wird ein
+eigener Beleg (mit Häkchen *Stapelscan*: ein eigener Stapel). Bei einer Datei
+landet man beim Beleg; bei mehreren bleibt man im Posteingang mit der Zeile,
+was angekommen ist.
+
+**Zuletzt aufgenommen** zeigt, was Sie selbst über den Posteingang
+hereingebracht haben, und wo es steht: *wird aufbereitet* (der Worker liest
+und rendert), *im Ablauf*, *abgelehnt* (Dublette). Ein Upload verschwindet
+damit nicht in einer Warteschlange — die Frage „ist er angekommen?" steht
+hier beantwortet, nicht in der Belegsuche. Die Liste zeigt nur die eigenen
+Uploads; was Kollegen hereinbringen, steht unter *Belege*.
 
 **Stapelscan.** Aus dem Scanner kommt eine Datei mit zwanzig Belegen. Sie wird
 zuerst gelesen, gerendert und getrennt — und erst nach Ihrer Bestätigung

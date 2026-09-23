@@ -16,7 +16,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
-import { feed, objektakte, suchen, zaehlen } from '../src/belege/liste'
+import { eigeneEingaenge, feed, objektakte, suchen, zaehlen } from '../src/belege/liste'
 import { einschraenken } from '../src/archiv'
 import { istGefiltert } from '../src/app/lib/belegliste'
 
@@ -306,6 +306,38 @@ describe('Volltext', () => {
       zaehlen(c, { volltext: 'Dachrinnenreinigung' }),
     )
     expect(anzahl).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('Eigene Eingaenge', () => {
+  /** Das Fixture kommt per Mail; hier ist es Annas Upload. */
+  async function alsUpload(von: string): Promise<void> {
+    await direkt(`update dokument set erfasst_von = $1, eingangskanal = 'upload' where id = $2`, [von, beleg])
+  }
+
+  it('zeigt, was man selbst hochgeladen hat', async () => {
+    await alsUpload(ANNA)
+    const ids = await alsBenutzer(ANNA, (c) => eigeneEingaenge(c, ANNA))
+    expect(ids.map((z) => z.id)).toContain(beleg)
+  })
+
+  it('zeigt nicht, was ein Kollege hochgeladen hat -- auch wenn man es sehen darf', async () => {
+    await alsUpload(ANNA)
+    // Bernd sieht den Beleg in jeder Sicht; hier geht es um seine Uploads.
+    const ids = await alsBenutzer(BERND, (c) => eigeneEingaenge(c, BERND))
+    expect(ids.map((z) => z.id)).not.toContain(beleg)
+  })
+
+  it('laesst die RLS die Grenze -- ein fremder Mandant sieht nichts, auch als Erfasser', async () => {
+    await alsUpload(DORIS)
+    const ids = await alsBenutzer(DORIS, (c) => eigeneEingaenge(c, DORIS))
+    expect(ids.map((z) => z.id)).not.toContain(beleg)
+  })
+
+  it('laesst einen Beleg per Mail weg -- der kam nicht ueber den Posteingang', async () => {
+    await direkt(`update dokument set erfasst_von = $1 where id = $2`, [ANNA, beleg])
+    const ids = await alsBenutzer(ANNA, (c) => eigeneEingaenge(c, ANNA))
+    expect(ids.map((z) => z.id)).not.toContain(beleg)
   })
 })
 

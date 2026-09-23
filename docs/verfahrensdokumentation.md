@@ -712,6 +712,10 @@ belegt.
 - versteht den Ausschluss mit Minus
 - scheitert nicht an unsinniger Eingabe
 - zaehlt Volltexttreffer genauso
+- zeigt, was man selbst hochgeladen hat
+- zeigt nicht, was ein Kollege hochgeladen hat -- auch wenn man es sehen darf
+- laesst die RLS die Grenze -- ein fremder Mandant sieht nichts, auch als Erfasser
+- laesst einen Beleg per Mail weg -- der kam nicht ueber den Posteingang
 - zeigt einem fremden Mandanten nichts
 - zeigt einem Kollegen ohne Zustaendigkeit nichts
 - zeigt der mandantenweiten Buchhaltungsrolle alles

@@ -1177,3 +1177,53 @@ kbd {
     min-height: 70vh;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Der Posteingang: die Ablagezone
+ * ------------------------------------------------------------------------ */
+
+.ablagezone {
+  border: 2px dashed var(--farbe-linie-stark);
+  border-radius: var(--radius);
+  flex: 1 1 24rem;
+  padding: 0.75rem 1rem;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.ablagezone--aktiv {
+  background: var(--farbe-akzent-hell);
+  border-color: var(--farbe-akzent);
+}
+
+.ablagezone-hinweis {
+  margin: 0.4rem 0 0;
+}
+
+.eingangsstand {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+}
+
+.eingangsstand--in_aufbereitung {
+  background: var(--farbe-orange-hell);
+  color: #6b4a15;
+}
+
+.eingangsstand--laufend,
+.eingangsstand--wartend {
+  background: var(--farbe-akzent-hell);
+  color: var(--farbe-akzent);
+}
+
+.eingangsstand--abgelehnt {
+  background: #f8e1df;
+  color: var(--farbe-rot);
+}
+
+.eingangsstand--abgeschlossen,
+.eingangsstand--archiviert {
+  background: #e3efe8;
+  color: var(--farbe-gruen);
+}

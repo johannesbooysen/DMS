@@ -328,3 +328,29 @@ export async function zaehlen(c: PoolClient, filter: Belegfilter): Promise<numbe
   )
   return Number(rows[0].n)
 }
+
+/**
+ * Was jemand selbst hereingebracht hat -- zuletzt zuerst.
+ *
+ * Die Rueckmeldung des Posteingangs: Ein hochgeladener Beleg verschwindet in
+ * die Warteschlange, und ohne diese Liste weiss niemand, ob er angekommen
+ * ist, noch aufbereitet wird oder schon laeuft. Gefiltert ueber
+ * `erfasst_von`, **zusaetzlich** zur RLS -- die bleibt die Grenze; hier
+ * wird nur eingeengt, nie erweitert.
+ */
+export async function eigeneEingaenge(
+  c: PoolClient,
+  benutzerId: string,
+  limit = 10,
+): Promise<Belegzeile[]> {
+  const { rows } = await c.query<Record<string, unknown>>(
+    `select ${SPALTEN}, null::integer as treffer_seite, null::text as treffer_auszug
+       from dokument d ${VERBINDUNGEN}
+      where d.erfasst_von = $1
+        and d.eingangskanal in ('upload', 'scan')
+      order by d.eingang_am desc
+      limit $2`,
+    [benutzerId, limit],
+  )
+  return rows.map(zeile)
+}

@@ -11,20 +11,39 @@
  * was zurückgenommen werden müsste (Konzept 24.1).
  */
 
+import { eigeneEingaenge } from '@/belege/liste'
+import { alsBenutzer } from '@/db'
 import { offeneStapel } from '@/stapel'
+import { Ablagezone } from '@/app/lib/ablagezone'
 import { postAufnehmenAktion } from '@/app/lib/posteingang-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { datum, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+
+/** Wo ein frisch aufgenommener Beleg gerade steht -- in Worten. */
+const STAND: Record<string, string> = {
+  in_aufbereitung: 'wird aufbereitet',
+  laufend: 'im Ablauf',
+  wartend: 'wartet',
+  abgeschlossen: 'abgeschlossen',
+  archiviert: 'archiviert',
+  abgelehnt: 'abgelehnt',
+  storniert: 'storniert',
+}
 
 export const dynamic = 'force-dynamic'
 
 export default async function Posteingang({
   searchParams,
 }: {
-  searchParams: Promise<{ fehler?: string }>
+  searchParams: Promise<{ fehler?: string; hinweis?: string }>
 }) {
-  const { fehler } = await searchParams
-  const stapel = await offeneStapel(await angemeldeterBenutzer())
+  const { fehler, hinweis } = await searchParams
+  const benutzer = await angemeldeterBenutzer()
+  const stapel = await offeneStapel(benutzer)
+  // Die Rueckmeldung: Was man selbst hereingebracht hat, und wo es steht.
+  // Ohne sie verschwindet ein Upload in der Warteschlange, und die Frage
+  // "ist er angekommen?" fuehrt in die Belegsuche.
+  const eingaenge = await alsBenutzer(benutzer, (c) => eigeneEingaenge(c, benutzer))
 
   return (
     <Seitenrahmen titel="Posteingang">
@@ -33,12 +52,14 @@ export default async function Posteingang({
           {fehler}
         </p>
       )}
+      {hinweis !== undefined && (
+        <p role="status" className="meldung-hinweis">
+          {hinweis}
+        </p>
+      )}
 
       <form action={postAufnehmenAktion} className="karte filterzeile" style={{ marginTop: 0 }}>
-        <label className="feld">
-          Datei
-          <input type="file" name="datei" accept="application/pdf,image/*,message/rfc822" required />
-        </label>
+        <Ablagezone accept="application/pdf,image/*,message/rfc822" />
 
         <label className="klein">
           <input type="checkbox" name="stapel" value="ja" /> Stapelscan — enthält mehrere Belege
@@ -51,8 +72,42 @@ export default async function Posteingang({
 
       <p className="leise klein">
         Ein einzelner Beleg geht sofort in den Ablauf. Ein Stapelscan wird erst getrennt und
-        geprüft — bis zur Übernahme entsteht kein Dokument.
+        geprüft — bis zur Übernahme entsteht kein Dokument. Mehrere Dateien auf einmal: jede wird
+        ein eigener Beleg (oder ein eigener Stapel).
       </p>
+
+      <h2>Zuletzt aufgenommen</h2>
+
+      {eingaenge.length === 0 ? (
+        <p className="leise">Noch nichts über diesen Posteingang aufgenommen.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Beleg</th>
+              <th>Objekt</th>
+              <th style={{ textAlign: 'right' }}>Betrag</th>
+              <th>Eingang</th>
+              <th>Stand</th>
+            </tr>
+          </thead>
+          <tbody>
+            {eingaenge.map((z) => (
+              <tr key={z.id}>
+                <td>
+                  <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
+                </td>
+                <td>{z.objektnummer ?? '—'}</td>
+                <td style={{ textAlign: 'right' }}>{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+                <td>{datum.format(new Date(z.eingangAm))}</td>
+                <td>
+                  <span className={`eingangsstand eingangsstand--${z.status}`}>{STAND[z.status] ?? z.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <h2>Stapel in Prüfung</h2>
 

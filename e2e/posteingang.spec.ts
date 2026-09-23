@@ -129,3 +129,38 @@ test('Dieselbe Datei zweimal ergibt einen roten zweiten Beleg', async ({ page })
     expect(await page.getByLabel('Ampel rot').count()).toBeGreaterThan(0)
   }).toPass({ timeout: 90_000 })
 })
+
+test('Mehrere Dateien auf einmal werden je ein Beleg', async ({ page }) => {
+  const worte = ['Fassadenanstrich', 'Treppenhausreinigung']
+  const pdfs = await Promise.all(
+    worte.map((wort, i) =>
+      pdfBauen([
+        {
+          zeilen: [
+            'Bedachungen Nord GmbH, Ziegelweg 7, 00000 Musterstadt',
+            `Rechnung RE-2026-078${i} vom 02.09.2026`,
+            `${wort} Objekt 42`,
+          ],
+        },
+      ]),
+    ),
+  )
+
+  await anmelden(page, BENUTZER.anna)
+  await navigiere(page, 'Posteingang')
+
+  // Ein Feld, zwei Dateien -- genau das, was ein Ablegen per Ziehen tut.
+  await page.getByLabel('Dateien').setInputFiles(
+    pdfs.map((buffer, i) => ({ name: `mehrere-${i}.pdf`, mimeType: 'application/pdf', buffer })),
+  )
+  await page.getByRole('button', { name: 'Aufnehmen' }).click()
+
+  // Bei mehreren bleibt man im Posteingang -- mit der Zeile, was angekommen
+  // ist, und beiden Belegen unter "Zuletzt aufgenommen".
+  await expect(page.getByRole('status')).toHaveText(/2 Belege aufgenommen/)
+  await expect(page.getByRole('heading', { name: 'Zuletzt aufgenommen' })).toBeVisible()
+  // Mindestens zwei: Die Tests davor haben ebenfalls hochgeladen, und ohne
+  // Extraktion heissen alle gleich.
+  expect(await page.getByRole('link', { name: /Ohne Bezeichnung/ }).count()).toBeGreaterThanOrEqual(2)
+  await expect(page.getByText(/wird aufbereitet|im Ablauf/).first()).toBeVisible()
+})

@@ -29,55 +29,89 @@ async function meinMandant(benutzerId: string): Promise<string> {
   })
 }
 
+/**
+ * Eine Datei oder mehrere -- derselbe Weg je Datei.
+ *
+ * Bei **einer** Datei geht es direkt zum Ergebnis (Beleg oder Stapel), wie
+ * immer. Bei mehreren bleibt man im Posteingang mit einer Zeile, was
+ * aufgenommen wurde: Zehn Belege auf einmal fuehren auf keinen einzelnen.
+ * Jede Datei laeuft in ihrer eigenen Transaktion -- eine abgewiesene
+ * (`StapelAbgelehnt`) haelt die anderen nicht auf, sie wird genannt.
+ */
 export async function postAufnehmenAktion(formular: FormData): Promise<void> {
   const benutzer = await angemeldeterBenutzer()
-  const datei = formular.get('datei')
+  const dateien = formular.getAll('datei').filter((d): d is File => d instanceof File && d.size > 0)
   const alsStapel = formular.get('stapel') === 'ja'
 
-  if (!(datei instanceof File) || datei.size === 0) {
+  if (dateien.length === 0) {
     redirect('/posteingang?fehler=' + encodeURIComponent('Keine Datei gewählt.'))
   }
 
-  const inhalt = Buffer.from(await datei.arrayBuffer())
   const mandantId = await meinMandant(benutzer)
+  const ergebnisse: Array<{ art: 'stapel' | 'beleg'; id: string }> = []
+  const abgewiesen: string[] = []
 
-  try {
-    if (alsStapel) {
-      const id = await stapelAufnehmen(benutzer, ABLAGE, {
-        mandantId,
-        dateiname: datei.name,
-        eingangskanal: 'scan',
-        inhalt,
-      })
-      revalidatePath('/posteingang')
-      redirect(`/posteingang/${id}`)
-    }
-
-    // Einzelner Beleg: direkt in den Lauf, ohne Zwischenschritt. Wer eine
-    // Rechnung hochlaedt, soll nicht durch eine Trennungspruefung muessen.
-    const auf = await alsBenutzer(benutzer, (c) =>
-      dokumentAufnehmen(
-        c,
-        ABLAGE,
-        {
+  for (const datei of dateien) {
+    const inhalt = Buffer.from(await datei.arrayBuffer())
+    try {
+      if (alsStapel) {
+        const id = await stapelAufnehmen(benutzer, ABLAGE, {
           mandantId,
-          belegart: 'rechnung',
-          eingangskanal: 'upload',
           dateiname: datei.name,
-          mime: datei.type === '' ? 'application/pdf' : datei.type,
+          eingangskanal: 'scan',
           inhalt,
-        },
-        benutzer,
-      ),
-    )
-    revalidatePath('/posteingang')
-    redirect(`/beleg/${auf.dokumentId}`)
-  } catch (fehler) {
-    if (fehler instanceof StapelAbgelehnt) {
-      redirect('/posteingang?fehler=' + encodeURIComponent(fehler.message))
+        })
+        ergebnisse.push({ art: 'stapel', id })
+        continue
+      }
+
+      // Einzelner Beleg: direkt in den Lauf, ohne Zwischenschritt. Wer eine
+      // Rechnung hochlaedt, soll nicht durch eine Trennungspruefung muessen.
+      const auf = await alsBenutzer(benutzer, (c) =>
+        dokumentAufnehmen(
+          c,
+          ABLAGE,
+          {
+            mandantId,
+            belegart: 'rechnung',
+            eingangskanal: 'upload',
+            dateiname: datei.name,
+            mime: datei.type === '' ? 'application/pdf' : datei.type,
+            inhalt,
+          },
+          benutzer,
+        ),
+      )
+      ergebnisse.push({ art: 'beleg', id: auf.dokumentId })
+    } catch (fehler) {
+      if (fehler instanceof StapelAbgelehnt) {
+        // Der Dateiname, nicht der Inhalt: Er stammt vom Hochladenden selbst.
+        abgewiesen.push(`${datei.name}: ${fehler.message}`)
+        continue
+      }
+      throw fehler
     }
-    throw fehler
   }
+
+  revalidatePath('/posteingang')
+
+  const einziges = ergebnisse[0]
+  if (dateien.length === 1 && einziges !== undefined) {
+    redirect(einziges.art === 'stapel' ? `/posteingang/${einziges.id}` : `/beleg/${einziges.id}`)
+  }
+  if (dateien.length === 1) {
+    redirect('/posteingang?fehler=' + encodeURIComponent(abgewiesen[0] ?? 'Nicht aufgenommen.'))
+  }
+
+  const stapel = ergebnisse.filter((e) => e.art === 'stapel').length
+  const belege = ergebnisse.length - stapel
+  const teile: string[] = []
+  if (belege > 0) teile.push(`${belege} ${belege === 1 ? 'Beleg' : 'Belege'} aufgenommen`)
+  if (stapel > 0) teile.push(`${stapel} ${stapel === 1 ? 'Stapel' : 'Stapel'} in der Aufbereitung`)
+  const abfrage = new URLSearchParams()
+  if (teile.length > 0) abfrage.set('hinweis', teile.join(', ') + '.')
+  if (abgewiesen.length > 0) abfrage.set('fehler', 'Nicht aufgenommen — ' + abgewiesen.join('; '))
+  redirect('/posteingang?' + abfrage.toString())
 }
 
 export async function trennungAendernAktion(formular: FormData): Promise<void> {
