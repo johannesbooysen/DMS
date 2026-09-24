@@ -35,6 +35,7 @@ import {
   zuordnungPruefen,
   type Bestandsbeleg,
 } from '../src/uebernahme'
+import { benutzerIdAufloesen } from '../src/benutzer-kennung'
 
 const argumente = process.argv.slice(2)
 const probe = argumente.includes('--probe')
@@ -46,14 +47,19 @@ if (ordnerRoh === undefined) {
 }
 const ordner = resolve(ordnerRoh)
 
-const benutzer = process.env['DMS_BENUTZER_UEBERNAHME']
-if (benutzer === undefined || benutzer === '') {
+const benutzerRoh = process.env['DMS_BENUTZER_UEBERNAHME']
+if (benutzerRoh === undefined || benutzerRoh === '') {
   console.error(
     'DMS_BENUTZER_UEBERNAHME fehlt. Die Uebernahme laeuft unter der Kennung ' +
       'eines Benutzers und damit unter dessen Rechten -- absichtlich.',
   )
   process.exit(1)
 }
+// E-Mail-Adresse oder Kennung -- beides geht, gesperrt geht nicht.
+const benutzer = await benutzerIdAufloesen(benutzerRoh).catch((fehler: unknown) => {
+  console.error(fehler instanceof Error ? fehler.message : String(fehler))
+  process.exit(1)
+})
 
 const zuordnungRoh: unknown = JSON.parse(await readFile(join(ordner, 'uebernahme.json'), 'utf8'))
 const csvText = await readFile(join(ordner, (zuordnungRoh as { index?: string }).index ?? 'index.csv'), 'utf8')

@@ -746,6 +746,13 @@ belegt.
 - kennt die beiden neuen Platzhalter
 - kennt weiterhin keinen Belegtext
 
+### [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts)
+
+- loest die E-Mail-Adresse auf -- Gross-/Kleinschreibung egal
+- nimmt die Kennung selbst
+- kennt eine erfundene Adresse nicht -- und nennt sie nicht
+- weist die leere Kennung ab
+
 ### [`tests/betrieb.test.ts`](../tests/betrieb.test.ts)
 
 - wird eingetragen und gilt danach als frisch
@@ -1610,6 +1617,7 @@ belegt.
 - weist eine Zuordnung mit unbekannter Spalte ab -- bevor eine Zeile gelesen wird
 - meldet fehlende Datei, unbekanntes Objekt und unbekannten Kreditor -- ohne zu schreiben
 - macht aus dem Altbeleg einen archivierten Beleg mit Fakten und altem Eingangsdatum
+- setzt die Ampel nach den uebernommenen Fakten, nicht nach dem Geratenen
 - uebernimmt dieselbe Datei kein zweites Mal -- die Dublette steht im Protokoll
 - legt einen unbekannten Kreditor an, wenn der Uebernehmende Stammdaten pflegen darf -- sonst Fehler mit Grund
 - zeigt das Protokoll nur dem eigenen Mandanten

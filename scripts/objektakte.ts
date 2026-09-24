@@ -20,6 +20,7 @@ import { alsBenutzer, poolSchliessen } from '../src/db'
 import { objektakteZusammenstellen } from '../src/archiv'
 import type { Ablage } from '../src/ablage'
 import { DateisystemAblage } from '../src/ablage'
+import { benutzerIdAufloesen } from '../src/benutzer-kennung'
 
 const [objektnummer, zielRoh] = process.argv.slice(2)
 
@@ -28,14 +29,19 @@ if (objektnummer === undefined) {
   process.exit(1)
 }
 
-const benutzer = process.env['DMS_BENUTZER_EXPORT']
-if (benutzer === undefined || benutzer === '') {
+const benutzerRoh = process.env['DMS_BENUTZER_EXPORT']
+if (benutzerRoh === undefined || benutzerRoh === '') {
   console.error(
     'DMS_BENUTZER_EXPORT fehlt. Der Export laeuft unter der Kennung eines ' +
       'Benutzers und damit unter dessen Rechten -- absichtlich.',
   )
   process.exit(1)
 }
+// E-Mail-Adresse oder Kennung -- beides geht, gesperrt geht nicht.
+const benutzer = await benutzerIdAufloesen(benutzerRoh).catch((fehler: unknown) => {
+  console.error(fehler instanceof Error ? fehler.message : String(fehler))
+  process.exit(1)
+})
 
 const ablage: Ablage = new DateisystemAblage(
   process.env['DMS_ABLAGE'] ?? resolve('.ablage'),

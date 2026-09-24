@@ -1605,6 +1605,9 @@ ordnet `belegarten` ihre Werte zu (`"Gutschrift": "gutschrift"`).
 DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner> --probe
 ```
 
+`<kennung>` ist die E-Mail-Adresse des Benutzers (oder seine Kennung aus der
+Datenbank); dasselbe gilt für die Skripte der Objektakte und der Freigabe.
+
 Die Probe liest alles und schreibt nichts. Sie meldet je Zeile, was fehlt:
 eine Datei, die nicht da ist, ein Objekt oder eine Ordnungsgruppe, die es
 im System nicht gibt — das sind **Fehler**, solche Zeilen werden nicht
@@ -1619,7 +1622,13 @@ DMS_BENUTZER_UEBERNAHME=<kennung> npm run uebernahme -- <exportordner>
 ```
 
 Der Lauf übernimmt Zeile für Zeile, jede in ihrer eigenen Transaktion. Was
-scheitert, steht mit Grund im Protokoll, der Rest geht weiter. Ein zweiter
+scheitert, steht mit Grund im Protokoll, der Rest geht weiter.
+
+Die **Ampel** eines übernommenen Belegs steht für die Extraktion auf Grün:
+Die Fakten kommen aus dem Altsystem, nichts wurde geraten. Die Plausibilität
+wird gegen diese Fakten geprüft — fehlen Netto und Steuer im Export, bleibt
+sie orange. Rot ist ein Altbeleg nur, wenn ein harter Befund vorliegt, etwa
+eine Dublette. Ein zweiter
 Lauf über denselben Export überspringt, was schon übernommen ist; dieselbe
 Datei ein zweites Mal ist eine Dublette und bleibt als solche stehen.
 

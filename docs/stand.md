@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-118 Module, 993 Testfaelle in 57 Dateien,
+119 Module, 998 Testfaelle in 58 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -591,6 +591,7 @@ Funktionen: `app.zahlung_moeglich`
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/belege/suchen-speichern.ts`](../src/belege/suchen-speichern.ts) | Gespeicherte Suchen -- ein Filter der Belegliste mit Namen |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
+| [`src/benutzer-kennung.ts`](../src/benutzer-kennung.ts) | Die Benutzerkennung der Skripte: E-Mail-Adresse oder Kennung |
 | [`src/betrieb/inbetriebnahme.ts`](../src/betrieb/inbetriebnahme.ts) | Inbetriebnahmeprüfung — die Fragen, die sonst erst im Prüfungsfall |
 | [`src/betrieb/index.ts`](../src/betrieb/index.ts) | Lebenszeichen und Gesundheit der Betriebsumgebung (ADR 0007) |
 | [`src/datum.ts`](../src/datum.ts) | Ein `date` aus PostgreSQL als `YYYY-MM-DD` |
@@ -672,6 +673,7 @@ Funktionen: `app.zahlung_moeglich`
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 33 | Feed, Akte eines Objekts, Filter, Volltext, Eigene Eingaenge, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
+| [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts) | 4 | Benutzerkennung |
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
@@ -715,7 +717,7 @@ Funktionen: `app.zahlung_moeglich`
 | [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
-| [`tests/uebernahme.test.ts`](../tests/uebernahme.test.ts) | 10 | Die Zuordnung, Die Probe, Die Uebernahme |
+| [`tests/uebernahme.test.ts`](../tests/uebernahme.test.ts) | 11 | Die Zuordnung, Die Probe, Die Uebernahme |
 | [`tests/verfahrensdoku.test.ts`](../tests/verfahrensdoku.test.ts) | 15 | Die geltende Fassung, Eine freigegebene Fassung, Der Nachweis am Text, Mandantentrennung |
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/vier-augen.test.ts`](../tests/vier-augen.test.ts) | 7 | An der Stufe, Am Stempeltyp, Die Pruefung des Ablaufs |

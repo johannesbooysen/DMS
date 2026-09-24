@@ -203,6 +203,22 @@ describe('Die Uebernahme', () => {
     expect(Number(d?.laeufe)).toBe(0)
   }, 30_000)
 
+  it('setzt die Ampel nach den uebernommenen Fakten, nicht nach dem Geratenen', async () => {
+    const ablage = new Merkablage()
+    const ergebnis = await belegUebernehmen(ablage, BERND, MANDANT, beleg(), pdf, { kennung: 'lauf-ampel', quelle: 'test' })
+    angelegt.push(ergebnis.dokumentId as string)
+    const [d] = await direkt<{ ampel_extraktion: string; befunde: string | null }>(
+      `select d.ampel_extraktion,
+              (select string_agg(b.pruefung, ',') from plausibilitaet_befund b where b.dokument_id = d.id) as befunde
+         from dokument d where d.id = $1`,
+      [ergebnis.dokumentId],
+    )
+    // Nichts geraten: Die Fakten stammen aus dem Altsystem.
+    expect(d?.ampel_extraktion).toBe('gruen')
+    // Der Kreditor steht am Beleg -- ein Befund "unbekannt" waere der Stand von vor dem Upsert.
+    expect(d?.befunde ?? '').not.toContain('kreditor_unbekannt')
+  }, 30_000)
+
   it('uebernimmt dieselbe Datei kein zweites Mal -- die Dublette steht im Protokoll', async () => {
     const ablage = new Merkablage()
     const erste = await belegUebernehmen(ablage, BERND, MANDANT, beleg(), pdf, { kennung: 'lauf-2', quelle: 'test' })

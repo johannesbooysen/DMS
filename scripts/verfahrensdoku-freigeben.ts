@@ -27,18 +27,24 @@ import { DateisystemAblage, type Ablage } from '../src/ablage'
 import { s3AusUmgebung } from '../src/ablage-s3'
 import { fassungFreigeben } from '../src/verfahrensdoku'
 import { verfahrensdokuErzeugen } from './verfahrensdoku-erzeugen.mjs'
+import { benutzerIdAufloesen } from '../src/benutzer-kennung'
 
 const WURZEL = fileURLToPath(new URL('..', import.meta.url))
 const DATEI = join(WURZEL, 'docs/verfahrensdokumentation.md')
 
-const benutzer = process.env['DMS_BENUTZER_FREIGABE']
-if (benutzer === undefined || benutzer === '') {
+const benutzerRoh = process.env['DMS_BENUTZER_FREIGABE']
+if (benutzerRoh === undefined || benutzerRoh === '') {
   console.error(
     'DMS_BENUTZER_FREIGABE fehlt. Eine Freigabe ist eine Handlung -- es soll ' +
       'dabeistehen, wer sie vorgenommen hat.',
   )
   process.exit(1)
 }
+// E-Mail-Adresse oder Kennung -- beides geht, gesperrt geht nicht.
+const benutzer = await benutzerIdAufloesen(benutzerRoh).catch((fehler: unknown) => {
+  console.error(fehler instanceof Error ? fehler.message : String(fehler))
+  process.exit(1)
+})
 
 const gueltigAb = process.argv[2] ?? new Date().toISOString().slice(0, 10)
 if (!/^\d{4}-\d{2}-\d{2}$/.test(gueltigAb)) {

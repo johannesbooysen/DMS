@@ -26,6 +26,7 @@ import { archivieren } from '../archiv'
 import { betragLesen } from '../extraktion/zahlen'
 import { dokumentAufnehmen } from '../ingest/aufnehmen'
 import { aufbereiten } from '../worker/aufbereitung'
+import { plausibilitaetPruefen } from '../pruefung/plausibilitaet'
 
 export const BELEGARTEN = ['rechnung', 'gutschrift', 'mahnung', 'schriftverkehr', 'sonstiges'] as const
 type Belegart = (typeof BELEGARTEN)[number]
@@ -484,6 +485,21 @@ export async function bestandUebernehmen(
       ],
     )
   }
+
+  /*
+   * Die Ampel nach den uebernommenen Fakten, nicht nach dem Geratenen.
+   *
+   * Die Aufbereitung hat extrahiert und geprueft, bevor die Fakten aus dem
+   * Altsystem standen: Extraktion rot (nichts sicher gelesen), Befund
+   * "Kreditor unbekannt". Beides beschreibt einen Zustand, den es nach dem
+   * Upsert nicht mehr gibt. Die Fakten kommen aus dem Altsystem -- nichts
+   * geraten, wie bei ZUGFeRD steht die Extraktion auf Gruen --, und die
+   * Pruefung laeuft noch einmal gegen das, was jetzt am Beleg steht. Sonst
+   * traegt jeder Altbeleg im Archiv eine rote Ampel, und Rot hiesse dort
+   * nichts mehr.
+   */
+  await c.query(`update dokument set ampel_extraktion = 'gruen' where id = $1`, [aufnahme.dokumentId])
+  await plausibilitaetPruefen(c, aufnahme.dokumentId)
 
   const bis = await archivieren(c, aufnahme.dokumentId)
   if (bis === null) throw new UebernahmeAbgelehnt('Der Beleg liess sich nicht archivieren.')
