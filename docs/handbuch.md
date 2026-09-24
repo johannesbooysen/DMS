@@ -286,6 +286,12 @@ stehen zur Wahl:
 nicht gesetzt ist — eine Vorschau, in der ein Scan ohne Text im Fehlerkorb
 landet, beantwortet die Frage nicht, für die es sie gibt.
 
+Direkt nach dem Aufnehmen zeigt die Belegansicht „die Aufbereitung läuft"
+und lädt sich alle paar Sekunden selbst neu, bis die Seiten da sind — bei
+einem Scan mit Texterkennung dauert das einige Sekunden je Seite. Ist die
+Aufbereitung gescheitert, steht dort stattdessen der Verweis in den
+Fehlerkorb.
+
 **Ohne eingerichtete Erkennung geht kein Scan verloren — er wird sichtbar.**
 Der Beleg landet im [Fehlerkorb](#fehlerkorb) mit dem Grund, dass keine
 Erkennung eingerichtet ist. Von dort führen die üblichen Wege weiter, in der

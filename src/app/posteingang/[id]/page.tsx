@@ -64,9 +64,10 @@ export default async function Stapelpruefung({
       </p>
 
       {kopf.status === 'aufbereitung' ? (
-        <p className="meldung-hinweis">
+        <p className="meldung-hinweis" role="status">
+          <meta httpEquiv="refresh" content="4" />
           Der Stapel wird gerade gelesen und gerendert — das übernimmt der
-          Worker, nicht diese Seite. Bitte in einem Moment neu laden.
+          Worker, nicht diese Seite. Sie lädt sich alle paar Sekunden neu.
         </p>
       ) : uebernommen ? (
         <p style={{ background: 'var(--farbe-gruen-hell)', color: 'var(--farbe-gruen)', padding: '0.75rem' }}>

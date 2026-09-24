@@ -67,6 +67,17 @@ test('Ein hochgeladener Beleg wird vom Worker aufbereitet', async ({ page }) => 
     await page.getByRole('button', { name: 'Aufnehmen' }).click()
   })
 
+  await test.step('Die Belegansicht wartet selbst auf den Worker', async () => {
+    /*
+     * Kein reload() hier, und das ist der Punkt: Der erste echte Beleg
+     * blieb beim Bedienen in "die Aufbereitung läuft" stehen, weil die
+     * Seite die von vor dem Worker war. Solange keine Seiten da sind,
+     * lädt sie sich selbst neu -- das Bild muss also von allein kommen.
+     */
+    await page.waitForURL('**/beleg/*')
+    await expect(page.getByRole('img', { name: 'Seite 1' })).toBeVisible({ timeout: 90_000 })
+  })
+
   await test.step('Der Seitentext taucht auf — er kommt aus dem Worker', async () => {
     await sucheBisTreffer(page, KENNWORT)
   })

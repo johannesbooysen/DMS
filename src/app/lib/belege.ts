@@ -146,6 +146,34 @@ export async function originalSchluessel(
 }
 
 /** Volltext einer Seite — Grundlage der Trefferhervorhebung ohne Nachladen. */
+export type Aufbereitungsstand = 'laeuft' | 'gescheitert' | 'fertig'
+
+/**
+ * Wo die Aufbereitung eines Belegs steht -- fuer die Anzeige, solange keine
+ * Seiten da sind. Drei Antworten, weil drei verschiedene Handgriffe folgen:
+ * warten (die Seite laedt sich neu), in den Fehlerkorb gehen, oder nichts
+ * (ein Beleg ohne Seiten, etwa ein Bild statt eines PDFs).
+ *
+ * "Gescheitert" heisst: ein offener Eintrag im Fehlerkorb. Der Status allein
+ * sagt das nicht -- ein Beleg, dessen Erkennung fehlt, ist trotzdem
+ * `laufend`.
+ */
+export async function aufbereitungsstand(benutzerId: string, dokumentId: string): Promise<Aufbereitungsstand> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<{ status: string; offen: boolean }>(
+      `select d.status,
+              exists (select 1 from verarbeitungsfehler f
+                       where f.dokument_id = d.id and f.erledigt_am is null) as offen
+         from dokument d where d.id = $1`,
+      [dokumentId],
+    )
+    const d = rows[0]
+    if (d === undefined) return 'fertig'
+    if (d.offen) return 'gescheitert'
+    return d.status === 'in_aufbereitung' ? 'laeuft' : 'fertig'
+  })
+}
+
 export async function seitentextLaden(
   benutzerId: string,
   dokumentId: string,

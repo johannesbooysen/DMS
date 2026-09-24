@@ -17,7 +17,7 @@
  */
 
 import Link from 'next/link'
-import { seitentextLaden } from '@/app/lib/belege'
+import { aufbereitungsstand, seitentextLaden } from '@/app/lib/belege'
 import { stempelVerschiebenAktion } from '@/app/lib/layer-aktionen'
 import { Layerschicht, Notizliste } from '@/app/lib/layerschicht'
 import { Seitentasten } from '@/app/lib/seitentasten'
@@ -50,10 +50,35 @@ export async function Belegbetrachter({
   const anzahl = seitenzahl > 0 ? seitenzahl : seiten.length
 
   if (anzahl === 0) {
+    /*
+     * Ohne Seiten gibt es drei Lagen, und die Seite muss sagen, welche:
+     * Der erste echte Beleg blieb beim Bedienen in "die Aufbereitung
+     * laeuft" stehen -- sie war laengst fertig, nur die Seite war die von
+     * vor dem Worker. Solange sie laeuft, laedt sich die Seite deshalb
+     * selbst neu (Meta-Refresh: serverseitig, ohne DOM-Zugriff, ohne
+     * Zustand). Ist sie gescheitert, hilft kein Neuladen, sondern der
+     * Fehlerkorb; ist sie fertig und es gibt trotzdem keine Seiten, war
+     * es kein PDF.
+     */
+    const stand = await aufbereitungsstand(benutzer, dokumentId)
     return (
       <div className="betrachter">
-        <p style={{ color: 'var(--farbe-text-leise)', textAlign: 'center' }}>
-          Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.
+        {stand === 'laeuft' && <meta httpEquiv="refresh" content="4" />}
+        <p role="status" style={{ color: 'var(--farbe-text-leise)', textAlign: 'center' }}>
+          {stand === 'laeuft' && (
+            <>
+              Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.
+              <br />
+              <span className="klein">Diese Seite lädt sich alle paar Sekunden neu.</span>
+            </>
+          )}
+          {stand === 'gescheitert' && (
+            <>
+              Die Aufbereitung ist gescheitert — der Beleg steht im{' '}
+              <Link href="/fehlerkorb">Fehlerkorb</Link>.
+            </>
+          )}
+          {stand === 'fertig' && 'Dieser Beleg hat keine Seiten — die Datei war kein lesbares PDF.'}
         </p>
       </div>
     )
