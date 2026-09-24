@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-120 Module, 1009 Testfaelle in 59 Dateien,
+121 Module, 1011 Testfaelle in 60 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -635,6 +635,7 @@ Funktionen: `app.moegliche_stempel`
 | [`src/notfall/index.ts`](../src/notfall/index.ts) | Notfallzugriff (Konzept §24.10) |
 | [`src/ocr/index.ts`](../src/ocr/index.ts) | Auswahl der Texterkennung |
 | [`src/ocr/ocrmypdf.ts`](../src/ocr/ocrmypdf.ts) | Texterkennung über ocrmypdf |
+| [`src/ocr/tesseractjs.ts`](../src/ocr/tesseractjs.ts) | Texterkennung mit tesseract.js -- Tesseract als WebAssembly im Worker |
 | [`src/ocr/typen.ts`](../src/ocr/typen.ts) | Texterkennung hinter einer Schnittstelle |
 | [`src/postausgang/index.ts`](../src/postausgang/index.ts) | Postausgang: Vorlage füllen, in das Ausgangsbuch legen, senden |
 | [`src/postausgang/versand.ts`](../src/postausgang/versand.ts) | Der Versand |
@@ -711,6 +712,7 @@ Funktionen: `app.moegliche_stempel`
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 26 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/notfall.test.ts`](../tests/notfall.test.ts) | 20 | Ohne Notfallzugriff, Die Reichweite, Die Befristung, Der Grund, Das Recht, einen einzurichten, Die Sichtbarkeit |
 | [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |
+| [`tests/ocr-tesseractjs.test.ts`](../tests/ocr-tesseractjs.test.ts) | 2 | Auswahl, Erkennung |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
 | [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |

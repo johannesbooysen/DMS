@@ -65,3 +65,6 @@ test-results/
 
 # Bestandsaufnahme der Oberflaeche -- Artefakte, kein Quelltext.
 bilder/
+
+# Sprachdaten der Texterkennung (tesseract.js laedt sie beim ersten Lauf)
+.tesseract/

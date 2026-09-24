@@ -35,6 +35,13 @@ export interface Texterkennung {
   verfuegbar(): Promise<boolean>
 
   erkennen(pdf: Buffer): Promise<Erkennungsergebnis>
+
+  /**
+   * Was beim Herunterfahren freizugeben ist -- ein Hilfsprozess, ein
+   * geladenes Modell. Ein Aufruf ueber ein Programm hat nichts davon und
+   * laesst es weg.
+   */
+  beenden?(): Promise<void>
 }
 
 export class ErkennungFehlgeschlagen extends Error {}

@@ -258,17 +258,33 @@ Die meisten PDFs bringen ihren Text mit. Ein **Scan** nicht: Er besteht aus
 Pixeln. Das System stellt das selbst fest (im Schnitt weniger als 40 Zeichen
 je Seite) und schickt ihn dann durch die Texterkennung.
 
-**Eingeschaltet wird sie über `DMS_OCR=ocrmypdf`**, und zwar auf dem Rechner,
-auf dem der *Worker* läuft — nicht auf dem der Anwendung. Vorausgesetzt sind
-dort drei Dinge: Python mit ocrmypdf, Tesseract mit deutschem Sprachpaket und
-Ghostscript.
+**Eingeschaltet wird sie über `DMS_OCR`**, und zwar auf dem Rechner, auf
+dem der *Worker* läuft — nicht auf dem der Anwendung. Zwei Erkennungen
+stehen zur Wahl:
+
+- **`ocrmypdf`** — der Weg auf dem Server. Es liegt im Docker-Image;
+  außerhalb davon braucht es Python mit ocrmypdf, Tesseract mit deutschem
+  Sprachpaket und Ghostscript. Ergebnis ist ein PDF/A.
+- **`tesseractjs`** — derselbe Tesseract, aber als WebAssembly im Worker,
+  **ohne Installation**. Beim ersten Lauf holt er die deutschen Sprachdaten
+  (etwa 7 MB) aus dem Netz und behält sie unter `.tesseract/`; danach läuft
+  er ohne Netz. Gedacht für Entwicklungsrechner und kleine Installationen
+  ohne ocrmypdf. Ergebnis ist ein PDF mit unsichtbarer Textebene — kein
+  PDF/A, aber dieselbe Textebene an derselben Stelle, und Suche, Zuordnung
+  und Extraktion sehen keinen Unterschied. Rund eine Sekunde je Seite.
 
 | Variable | Vorgabe | Wofür |
 |---|---|---|
-| `DMS_OCR` | `keine` | `ocrmypdf` schaltet ein |
+| `DMS_OCR` | `keine` | `ocrmypdf` oder `tesseractjs` schaltet ein |
 | `DMS_OCR_SPRACHE` | `deu` | Mehrere mit `+`, etwa `deu+eng` |
 | `DMS_OCR_ZEITLIMIT_S` | `300` | Abbruch je Beleg |
-| `DMS_OCR_PROGRAMM` | `ocrmypdf` | Falls es nicht im Pfad liegt |
+| `DMS_OCR_PROGRAMM` | `ocrmypdf` | Nur ocrmypdf: falls es nicht im Pfad liegt |
+| `DMS_OCR_SPRACHDATEN` | `.tesseract` | Nur tesseractjs: wo die Sprachdaten liegen |
+| `DMS_OCR_SPRACHQUELLE` | tessdata.projectnaptha.com | Nur tesseractjs: woher fehlende Sprachdaten kommen |
+
+`npm run vorschau` schaltet `tesseractjs` von selbst ein, wenn `DMS_OCR`
+nicht gesetzt ist — eine Vorschau, in der ein Scan ohne Text im Fehlerkorb
+landet, beantwortet die Frage nicht, für die es sie gibt.
 
 **Ohne eingerichtete Erkennung geht kein Scan verloren — er wird sichtbar.**
 Der Beleg landet im [Fehlerkorb](#fehlerkorb) mit dem Grund, dass keine

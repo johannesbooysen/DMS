@@ -128,6 +128,56 @@ export async function seiteRendern(
   zielbreite: number,
   qualitaet = 82,
 ): Promise<Buffer> {
+  const { leinwand } = await seiteZeichnen(inhalt, seitennummer, zielbreite)
+  return leinwand.encode('webp', qualitaet)
+}
+
+/**
+ * Dieselbe Seite als PNG -- fuer die Texterkennung, nicht fuer die Anzeige.
+ * Tesseract liest PNG, aber kein WebP; und verlustfrei ist fuer die
+ * Erkennung ohnehin richtiger als eine Vorschau mit Kompressionsartefakten.
+ */
+export async function seiteAlsPng(inhalt: Buffer, seitennummer: number, zielbreite: number): Promise<Buffer> {
+  const { leinwand } = await seiteZeichnen(inhalt, seitennummer, zielbreite)
+  return leinwand.encode('png')
+}
+
+export interface Erkennungsbild {
+  png: Buffer
+  /** Bildmasse in Pixeln. */
+  breite: number
+  hoehe: number
+  /**
+   * Rechnet einen Bildpunkt (Ursprung oben links) in den Punkt des
+   * PDF-Nutzerraums um -- mit der Drehung der Seite, die pdfjs beim Rendern
+   * angewandt hat. Wer die Drehung selbst nachrechnet, rechnet sie falsch.
+   */
+  zumPdfPunkt: (x: number, y: number) => [number, number]
+}
+
+/**
+ * Eine Seite so, wie die Texterkennung sie braucht: als PNG in der
+ * gewuenschten Aufloesung, mit der Rueckrechnung von Bildpunkten in
+ * PDF-Koordinaten, damit erkannte Woerter an ihrer Stelle im PDF landen.
+ */
+export async function seiteFuerErkennung(inhalt: Buffer, seitennummer: number, dpi: number): Promise<Erkennungsbild> {
+  const { leinwand, sicht } = await seiteZeichnen(inhalt, seitennummer, (grundbreite) => (grundbreite * dpi) / 72)
+  return {
+    png: await leinwand.encode('png'),
+    breite: leinwand.width,
+    hoehe: leinwand.height,
+    zumPdfPunkt: (x, y) => {
+      const [px, py] = sicht.convertToPdfPoint(x, y)
+      return [px ?? 0, py ?? 0]
+    },
+  }
+}
+
+async function seiteZeichnen(
+  inhalt: Buffer,
+  seitennummer: number,
+  zielbreite: number | ((grundbreite: number) => number),
+) {
   schriftenAnmelden()
 
   const ladeauftrag = dokumentOeffnen(inhalt)
@@ -135,7 +185,8 @@ export async function seiteRendern(
   try {
     const seite = await doc.getPage(seitennummer)
     const grundmass = seite.getViewport({ scale: 1 })
-    const sicht = seite.getViewport({ scale: zielbreite / grundmass.width })
+    const breite = typeof zielbreite === 'function' ? zielbreite(grundmass.width) : zielbreite
+    const sicht = seite.getViewport({ scale: breite / grundmass.width })
 
     const leinwand = createCanvas(Math.round(sicht.width), Math.round(sicht.height))
     const kontext = leinwand.getContext('2d')
@@ -154,7 +205,7 @@ export async function seiteRendern(
     await seite.render(auftrag).promise
 
     seite.cleanup()
-    return leinwand.encode('webp', qualitaet)
+    return { leinwand, sicht }
   } finally {
     await ladeauftrag.destroy()
   }

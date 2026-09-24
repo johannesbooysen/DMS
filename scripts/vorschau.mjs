@@ -32,6 +32,10 @@ const umgebung = {
   // Dieselbe Ablage wie `npm run dev`, damit ein hochgeladener Beleg auch
   // hier seine Vorschaubilder findet.
   DMS_ABLAGE: process.env.DMS_ABLAGE ?? '.ablage',
+  // Texterkennung ohne Installation: Ein Scan, der in der Vorschau ohne
+  // Text im Fehlerkorb landet, beantwortet die Frage nicht, fuer die es die
+  // Vorschau gibt. Wer ocrmypdf hat, setzt DMS_OCR selbst.
+  DMS_OCR: process.env.DMS_OCR ?? 'tesseractjs',
 }
 
 console.log('Vorschau mit Entwicklungsanmeldung auf http://localhost:3000')

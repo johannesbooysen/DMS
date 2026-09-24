@@ -1314,6 +1314,10 @@ belegt.
 - holt nach, was vor der Einrichtung des Speichers archiviert wurde
 - laesst einen Beleg offen, dessen Datei fehlt
 
+### [`tests/ocr-tesseractjs.test.ts`](../tests/ocr-tesseractjs.test.ts)
+
+- ist ueber DMS_OCR=tesseractjs waehlbar
+
 ### [`tests/ocr.test.ts`](../tests/ocr.test.ts)
 
 - legt einen Scan in den Fehlerkorb, statt ihn still durchzulassen

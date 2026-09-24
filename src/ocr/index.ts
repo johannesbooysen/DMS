@@ -13,10 +13,11 @@
  */
 
 import { ocrmypdfErkennung } from './ocrmypdf'
+import { tesseractjsErkennung } from './tesseractjs'
 import type { Texterkennung } from './typen'
 
 export * from './typen'
-export { ocrmypdfErkennung }
+export { ocrmypdfErkennung, tesseractjsErkennung }
 
 /**
  * Welche Erkennung eingestellt ist — oder `null`.
@@ -28,6 +29,10 @@ export function texterkennung(): Texterkennung | null {
   switch (process.env['DMS_OCR'] ?? 'keine') {
     case 'ocrmypdf':
       return ocrmypdfErkennung
+    case 'tesseractjs':
+      // Tesseract als WebAssembly, ohne Installation -- fuer Rechner ohne
+      // ocrmypdf. Sprachdaten kommen beim ersten Lauf nach `.tesseract/`.
+      return tesseractjsErkennung
     default:
       return null
   }
@@ -35,4 +40,9 @@ export function texterkennung(): Texterkennung | null {
 
 export function ocrEingerichtet(): boolean {
   return texterkennung() !== null
+}
+
+/** Beim Herunterfahren: Was die Erkennung an Prozessen haelt, freigeben. */
+export async function texterkennungBeenden(): Promise<void> {
+  await texterkennung()?.beenden?.()
 }

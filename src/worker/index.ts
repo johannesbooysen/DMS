@@ -26,7 +26,7 @@ import {
 } from '../queue'
 import { eingangAbholen } from '../eingang'
 import { fehlerMelden } from '../fehlerkorb'
-import { texterkennung } from '../ocr'
+import { texterkennung, texterkennungBeenden } from '../ocr'
 import { aufbereiten } from './aufbereitung'
 import { stapelAufbereiten } from './stapelaufbereitung'
 import { postSenden, versandAusUmgebung, versandEingerichtet } from '../postausgang'
@@ -335,6 +335,7 @@ async function start(): Promise<void> {
 async function beenden(signal: string): Promise<void> {
   console.log(`[worker] ${signal} empfangen, fahre herunter`)
   await queueBeenden()
+  await texterkennungBeenden()
   process.exit(0)
 }
 
