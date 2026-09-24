@@ -235,15 +235,15 @@ describe('Anlegen und Pruefen', () => {
 
 describe('Die Rechtelage der Oberflaeche', () => {
   it('meldet fuer die Objektbearbeitung beides als nein', async () => {
-    expect(await rechtelage(ANNA)).toEqual({ stammdaten: false, benutzer: false })
+    expect(await rechtelage(ANNA)).toEqual({ stammdaten: false, benutzer: false, prozess: false })
   })
 
   it('meldet fuer die Buchhaltung nur die Stammdaten', async () => {
-    expect(await rechtelage(BERND)).toEqual({ stammdaten: true, benutzer: false })
+    expect(await rechtelage(BERND)).toEqual({ stammdaten: true, benutzer: false, prozess: false })
   })
 
   it('meldet fuer die Geschaeftsleitung beides', async () => {
-    expect(await rechtelage(EVA)).toEqual({ stammdaten: true, benutzer: true })
+    expect(await rechtelage(EVA)).toEqual({ stammdaten: true, benutzer: true, prozess: true })
   })
 })
 

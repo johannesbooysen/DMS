@@ -27,6 +27,7 @@ import {
 } from '@/app/lib/konfig-aktionen'
 import { Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { rechtelage } from '@/stammdaten'
 import { Stufenformular } from '@/app/lib/stufenformular'
 import type { Knoten } from '@/workflow/baum'
 import {
@@ -257,7 +258,8 @@ export default async function Fassung({
     stempelJeStufe(benutzer, id),
     zustaendigkeitsnamen(benutzer),
   ])
-  const bearbeitbar = fassung.status === 'entwurf'
+  // Entwurf und Recht -- ohne prozess_konfigurieren ist der Entwurf nur zu lesen.
+  const bearbeitbar = fassung.status === 'entwurf' && (await rechtelage(benutzer)).prozess
 
   const probebetrag = Number(brutto ?? 3000)
   const schritte = await fassungSimulieren(benutzer, id, {

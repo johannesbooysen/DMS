@@ -151,3 +151,54 @@ test('Die Eingangsquellenmaske hat kein Passwortfeld', async ({ page }) => {
   await expect(page.locator('input[type="password"]')).toHaveCount(0)
   await expect(page.getByText(/kein Passwortfeld, und das ist Absicht/)).toBeVisible()
 })
+
+test('Eine eigene Vorlage: angelegt, geprüft, aus dem Verkehr gezogen', async ({ page }) => {
+  await anmelden(page, BENUTZER.eva)
+  await page.goto('/stammdaten/vorlagen')
+
+  await test.step('Ein unbekannter Platzhalter wird schon beim Anlegen abgewiesen', async () => {
+    await page.locator('input[name=schluessel]').fill('e2e_rueckfrage')
+    await page.locator('input[name=name]').fill('E2E Rückfrage')
+    await page.locator('form:has(input[name=schluessel]) input[name=betreff]').fill('Rückfrage zu {{rechnungsnr}}')
+    await page.locator('form:has(input[name=schluessel]) textarea[name=text]').fill('Bitte um Rückmeldung.')
+    await page.getByRole('button', { name: 'Vorlage anlegen' }).click()
+    await expect(page.getByRole('alert').filter({ hasText: /rechnungsnr/ })).toBeVisible()
+  })
+
+  await test.step('Mit erlaubten Platzhaltern steht sie danach mit Vorschau da', async () => {
+    await page.locator('input[name=schluessel]').fill('e2e_rueckfrage')
+    await page.locator('input[name=name]').fill('E2E Rückfrage')
+    await page.locator('form:has(input[name=schluessel]) input[name=betreff]').fill('Rückfrage zu {{rechnungsnummer}}')
+    await page.locator('form:has(input[name=schluessel]) textarea[name=text]').fill('Zu {{betrag}} haben wir eine Frage.')
+    await page.getByRole('button', { name: 'Vorlage anlegen' }).click()
+    await expect(page.getByRole('heading', { name: /E2E Rückfrage/ })).toBeVisible()
+    await expect(page.getByText('Rückfrage zu RE-2026-0001')).toBeVisible()
+  })
+
+  await test.step('Deaktivieren statt löschen -- und zurück', async () => {
+    const abschnitt = page.locator('section').filter({ has: page.getByRole('heading', { name: /E2E Rückfrage/ }) })
+    await abschnitt.getByRole('button', { name: 'deaktivieren' }).click()
+    await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: /E2E Rückfrage/ }) }).getByText('inaktiv')).toBeVisible()
+    await page.locator('section').filter({ has: page.getByRole('heading', { name: /E2E Rückfrage/ }) }).getByRole('button', { name: 'aktivieren' }).click()
+    await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: /E2E Rückfrage/ }) }).getByText('inaktiv')).toHaveCount(0)
+  })
+})
+
+test('Der Kreditor bekommt eine E-Mail-Adresse -- und eine kaputte wird abgewiesen', async ({ page }) => {
+  await anmelden(page, BENUTZER.bernd)
+  await navigiere(page, 'Stammdaten')
+  const feld = page.getByLabel(/E-Mail-Adresse von Musterreinigung/)
+  const formular = page.locator('form').filter({ has: feld })
+
+  await feld.fill('rechnung@musterreinigung.invalid')
+  await formular.getByRole('button', { name: 'übernehmen' }).click()
+  await expect(page.getByText('rechnung@musterreinigung.invalid').first()).toBeVisible()
+
+  // Der Server prüft die Form selbst -- die Browserprüfung wird dafür
+  // abgeschaltet, sonst käme die Eingabe gar nicht erst an.
+  const erneut = page.locator('form').filter({ has: page.getByLabel(/E-Mail-Adresse von Musterreinigung/) })
+  await erneut.evaluate((f) => ((f as unknown as { noValidate: boolean }).noValidate = true))
+  await erneut.getByLabel(/E-Mail-Adresse von Musterreinigung/).fill('keine adresse')
+  await erneut.getByRole('button', { name: 'übernehmen' }).click()
+  await expect(page.getByRole('alert').filter({ hasText: /name@domain/ })).toBeVisible()
+})

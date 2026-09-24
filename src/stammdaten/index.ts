@@ -724,6 +724,8 @@ export async function zustaendigkeitBeenden(benutzerId: string, f: Eingaben): Pr
 export interface Rechtelage {
   stammdaten: boolean
   benutzer: boolean
+  /** Ablaeufe aendern -- prozess_konfigurieren. */
+  prozess: boolean
 }
 
 /**
@@ -737,9 +739,10 @@ export interface Rechtelage {
  */
 export async function rechtelage(benutzerId: string): Promise<Rechtelage> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ s: boolean; b: boolean }>(
-      `select app.darf('stammdaten_pflegen') as s, app.darf('benutzer_verwalten') as b`,
+    const { rows } = await c.query<{ s: boolean; b: boolean; p: boolean }>(
+      `select app.darf('stammdaten_pflegen') as s, app.darf('benutzer_verwalten') as b,
+              app.darf('prozess_konfigurieren') as p`,
     )
-    return { stammdaten: rows[0]?.s === true, benutzer: rows[0]?.b === true }
+    return { stammdaten: rows[0]?.s === true, benutzer: rows[0]?.b === true, prozess: rows[0]?.p === true }
   })
 }

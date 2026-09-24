@@ -101,7 +101,26 @@ test('Die Kontierung verlangt die volle Summe — und sagt das', async ({ page }
   await test.step('Rest übernehmen, dann geht es weiter', async () => {
     await page.getByRole('button', { name: /Rest übernehmen/ }).click()
     await expect(page.getByText('Stimmt mit dem Rechnungsbetrag überein')).toBeVisible()
+  })
 
+  await test.step('§ 35a an der Zeile -- die Anteile dürfen den Zeilenbetrag nicht übersteigen', async () => {
+    const klappe = page.locator('details').filter({ hasText: '§ 35a' }).first()
+    await klappe.locator('summary').click()
+    await klappe.locator('select[name=art]').selectOption('handwerkerleistung')
+    await klappe.locator('input[name=lohnanteil]').fill('900')
+    await klappe.getByRole('button', { name: 'Übernehmen' }).click()
+    await expect(page.getByRole('alert').filter({ hasText: /übersteigen/ })).toBeVisible()
+
+    const erneut = page.locator('details').filter({ hasText: '§ 35a' }).first()
+    await erneut.locator('summary').click()
+    await erneut.locator('select[name=art]').selectOption('handwerkerleistung')
+    await erneut.locator('input[name=lohnanteil]').fill('200')
+    await erneut.locator('input[name=unbarGezahlt]').check()
+    await erneut.getByRole('button', { name: 'Übernehmen' }).click()
+    await expect(page.getByText(/§ 35a Handwerkerleistung · Lohn 200,00/)).toBeVisible()
+  })
+
+  await test.step('Kontiert -- und weiter', async () => {
     await page.getByRole('button', { name: 'Kontiert' }).click()
     await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
   })

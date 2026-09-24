@@ -10,6 +10,7 @@
 import { entwurfAnlegenAktion } from '@/app/lib/konfig-aktionen'
 import { Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { rechtelage } from '@/stammdaten'
 import { definitionenLaden, type Definitionszeile } from '@/workflow/konfiguration'
 
 export const dynamic = 'force-dynamic'
@@ -20,7 +21,7 @@ const ZUSTAND: Record<string, string> = {
   abgeloest: 'abgelöst',
 }
 
-function Fassungstabelle({ zeilen }: { zeilen: Definitionszeile[] }) {
+function Fassungstabelle({ zeilen, darfAendern }: { zeilen: Definitionszeile[]; darfAendern: boolean }) {
   if (zeilen.length === 0) return <p className="leise">Nichts vorhanden.</p>
 
   return (
@@ -49,7 +50,7 @@ function Fassungstabelle({ zeilen }: { zeilen: Definitionszeile[] }) {
             </td>
             <td className="rechts">{f.laufendeBelege}</td>
             <td>
-              {f.status === 'aktiv' && (
+              {f.status === 'aktiv' && darfAendern && (
                 <form action={entwurfAnlegenAktion}>
                   <input type="hidden" name="vorlageId" value={f.id} />
                   <button type="submit">Entwurf anlegen</button>
@@ -69,7 +70,12 @@ export default async function Konfiguration({
   searchParams: Promise<{ fehler?: string }>
 }) {
   const { fehler } = await searchParams
-  const fassungen = await definitionenLaden(await angemeldeterBenutzer())
+  const benutzer = await angemeldeterBenutzer()
+  const fassungen = await definitionenLaden(benutzer)
+  // Bequemlichkeit, keine Sicherheit: Die Policy weist das Anlegen ohne
+  // prozess_konfigurieren ohnehin ab -- aber ein Knopf, der beim Druecken
+  // nein sagt, ist schlechter als keiner.
+  const darf = await rechtelage(benutzer)
   const laufend = fassungen.filter((f) => f.status !== 'abgeloest')
   const abgeloest = fassungen.filter((f) => f.status === 'abgeloest')
 
@@ -85,7 +91,7 @@ export default async function Konfiguration({
         <p className="leise">Keine Prozessdefinition vorhanden.</p>
       ) : (
         <>
-          <Fassungstabelle zeilen={laufend} />
+          <Fassungstabelle zeilen={laufend} darfAendern={darf.prozess} />
 
           {/*
             Abgeloeste Fassungen werden nie geloescht -- sie erklaeren, warum
@@ -99,7 +105,7 @@ export default async function Konfiguration({
                 {abgeloest.length} abgelöste Fassung{abgeloest.length === 1 ? '' : 'en'}
               </summary>
               <div style={{ marginTop: '0.75rem' }}>
-                <Fassungstabelle zeilen={abgeloest} />
+                <Fassungstabelle zeilen={abgeloest} darfAendern={darf.prozess} />
               </div>
             </details>
           )}

@@ -204,9 +204,25 @@ describe('Eingangsquellen einrichten', () => {
   })
 })
 
+/**
+ * Eine eigene Vorlage je Test -- nicht "irgendeine" aus dem Grundbestand.
+ * Die Tests hier speichern Betreff und Text; auf `limit 1` traf das den
+ * Einsichtslink, und der Einsichtstest fand danach keinen Link mehr in
+ * seiner Mail. Welche Datei zuerst laeuft, entscheidet der Dauer-Cache.
+ */
+async function testvorlage(): Promise<{ id: string }> {
+  const [v] = await direkt<{ id: string }>(
+    `insert into vorlage (mandant_id, schluessel, name, betreff, text)
+     values ('10000000-0000-0000-0000-000000000001', 'test_pflege', 'TEST Pflege', 'Betreff {{kreditor}}', 'Text {{betrag}}')
+     on conflict (mandant_id, schluessel) do update set betreff = excluded.betreff, text = excluded.text
+     returning id`,
+  )
+  return v!
+}
+
 describe('Vorlagen', () => {
   it('weist einen unbekannten Platzhalter ab', async () => {
-    const [v] = await direkt<{ id: string }>('select id from vorlage limit 1')
+    const v = await testvorlage()
 
     /*
      * Beim Fuellen bleibt ein unbekannter Platzhalter stehen, damit er
@@ -224,7 +240,7 @@ describe('Vorlagen', () => {
   })
 
   it('nimmt eine Vorlage mit erlaubten Platzhaltern an', async () => {
-    const [v] = await direkt<{ id: string }>('select id from vorlage limit 1')
+    const v = await testvorlage()
     await vorlageSpeichern(EVA, {
       id: v.id,
       betreff: 'Zahlung {{kreditor}} {{rechnungsnummer}}',
@@ -238,7 +254,7 @@ describe('Vorlagen', () => {
   })
 
   it('zeigt die Vorschau mit erfundenen Beispielwerten', async () => {
-    const [v] = await direkt<{ id: string }>('select id from vorlage limit 1')
+    const v = await testvorlage()
     await vorlageSpeichern(EVA, {
       id: v.id,
       betreff: '{{kreditor}}',
@@ -255,7 +271,7 @@ describe('Vorlagen', () => {
   })
 
   it('haelt fest, wer zuletzt geaendert hat', async () => {
-    const [v] = await direkt<{ id: string }>('select id from vorlage limit 1')
+    const v = await testvorlage()
     await vorlageSpeichern(BERND, {
       id: v.id,
       betreff: 'Neu {{kreditor}}',
@@ -312,7 +328,7 @@ describe('Vorlagen', () => {
   })
 
   it('laesst eine Objektbearbeiterin keine Vorlage aendern', async () => {
-    const [v] = await direkt<{ id: string }>('select id from vorlage limit 1')
+    const v = await testvorlage()
 
     /*
      * Der Fund dieses Blocks: `vorlage_sicht` lautete `for all` mit reinem

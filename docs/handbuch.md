@@ -2108,7 +2108,8 @@ Belege, die vor der Umstellung gestartet sind, laufen in ihrer Fassung zu Ende.
 Die Spalte *laufende Belege* zeigt, wie viele das sind.
 
 **Ändern geht nur über einen Entwurf.** Die aktive Fassung wird nie
-bearbeitet. Ein Entwurf ist eine vollständige Kopie mit eigenen Stufen — sonst
+bearbeitet. Den Knopf *Entwurf anlegen* und die Formulare im Editor sieht nur,
+wer Abläufe konfigurieren darf; alle anderen lesen. Ein Entwurf ist eine vollständige Kopie mit eigenen Stufen — sonst
 würde eine Änderung rückwirkend die Belege betreffen, die gerade unterwegs
 sind. Es gibt höchstens einen Entwurf je Ablauf; wer ihn angelegt hat, steht
 dabei.
