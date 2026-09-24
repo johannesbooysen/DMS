@@ -516,9 +516,12 @@ der Worker, nicht die Weboberfläche. Bei dreißig Seiten wäre das nichts für
 einen Klick, der auf eine Antwort wartet. Die Prüfansicht sagt es und bittet
 um erneutes Laden.
 
-> Noch nicht da: **Barcode-Trennblätter** werden über ihre Klarschriftzeile
-> erkannt, nicht über den Barcode selbst. Ein Blatt, das nur einen Barcode
-> trägt, muss von Hand getrennt werden.
+**Barcode-Trennblätter** werden auch ohne Klarschrift erkannt: Trägt eine
+fast leere Seite einen Barcode (Code 128, QR und die üblichen anderen), gilt
+sie als Trennblatt, und die Korrekturansicht nennt den gelesenen Inhalt.
+Druckt das Haus seine Blätter mit festem Text, sagt `DMS_TRENNBARCODE` (ein
+Muster, etwa `^TRENN`), welcher Barcode zählt — dann ist eine Seite, die nur
+ein Paketetikett trägt, kein Trennblatt.
 
 ---
 

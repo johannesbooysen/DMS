@@ -10,10 +10,17 @@
  * Blatt erkennt. Diese Zeile liest der vorhandene Textlayer ohnehin mit. Ein
  * Barcodeleser wäre eine weitere Abhängigkeit für dieselbe Auskunft.
  *
- * Was er nicht kann: ein Trennblatt erkennen, das nur einen Barcode trägt und
- * sonst nichts. Dafür gibt es die Korrekturoberfläche — und sie ist ohnehin
- * Pflicht, weil keine automatische Trennung fehlerfrei ist.
+ * Den zweiten Weg gibt es inzwischen auch: Ein Blatt, das nur einen Barcode
+ * trägt, liest der Worker über das Seitenbild (`barcode.ts`) — aber nur bei
+ * Seiten, die fast leer sind, und nur, wenn der Text hier nichts fand. Die
+ * Korrekturoberfläche bleibt Pflicht, weil keine automatische Trennung
+ * fehlerfrei ist.
  */
+
+/** Ein Trennblatt, das der Barcode verraten hat -- fuer die Korrekturansicht. */
+export function barcodeBefund(seite: number, text: string): Seitenbefund {
+  return { seite, trenner: true, grund: `Seite trägt den Barcode „${text}" und ist fast leer` }
+}
 
 /**
  * Was auf einem Trennblatt steht.
@@ -38,7 +45,7 @@ const TRENNWORTE = [
  * Druckereirechnung —, ist es keins. Ohne diese Schranke zerlegte genau eine
  * solche Rechnung den Stapel an der falschen Stelle.
  */
-const HOECHSTLAENGE = 400
+export const HOECHSTLAENGE = 400
 
 export interface Seitenbefund {
   seite: number

@@ -19,8 +19,9 @@
 import type { PoolClient } from 'pg'
 import type { Ablage } from '../ablage'
 import { seitenLesen, seiteRendern } from '../ingest/pdf'
-import { trennungVorschlagen } from '../stapel/trennung'
-import { BREITE_MINIATUR } from './aufbereitung'
+import { barcodeBefund, HOECHSTLAENGE, trennungVorschlagen } from '../stapel/trennung'
+import { barcodesLesen, istTrennbarcode } from '../stapel/barcode'
+import { BREITE_LESEN, BREITE_MINIATUR } from './aufbereitung'
 
 export interface Stapelergebnis {
   seiten: number
@@ -58,6 +59,23 @@ export async function stapelAufbereiten(
   }
 
   const befunde = trennungVorschlagen(seiten.map((s) => ({ seite: s.seite, text: s.text })))
+
+  /*
+   * Zweiter Blick fuer fast leere Seiten ohne Trennwort: Traegt sie einen
+   * Barcode, ist sie ein Trennblatt (Konzept 24.1). Gelesen wird das Bild
+   * in Lesegroesse -- die Miniatur ist fuer einen Barcode zu klein. Nur fuer
+   * Kandidaten, weil das Rendern der teure Teil ist; eine volle Seite ist
+   * ohnehin kein Trennblatt.
+   */
+  for (const [i, befund] of befunde.entries()) {
+    const seite = seiten.find((s) => s.seite === befund.seite)
+    if (seite === undefined || befund.trenner) continue
+    const laenge = (seite.text ?? '').replace(/\s+/g, ' ').trim().length
+    if (laenge > HOECHSTLAENGE) continue
+    const bild = await seiteRendern(inhalt, seite.seite, BREITE_LESEN)
+    const codes = (await barcodesLesen(bild)).filter((c) => istTrennbarcode(c))
+    if (codes[0] !== undefined) befunde[i] = barcodeBefund(seite.seite, codes[0])
+  }
 
   for (const s of seiten) {
     const befund = befunde.find((b) => b.seite === s.seite)

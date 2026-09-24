@@ -10,6 +10,8 @@ import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 export interface Seitenvorlage {
   zeilen: string[]
+  /** Ein PNG, mittig auf der Seite -- etwa ein Barcode ohne Klarschrift. */
+  bild?: Buffer
 }
 
 export async function pdfBauen(seiten: Seitenvorlage[]): Promise<Buffer> {
@@ -22,6 +24,12 @@ export async function pdfBauen(seiten: Seitenvorlage[]): Promise<Buffer> {
     for (const zeile of vorlage.zeilen) {
       seite.drawText(zeile, { x: 60, y, size: 12, font: schrift })
       y -= 20
+    }
+    if (vorlage.bild !== undefined) {
+      const png = await doc.embedPng(vorlage.bild)
+      const breite = Math.min(png.width, 400)
+      const hoehe = (png.height * breite) / png.width
+      seite.drawImage(png, { x: (595 - breite) / 2, y: 500, width: breite, height: hoehe })
     }
   }
 

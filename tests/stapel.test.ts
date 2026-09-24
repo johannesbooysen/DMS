@@ -14,7 +14,9 @@
 
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
+import { toBuffer as barcodeBauen } from 'bwip-js/node'
 import { pdfBauen } from './hilfe/pdf-bauen'
+import { barcodesLesen, istTrennbarcode } from '../src/stapel/barcode'
 import { poolSchliessen, verbindungspool } from '../src/db'
 import type { Ablage } from '../src/ablage'
 import { inhaltHash } from '../src/ablage'
@@ -133,6 +135,50 @@ describe('Trennblatt erkennen', () => {
     expect(istTrennblatt(null).trenner).toBe(false)
     expect(istTrennblatt('').trenner).toBe(false)
   })
+})
+
+describe('Barcode-Trennblatt', () => {
+  /** Ein Code 128 ohne Klarschriftzeile -- das Blatt, das der Text nicht erkennt. */
+  async function trennbarcode(text = 'TRENNBLATT'): Promise<Buffer> {
+    return barcodeBauen({ bcid: 'code128', text, scale: 4, height: 20, paddingwidth: 60, paddingheight: 60, backgroundcolor: 'ffffff' })
+  }
+
+  it('liest den Barcode aus einem Seitenbild', async () => {
+    expect(await barcodesLesen(await trennbarcode('TRENN-42'))).toEqual(['TRENN-42'])
+  })
+
+  it('liest nichts aus einer leeren Seite', async () => {
+    const leer = await pdfBauen([{ zeilen: [] }])
+    expect(leer.byteLength).toBeGreaterThan(0)
+    const { seiteRendern } = await import('../src/ingest/pdf')
+    expect(await barcodesLesen(await seiteRendern(leer, 1, 1240))).toEqual([])
+  })
+
+  it('laesst DMS_TRENNBARCODE entscheiden, welcher Barcode zaehlt', () => {
+    expect(istTrennbarcode('TRENNBLATT-7', undefined)).toBe(true)
+    expect(istTrennbarcode('TRENNBLATT-7', '^trennblatt')).toBe(true)
+    expect(istTrennbarcode('4006381333931', '^trennblatt')).toBe(false)
+    // Ein kaputtes Muster sperrt nicht alles.
+    expect(istTrennbarcode('x', '[')).toBe(true)
+  })
+
+  it('trennt einen Stapel an einem Blatt, das nur einen Barcode traegt', async () => {
+    const ablage = new Merkablage()
+    const id = await stapelAnlegen(ablage, {
+      dateiname: 'barcode.pdf',
+      inhalt: await pdfBauen([
+        { zeilen: ['Musterreinigung GmbH', 'Rechnung RE-BC-1 vom 01.02.2026'] },
+        { zeilen: [], bild: await trennbarcode() },
+        { zeilen: ['Elektro Blitz e.K.', 'Rechnung RE-BC-2 vom 02.02.2026'] },
+      ]),
+    })
+    const seiten = await direkt<{ seite: number; trenner: boolean; beleg_nr: number | null }>(
+      'select seite, trenner, beleg_nr from stapel_seite where stapel_id = $1 order by seite',
+      [id],
+    )
+    expect(seiten.map((s) => s.trenner)).toEqual([false, true, false])
+    expect(seiten.map((s) => s.beleg_nr)).toEqual([1, null, 2])
+  }, 60_000)
 })
 
 describe('Gruppieren', () => {

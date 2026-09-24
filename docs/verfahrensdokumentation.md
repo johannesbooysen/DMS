@@ -1535,6 +1535,10 @@ belegt.
 - erkennt eine Rechnung nicht als Trennblatt
 - faellt nicht auf das Wort mitten in einer langen Rechnung herein
 - vertraegt eine Seite ohne Text
+- liest den Barcode aus einem Seitenbild
+- liest nichts aus einer leeren Seite
+- laesst DMS_TRENNBARCODE entscheiden, welcher Barcode zaehlt
+- trennt einen Stapel an einem Blatt, das nur einen Barcode traegt
 - teilt an den Trennblaettern
 - macht aus einem Stapel ohne Trennblatt einen Beleg
 - erzeugt keinen Phantombeleg, wenn der Stapel mit einem Trennblatt beginnt
