@@ -129,6 +129,22 @@ export function Befunde({
  * bei einem Schriftstück Korrespondent und Betreff — dasselbe Muster,
  * andere Felder.
  */
+/**
+ * Der Anriss unter einem Beleg ohne Bezeichnung: Seitenzahl und die ersten
+ * Woerter der ersten Seite. Vier Scans, die alle "Ohne Bezeichnung"
+ * heissen, sind sonst nicht auseinanderzuhalten -- und der Dateiname wird
+ * nicht gespeichert.
+ */
+export function belegAnriss(z: { seitenzahl: number | null; textanfang: string | null }): string {
+  const teile: string[] = []
+  if (z.seitenzahl !== null && z.seitenzahl > 0) {
+    teile.push(`${z.seitenzahl} ${z.seitenzahl === 1 ? 'Seite' : 'Seiten'}`)
+  }
+  const anfang = (z.textanfang ?? '').trim()
+  if (anfang !== '') teile.push(`„${anfang}…"`)
+  return teile.length === 0 ? 'noch kein Text' : teile.join(' · ')
+}
+
 export function belegBezeichnung(z: {
   kreditor?: string | null
   rechnungsnummer?: string | null

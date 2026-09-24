@@ -22,7 +22,7 @@ import { zaehlerLaden } from '@/benachrichtigung'
 import { fehlerkorbZaehler } from '@/fehlerkorb'
 import { laufende, type Zugriff } from '@/notfall'
 
-export { AMPELFARBEN, Ampel, Befunde, belegBezeichnung, datum, euro, seit } from '@/app/lib/anzeige'
+export { AMPELFARBEN, Ampel, Befunde, belegAnriss, belegBezeichnung, datum, euro, seit } from '@/app/lib/anzeige'
 
 /**
  * Die Bereiche der Seitenleiste.

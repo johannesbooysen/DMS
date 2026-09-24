@@ -19,7 +19,7 @@ import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { wunschLaden } from '@/benachrichtigung'
 import { wunschSpeichernAktion } from '@/app/lib/benachrichtigung-aktionen'
-import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegAnriss, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,6 +112,7 @@ export default async function Postfaecher() {
                 <th>Beleg</th>
                 <th>Stufe</th>
                 <th>Eingang</th>
+                <th>Fällig</th>
                 <th />
               </tr>
             </thead>
@@ -120,8 +121,11 @@ export default async function Postfaecher() {
                 <tr key={z.aufgabeId}>
                   <td>
                     <Ampel wert={z.ampel} /> <a href={`/beleg/${z.dokumentId}`}>{belegBezeichnung(z)}</a>
+                    <br />
+                    <span className="leise klein">{belegAnriss(z)}</span>
                   </td>
                   <td>{z.stufe}</td>
+                  <td>{datum.format(new Date(z.eingangAm))}</td>
                   <td>{z.faelligAm === null ? '—' : datum.format(new Date(z.faelligAm))}</td>
                   <td>
                     <a href={`/arbeitsplatz/${z.aufgabeId}`}>Angaben nachtragen</a>

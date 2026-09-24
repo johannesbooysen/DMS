@@ -35,6 +35,14 @@ export interface Postfachzeile {
   ampel: string | null
   faelligAm: string | null
   uebernommenVon: string | null
+  eingangAm: string
+  seitenzahl: number | null
+  /**
+   * Die ersten Woerter der ersten Seite -- damit vier Belege "Ohne
+   * Bezeichnung" auseinanderzuhalten sind. Nur ein Anriss, unter der RLS
+   * wie der Beleg selbst.
+   */
+  textanfang: string | null
 }
 
 const ZEILEN_ABFRAGE = `
@@ -43,7 +51,11 @@ const ZEILEN_ABFRAGE = `
          k.name as kreditor, f.rechnungsnummer, f.brutto,
          sv.korrespondent, sv.betreff,
          o.objektnummer, og.name as ordnungsgruppe, d.ampel_gesamt,
-         a.faellig_am, a.uebernommen_von
+         a.faellig_am, a.uebernommen_von,
+         d.eingang_am, d.seitenzahl,
+         (select left(regexp_replace(s1.text, '\\s+', ' ', 'g'), 70)
+            from dokument_seite s1
+           where s1.dokument_id = d.id and s1.seite = 1) as textanfang
     from aufgabe a
     join dokument_lauf l on l.id = a.lauf_id
     join dokument d on d.id = l.dokument_id
@@ -75,6 +87,9 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
     ampel: text(z['ampel_gesamt']),
     faelligAm: text(z['faellig_am']),
     uebernommenVon: text(z['uebernommen_von']),
+    eingangAm: String(z['eingang_am']),
+    seitenzahl: z['seitenzahl'] == null ? null : Number(z['seitenzahl']),
+    textanfang: text(z['textanfang']),
   }
 }
 

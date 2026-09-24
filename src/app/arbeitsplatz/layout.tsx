@@ -17,7 +17,7 @@
 
 import type { ReactNode } from 'react'
 import { Aufgabenleiste } from '@/app/lib/aufgabenleiste'
-import { Seitenrahmen } from '@/app/lib/darstellung'
+import { belegAnriss, Seitenrahmen } from '@/app/lib/darstellung'
 import { ohneZustaendigkeit, persoenlichesPostfach, poolPostfach, type Postfachzeile } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
@@ -36,6 +36,9 @@ function eintrag(z: Postfachzeile) {
     brutto: z.brutto,
     ampel: z.ampel,
     faelligAm: z.faelligAm,
+    // Nur, wenn der Titel nichts sagt: Sonst stuende unter jeder Rechnung
+    // ihr erster Satz.
+    hinweis: z.kreditor === null && z.korrespondent === null && z.betreff === null ? belegAnriss(z) : null,
   }
 }
 

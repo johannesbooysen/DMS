@@ -34,6 +34,8 @@ export interface Aufgabeneintrag {
   brutto: number | null
   ampel: string | null
   faelligAm: string | null
+  /** Anriss fuer Belege ohne Bezeichnung (Seitenzahl, erste Woerter). */
+  hinweis?: string | null
 }
 
 interface Tastendruck {
@@ -115,6 +117,9 @@ export function Aufgabenleiste({
                     <Ampel wert={z.ampel} />
                     <span>{belegBezeichnung(z)}</span>
                   </span>
+                  {z.hinweis != null && z.hinweis !== '' && (
+                    <span className="aufgabenleiste-zeile leise klein">{z.hinweis}</span>
+                  )}
                   <span className="aufgabenleiste-zeile">
                     <span>
                       {z.objektnummer !== null && `Objekt ${z.objektnummer} · `}
