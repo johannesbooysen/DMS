@@ -54,6 +54,12 @@ export async function wartenBeginnen(
   if (eingabe.art.trim() === '') {
     throw new WartenAbgelehnt('Der Container braucht eine Bezeichnung.')
   }
+  // Vor der Datenbank: Ein leeres Datum ist fuer pg kein "fehlt", sondern
+  // "invalid input syntax for type date" -- ein Serverfehler statt einer
+  // Meldung. Gefunden vom Browsertest, der die Browserpruefung abschaltete.
+  if (eingabe.wiedervorlageAm.trim() === '') {
+    throw new WartenAbgelehnt('Ein Wartecontainer braucht eine Wiedervorlage.')
+  }
 
   const id = await alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ warten_beginnen: string | null }>(

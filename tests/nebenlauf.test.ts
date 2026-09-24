@@ -125,6 +125,12 @@ describe('Wartecontainer', () => {
     ).rejects.toThrow()
   })
 
+  it('weist ein leeres Datum ab, bevor die Datenbank es sieht', async () => {
+    await expect(
+      wartenBeginnen(ANNA, { dokumentId: beleg, art: 'x', ereignis: 'erstattung', wiedervorlageAm: '' }),
+    ).rejects.toThrow(/Wiedervorlage/)
+  })
+
   it('verlangt eine Wiedervorlage in der Zukunft', async () => {
     // Eine Wiedervorlage von gestern ist keine.
     await expect(

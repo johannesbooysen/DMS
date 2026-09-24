@@ -1245,6 +1245,7 @@ belegt.
 - setzt den Lauf auf wartend
 - erscheint in der Wartenliste
 - verlangt eine Wiedervorlage
+- weist ein leeres Datum ab, bevor die Datenbank es sieht
 - verlangt eine Wiedervorlage in der Zukunft
 - verlangt eine Bezeichnung
 - braucht einen Lauf

@@ -10,7 +10,7 @@ Zwei Nachweisarten (siehe CLAUDE.md, „Zwei Testarten"): **Browsertests**
 prüfen Regeln gegen die Datenbank, im Rollback. Eine Zusicherung über eine
 Policy steht nie in einem Browsertest.
 
-Stand: 24.09.2026, 1.009 Regeltests und 82 Browsertests grün.
+Stand: 24.09.2026, 1.010 Regeltests und 88 Browsertests grün.
 
 ## Belege hereinbringen
 
@@ -41,6 +41,8 @@ Stand: 24.09.2026, 1.009 Regeltests und 82 Browsertests grün.
 | Die Systemaktion schreibt beim Erreichen der Stufe ins Ausgangsbuch und rückt selbst weiter | `tests/engine.test.ts` |
 | Schriftverkehr ist eine zweite Belegart mit eigener Stufenfolge, kein zweites Modul | `e2e/schriftverkehr.spec.ts` |
 | Der Zähler neben „Postfächer" zeigt, was die Liste zeigt; die Sammelmail lässt sich abschalten | `e2e/benachrichtigung.spec.ts` |
+| Ein Wartecontainer verlangt eine Wiedervorlage und endet nur mit Ergebnis | `e2e/warten.spec.ts`, `tests/nebenlauf.test.ts` |
+| „Wo steht was" zählt je Stufe, und die Zahl passt zur Liste dahinter | `e2e/stufen.spec.ts`, `tests/stufen.test.ts` |
 
 ## Belege finden und ansehen
 
@@ -57,7 +59,7 @@ Stand: 24.09.2026, 1.009 Regeltests und 82 Browsertests grün.
 | Kriterium | Nachweis |
 |---|---|
 | Ein Mieter sieht seinen Beleg ohne Anmeldung, nach dem Widerruf nicht mehr; ein erfundener Token führt nirgendwohin | `e2e/einsicht.spec.ts` |
-| Nichts verlässt das Haus außerhalb des Ausgangsbuchs; Vorlagen prüfen ihre Platzhalter vor dem Speichern | `e2e/stammdaten.spec.ts`, `tests/postausgang.test.ts` |
+| Nichts verlässt das Haus außerhalb des Ausgangsbuchs; ohne Versand bleibt es sichtbar liegen; Vorlagen prüfen ihre Platzhalter vor dem Speichern | `e2e/postausgang.spec.ts`, `e2e/stammdaten.spec.ts`, `tests/postausgang.test.ts` |
 | Eine Zahlung wird nie als übergeben vermerkt, wenn die Übergabe scheitert | `tests/zahlung.test.ts` |
 
 ## Einrichten und Rechte

@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-119 Module, 1001 Testfaelle in 58 Dateien,
+119 Module, 1002 Testfaelle in 58 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -706,7 +706,7 @@ Funktionen: `app.moegliche_stempel`
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
-| [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 25 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
+| [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 26 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/notfall.test.ts`](../tests/notfall.test.ts) | 20 | Ohne Notfallzugriff, Die Reichweite, Die Befristung, Der Grund, Das Recht, einen einzurichten, Die Sichtbarkeit |
 | [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
