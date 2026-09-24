@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-79 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+80 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -286,6 +286,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `gespeicherte_suche` | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
 | `sicherungs_probe` | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 | `uebernahme_eintrag` | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
+| `pflichtfeld` | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -332,7 +333,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (73): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (74): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `pflichtfeld`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -521,6 +522,8 @@ Tabellen mit Policies (73): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `gespeicherte_suche_eigene` | `gespeicherte_suche` | all | [`20260923120000_gespeicherte_suche.sql`](../supabase/migrations/20260923120000_gespeicherte_suche.sql) |
 | `uebernahme_eintrag_lesen` | `uebernahme_eintrag` | select | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `uebernahme_eintrag_anlegen` | `uebernahme_eintrag` | insert | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
+| `pflichtfeld_lesen` | `pflichtfeld` | select | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
+| `pflichtfeld_schreiben` | `pflichtfeld` | all | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1249,6 +1252,10 @@ belegt.
 - weist ein Objekt ab, das es im eigenen Haus nicht gibt
 - laesst einen fremden Mandanten nichts nachtragen
 - bietet nur die Listen des eigenen Hauses an
+- nennt, was fehlt -- und stellt die Ampel auf gruen, wenn alles da ist
+- nimmt auch die weiteren Angaben -- und weist eine unlesbare IBAN ab
+- reiht denselben Auftrag ein wie der Eingang und laesst den Beleg warten
+- laesst einen fremden Mandanten nichts einreihen
 
 ### [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts)
 
@@ -1331,6 +1338,16 @@ belegt.
 - waehlt ocrmypdf, wenn es eingestellt ist
 - raeumt die Zwischendateien weg, auch wenn der Aufruf scheitert
 - meldet sich als nicht verfuegbar, wenn das Programm fehlt
+
+### [`tests/pflichtfeld.test.ts`](../tests/pflichtfeld.test.ts)
+
+- beginnt mit der Liste aus dem Quelltext
+- laesst setzen, wer Stammdaten pflegen darf -- und stellt die Liste ganz
+- weist ab, wer das Recht nicht hat -- und aendert nichts
+- kennt keine Pflichtfelder fuer Schriftverkehr
+- liefert fuer einen Beleg die Liste seines Hauses
+- rechnet ueber die uebergebene Liste, nicht ueber die aus dem Quelltext
+- ist ohne Pflichtfelder 1 -- nichts kann fehlen
 
 ### [`tests/platzierung.test.ts`](../tests/platzierung.test.ts)
 

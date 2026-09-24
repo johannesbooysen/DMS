@@ -286,6 +286,41 @@ stehen zur Wahl:
 nicht gesetzt ist — eine Vorschau, in der ein Scan ohne Text im Fehlerkorb
 landet, beantwortet die Frage nicht, für die es sie gibt.
 
+## Pflichtfelder
+
+Welche Angaben an jeder Rechnung erfasst sein müssen, legt jedes Haus selbst
+fest: *Stammdaten* → *Pflichtfelder*. Zur Wahl stehen Kreditor, USt-IdNr.,
+Rechnungsnummer, Rechnungsdatum, Leistungszeitraum, Netto, Steuer, Brutto,
+IBAN, Zahlungsziel und Skonto. Voreingestellt sind Kreditor, Rechnungsnummer,
+Rechnungsdatum und Brutto.
+
+Zwei Wirkungen: Die **Ampel der Erkennung** rechnet über genau diese Felder.
+Fehlt eines oder ist es unsicher gelesen, steht der Beleg auf Rot und wartet
+auf einen Menschen. Und beim **Nachtragen von Hand** sind die Pflichtfelder
+gekennzeichnet, mit dem Satz, welche noch offen sind; sind alle da, wird die
+Ampel grün. Ändern darf die Liste, wer Stammdaten pflegen darf.
+
+Die Pflichtangaben nach § 14 UStG für den Vorsteuerabzug werden davon
+unabhängig immer geprüft — sie sind Gesetz, kein Stammdatum.
+
+## Warum werden die Daten nicht automatisch ausgelesen?
+
+Weil die Erkennung der Rechnungsdaten ohne Bestellung nicht rät: Die Vorgabe
+ist *keine* (`DMS_EXTRAKTION`). Eingeschaltet wird sie auf dem Rechner des
+Workers — `ollama` für ein lokales Modell (Vorgabe `qwen2.5:7b-instruct`,
+Adresse `DMS_OLLAMA`), im Betrieb später der Dienst aus dem Konzept. Ohne
+Erkennung kommt jeder Beleg ohne Objekt und Kreditor an und steht unter
+*Postfächer* → „Ohne Zuständigkeit"; das Formular dort sagt dann auch, dass
+keine Erkennung eingerichtet ist.
+
+Ist die Erkennung erst nach dem Eingang eingeschaltet worden, holt
+**Erkennung erneut ausführen** im Formular *Angaben nachtragen* alles nach —
+Texterkennung, Rechnungsdaten und Zuordnung, wie beim Eingang. Was ein
+Mensch schon eingetragen hat, bleibt stehen.
+
+`npm run vorschau` schaltet `ollama` von selbst ein, wenn Ollama auf dem
+Rechner antwortet.
+
 Direkt nach dem Aufnehmen zeigt die Belegansicht „die Aufbereitung läuft"
 und lädt sich alle paar Sekunden selbst neu, bis die Seiten da sind — bei
 einem Scan mit Texterkennung dauert das einige Sekunden je Seite. Ist die

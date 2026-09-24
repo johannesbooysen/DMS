@@ -24,6 +24,29 @@
 
 import { spawn } from 'node:child_process'
 
+/*
+ * Extraktion mit dem lokalen Modell -- aber nur, wenn Ollama laeuft.
+ *
+ * Beim Bedienen gefragt: "Warum werden die Daten nicht automatisch
+ * ausgelesen?" Weil die Extraktion ohne Bestellung nicht raet (Vorgabe
+ * `keiner`). Auf dem Entwicklungsrechner liegt Ollama mit dem
+ * Standardmodell; die Vorschau schaltet es ein, wenn es antwortet. Faellt
+ * es aus, laeuft der Beleg trotzdem -- die Erkennung gibt dann nichts
+ * zurueck, und erfasst wird von Hand.
+ */
+async function ollamaErreichbar(adresse) {
+  try {
+    const antwort = await fetch(`${adresse}/api/tags`, { signal: AbortSignal.timeout(2000) })
+    return antwort.ok
+  } catch {
+    return false
+  }
+}
+
+const OLLAMA = process.env.DMS_OLLAMA ?? 'http://127.0.0.1:11434'
+const extraktion =
+  process.env.DMS_EXTRAKTION ?? ((await ollamaErreichbar(OLLAMA)) ? 'ollama' : 'keiner')
+
 const umgebung = {
   ...process.env,
   DMS_ANMELDUNG: 'entwicklung',
@@ -36,6 +59,7 @@ const umgebung = {
   // Text im Fehlerkorb landet, beantwortet die Frage nicht, fuer die es die
   // Vorschau gibt. Wer ocrmypdf hat, setzt DMS_OCR selbst.
   DMS_OCR: process.env.DMS_OCR ?? 'tesseractjs',
+  DMS_EXTRAKTION: extraktion,
 }
 
 console.log('Vorschau mit Entwicklungsanmeldung auf http://localhost:3000')

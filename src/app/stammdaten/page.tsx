@@ -127,7 +127,9 @@ export default async function Stammdaten({
       <p className="absatz-leise">
         Was das Haus verlässt, steht unter{' '}
         <Link href="/stammdaten/vorlagen">Vorlagen</Link>; woher Belege von selbst
-        hereinkommen, unter <Link href="/eingang">Eingangsquellen</Link>.
+        hereinkommen, unter <Link href="/eingang">Eingangsquellen</Link>. Welche
+        Angaben an jeder Rechnung erfasst sein müssen, unter{' '}
+        <Link href="/stammdaten/pflichtfelder">Pflichtfelder</Link>.
       </p>
       <p className="absatz-leise">
         {/* Der Verweis auf Benutzer und Rollen steht nur da, wenn er zu etwas

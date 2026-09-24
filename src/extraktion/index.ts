@@ -7,8 +7,10 @@
  */
 
 import type { PoolClient } from 'pg'
+import { freierAnbieterName } from './einstellung'
 import { ollamaAnbieter } from './ollama'
-import type { ErkanntesFeld, Extraktionsanbieter, Extraktionsanfrage } from './typen'
+import { pflichtfelderFuerDokument, STANDARD_PFLICHTFELDER } from '../stammdaten/pflichtfeld'
+import type { ErkanntesFeld, Extraktionsanbieter, Extraktionsanfrage, Feldname } from './typen'
 import { zugferdAnbieter } from './zugferd'
 
 /**
@@ -19,13 +21,15 @@ import { zugferdAnbieter } from './zugferd'
  * Voreinstellung als ein Modell, das niemand bestellt hat.
  */
 function freierAnbieter(): Extraktionsanbieter | null {
-  switch (process.env['DMS_EXTRAKTION'] ?? 'keiner') {
+  switch (freierAnbieterName()) {
     case 'ollama':
       return ollamaAnbieter
     default:
       return null
   }
 }
+
+export { extraktionEingerichtet } from './einstellung'
 
 export interface Extraktionsbericht {
   quelle: 'zugferd' | 'ki' | 'keine'
@@ -35,18 +39,21 @@ export interface Extraktionsbericht {
   ampel: 'gruen' | 'orange' | 'rot' | null
 }
 
-/** Pflichtfelder der Belegart Rechnung — sie bestimmen die Ampel. */
-const PFLICHTFELDER = ['kreditor_name', 'rechnungsnummer', 'rechnungsdatum', 'brutto'] as const
-
 /**
  * Das Extraktionsvertrauen ist das **Minimum** über die Pflichtfelder, nicht
  * der Durchschnitt: Ein unsicher gelesener Betrag wird nicht dadurch besser,
  * dass der Lieferantenname eindeutig war (Konzept 14).
+ *
+ * Welche Felder Pflicht sind, sagt das Stammdatum `pflichtfeld` je Haus und
+ * Belegart; die Liste aus dem Quelltext ist nur noch der Rückfall. Keine
+ * Pflichtfelder heißt: nichts kann fehlen, das Vertrauen ist 1.
  */
-export function extraktionsvertrauen(felder: ErkanntesFeld[]): number | null {
-  const werte = PFLICHTFELDER.map(
-    (name) => felder.find((f) => f.feldname === name)?.confidence,
-  )
+export function extraktionsvertrauen(
+  felder: ErkanntesFeld[],
+  pflicht: readonly Feldname[] = STANDARD_PFLICHTFELDER,
+): number | null {
+  if (pflicht.length === 0) return 1
+  const werte = pflicht.map((name) => felder.find((f) => f.feldname === name)?.confidence)
   if (werte.some((w) => w === undefined)) return null // ein Pflichtfeld fehlt
   return Math.min(...(werte as number[]))
 }
@@ -163,7 +170,10 @@ export async function extrahierenUndUebernehmen(
     ],
   )
 
-  const vertrauen = extraktionsvertrauen(ergebnis.felder)
+  const vertrauen = extraktionsvertrauen(
+    ergebnis.felder,
+    await pflichtfelderFuerDokument(c, anfrage.dokumentId),
+  )
   const ampel = ampelAus(vertrauen)
   await c.query(`update dokument set ampel_extraktion = $2 where id = $1`, [
     anfrage.dokumentId,

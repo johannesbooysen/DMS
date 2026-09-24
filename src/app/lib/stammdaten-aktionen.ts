@@ -14,6 +14,7 @@
  */
 
 import { revalidatePath } from 'next/cache'
+import { pflichtfelderSetzen } from '@/stammdaten/pflichtfeld'
 import { redirect } from 'next/navigation'
 import {
   bankverbindungAnlegen,
@@ -242,4 +243,25 @@ export async function stempelGestaltungAktion(f: FormData): Promise<void> {
 }
 export async function stempeltypUmschaltenAktion(f: FormData): Promise<void> {
   await versuchen(f, stempeltypUmschalten)
+}
+
+/*
+ * Pflichtfelder je Belegart (Konzept 14) -- ein Stammdatum, gesetzt als
+ * ganze Liste: Was abgehakt ist, gilt. Nicht ueber `versuchen`, weil
+ * Kaestchen mehrere Werte unter einem Namen tragen.
+ */
+export async function pflichtfelderSetzenAktion(formular: FormData): Promise<void> {
+  const belegart = String(formular.get('belegart') ?? 'rechnung')
+  const felder = formular.getAll('feld').map(String)
+  const ziel = '/stammdaten/pflichtfelder'
+  try {
+    await pflichtfelderSetzen(await angemeldeterBenutzer(), belegart, felder)
+  } catch (fehler) {
+    if (fehler instanceof NichtErlaubt || fehler instanceof NichtMoeglich) {
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath(ziel)
+  redirect(`${ziel}?hinweis=${encodeURIComponent('Pflichtfelder gespeichert.')}`)
 }

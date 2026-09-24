@@ -67,6 +67,37 @@ export default async function aufsetzen(): Promise<() => Promise<void>> {
 }
 
 /**
+ * Die Marke, an der ein E2E-Worker auf der Prozessliste zu erkennen ist.
+ *
+ * Sie steht als Argument in der Befehlszeile (`tsx src/worker/index.ts
+ * --marke=e2e`; der Worker liest keine Argumente und stört sich nicht
+ * daran). Grund: `taskkill /T` auf die npm-Hülle hat den Worker **nicht**
+ * immer erwischt — nachgestellt am 24.09.2026: Ein Worker aus dem Lauf von
+ * 14:32 lief um 16:30 noch, mit `.ablage-e2e`, und holte sich Aufträge der
+ * Vorschau ab. Jeder dritte Auftrag scheiterte dann mit ENOENT auf einem
+ * Pfad, den es nur im Test gibt. Ein Prozess, den man an seiner
+ * Befehlszeile erkennt, lässt sich auch dann beenden, wenn die Hülle längst
+ * weg ist.
+ */
+const MARKE = '--marke=e2e'
+
+/** Alle Worker mit der Marke beenden — vorher (Reste) und nachher (der eigene). */
+async function markierteWorkerBeenden(): Promise<number> {
+  if (process.platform === 'win32') {
+    const befehl =
+      `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*${MARKE}*' ` +
+      `-and $_.CommandLine -notlike '*Get-CimInstance*' } | ` +
+      `ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue; $_.ProcessId }`
+    const { stdout } = await ausfuehren(`powershell -NoProfile -Command "${befehl}"`).catch(() => ({
+      stdout: '',
+    }))
+    return stdout.split(/\r?\n/).filter((z) => z.trim() !== '').length
+  }
+  const { stdout } = await ausfuehren(`pkill -f -- '${MARKE}' && echo 1`).catch(() => ({ stdout: '' }))
+  return stdout.trim() === '' ? 0 : 1
+}
+
+/**
  * Den Worker starten — und Playwright sagen, wie er wieder wegkommt.
  *
  * **Nicht** über `webServer`: Der Worker hat keine Adresse, an der man ihn
@@ -78,11 +109,16 @@ export default async function aufsetzen(): Promise<() => Promise<void>> {
  * Der Rückgabewert einer `globalSetup`-Funktion ist ihr Gegenstück: Was hier
  * zurückkommt, läuft nach dem letzten Test.
  */
-function workerStarten(): () => Promise<void> {
+async function workerStarten(): Promise<() => Promise<void>> {
+  const reste = await markierteWorkerBeenden()
+  if (reste > 0) {
+    process.stdout.write(`  ${reste} verwaiste(n) Worker aus einem früheren Lauf beendet\n`)
+  }
+
   // Ein Befehl als Zeichenkette, keine Argumentliste: Mit `shell: true`
   // wuerden Argumente nur aneinandergehaengt und nicht maskiert -- Node warnt
   // zu Recht davor.
-  const kind = spawn('npm run worker', {
+  const kind = spawn(`npm run worker -- ${MARKE}`, {
     env: { ...process.env, DMS_ABLAGE: '.ablage-e2e' },
     shell: true,
     stdio: 'ignore',
@@ -93,10 +129,10 @@ function workerStarten(): () => Promise<void> {
   return async () => {
     kind.kill()
     // Auf Windows überlebt der Kindprozess von `npm` das Töten der Hülle.
-    // Ohne diesen Griff bliebe nach jedem Lauf ein Worker stehen, der weiter
-    // an der Datenbank hängt.
     if (process.platform === 'win32' && kind.pid !== undefined) {
       await ausfuehren(`taskkill /pid ${kind.pid} /T /F`).catch(() => undefined)
     }
+    // Und was die Hülle nicht mitnahm, nimmt die Marke.
+    await markierteWorkerBeenden()
   }
 }

@@ -12,7 +12,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { StempelAbgelehnt, stempelSetzen } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { angabenNachtragen, NachtragAbgelehnt } from '@/belege/nachtragen'
+import { angabenNachtragen, aufbereitungErneut, NachtragAbgelehnt } from '@/belege/nachtragen'
 import { betragLesen } from '@/extraktion/zahlen'
 
 export async function stempelnAktion(formular: FormData): Promise<void> {
@@ -58,20 +58,39 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
 export async function angabenNachtragenAktion(formular: FormData): Promise<void> {
   const dokumentId = String(formular.get('dokumentId') ?? '')
   const aufgabeId = String(formular.get('aufgabeId') ?? '')
-  const bruttoRoh = String(formular.get('brutto') ?? '').trim()
-  const brutto = bruttoRoh === '' ? null : betragLesen(bruttoRoh)
-  if (bruttoRoh !== '' && brutto === null) {
-    redirect(`/arbeitsplatz/${aufgabeId}?fehler=${encodeURIComponent('Der Betrag ist nicht lesbar.')}`)
+  const text = (name: string) => String(formular.get(name) ?? '')
+  // Betraege in deutscher Schreibweise; ein unlesbarer wird genannt, nicht
+  // stillschweigend zu null.
+  const betrag = (name: string, was: string): number | null => {
+    const roh = text(name).trim()
+    if (roh === '') return null
+    const wert = betragLesen(roh)
+    if (wert === null) {
+      redirect(`/arbeitsplatz/${aufgabeId}?fehler=${encodeURIComponent(`${was} ist nicht lesbar.`)}`)
+    }
+    return wert
   }
-  let ergebnis: { neuZugewiesen: number }
+  const brutto = betrag('brutto', 'Der Bruttobetrag')
+  const netto = betrag('netto', 'Der Nettobetrag')
+  const steuer = betrag('steuer', 'Der Steuerbetrag')
+  const skontoProzent = betrag('skontoProzent', 'Der Skontosatz')
+  let ergebnis: { neuZugewiesen: number; pflichtfelderVollstaendig: boolean }
   try {
     ergebnis = await angabenNachtragen(await angemeldeterBenutzer(), dokumentId, {
-      objektId: String(formular.get('objektId') ?? ''),
-      ordnungsgruppeId: String(formular.get('ordnungsgruppeId') ?? ''),
-      kreditorId: String(formular.get('kreditorId') ?? ''),
-      rechnungsnummer: String(formular.get('rechnungsnummer') ?? ''),
-      rechnungsdatum: String(formular.get('rechnungsdatum') ?? ''),
+      objektId: text('objektId'),
+      ordnungsgruppeId: text('ordnungsgruppeId'),
+      kreditorId: text('kreditorId'),
+      rechnungsnummer: text('rechnungsnummer'),
+      rechnungsdatum: text('rechnungsdatum'),
       brutto,
+      netto,
+      steuer,
+      leistungVon: text('leistungVon'),
+      leistungBis: text('leistungBis'),
+      ibanImBeleg: text('ibanImBeleg'),
+      zahlungsziel: text('zahlungsziel'),
+      skontoProzent,
+      skontoBis: text('skontoBis'),
     })
   } catch (fehler) {
     if (fehler instanceof NachtragAbgelehnt) {
@@ -86,4 +105,21 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
       ergebnis.neuZugewiesen > 0 ? 'Angaben übernommen — die Aufgabe hat jetzt ihren Bearbeiter.' : 'Angaben übernommen.',
     )}`,
   )
+}
+
+/** Die Aufbereitung noch einmal -- Erkennung nach dem Eingang eingerichtet, Stammdatum dazugekommen. */
+export async function aufbereitungErneutAktion(formular: FormData): Promise<void> {
+  const dokumentId = String(formular.get('dokumentId') ?? '')
+  const aufgabeId = String(formular.get('aufgabeId') ?? '')
+  try {
+    await aufbereitungErneut(await angemeldeterBenutzer(), dokumentId)
+  } catch (fehler) {
+    if (fehler instanceof NachtragAbgelehnt) {
+      redirect(`/arbeitsplatz/${aufgabeId}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath('/postfach')
+  revalidatePath('/arbeitsplatz')
+  redirect(`/beleg/${dokumentId}`)
 }

@@ -237,6 +237,7 @@ export const OHNE_PERSONENBEZUG = {
   mandant: 'Das verwaltende Haus selbst.',
   objekt: 'Liegenschaft: Nummer, Bezeichnung, Anschrift des Objekts.',
   ordnungsgruppe: 'Stammdatum.',
+  pflichtfeld: 'Stammdatum: welche Felder je Belegart erfasst sein muessen. Feldnamen, keine Personen.',
   prozess_override: 'Abweichende Ablaufkonfiguration je Objekt.',
   prozessdefinition: 'Ablaufkonfiguration.',
   prozessknoten: 'Ablaufkonfiguration.',

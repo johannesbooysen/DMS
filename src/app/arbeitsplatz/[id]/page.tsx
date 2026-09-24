@@ -19,7 +19,9 @@ import { Kontierung } from '@/app/lib/kontierungsmaske'
 import { aufgabeLaden } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Nachtragsformular } from '@/app/lib/nachtragsformular'
-import { nachtragNoetig, nachtragsauswahl } from '@/belege/nachtragen'
+import { fehlendePflichtfelder, nachtragNoetig, nachtragsauswahl } from '@/belege/nachtragen'
+import { extraktionEingerichtet } from '@/extraktion/einstellung'
+import { pflichtfelderLaden } from '@/stammdaten/pflichtfeld'
 import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
 import { Zahlung } from '@/app/lib/zahlungsansicht'
 
@@ -128,6 +130,9 @@ export default async function Aufgabe({
             auswahl={await nachtragsauswahl(benutzer)}
             belegart={kopf?.belegart ?? 'rechnung'}
             ohneObjekt={zeile.objektnummer === null}
+            pflicht={await pflichtfelderLaden(benutzer, kopf?.belegart ?? 'rechnung')}
+            fehlt={await fehlendePflichtfelder(benutzer, zeile.dokumentId)}
+            extraktion={extraktionEingerichtet()}
           />
         )}
 

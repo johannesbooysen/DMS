@@ -11,7 +11,14 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
-import { angabenNachtragen, NachtragAbgelehnt, nachtragNoetig, nachtragsauswahl } from '../src/belege/nachtragen'
+import {
+  angabenNachtragen,
+  aufbereitungErneut,
+  fehlendePflichtfelder,
+  NachtragAbgelehnt,
+  nachtragNoetig,
+  nachtragsauswahl,
+} from '../src/belege/nachtragen'
 import { ohneZustaendigkeit, persoenlichesPostfach } from '../src/app/lib/postfach'
 import { laufStarten } from '../src/workflow/engine'
 
@@ -50,6 +57,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  await direkt(`delete from pgboss.job where data->>'dokumentId' = $1`, [beleg])
   await belegEntfernen(beleg)
 })
 
@@ -124,5 +132,58 @@ describe('Angaben nachtragen', () => {
     const auswahl = await nachtragsauswahl(DORIS)
     expect(auswahl.objekte.some((o) => o.id === OBJEKT_42)).toBe(false)
     expect(auswahl.kreditoren.some((k) => k.id === KREDITOR)).toBe(false)
+  })
+})
+
+describe('Pflichtfelder beim Nachtragen', () => {
+  it('nennt, was fehlt -- und stellt die Ampel auf gruen, wenn alles da ist', async () => {
+    // Vor dem Nachtragen fehlt alles (Standardliste: Kreditor, Nummer, Datum, Brutto).
+    expect(await fehlendePflichtfelder(BERND, beleg)).toEqual(['brutto', 'kreditor_name', 'rechnungsdatum', 'rechnungsnummer'])
+
+    const halb = await angabenNachtragen(BERND, beleg, { objektId: OBJEKT_42, kreditorId: KREDITOR, brutto: 100 })
+    expect(halb.pflichtfelderVollstaendig).toBe(false)
+    expect(await fehlendePflichtfelder(BERND, beleg)).toEqual(['rechnungsdatum', 'rechnungsnummer'])
+    let [d] = await direkt<{ ampel_extraktion: string | null }>('select ampel_extraktion from dokument where id = $1', [beleg])
+    expect(d?.ampel_extraktion).not.toBe('gruen')
+
+    const ganz = await angabenNachtragen(BERND, beleg, { rechnungsnummer: 'RE-VOLL-1', rechnungsdatum: '2026-09-02' })
+    expect(ganz.pflichtfelderVollstaendig).toBe(true)
+    expect(await fehlendePflichtfelder(BERND, beleg)).toEqual([])
+    ;[d] = await direkt('select ampel_extraktion from dokument where id = $1', [beleg])
+    expect(d?.ampel_extraktion).toBe('gruen')
+  })
+
+  it('nimmt auch die weiteren Angaben -- und weist eine unlesbare IBAN ab', async () => {
+    await angabenNachtragen(BERND, beleg, {
+      netto: 84.03, steuer: 15.97, leistungVon: '2026-08-01', leistungBis: '2026-08-31',
+      ibanImBeleg: 'de02 1203 0000 0000 2020 51', zahlungsziel: '2026-09-30', skontoProzent: 2, skontoBis: '2026-09-15',
+    })
+    const [f] = await direkt<{ iban_im_beleg: string; skonto_prozent: string; leistung_von: string }>(
+      "select iban_im_beleg, skonto_prozent, to_char(leistung_von, 'YYYY-MM-DD') as leistung_von from rechnung_fakten where dokument_id = $1",
+      [beleg],
+    )
+    expect(f).toMatchObject({ iban_im_beleg: 'DE02120300000000202051', leistung_von: '2026-08-01' })
+    expect(Number(f?.skonto_prozent)).toBe(2)
+    await expect(angabenNachtragen(BERND, beleg, { ibanImBeleg: 'keine' })).rejects.toThrow(/IBAN/)
+  })
+})
+
+describe('Aufbereitung erneut', () => {
+  it('reiht denselben Auftrag ein wie der Eingang und laesst den Beleg warten', async () => {
+    await direkt(`update dokument set status = 'laufend' where id = $1`, [beleg])
+    await aufbereitungErneut(BERND, beleg)
+    const [d] = await direkt<{ status: string }>('select status from dokument where id = $1', [beleg])
+    expect(d?.status).toBe('in_aufbereitung')
+    const [j] = await direkt<{ n: number }>(
+      `select count(*)::int n from pgboss.job where name = 'dokument-aufbereiten' and data->>'dokumentId' = $1`,
+      [beleg],
+    )
+    expect(j?.n).toBe(1)
+    // Ein zweites Mal, waehrend sie laeuft: abgewiesen, kein zweiter Auftrag.
+    await expect(aufbereitungErneut(BERND, beleg)).rejects.toThrow(/läuft bereits/)
+  })
+
+  it('laesst einen fremden Mandanten nichts einreihen', async () => {
+    await expect(aufbereitungErneut(DORIS, beleg)).rejects.toThrow(/gibt es nicht/)
   })
 })

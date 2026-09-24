@@ -486,3 +486,10 @@ insert into dokument_lauf (id, dokument_id, definition_id, definition_version,
 insert into aufgabe (lauf_id, stufe_id, zugewiesen_benutzer, status, faellig_am) values
   ('67000000-0000-0000-0000-000000000011', '66000000-0000-0000-0000-000000000011',
    '20000000-0000-0000-0000-000000000001', 'offen', now() + interval '2 days');
+
+-- Pflichtfelder (Konzept 14): die bisherige Liste aus dem Quelltext, je Haus.
+insert into pflichtfeld (mandant_id, belegart, feldname)
+select m.id, 'rechnung', f.feldname
+  from mandant m
+ cross join (values ('kreditor_name'), ('rechnungsnummer'), ('rechnungsdatum'), ('brutto')) as f(feldname)
+on conflict do nothing;

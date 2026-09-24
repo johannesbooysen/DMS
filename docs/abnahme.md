@@ -24,6 +24,8 @@ Stand: 24.09.2026, 1.021 Regeltests und 89 Browsertests grün.
 | Ein überwachter Ordner liefert Belege ohne Klick, mit Objekt vorbelegt | `e2e/eingang.spec.ts` |
 | Ein Scan ohne Textlayer ohne eingerichtete Erkennung landet sichtbar im Fehlerkorb | `e2e/fehlerkorb.spec.ts` |
 | Mit `DMS_OCR=tesseractjs` bekommt ein Scan ohne Installation eine Textebene an der richtigen Stelle, das Original bleibt unberührt | `tests/ocr-tesseractjs.test.ts` |
+| Welche Felder Pflicht sind, legt das Haus fest; nur mit Stammdatenrecht, nur im eigenen Haus; die Ampel rechnet darüber | `tests/pflichtfeld.test.ts` |
+| Nachtragen kennzeichnet fehlende Pflichtfelder und stellt die Ampel auf grün, wenn alle da sind; die Erkennung lässt sich erneut anstoßen | `tests/nachtragen.test.ts` |
 | Ein Beleg ohne erkannte Angaben steht unter „Ohne Zuständigkeit"; nach dem Nachtragen hat die Aufgabe ihren Bearbeiter | `e2e/zuordnung.spec.ts`, `tests/nachtragen.test.ts` |
 | Bestandsbelege aus Amagno kommen archiviert mit altem Eingangsdatum an; ein zweiter Lauf ist folgenlos | `tests/uebernahme.test.ts` |
 

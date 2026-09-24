@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 79 Tabellen, 196 Policies,
-121 Module, 1011 Testfaelle in 60 Dateien,
+Auf einen Blick: 80 Tabellen, 198 Policies,
+123 Module, 1022 Testfaelle in 61 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -544,6 +544,14 @@ Der Weg aus der Klaerung (Konzept 8.5): der naechste Stempel an der
 Funktionen: `app.moegliche_stempel`
 
 
+### `supabase/migrations/20260928100000_pflichtfeld.sql`
+
+Pflichtfelder je Belegart -- Konfiguration statt Code
+
+Tabellen: `pflichtfeld`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -614,6 +622,7 @@ Funktionen: `app.moegliche_stempel`
 | [`src/export/index.ts`](../src/export/index.ts) | Belege ausgeben — mit den Layern, die zur Variante gehören |
 | [`src/export/pdf.ts`](../src/export/pdf.ts) | Layer in ein PDF einbrennen |
 | [`src/export/varianten.ts`](../src/export/varianten.ts) | Welche Layer in welchen Export gehören — und wie er gebaut wird |
+| [`src/extraktion/einstellung.ts`](../src/extraktion/einstellung.ts) | Welche freie Erkennung eingestellt ist -- ohne die Anbieter selbst zu |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
 | [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
@@ -647,6 +656,7 @@ Funktionen: `app.moegliche_stempel`
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
 | [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
+| [`src/stammdaten/pflichtfeld.ts`](../src/stammdaten/pflichtfeld.ts) | Pflichtfelder je Belegart -- welche Angaben ein Haus unbedingt erfasst |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
 | [`src/stammdaten/stempel.ts`](../src/stammdaten/stempel.ts) | Stempeltypen und ihre Gestaltung -- die Fachschicht des Stempel-Designers |
@@ -708,12 +718,13 @@ Funktionen: `app.moegliche_stempel`
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
-| [`tests/nachtragen.test.ts`](../tests/nachtragen.test.ts) | 7 | Ohne Zustaendigkeit, Angaben nachtragen |
+| [`tests/nachtragen.test.ts`](../tests/nachtragen.test.ts) | 11 | Ohne Zustaendigkeit, Angaben nachtragen, Pflichtfelder beim Nachtragen, Aufbereitung erneut |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 26 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/notfall.test.ts`](../tests/notfall.test.ts) | 20 | Ohne Notfallzugriff, Die Reichweite, Die Befristung, Der Grund, Das Recht, einen einzurichten, Die Sichtbarkeit |
 | [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |
 | [`tests/ocr-tesseractjs.test.ts`](../tests/ocr-tesseractjs.test.ts) | 2 | Auswahl, Erkennung |
 | [`tests/ocr.test.ts`](../tests/ocr.test.ts) | 11 | Ohne Erkennung, Mit Erkennung, Zweiter Lauf, Anbieterauswahl |
+| [`tests/pflichtfeld.test.ts`](../tests/pflichtfeld.test.ts) | 7 | Stammdatum, Extraktionsvertrauen |
 | [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
