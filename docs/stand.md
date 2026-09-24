@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-116 Module, 988 Testfaelle in 57 Dateien,
+117 Module, 988 Testfaelle in 57 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -550,6 +550,7 @@ Funktionen: `app.eskalation_durchgang`
 | [`src/app/api/einsicht/[token]/[dokument]/pdf/route.ts`](../src/app/api/einsicht/[token]/[dokument]/pdf/route.ts) | Das Original als PDF — nur bei ausdrücklichem Download-Recht |
 | [`src/app/api/lebenszeichen/route.ts`](../src/app/api/lebenszeichen/route.ts) | Lebenszeichen der Betriebsumgebung (ADR 0007) |
 | [`src/app/api/stapel/[id]/seite/[nr]/route.ts`](../src/app/api/stapel/[id]/seite/[nr]/route.ts) | Eine Stapelseite als Miniatur |
+| [`src/app/lib/ablage-lesen.ts`](../src/app/lib/ablage-lesen.ts) | Aus der Ablage lesen -- und "gibt es nicht" als Antwort, nicht als Absturz |
 | [`src/app/lib/adresse.ts`](../src/app/lib/adresse.ts) | Wie die Anwendung von außen heißt |
 | [`src/app/lib/aktionen.ts`](../src/app/lib/aktionen.ts) | 'use server' |
 | [`src/app/lib/anmelde-aktionen.ts`](../src/app/lib/anmelde-aktionen.ts) | 'use server' |

@@ -7,7 +7,8 @@
  * der Zeitpunkt der Verarbeitung (Konzept 1).
  */
 
-import { ABLAGE, seitenbildSchluessel } from '@/app/lib/belege'
+import { seitenbildSchluessel } from '@/app/lib/belege'
+import { lesenOderNichts } from '@/app/lib/ablage-lesen'
 import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 
 export async function GET(
@@ -34,7 +35,9 @@ export async function GET(
   // Die zweite Auskunft verriete bereits, dass es den Beleg gibt.
   if (schluessel === null) return new Response('Nicht gefunden', { status: 404 })
 
-  const bild = await ABLAGE.lesen(schluessel)
+  const bild = await lesenOderNichts(schluessel)
+  // Die Seite ist vermerkt, das Bild fehlt: 404, kein 500 mit Pfad im Log.
+  if (bild === null) return new Response('Ansicht fehlt', { status: 404 })
   return new Response(new Uint8Array(bild), {
     headers: {
       'content-type': 'image/webp',

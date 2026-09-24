@@ -7,7 +7,7 @@
  * und sie soll auch im Code an einer anderen Stelle stehen.
  */
 
-import { ABLAGE } from '@/app/lib/belege'
+import { lesenOderNichts } from '@/app/lib/ablage-lesen'
 import {
   einsichtAufloesen,
   einsichtDarfBeleg,
@@ -85,7 +85,8 @@ export async function GET(
     absender(anfrage),
   )
 
-  const inhalt = await ABLAGE.lesen(datei.storageKey, datei.fassung ?? null)
+  const inhalt = await lesenOderNichts(datei.storageKey, datei.fassung ?? null)
+  if (inhalt === null) return new Response('Nicht gefunden', { status: 404 })
   return new Response(new Uint8Array(inhalt), {
     headers: {
       'content-type': datei.mime,

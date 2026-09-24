@@ -15,7 +15,6 @@
  * verwechselt.
  */
 
-import { ABLAGE } from '@/app/lib/belege'
 import {
   einsichtAufloesen,
   einsichtDarfBeleg,
@@ -25,6 +24,7 @@ import {
 } from '@/einsicht'
 import { layerEinbrennen } from '@/einsicht/schwaerzung'
 import { wasserzeichenAuftragen } from '@/einsicht/wasserzeichen'
+import { lesenOderNichts } from '@/app/lib/ablage-lesen'
 
 /** Die Adresse des Anfragenden, so wie der Reverse Proxy sie meldet. */
 function absender(anfrage: Request): string | null {
@@ -67,7 +67,8 @@ export async function GET(
     absender(anfrage),
   )
 
-  const bild = await ABLAGE.lesen(datei.storageKey)
+  const bild = await lesenOderNichts(datei.storageKey)
+  if (bild === null) return new Response('Nicht gefunden', { status: 404 })
 
   /*
    * Erst die Layer einbrennen, dann das Wasserzeichen.

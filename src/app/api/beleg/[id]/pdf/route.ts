@@ -7,8 +7,9 @@
  * die bestehende Loesung langsam macht.
  */
 
-import { ABLAGE, originalSchluessel } from '@/app/lib/belege'
+import { originalSchluessel } from '@/app/lib/belege'
 import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
+import { lesenOderNichts } from '@/app/lib/ablage-lesen'
 
 /** Wertet einen Range-Kopf der Form "bytes=0-1023" aus. */
 function bereichLesen(kopf: string | null, groesse: number): { von: number; bis: number } | null {
@@ -48,7 +49,8 @@ export async function GET(
   // Mit der archivierten Fassung: Bei einem archivierten Beleg sollen die
   // Bytes kommen, die archiviert wurden -- nicht die, die zuletzt jemand
   // ueber den Schluessel gelegt hat.
-  const inhalt = await ABLAGE.lesen(datei.schluessel, datei.fassung)
+  const inhalt = await lesenOderNichts(datei.schluessel, datei.fassung)
+  if (inhalt === null) return new Response('Datei fehlt in der Ablage', { status: 404 })
   const bereich = bereichLesen(anfrage.headers.get('range'), inhalt.byteLength)
 
   if (bereich === null) {
