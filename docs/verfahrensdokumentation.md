@@ -1692,6 +1692,7 @@ belegt.
 - haelt ihn auf, wenn die Kontierung nicht mehr aufgeht
 - haelt ihn auf bei einem harten Plausibilitaetsbefund
 - haelt ihn auf ohne verifizierte Bankverbindung
+- haelt eine Mahnung auf -- sie wird nie separat bezahlt
 - haelt ihn auf ohne Zahlungsweg am Objekt
 - haelt jeden Freigabestempel am Datenstand fest
 - laesst die Freigabe verfallen, wenn der Betrag sich aendert

@@ -253,6 +253,14 @@ describe('Die harte Sperre', () => {
     expect((await sperre()).hindernis).toMatch(/Bankverbindung/)
   })
 
+  it('haelt eine Mahnung auf -- sie wird nie separat bezahlt', async () => {
+    await pruefungAbschliessen()
+    await direkt(`update dokument set belegart = 'mahnung' where id = $1`, [beleg])
+    const ergebnis = await sperre()
+    expect(ergebnis.moeglich).toBe(false)
+    expect(ergebnis.hindernis).toMatch(/Mahnung/)
+  })
+
   it('haelt ihn auf ohne Zahlungsweg am Objekt', async () => {
     await pruefungAbschliessen()
     await direkt('update objekt set zahlungsweg_id = null where id = $1', [OBJEKT_42])

@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-118 Module, 992 Testfaelle in 57 Dateien,
+118 Module, 993 Testfaelle in 57 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -530,6 +530,13 @@ Eskalation (Konzept 8, 17): Eine Aufgabe, die ueber der Frist liegt,
 Funktionen: `app.eskalation_durchgang`
 
 
+### `supabase/migrations/20260927100000_mahnung_sperre.sql`
+
+Die Zahlungssperre kennt die Belegart: Eine Mahnung wird nie separat
+
+Funktionen: `app.zahlung_moeglich`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -713,7 +720,7 @@ Funktionen: `app.eskalation_durchgang`
 | [`tests/vertretung.test.ts`](../tests/vertretung.test.ts) | 15 | Vertretung anlegen, Wirkung auf neue Aufgaben, Vertretung uebertraegt keine Rechte |
 | [`tests/vier-augen.test.ts`](../tests/vier-augen.test.ts) | 7 | An der Stufe, Am Stempeltyp, Die Pruefung des Ablaufs |
 | [`tests/workflow.test.ts`](../tests/workflow.test.ts) | 21 | Blockbaum, Bedingungen: Pruefung, Bedingungen: Auswertung |
-| [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 33 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
+| [`tests/zahlung.test.ts`](../tests/zahlung.test.ts) | 34 | Die harte Sperre, Ein Stempel ist nicht dasselbe wie ein gueltiger Stempel, Uebergabe, Lastschrift, Eigenanteil bei Selbstbeteiligung, Stempeln an der Zahlungsstufe, Exportzeile, Sichtbarkeit |
 
 ## Architekturentscheidungen
 

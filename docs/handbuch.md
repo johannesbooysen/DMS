@@ -386,10 +386,10 @@ Der letzte Fall ist der übersehene: Eine Mahnung ohne auffindbare Rechnung ist
 oft der einzige Hinweis darauf, dass ein Beleg nie angekommen ist. Das fällt
 sonst erst auf, wenn die Frist längst abgelaufen ist.
 
-> Noch offen: Dass eine Mahnung **nie separat bezahlt** wird, ist ein
-> Hinweistext und keine Sperre. Die Zahlungssperre prüft Freigaben,
-> Pflichtstufen, Summenzwang, harte Befunde, Zahlungsweg und Bankverbindung —
-> die Belegart nicht.
+Dass eine Mahnung **nie separat bezahlt** wird, ist eine Sperre, kein
+Hinweis: Die Zahlungssperre weist eine Mahnung als Erstes ab, vor Freigaben,
+Pflichtstufen und Summenzwang. Bezahlt wird die Rechnung, auf die sie sich
+bezieht.
 
 ### Warum die Hinweise im Klartext stehen
 
