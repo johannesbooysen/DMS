@@ -35,6 +35,8 @@ const MIT_DATEI: Array<{
   seiten: Seitenvorlage[]
   /** Bekommt einen eigenen Lauf -- siehe unten. */
   eigenerLauf?: boolean
+  /** Steht nicht im Seed und wird hier angelegt -- mit diesen Rechnungsdaten. */
+  neu?: { rechnungsnummer: string; brutto: number }
 }> = [
   {
     id: '70000000-0000-0000-0000-000000000001',
@@ -52,6 +54,28 @@ const MIT_DATEI: Array<{
           'Abschlagsrechnung AR-2026-0044 vom 02.05.2026',
           'Objekt 42, Allgemeinstrom, Leistungszeitraum Mai 2026',
           'Netto 168,07 EUR zuzueglich 19 Prozent Umsatzsteuer',
+        ],
+      },
+    ],
+  },
+  {
+    /*
+     * Der dritte Beleg, fuer den Klaerungstest: Jede Testdatei, die einen
+     * Beleg veraendert, braucht ihren eigenen (siehe unten). D1 gehoert dem
+     * Stempeltest, D4 der Zahlung -- D5 der Klaerung. Er steht nicht im
+     * Seed und wird hier angelegt, mit eigenem Lauf.
+     */
+    id: '70000000-0000-0000-0000-000000000005',
+    praefix: 'nord/42/2026/d5',
+    eigenerLauf: true,
+    neu: { rechnungsnummer: 'RE-2026-0005', brutto: 500 },
+    seiten: [
+      {
+        zeilen: [
+          'Musterreinigung GmbH, Beispielweg 1, 00000 Musterstadt',
+          'Rechnung RE-2026-0005 vom 20.05.2026',
+          'Fensterreinigung Objekt 42, Mai 2026',
+          'Netto 420,17 EUR zuzueglich 19 Prozent Umsatzsteuer',
         ],
       },
     ],
@@ -78,6 +102,23 @@ export async function belegeAnlegen(wurzel: string = ABLAGE_WURZEL): Promise<voi
     await ablage.schreiben(schluessel, pdf)
 
     await alsBenutzer(ANNA, async (c) => {
+      if (beleg.neu !== undefined) {
+        await c.query(
+          `insert into dokument (id, mandant_id, objekt_id, belegart, ordnungsgruppe_id, eingangskanal,
+                                 inhalt_hash, storage_praefix, ampel_gesamt)
+           values ($1, '10000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000042',
+                   'rechnung', '40000000-0000-0000-0000-000000000001', 'mail', $2, $3, 'gruen')
+           on conflict (id) do nothing`,
+          [beleg.id, inhaltHash(pdf), beleg.praefix],
+        )
+        await c.query(
+          `insert into rechnung_fakten (dokument_id, kreditor_id, rechnungsnummer, rechnungsdatum, netto, steuer, brutto)
+           values ($1, '55000000-0000-0000-0000-000000000001', $2, '2026-05-20', $3, $4, $5)
+           on conflict (dokument_id) do nothing`,
+          [beleg.id, beleg.neu.rechnungsnummer, Math.round((beleg.neu.brutto / 1.19) * 100) / 100,
+           Math.round((beleg.neu.brutto - beleg.neu.brutto / 1.19) * 100) / 100, beleg.neu.brutto],
+        )
+      }
       /*
        * Die Datei an den bestehenden Beleg haengen, statt einen neuen
        * aufzunehmen. So bleiben Lauf, Aufgaben und Kontierung des Seeds

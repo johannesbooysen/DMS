@@ -467,6 +467,11 @@ export async function stempeln(
 
   if (vorgang.entscheidung === 'ablehnung') {
     await c.query(
+      `update klaerung set erledigt_am = now(), ergebnis = 'abgelehnt'
+        where dokument_id = $1 and erledigt_am is null`,
+      [lauf.dokument_id],
+    )
+    await c.query(
       `update aufgabe set status = 'erledigt', erledigt_am = now()
         where lauf_id = $1 and status in ('offen','in_arbeit')`,
       [vorgang.laufId],
@@ -491,6 +496,28 @@ export async function stempeln(
     // behalten ihre Gültigkeit (Konzept 8.5).
     return { laufAbgeschlossen: false, neueAufgaben: [] }
   }
+
+  /*
+   * Der Weg aus der Klaerung: der naechste Stempel an der gemerkten Stufe.
+   *
+   * Bis Migration 20260927100000 gab es ihn nicht -- der Lauf blieb fuer
+   * immer auf "klaerung", der Eintrag im Klaerungspostfach fuer immer offen,
+   * auch wenn der Beleg laengst weitergestempelt war. Jetzt schliesst jede
+   * Entscheidung, die keine Klaerung ist, die offenen Klaerungen des Belegs
+   * mit dem Kommentar des Stempels als Ergebnis und stellt den Lauf zurueck
+   * auf laufend. Nicht als eigene Handlung "Klaerung beenden": Die Klaerung
+   * ist zu Ende, wenn entschieden wurde -- eine zweite Schaltflaeche waere
+   * ein zweiter Zustand, den jemand vergessen kann.
+   */
+  await c.query(
+    `update klaerung set erledigt_am = now(), ergebnis = coalesce($2, 'weiter bearbeitet')
+      where dokument_id = $1 and erledigt_am is null`,
+    [lauf.dokument_id, vorgang.kommentar ?? null],
+  )
+  await c.query(
+    `update dokument_lauf set status = 'laufend' where id = $1 and status = 'klaerung'`,
+    [vorgang.laufId],
+  )
 
   await c.query(
     `update aufgabe set status = 'erledigt', erledigt_am = now()

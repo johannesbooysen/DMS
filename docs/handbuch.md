@@ -204,7 +204,7 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 | **Stufe** | Eine Station im Lauf: sachliche Prüfung, Kontierung, Freigabe … |
 | **Aufgabe** | Was in einem Postfach erscheint. Alle drei Postfächer sind nur Sichten darauf. |
 | **Stempel** | Eine getroffene Entscheidung, festgehalten als Ereignis. Sagt *nicht*, wohin der Beleg als Nächstes geht. |
-| **Klärung** | Beleg wird geparkt, mit Pflichtkommentar und Wiedervorlagedatum. Die Stempel bleiben gültig. |
+| **Klärung** | Beleg wird geparkt, mit Pflichtkommentar und Wiedervorlagedatum. Die Stempel bleiben gültig. Beendet wird sie durch den nächsten Stempel an derselben Stufe; der Kommentar dazu ist das Ergebnis. |
 | **Kontierung** | Aufteilung des Betrags auf Konten, zeilenweise, mit Umlagefähigkeit je Zeile. |
 | **Ampel** | Zwei Werte: wie sicher wurde gelesen (Extraktion), und wie plausibel ist das Ergebnis. Der schlechtere gewinnt. |
 | **Rolle** | Bündel von Rechten, einem Benutzer je Objekt oder mandantenweit zugewiesen. Mehrere Rollen ergänzen sich; eine Rolle entzieht nie ein Recht. |

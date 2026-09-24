@@ -845,6 +845,7 @@ belegt.
 - schreibt zu jedem Schritt ein Stempelereignis
 - beendet den Lauf bei Ablehnung und setzt den Beleg auf abgelehnt
 - haelt bei Klaerung an, ohne die Aufgabe zu schliessen
+- kommt aus der Klaerung wieder heraus -- mit dem naechsten Stempel
 - laesst eine Stufe entfallen, statt sie stillschweigend zu ueberspringen
 - oeffnet beide Stufen gleichzeitig und wartet auf die zweite
 - nimmt den Dann-Zweig, wenn die Bedingung zutrifft
@@ -1408,6 +1409,8 @@ belegt.
 - verlangt bei Klaerung ein Wiedervorlagedatum
 - legt bei Klaerung einen Eintrag im Klaerungspostfach an
 - haelt die Aufgabe bei Klaerung offen -- die Stempel bleiben gueltig
+- haelt bei einem harten Befund den Stempel auf -- Ablehnung und Klaerung gehen
+- beendet die Klaerung mit dem naechsten Stempel -- das Postfach ist wieder leer
 - macht den Beleg unloeschbar, sobald gestempelt wurde
 - schreibt zu jedem Stempel ein Ereignis mit dem handelnden Benutzer
 

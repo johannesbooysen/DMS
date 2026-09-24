@@ -283,6 +283,27 @@ export async function stempelSetzen(
       }
     }
 
+    /*
+     * Ein harter Befund haelt die Bearbeitung an (Konzept 14): IBAN passt
+     * nicht zum Kreditor, Dublette. Er faerbt nicht nur -- solange er steht,
+     * geht der Beleg nicht weiter. Ablehnen und zur Klaerung geben bleiben
+     * moeglich, das sind die beiden Ausgaenge, die einen harten Befund
+     * behandeln. Das Handbuch versprach das laengst; geprueft hat es bisher
+     * nur die Zahlungssperre.
+     */
+    if (gewaehlt.entscheidung !== 'ablehnung' && gewaehlt.entscheidung !== 'klaerung') {
+      const { rows: harte } = await c.query<{ hinweis: string }>(
+        `select hinweis from plausibilitaet_befund
+          where dokument_id = $1 and schwere = 'hart' order by erkannt_am limit 1`,
+        [aufgabe.dokument_id],
+      )
+      if (harte[0] !== undefined) {
+        throw new StempelAbgelehnt(
+          `Ein harter Befund hält den Beleg an: ${harte[0].hinweis} Erst beheben oder ablehnen.`,
+        )
+      }
+    }
+
     const kommentar = eingabe.kommentar?.trim() ?? ''
     if (gewaehlt.kommentar_pflicht && kommentar === '') {
       throw new StempelAbgelehnt('Für diesen Stempel ist ein Kommentar Pflicht')

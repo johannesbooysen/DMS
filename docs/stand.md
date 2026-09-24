@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-119 Module, 998 Testfaelle in 58 Dateien,
+119 Module, 1001 Testfaelle in 58 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -537,6 +537,13 @@ Die Zahlungssperre kennt die Belegart: Eine Mahnung wird nie separat
 Funktionen: `app.zahlung_moeglich`
 
 
+### `supabase/migrations/20260927110000_klaerung_ausgang.sql`
+
+Der Weg aus der Klaerung (Konzept 8.5): der naechste Stempel an der
+
+Funktionen: `app.moegliche_stempel`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -677,7 +684,7 @@ Funktionen: `app.zahlung_moeglich`
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
-| [`tests/engine.test.ts`](../tests/engine.test.ts) | 21 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
+| [`tests/engine.test.ts`](../tests/engine.test.ts) | 22 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
 | [`tests/erklaerung.test.ts`](../tests/erklaerung.test.ts) | 7 | Gelesene Gruende, Abgeleitete Gruende, Mandantentrennung |
 | [`tests/eskalation.test.ts`](../tests/eskalation.test.ts) | 5 | Eskalation |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
@@ -706,7 +713,7 @@ Funktionen: `app.zahlung_moeglich`
 | [`tests/platzierung.test.ts`](../tests/platzierung.test.ts) | 12 | Freie Bloecke |
 | [`tests/plausibilitaet.test.ts`](../tests/plausibilitaet.test.ts) | 20 | Die Gesamtampel, IBAN gegen den bekannten Kreditor, Dublette, Betragsprobe, Pflichtangaben nach Paragraf 14 UStG, Kreditor, Harte Befunde halten an, Erneutes Pruefen |
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
-| [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 18 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
+| [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 20 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/presets.test.ts`](../tests/presets.test.ts) | 10 | Die Presets selbst, Anwenden, Das Recht |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |

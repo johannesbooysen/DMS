@@ -326,6 +326,33 @@ describe('Lauf', () => {
     expect(ergebnis.status).toBe('klaerung')
     expect(Number(ergebnis.offene)).toBe(1)
   })
+
+  it('kommt aus der Klaerung wieder heraus -- mit dem naechsten Stempel', async () => {
+    const ergebnis = await alsAnna(async (c) => {
+      const beleg = await belegAnlegen(c, 1000)
+      const lauf = await laufStarten(c as never, beleg)
+      const offen = await c.query<{ stufe_id: string }>('select stufe_id from aufgabe where lauf_id = $1', [lauf!.laufId])
+      const stufe = offen.rows[0]!.stufe_id
+      await stempeln(c as never, { laufId: lauf!.laufId, stufeId: stufe, benutzerId: ANNA, entscheidung: 'klaerung', kommentar: 'Rueckfrage' })
+      await c.query(
+        `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von, verantwortlich_benutzer, stufe_beim_eintritt, wiedervorlage_am)
+         values ($1, 'Rueckfrage', 'Rueckfrage', $2, $2, $3, current_date + 3)`,
+        [beleg, ANNA, stufe],
+      )
+      await stempeln(c as never, { laufId: lauf!.laufId, stufeId: stufe, benutzerId: ANNA, entscheidung: 'freigabe', kommentar: 'Lieferant hat bestaetigt' })
+      const { rows } = await c.query<{ status: string; offene_klaerungen: string; ergebnis: string | null }>(
+        `select l.status,
+                (select count(*) from klaerung k where k.dokument_id = l.dokument_id and k.erledigt_am is null) as offene_klaerungen,
+                (select k.ergebnis from klaerung k where k.dokument_id = l.dokument_id limit 1) as ergebnis
+           from dokument_lauf l where l.id = $1`,
+        [lauf!.laufId],
+      )
+      return rows[0]!
+    })
+    expect(ergebnis.status).toBe('laufend')
+    expect(Number(ergebnis.offene_klaerungen)).toBe(0)
+    expect(ergebnis.ergebnis).toBe('Lieferant hat bestaetigt')
+  })
 })
 
 describe('Betragsgrenze', () => {

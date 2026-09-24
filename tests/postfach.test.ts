@@ -317,6 +317,52 @@ describe('Stempeln', () => {
     }
   })
 
+  it('haelt bei einem harten Befund den Stempel auf -- Ablehnung und Klaerung gehen', async () => {
+    const aufgabe = await meineAufgabe(ANNA)
+    const c = await verbindungspool().connect()
+    try {
+      await c.query(
+        `insert into plausibilitaet_befund (dokument_id, pruefung, schwere, hinweis)
+         values ($1, 'iban_fremd', 'hart', 'Die IBAN gehoert nicht zum Kreditor.')`,
+        [beleg],
+      )
+    } finally {
+      c.release()
+    }
+    await expect(
+      stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG }),
+    ).rejects.toThrow(/harter Befund/)
+    // Zur Klaerung geht: Das ist der Ausgang, der den Befund behandelt.
+    await stempelSetzen(ANNA, {
+      aufgabeId: aufgabe.aufgabeId,
+      stempeltypId: ZUR_KLAERUNG,
+      kommentar: 'IBAN beim Lieferanten nachfragen',
+      wiedervorlageAm: '2026-09-30',
+    })
+    expect((await klaerungsPostfach(ANNA)).some((k) => k.dokumentId === beleg)).toBe(true)
+  })
+
+  it('beendet die Klaerung mit dem naechsten Stempel -- das Postfach ist wieder leer', async () => {
+    const aufgabe = await meineAufgabe(ANNA)
+    await stempelSetzen(ANNA, {
+      aufgabeId: aufgabe.aufgabeId,
+      stempeltypId: ZUR_KLAERUNG,
+      kommentar: 'Position 3 unklar',
+      wiedervorlageAm: '2026-09-30',
+    })
+    expect((await klaerungsPostfach(ANNA)).some((k) => k.dokumentId === beleg)).toBe(true)
+
+    await stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG, kommentar: 'geklaert' })
+    expect((await klaerungsPostfach(ANNA)).some((k) => k.dokumentId === beleg)).toBe(false)
+    const c = await verbindungspool().connect()
+    try {
+      const { rows } = await c.query<{ status: string }>('select status from dokument_lauf where dokument_id = $1', [beleg])
+      expect(rows[0]!.status).toBe('laufend')
+    } finally {
+      c.release()
+    }
+  })
+
   it('macht den Beleg unloeschbar, sobald gestempelt wurde', async () => {
     const aufgabe = await meineAufgabe(ANNA)
     await stempelSetzen(ANNA, { aufgabeId: aufgabe.aufgabeId, stempeltypId: SACHLICH_RICHTIG })
