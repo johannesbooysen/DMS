@@ -59,5 +59,11 @@ export async function abmeldenAktion(): Promise<void> {
   // ein Cookie hat -- unsichtbar und trotzdem benutzbar, wenn der Token
   // irgendwo mitgeschnitten wurde.
   kekse.delete(SITZUNG_COOKIE)
-  redirect('/anmeldung?grund=abgemeldet')
+
+  // Danach beim Anbieter abmelden, wenn er das kennt (Entra: ja, die
+  // Entwicklungsanmeldung: nein). Erst die eigene Sitzung, dann die fremde --
+  // wer hier abbricht, ist im DMS auf jeden Fall draussen.
+  const zurueck = `${await basisUrl()}/anmeldung?grund=abgemeldet`
+  const ziel = (await anbieter().abmeldeziel?.(zurueck)) ?? null
+  redirect(ziel ?? '/anmeldung?grund=abgemeldet')
 }

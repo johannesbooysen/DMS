@@ -56,6 +56,14 @@ export interface Identitaetsanbieter {
     zustand: Anmeldezustand,
     rueckkehrUrl: string,
   ): Promise<Identitaet>
+
+  /**
+   * Wohin der Browser nach der Abmeldung geht, damit auch die Sitzung beim
+   * Anbieter endet (RP-initiated logout). `null` oder nicht vorhanden:
+   * Es gibt keine Anbietersitzung, die enden koennte -- die Abmeldung
+   * bleibt bei der Anmeldeseite.
+   */
+  abmeldeziel?(rueckkehrNachAbmeldung: string): Promise<string | null>
 }
 
 /**

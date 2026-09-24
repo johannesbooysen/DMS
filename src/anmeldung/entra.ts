@@ -93,6 +93,29 @@ export class EntraAnbieter implements Identitaetsanbieter {
     return { ziel: ziel.href, zustand: { state, nonce, pkceVerifier, zurueckNach } }
   }
 
+  /*
+   * Die Abmeldung beim DMS endet auch bei Microsoft: Sonst bliebe auf einem
+   * gemeinsam genutzten Rechner die Microsoft-Sitzung stehen, und der
+   * naechste Klick auf "Anmelden" kaeme ohne Passwort durch. Die Adresse
+   * kommt aus dem Discovery-Dokument (end_session_endpoint); die
+   * Rueckkehradresse muss in der App-Registrierung als Abmelde-URL
+   * eingetragen sein, sonst zeigt Microsoft eine eigene Seite statt
+   * zurueckzuleiten -- abgemeldet ist man trotzdem.
+   *
+   * Scheitert das Discovery gerade, bleibt es bei der DMS-Abmeldung: Eine
+   * Abmeldung, die an einem Netzfehler haengt, waere die schlechtere.
+   */
+  async abmeldeziel(rueckkehrNachAbmeldung: string): Promise<string | null> {
+    try {
+      const konfiguration = await this.#laden()
+      return oidc.buildEndSessionUrl(konfiguration, {
+        post_logout_redirect_uri: rueckkehrNachAbmeldung,
+      }).href
+    } catch {
+      return null
+    }
+  }
+
   async abschliessen(
     antwortUrl: URL,
     zustand: Anmeldezustand,

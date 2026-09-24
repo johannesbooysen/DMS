@@ -76,7 +76,9 @@ nicht startet.
 Für den Betrieb braucht es eine App-Registrierung in Microsoft Entra. Die
 kann nur jemand mit Adminrechten im Microsoft-Mandanten anlegen. Nötig sind
 dort: eine Umleitungs-URI vom Typ *Web* auf
-`https://ihre-adresse/api/anmeldung/rueckkehr` und ein Clientgeheimnis.
+`https://ihre-adresse/api/anmeldung/rueckkehr`, eine Abmelde-URL auf
+`https://ihre-adresse/anmeldung` (damit die Abmeldung auch bei Microsoft
+ankommt und der Browser zurückfindet) und ein Clientgeheimnis.
 
 ```
 ENTRA_TENANT_ID=…            # Verzeichnis-ID (Mandant)
@@ -417,9 +419,16 @@ ohne dass jemand daran denken muss.
 tatsächlich, nicht nur im Browser: Der Eintrag in der Datenbank wird
 geschlossen, ein mitgeschnittenes Cookie nützt danach nichts mehr.
 
-> Noch nicht da: Die Abmeldung beendet nur die DMS-Sitzung. Die
-> Microsoft-Sitzung im Browser bleibt bestehen — auf einem gemeinsam
-> genutzten Rechner ist das ein Unterschied.
+Danach geht es weiter zur Abmeldung bei Microsoft, damit auch die dortige
+Sitzung endet — auf einem gemeinsam genutzten Rechner ist das der Unterschied.
+Dafür muss die Adresse `<DMS_BASIS_URL>/anmeldung` in der App-Registrierung
+als **Abmelde-URL** (Front-channel logout, *post_logout_redirect_uri*)
+eingetragen sein; sonst bleibt der Browser auf einer Microsoft-Seite stehen,
+abgemeldet ist man trotzdem.
+
+> Noch nicht da: Dieser Weg folgt dem OpenID-Connect-Standard, ist aber noch
+> nicht gegen ein echtes Entra ID geprüft — das geht erst mit der
+> App-Registrierung des Hauses.
 
 ### Eine Sitzung endet auch von selbst
 
