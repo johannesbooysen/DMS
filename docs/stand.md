@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 79 Tabellen, 196 Policies,
-119 Module, 1002 Testfaelle in 58 Dateien,
+120 Module, 1009 Testfaelle in 59 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -596,6 +596,7 @@ Funktionen: `app.moegliche_stempel`
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
 | [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
+| [`src/belege/nachtragen.ts`](../src/belege/nachtragen.ts) | Angaben von Hand nachtragen -- die manuelle Zuordnung (Konzept 13: "rot: |
 | [`src/belege/suchen-speichern.ts`](../src/belege/suchen-speichern.ts) | Gespeicherte Suchen -- ein Filter der Belegliste mit Namen |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
 | [`src/benutzer-kennung.ts`](../src/benutzer-kennung.ts) | Die Benutzerkennung der Skripte: E-Mail-Adresse oder Kennung |
@@ -706,6 +707,7 @@ Funktionen: `app.moegliche_stempel`
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
+| [`tests/nachtragen.test.ts`](../tests/nachtragen.test.ts) | 7 | Ohne Zustaendigkeit, Angaben nachtragen |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 26 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |
 | [`tests/notfall.test.ts`](../tests/notfall.test.ts) | 20 | Ohne Notfallzugriff, Die Reichweite, Die Befristung, Der Grund, Das Recht, einen einzurichten, Die Sichtbarkeit |
 | [`tests/objektsperre.test.ts`](../tests/objektsperre.test.ts) | 9 | Der Vermerk in der Datenbank, Der Durchgang ohne sperrfaehige Ablage, Der Durchgang gegen den Speicher |

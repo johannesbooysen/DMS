@@ -55,13 +55,16 @@ const ziel = (id: string) => `/arbeitsplatz/${id}`
 export function Aufgabenleiste({
   persoenlich,
   pool,
+  herrenlos = [],
 }: {
   persoenlich: Aufgabeneintrag[]
   pool: Aufgabeneintrag[]
+  /** Aufgaben ohne Traeger -- Belege ohne Objekt, die jemand zuordnen muss. */
+  herrenlos?: Aufgabeneintrag[]
 }) {
   const pfad = usePathname()
   const router = useRouter()
-  const alle = useMemo(() => [...persoenlich, ...pool], [persoenlich, pool])
+  const alle = useMemo(() => [...persoenlich, ...pool, ...herrenlos], [persoenlich, pool, herrenlos])
   const aktuell = alle.findIndex((a) => pfad === ziel(a.aufgabeId))
   // Steht erst, wenn der Zuhoerer haengt -- vorher geht ein Tastendruck ins
   // Leere. Sichtbar als `data-tastatur` am Element, damit ein Browsertest
@@ -145,6 +148,7 @@ export function Aufgabenleiste({
     >
       {gruppe('Persönlich', persoenlich, 'Nichts zugewiesen.')}
       {gruppe('Pool', pool, 'Nichts im Pool.')}
+      {herrenlos.length > 0 && gruppe('Ohne Zuständigkeit', herrenlos, '')}
       <p className="aufgabenleiste-hinweis">
         <kbd>↓</kbd> <kbd>↑</kbd> nächste und vorige Aufgabe
       </p>

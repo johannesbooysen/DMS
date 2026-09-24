@@ -18,7 +18,7 @@
 import type { ReactNode } from 'react'
 import { Aufgabenleiste } from '@/app/lib/aufgabenleiste'
 import { Seitenrahmen } from '@/app/lib/darstellung'
-import { persoenlichesPostfach, poolPostfach, type Postfachzeile } from '@/app/lib/postfach'
+import { ohneZustaendigkeit, persoenlichesPostfach, poolPostfach, type Postfachzeile } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 
 export const dynamic = 'force-dynamic'
@@ -41,15 +41,16 @@ function eintrag(z: Postfachzeile) {
 
 export default async function Arbeitsplatz({ children }: { children: ReactNode }) {
   const benutzer = await angemeldeterBenutzer()
-  const [persoenlich, pool] = await Promise.all([
+  const [persoenlich, pool, herrenlos] = await Promise.all([
     persoenlichesPostfach(benutzer),
     poolPostfach(benutzer),
+    ohneZustaendigkeit(benutzer),
   ])
 
   return (
     <Seitenrahmen titel="Arbeitsplatz" breit>
       <div className="arbeitsplatz">
-        <Aufgabenleiste persoenlich={persoenlich.map(eintrag)} pool={pool.map(eintrag)} />
+        <Aufgabenleiste persoenlich={persoenlich.map(eintrag)} pool={pool.map(eintrag)} herrenlos={herrenlos.map(eintrag)} />
         {children}
       </div>
     </Seitenrahmen>

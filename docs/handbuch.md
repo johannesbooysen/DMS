@@ -479,6 +479,17 @@ eigener Beleg (mit Häkchen *Stapelscan*: ein eigener Stapel). Bei einer Datei
 landet man beim Beleg; bei mehreren bleibt man im Posteingang mit der Zeile,
 was angekommen ist.
 
+**Ein Beleg ohne erkannte Angaben verschwindet nicht.** Ein Scan ohne
+Textebene, ein Foto, ein Beleg ohne eingerichtete Erkennung kommt ohne Objekt
+und ohne Kreditor an. Ohne Objekt gibt es keine Objektverantwortliche, also
+hat seine Aufgabe zunächst niemanden. Solche Belege stehen unter *Postfächer*
+im Abschnitt **Ohne Zuständigkeit** und am Arbeitsplatz in der gleichnamigen
+Gruppe, sichtbar für alle im Haus. Am Arbeitsplatz steht dann vor der
+Entscheidung das Formular **Angaben nachtragen**: Objekt, Ordnungsgruppe,
+Kreditor, Rechnungsnummer, Datum, Betrag. Was erkannt wurde, bleibt; was
+eingetragen wird, gilt. Danach hat die Aufgabe ihren Bearbeiter, und der
+Beleg erscheint dort, wo er hingehört.
+
 **Zuletzt aufgenommen** zeigt, was Sie selbst über den Posteingang
 hereingebracht haben, und wo es steht: *wird aufbereitet* (der Worker liest
 und rendert), *im Ablauf*, *abgelehnt* (Dublette). Ein Upload verschwindet

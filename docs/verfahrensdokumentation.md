@@ -1240,6 +1240,16 @@ belegt.
 - erkennt eine zu niedrige Summe
 - erkennt eine zu hohe Summe
 
+### [`tests/nachtragen.test.ts`](../tests/nachtragen.test.ts)
+
+- fuehrt den Beleg ohne Objekt -- die Aufgabe hat niemanden
+- zeigt einem fremden Mandanten nichts davon
+- setzt Objekt und Fakten -- und die Aufgabe bekommt die Objektverantwortliche
+- laesst leere Felder stehen und ueberschreibt gefuellte -- ein Mensch hat das letzte Wort
+- weist ein Objekt ab, das es im eigenen Haus nicht gibt
+- laesst einen fremden Mandanten nichts nachtragen
+- bietet nur die Listen des eigenen Hauses an
+
 ### [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts)
 
 - setzt den Lauf auf wartend

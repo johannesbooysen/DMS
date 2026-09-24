@@ -10,6 +10,7 @@
 import Link from 'next/link'
 import {
   klaerungsPostfach,
+  ohneZustaendigkeit,
   persoenlichesPostfach,
   poolPostfach,
   type Postfachzeile,
@@ -63,11 +64,12 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
 
 export default async function Postfaecher() {
   const benutzer = await angemeldeterBenutzer()
-  const [persoenlich, spezial, klaerungen, wunsch] = await Promise.all([
+  const [persoenlich, spezial, klaerungen, wunsch, herrenlos] = await Promise.all([
     persoenlichesPostfach(benutzer),
     poolPostfach(benutzer),
     klaerungsPostfach(benutzer),
     alsBenutzer(benutzer, wunschLaden),
+    ohneZustaendigkeit(benutzer),
   ])
 
   return (
@@ -96,6 +98,40 @@ export default async function Postfaecher() {
         <h2>Pool: Spezialgebiet und Rolle ({spezial.length})</h2>
         <Aufgabenliste zeilen={spezial} leer="Nichts im Pool." />
       </section>
+
+      {herrenlos.length > 0 && (
+        <section>
+          <h2>Ohne Zuständigkeit ({herrenlos.length})</h2>
+          <p className="leise klein">
+            Belege ohne Objekt -- meist ein Scan ohne erkannte Angaben. Am Arbeitsplatz lassen sich
+            Objekt, Kreditor und Betrag nachtragen; danach hat die Aufgabe ihren Bearbeiter.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Beleg</th>
+                <th>Stufe</th>
+                <th>Eingang</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {herrenlos.map((z) => (
+                <tr key={z.aufgabeId}>
+                  <td>
+                    <Ampel wert={z.ampel} /> <a href={`/beleg/${z.dokumentId}`}>{belegBezeichnung(z)}</a>
+                  </td>
+                  <td>{z.stufe}</td>
+                  <td>{z.faelligAm === null ? '—' : datum.format(new Date(z.faelligAm))}</td>
+                  <td>
+                    <a href={`/arbeitsplatz/${z.aufgabeId}`}>Angaben nachtragen</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <section>
         <h2>Klärung ({klaerungen.length})</h2>

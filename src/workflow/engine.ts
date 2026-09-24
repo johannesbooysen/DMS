@@ -322,6 +322,43 @@ async function vorruecken(
   return { laufAbgeschlossen: false, neueAufgaben }
 }
 
+/**
+ * Offene Aufgaben ohne Traeger noch einmal aufloesen -- nachdem jemand das
+ * Objekt nachgetragen hat (`belege/nachtragen.ts`).
+ *
+ * Dieselbe Aufloesung wie beim Anlegen, mit Vertretung. Nur Aufgaben, die
+ * niemanden haben: Eine Aufgabe, die schon bei jemandem liegt, wandert
+ * nicht, weil ein Objekt dazukam -- das waere ein stiller Wechsel des
+ * Bearbeiters. Gibt die Zahl der neu zugewiesenen zurueck.
+ */
+export async function aufgabenNeuZuweisen(c: PoolClient, dokumentId: string): Promise<number> {
+  const { rows } = await c.query<{ id: string; stufe_id: string; definition_id: string }>(
+    `select a.id, a.stufe_id, l.definition_id
+       from aufgabe a join dokument_lauf l on l.id = a.lauf_id
+      where l.dokument_id = $1 and a.status in ('offen','in_arbeit')
+        and a.zugewiesen_benutzer is null and a.zugewiesen_gruppe is null and a.zugewiesen_rolle is null`,
+    [dokumentId],
+  )
+  let zugewiesen = 0
+  for (const a of rows) {
+    const wurzel = await baumLaden(c, a.definition_id)
+    if (wurzel === null) continue
+    const blatt = alleBlaetter(wurzel).find((b) => b.stufe?.id === a.stufe_id)
+    if (blatt === undefined || blatt.stufe === null) continue
+    const zustaendig = await zustaendigkeitAufloesen(c, blatt, dokumentId)
+    const traeger = await vertretungAnwenden(c, zustaendig, dokumentId, blatt.stufe.stufentyp)
+    if (traeger.benutzerId === null && traeger.gruppeId === null && traeger.rolleId === null) continue
+    await c.query(
+      `update aufgabe set zugewiesen_benutzer = $2, zugewiesen_gruppe = $3, zugewiesen_rolle = $4,
+                          wegen_delegation = $5
+        where id = $1`,
+      [a.id, traeger.benutzerId, traeger.gruppeId, traeger.rolleId, traeger.delegationId ?? null],
+    )
+    zugewiesen += 1
+  }
+  return zugewiesen
+}
+
 /** Ist der Teilbaum durch? Entfallene Stufen zählen als erledigt. */
 function abschlussPruefer(
   erledigteStufen: Set<string>,

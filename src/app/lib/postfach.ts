@@ -90,6 +90,27 @@ export async function persoenlichesPostfach(benutzerId: string): Promise<Postfac
 }
 
 /**
+ * Ohne Zustaendigkeit: Aufgaben, die niemanden haben -- weil der Beleg kein
+ * Objekt hat (Scan ohne Text, keine Erkennung) und die Stufe die
+ * Objektverantwortliche verlangt. Bis hierher standen sie in keinem
+ * Postfach; der erste echte Scan beim Bedienen verschwand genau so. Sichtbar
+ * fuer jeden, der den Beleg sieht (ohne Objekt: das ganze Haus), damit
+ * jemand die Angaben nachtraegt (`belege/nachtragen.ts`).
+ */
+export async function ohneZustaendigkeit(benutzerId: string): Promise<Postfachzeile[]> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query(
+      `${ZEILEN_ABFRAGE}
+         and a.zugewiesen_benutzer is null
+         and a.zugewiesen_gruppe is null
+         and a.zugewiesen_rolle is null
+        order by d.eingang_am`,
+    )
+    return rows.map(zeile)
+  })
+}
+
+/**
  * Pool-Postfach: Aufgaben, die einer Gruppe oder einer Rolle gehören statt
  * einer Person — Spezialgebiet und Fachrolle. Wer eine übernimmt, sperrt sie
  * für eine Weile; bei Untätigkeit fällt sie zurück (Konzept 8.6).

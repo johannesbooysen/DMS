@@ -18,6 +18,8 @@ import { kontierungsmaskeLaden } from '@/app/lib/kontierung-daten'
 import { Kontierung } from '@/app/lib/kontierungsmaske'
 import { aufgabeLaden } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { Nachtragsformular } from '@/app/lib/nachtragsformular'
+import { nachtragNoetig, nachtragsauswahl } from '@/belege/nachtragen'
 import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
 import { Zahlung } from '@/app/lib/zahlungsansicht'
 
@@ -28,10 +30,10 @@ export default async function Aufgabe({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ fehler?: string }>
+  searchParams: Promise<{ fehler?: string; hinweis?: string }>
 }) {
   const { id } = await params
-  const { fehler } = await searchParams
+  const { fehler, hinweis } = await searchParams
   const benutzer = await angemeldeterBenutzer()
 
   const geladen = await aufgabeLaden(benutzer, id)
@@ -109,6 +111,24 @@ export default async function Aufgabe({
           <p role="alert" className="meldung-fehler">
             {fehler}
           </p>
+        )}
+        {hinweis !== undefined && (
+          <p role="status" className="meldung-hinweis">
+            {hinweis}
+          </p>
+        )}
+
+        {/* Die manuelle Zuordnung (Konzept 13): Fehlt Objekt oder Kreditor,
+            steht das Formular vor der Entscheidung -- ohne Objekt hat die
+            Aufgabe niemanden, und ohne Kreditor gibt es keine Freigabe. */}
+        {nachtragNoetig({ objektnummer: zeile.objektnummer, kreditor: zeile.kreditor, belegart: kopf?.belegart ?? null }) && (
+          <Nachtragsformular
+            dokumentId={zeile.dokumentId}
+            aufgabeId={zeile.aufgabeId}
+            auswahl={await nachtragsauswahl(benutzer)}
+            belegart={kopf?.belegart ?? 'rechnung'}
+            ohneObjekt={zeile.objektnummer === null}
+          />
         )}
 
         <Befunde befunde={befunde} />

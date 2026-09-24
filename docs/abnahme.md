@@ -10,7 +10,7 @@ Zwei Nachweisarten (siehe CLAUDE.md, „Zwei Testarten"): **Browsertests**
 prüfen Regeln gegen die Datenbank, im Rollback. Eine Zusicherung über eine
 Policy steht nie in einem Browsertest.
 
-Stand: 24.09.2026, 1.010 Regeltests und 88 Browsertests grün.
+Stand: 24.09.2026, 1.017 Regeltests und 89 Browsertests grün.
 
 ## Belege hereinbringen
 
@@ -23,6 +23,7 @@ Stand: 24.09.2026, 1.010 Regeltests und 88 Browsertests grün.
 | Ein Trennblatt wird am Text und am Barcode erkannt | `tests/stapel.test.ts` |
 | Ein überwachter Ordner liefert Belege ohne Klick, mit Objekt vorbelegt | `e2e/eingang.spec.ts` |
 | Ein Scan ohne Textlayer ohne eingerichtete Erkennung landet sichtbar im Fehlerkorb | `e2e/fehlerkorb.spec.ts` |
+| Ein Beleg ohne erkannte Angaben steht unter „Ohne Zuständigkeit"; nach dem Nachtragen hat die Aufgabe ihren Bearbeiter | `e2e/zuordnung.spec.ts`, `tests/nachtragen.test.ts` |
 | Bestandsbelege aus Amagno kommen archiviert mit altem Eingangsdatum an; ein zweiter Lauf ist folgenlos | `tests/uebernahme.test.ts` |
 
 ## Belege bearbeiten
