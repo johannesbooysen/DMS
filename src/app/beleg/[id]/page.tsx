@@ -201,6 +201,7 @@ export default async function Belegansicht({
               <dl>
                 {(
                   [
+                    ['Belegart', erklaerung.belegart],
                     ['Objekt', erklaerung.objekt],
                     ['Kategorie', erklaerung.kategorie],
                     ['Ablauf', erklaerung.ablauf],

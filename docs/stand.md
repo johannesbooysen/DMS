@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 80 Tabellen, 198 Policies,
-123 Module, 1022 Testfaelle in 61 Dateien,
+124 Module, 1032 Testfaelle in 62 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -552,6 +552,11 @@ Tabellen: `pflichtfeld`
 
 Policies: 2
 
+### `supabase/migrations/20260929100000_belegart_erkennung.sql`
+
+Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -638,6 +643,7 @@ Policies: 2
 | [`src/layer/gestaltung.ts`](../src/layer/gestaltung.ts) | Die Gestaltung eines Stempeltyps -- was der Stempel-Designer einstellt |
 | [`src/layer/index.ts`](../src/layer/index.ts) | Layer: was neben dem Beleg liegt |
 | [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
+| [`src/lernen/belegart.ts`](../src/lernen/belegart.ts) | Belegart aus dem Inhalt erkennen |
 | [`src/lernen/kategorie.ts`](../src/lernen/kategorie.ts) | Kategorie (Ordnungsgruppe) eines Belegs bestimmen |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
@@ -690,6 +696,7 @@ Policies: 2
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |
 | [`tests/ausfuehrbarkeit.test.ts`](../tests/ausfuehrbarkeit.test.ts) | 6 | Niemand darf stempeln, Zustaendigkeit ohne Menschen, Genau eine Person |
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
+| [`tests/belegart.test.ts`](../tests/belegart.test.ts) | 10 | Erkennung, Wechsel des Ablaufs |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 33 | Feed, Akte eines Objekts, Filter, Volltext, Eigene Eingaenge, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
 | [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts) | 4 | Benutzerkennung |
@@ -763,6 +770,6 @@ Policies: 2
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:385`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:424`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:93`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:195`](../src/workflow/engine.ts) |

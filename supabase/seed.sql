@@ -493,3 +493,69 @@ select m.id, 'rechnung', f.feldname
   from mandant m
  cross join (values ('kreditor_name'), ('rechnungsnummer'), ('rechnungsdatum'), ('brutto')) as f(feldname)
 on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Mahnung und Gutschrift: eigene Ablaeufe, damit die Erkennung der Belegart
+-- aus dem Inhalt (src/lernen/belegart.ts) einen Beleg dorthin umstellen
+-- kann. Ohne aktiven Ablauf fuer die erkannte Belegart bleibt der Beleg,
+-- was der Eingang sagte -- mit dem Hinweis am Beleg.
+-- ---------------------------------------------------------------------------
+
+insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_ab) values
+  ('65000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   'mahnung', 1, 'aktiv', now()),
+  ('65000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001',
+   'gutschrift', 1, 'aktiv', now());
+
+insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
+                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref) values
+  -- Mahnung: Die Buchhaltung prueft, ob die gemahnte Rechnung bezahlt oder
+  -- offen ist -- schnell, weil Mahngebuehren laufen.
+  ('66000000-0000-0000-0000-000000000021', '65000000-0000-0000-0000-000000000003',
+   1, 'sachlich', 'Mahnung pruefen', 'rolle', 24, '90000000-0000-0000-0000-000000000002'),
+  ('66000000-0000-0000-0000-000000000022', '65000000-0000-0000-0000-000000000003',
+   2, 'freigabe', 'Erledigt', 'rolle', 48, '90000000-0000-0000-0000-000000000002'),
+  -- Gutschrift: sachlich am Objekt, dann verbucht die Buchhaltung.
+  ('66000000-0000-0000-0000-000000000031', '65000000-0000-0000-0000-000000000004',
+   1, 'sachlich', 'Sachliche Pruefung', 'objektverantwortlich', 72, null),
+  ('66000000-0000-0000-0000-000000000032', '65000000-0000-0000-0000-000000000004',
+   2, 'freigabe', 'Erledigt', 'rolle', 48, '90000000-0000-0000-0000-000000000002');
+
+insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, stufe_id) values
+  ('67000000-0000-0000-0000-000000000031', '65000000-0000-0000-0000-000000000003', null, 0, 'nacheinander', null),
+  ('67000000-0000-0000-0000-000000000032', '65000000-0000-0000-0000-000000000003',
+   '67000000-0000-0000-0000-000000000031', 0, 'stufe', '66000000-0000-0000-0000-000000000021'),
+  ('67000000-0000-0000-0000-000000000033', '65000000-0000-0000-0000-000000000003',
+   '67000000-0000-0000-0000-000000000031', 1, 'stufe', '66000000-0000-0000-0000-000000000022'),
+  ('67000000-0000-0000-0000-000000000041', '65000000-0000-0000-0000-000000000004', null, 0, 'nacheinander', null),
+  ('67000000-0000-0000-0000-000000000042', '65000000-0000-0000-0000-000000000004',
+   '67000000-0000-0000-0000-000000000041', 0, 'stufe', '66000000-0000-0000-0000-000000000031'),
+  ('67000000-0000-0000-0000-000000000043', '65000000-0000-0000-0000-000000000004',
+   '67000000-0000-0000-0000-000000000041', 1, 'stufe', '66000000-0000-0000-0000-000000000032');
+
+-- Stempel: "Zur Kenntnis" und "Erledigt" wie beim Schriftverkehr, dazu
+-- "Sachlich richtig" und "Abgelehnt" fuer die Gutschrift.
+insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
+  ('66000000-0000-0000-0000-000000000021', '60000000-0000-0000-0000-000000000008', 0),
+  ('66000000-0000-0000-0000-000000000021', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000022', '60000000-0000-0000-0000-000000000009', 0),
+  ('66000000-0000-0000-0000-000000000031', '60000000-0000-0000-0000-000000000001', 0),
+  ('66000000-0000-0000-0000-000000000031', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000032', '60000000-0000-0000-0000-000000000009', 0);
+
+-- Die Buchhaltung darf "Zur Kenntnis" und "Erledigt" setzen.
+insert into stempel_recht (stempeltyp_id, rolle_id) values
+  ('60000000-0000-0000-0000-000000000008', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000009', '90000000-0000-0000-0000-000000000002');
+
+-- Der Stufenbaum des Schriftverkehrsablaufs. Er fehlte: Die Stufen standen
+-- da, aber ohne Knoten laeuft `laufStarten` ins Leere -- ein Schriftstueck
+-- aus einer Eingangsquelle bekam keinen Lauf und stand in keinem Postfach.
+-- Der Seed-Beleg 70000000-...-0011 hatte seinen Lauf von Hand. Gefunden,
+-- als die Belegart-Erkennung ein Angebot in diesen Ablauf stellen wollte.
+insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, stufe_id) values
+  ('67000000-0000-0000-0000-000000000021', '65000000-0000-0000-0000-000000000002', null, 0, 'nacheinander', null),
+  ('67000000-0000-0000-0000-000000000022', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000021', 0, 'stufe', '66000000-0000-0000-0000-000000000011'),
+  ('67000000-0000-0000-0000-000000000023', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000021', 1, 'stufe', '66000000-0000-0000-0000-000000000012');

@@ -594,3 +594,119 @@ export async function fehlendePflichtstempel(
   )
   return rows.map((r) => r.bezeichnung)
 }
+
+export type Belegartwechsel = 'gewechselt' | 'unveraendert' | 'entschieden' | 'kein_ablauf'
+
+/**
+ * Die Belegart eines Belegs umstellen -- und den Lauf mit ihr.
+ *
+ * Der Lauf startet beim Eingang, bevor der Worker den Text gelesen hat
+ * (damit ein Beleg auch dann sichtbar ist, wenn der Worker faellt). Stellt
+ * sich danach heraus, dass die Rechnung eine Mahnung ist, gehoert sie in den
+ * Mahnungsablauf -- aber nur, solange niemand entschieden hat: Ein Stempel
+ * ist eine Entscheidung ueber genau diesen Beleg in genau diesem Ablauf,
+ * und die wird nicht dadurch entwertet, dass ein Wort im Text steht.
+ *
+ * Gibt es fuer die neue Belegart keinen aktiven Ablauf, bleibt alles, und
+ * der Beleg traegt den Hinweis: Ein Beleg ohne Lauf staende in keinem
+ * Postfach -- das waere schlimmer als der falsche Ablauf.
+ *
+ * Der alte Lauf wird storniert, seine Aufgaben entfallen; nichts wird
+ * geloescht. Eine Quelle `mensch` ist fest: Die Erkennung stellt nichts
+ * mehr um, was jemand gewaehlt hat.
+ */
+export async function belegartWechseln(
+  c: PoolClient,
+  dokumentId: string,
+  neu: string,
+  quelle: 'erkannt' | 'mensch',
+  begruendung: string,
+): Promise<Belegartwechsel> {
+  const { rows } = await c.query<{ belegart: string; belegart_quelle: string; mandant_id: string }>(
+    'select belegart, belegart_quelle, mandant_id from dokument where id = $1',
+    [dokumentId],
+  )
+  const d = rows[0]
+  if (d === undefined) return 'unveraendert'
+  if (quelle === 'erkannt' && d.belegart_quelle === 'mensch') return 'unveraendert'
+
+  if (d.belegart === neu) {
+    await c.query('update dokument set belegart_quelle = $2, belegart_begruendung = $3 where id = $1', [
+      dokumentId,
+      quelle,
+      begruendung,
+    ])
+    return 'unveraendert'
+  }
+
+  const { rows: entschieden } = await c.query<{ n: number }>(
+    `select count(*)::int n from stempel_ereignis e
+       join dokument_lauf l on l.id = e.lauf_id
+      where l.dokument_id = $1`,
+    [dokumentId],
+  )
+  if ((entschieden[0]?.n ?? 0) > 0) {
+    await c.query('update dokument set belegart_begruendung = $2 where id = $1', [
+      dokumentId,
+      `${begruendung} — nicht umgestellt, der Beleg trägt schon Entscheidungen`,
+    ])
+    return 'entschieden'
+  }
+
+  const { rows: ablauf } = await c.query<{ id: string }>(
+    `select id from prozessdefinition where mandant_id = $1 and belegart = $2 and status = 'aktiv' limit 1`,
+    [d.mandant_id, neu],
+  )
+  // Ein Ablauf ohne Stufenbaum ist keiner: Gefunden am Schriftverkehr, dessen
+  // Stufen ohne Knoten dastanden -- die Belegart waere umgestellt worden und
+  // der Lauf nicht, und der Beleg haette im falschen Ablauf gestanden.
+  const wurzel = ablauf[0] === undefined ? null : await baumLaden(c, ablauf[0].id)
+  if (ablauf[0] === undefined || wurzel === null) {
+    await c.query('update dokument set belegart_begruendung = $2 where id = $1', [
+      dokumentId,
+      `${begruendung} — nicht umgestellt, für diese Belegart gibt es keinen aktiven Ablauf`,
+    ])
+    return 'kein_ablauf'
+  }
+
+  await c.query(
+    'update dokument set belegart = $2, belegart_quelle = $3, belegart_begruendung = $4 where id = $1',
+    [dokumentId, neu, quelle, begruendung],
+  )
+
+  /*
+   * Der Lauf wechselt seine Definition -- ein Beleg hat genau einen Lauf
+   * (eindeutiger Index), und ohne Ereignis darin gibt es nichts, was ein
+   * zweiter Lauf festhalten muesste. Die alten Aufgaben entfallen, die
+   * neuen entstehen wie beim Start. Ein Bestandsbeleg (Uebernahme) hat
+   * keinen Lauf und bekommt durch die Belegart auch keinen.
+   */
+  const { rows: laeufe } = await c.query<{ id: string }>(
+    `select id from dokument_lauf where dokument_id = $1 and status in ('laufend','klaerung')`,
+    [dokumentId],
+  )
+  const laufId = laeufe[0]?.id
+  if (laufId === undefined) return 'gewechselt'
+
+  const kontext = await kontextLaden(c, dokumentId)
+  const blaetter = einstiegsblaetter(wurzel, kontext)
+  const { rows: fassung } = await c.query<{ version: number }>(
+    'select version from prozessdefinition where id = $1',
+    [ablauf[0].id],
+  )
+
+  await c.query(
+    `update aufgabe set status = 'entfallen', erledigt_am = now()
+      where lauf_id = $1 and status in ('offen','in_arbeit')`,
+    [laufId],
+  )
+  await c.query(
+    `update dokument_lauf
+        set definition_id = $2, definition_version = $3, aktuelle_stufe_id = $4,
+            status = 'laufend', beendet_am = null, freigabe_hash = null, kontierungs_hash = null
+      where id = $1`,
+    [laufId, ablauf[0].id, fassung[0]?.version ?? 1, blaetter[0]?.stufe?.id ?? null],
+  )
+  await aufgabenAnlegen(c, laufId, dokumentId, wurzel, blaetter, kontext)
+  return 'gewechselt'
+}

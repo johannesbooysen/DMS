@@ -389,6 +389,41 @@ zugeordneter Beleg kostet mehr Zeit, als die Zuordnung spart.
 
 ---
 
+## Belegart aus dem Inhalt
+
+Die Belegart kam bisher allein vom Eingangsweg: Ein Upload war eine
+Rechnung, eine Eingangsquelle trägt ihre Belegart als Stammdatum. Ein Angebot
+oder eine Mahnung lief damit als Rechnung durch die sachliche Prüfung.
+
+Jetzt liest der Worker die Belegart aus dem Text — mit Wörtern, nicht mit
+einem Modell: „Mahnung", „Zahlungserinnerung", „Mahngebühr" machen eine
+Mahnung; „Gutschrift" eine Gutschrift; „Rechnungsnummer" und „Rechnungsdatum"
+eine Rechnung; „Angebot", „Kostenvoranschlag", „Auftragsbestätigung",
+„Lieferschein", „Mängelanzeige" oder „Kündigung" Schriftverkehr. Was im Kopf
+des Belegs steht, zählt doppelt. Eine Mahnung nennt ihre Rechnung — das
+Wort „Rechnung" allein macht daraus keine.
+
+**Umgestellt wird nur, was eindeutig ist.** Ein klarer Sieger mit Abstand
+ist grün, und nur dann wechselt der Beleg die Belegart und mit ihr den
+Ablauf: Die alten Aufgaben entfallen, die neuen entstehen wie beim Eingang.
+Das geht nur, solange niemand gestempelt hat — ein Stempel ist eine
+Entscheidung über diesen Beleg in diesem Ablauf. Und nur, wenn es für die
+erkannte Belegart einen aktiven Ablauf gibt; sonst bleibt der Beleg, was
+der Eingang sagte, und trägt den Hinweis. Unsicheres steht nur als Hinweis
+am Beleg.
+
+Unter *Warum hier* steht die Belegart mit ihrer Herkunft: vom Eingangsweg,
+aus dem Inhalt (mit den erkannten Wörtern) oder von Hand. Von Hand setzt
+man sie im Formular *Angaben nachtragen*; was ein Mensch gewählt hat, stellt
+die Erkennung nicht mehr um. Ein Bestandsbeleg aus der Übernahme behält die
+Belegart aus der CSV.
+
+Die Testdaten haben Abläufe für Rechnung, Schriftverkehr, Mahnung und
+Gutschrift. Ein Haus, das eine Belegart nicht bearbeitet, legt dafür keinen
+Ablauf an — dann bleibt ein solcher Beleg sichtbar in seinem Eingangsablauf.
+
+---
+
 ## Die Ampel
 
 Zwei Werte, weil zwei verschiedene Fragen dahinterstehen.

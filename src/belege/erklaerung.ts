@@ -21,6 +21,7 @@
  */
 
 import { alsBenutzer } from '../db'
+import { belegartName } from '../lernen/belegart'
 
 export interface Erklaerungszeile {
   /** Was gilt -- "Objekt 42", "Betriebskosten", "Rechnung, Fassung 1". */
@@ -30,6 +31,8 @@ export interface Erklaerungszeile {
 }
 
 export interface Erklaerung {
+  /** Die Belegart und woher sie stammt -- Eingangsweg, Inhalt oder Mensch. */
+  belegart: Erklaerungszeile | null
   objekt: Erklaerungszeile | null
   kategorie: Erklaerungszeile | null
   ablauf: Erklaerungszeile | null
@@ -51,7 +54,7 @@ export async function zuordnungErklaeren(
 ): Promise<Erklaerung | null> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      `select d.belegart,
+      `select d.belegart, d.belegart_quelle, d.belegart_begruendung,
               o.objektnummer, d.objekt_begruendung,
               og.name as kategorie, d.kategorie_quelle, d.kategorie_begruendung,
               og.prozessdefinition_id as kategorie_ablauf,
@@ -80,6 +83,18 @@ export async function zuordnungErklaeren(
     const z = rows[0]
     if (z === undefined) return null
     const text = (w: unknown): string | null => (w == null ? null : String(w))
+
+    const belegartQuelle = text(z['belegart_quelle'])
+    const belegart: Erklaerungszeile = {
+      was: belegartName(text(z['belegart']) ?? ''),
+      warum:
+        text(z['belegart_begruendung']) ??
+        (belegartQuelle === 'mensch'
+          ? 'von Hand gesetzt'
+          : belegartQuelle === 'erkannt'
+            ? 'aus dem Inhalt erkannt'
+            : 'vom Eingangsweg vorgegeben — im Text kein Merkmal einer anderen Belegart'),
+    }
 
     const objekt: Erklaerungszeile | null =
       text(z['objektnummer']) === null
@@ -179,6 +194,6 @@ export async function zuordnungErklaeren(
       }
     }
 
-    return { objekt, kategorie, ablauf, stufe }
+    return { belegart, objekt, kategorie, ablauf, stufe }
   })
 }

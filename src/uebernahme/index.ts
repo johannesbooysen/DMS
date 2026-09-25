@@ -415,6 +415,9 @@ export async function bestandUebernehmen(
       mandantId,
       objektId,
       belegart: beleg.belegart,
+      // Aus der CSV, also von einem Menschen: Die Erkennung aus dem
+      // Inhalt stellt einen Bestandsbeleg nicht um.
+      belegartFest: true,
       eingangskanal: 'uebernahme',
       dateiname: beleg.datei,
       mime: 'application/pdf',

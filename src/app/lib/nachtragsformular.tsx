@@ -118,6 +118,17 @@ export function Nachtragsformular({
         <input type="hidden" name="dokumentId" value={dokumentId} />
         <input type="hidden" name="aufgabeId" value={aufgabeId} />
         <label className="entscheidung-feld">
+          Belegart
+          <select name="belegart" defaultValue={belegart}>
+            <option value="rechnung">Rechnung</option>
+            <option value="gutschrift">Gutschrift</option>
+            <option value="mahnung">Mahnung</option>
+            <option value="schriftverkehr">Schriftverkehr (Angebot, Schreiben, Protokoll)</option>
+            <option value="sonstiges">Sonstiges</option>
+          </select>
+          <span className="klein leise"> Eine andere Belegart wechselt den Ablauf — nur vor dem ersten Stempel.</span>
+        </label>
+        <label className="entscheidung-feld">
           Objekt
           <select name="objektId" defaultValue="">
             <option value="">— unverändert —</option>

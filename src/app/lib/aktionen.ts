@@ -77,6 +77,7 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
   let ergebnis: { neuZugewiesen: number; pflichtfelderVollstaendig: boolean }
   try {
     ergebnis = await angabenNachtragen(await angemeldeterBenutzer(), dokumentId, {
+      belegart: text('belegart'),
       objektId: text('objektId'),
       ordnungsgruppeId: text('ordnungsgruppeId'),
       kreditorId: text('kreditorId'),

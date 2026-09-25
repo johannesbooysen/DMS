@@ -21,7 +21,9 @@ import type { Ablage } from '../ablage'
 import { extrahierenUndUebernehmen, type Extraktionsbericht } from '../extraktion'
 import { istXmlRechnung } from '../extraktion/zugferd'
 import { kategorieVorschlagen, type Kategorievorschlag } from '../lernen/kategorie'
+import { belegartErkennen, type ErkennbareBelegart } from '../lernen/belegart'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
+import { belegartWechseln, type Belegartwechsel } from '../workflow/engine'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
 import { mailtext } from '../eingang/mail'
@@ -55,6 +57,8 @@ export interface Aufbereitungsergebnis {
   erkennung?: Extraktionsbericht
   pruefung?: Pruefergebnis
   zuordnung?: Zuordnungsvorschlag
+  /** Belegart aus dem Inhalt: was erkannt wurde und was daraus geworden ist. */
+  belegart?: { vorschlag: ErkennbareBelegart; sicherheit: 'gruen' | 'orange' | 'rot'; ausgang: Belegartwechsel }
   kategorie?: Kategorievorschlag
 }
 
@@ -138,11 +142,20 @@ export async function aufbereiten(
    */
   texterkenner: Texterkennung | null = texterkennung(),
 ): Promise<Aufbereitungsergebnis> {
-  const { rows } = await c.query<{ storage_praefix: string; storage_key: string | null }>(
-    `select d.storage_praefix,
+  const { rows } = await c.query<{
+    storage_praefix: string
+    storage_key: string | null
+    mime: string | null
+    belegart: string
+    belegart_quelle: string
+  }>(
+    `select d.storage_praefix, d.belegart, d.belegart_quelle,
             (select f.storage_key from dokument_datei f
               where f.dokument_id = d.id and f.variante = 'original'
-              limit 1) as storage_key
+              limit 1) as storage_key,
+            (select f.mime from dokument_datei f
+              where f.dokument_id = d.id and f.variante = 'original'
+              limit 1) as mime
        from dokument d
       where d.id = $1`,
     [dokumentId],
@@ -299,6 +312,32 @@ export async function aufbereiten(
     seiten.length,
   ])
 
+  /*
+   * Belegart aus dem Inhalt -- vor der Extraktion, weil die Extraktion
+   * Rechnungsfelder sucht und bei einem Angebot nichts zu suchen hat.
+   *
+   * Umgestellt wird nur, was eindeutig ist (gruen) und was kein Mensch
+   * festgelegt hat; alles andere steht als Hinweis am Beleg. Der Lauf
+   * wandert mit (belegartWechseln), solange keine Entscheidung darin liegt.
+   */
+  let belegart: Aufbereitungsergebnis['belegart'] | undefined
+  if (rows[0].belegart_quelle !== 'mensch' && rows[0].mime !== 'message/rfc822') {
+    const vorschlag = belegartErkennen(seiten.map((s) => ({ seite: s.seite, text: s.text })))
+    if (vorschlag.belegart !== null) {
+      const ausgang =
+        vorschlag.sicherheit === 'gruen'
+          ? await belegartWechseln(c, dokumentId, vorschlag.belegart, 'erkannt', vorschlag.begruendung)
+          : 'unveraendert'
+      if (vorschlag.sicherheit !== 'gruen' && vorschlag.belegart !== rows[0].belegart) {
+        await c.query('update dokument set belegart_begruendung = $2 where id = $1', [
+          dokumentId,
+          `${vorschlag.begruendung} — nicht umgestellt, weil unsicher`,
+        ])
+      }
+      belegart = { vorschlag: vorschlag.belegart, sicherheit: vorschlag.sicherheit, ausgang }
+    }
+  }
+
   // Erkennung. Der strukturierte Weg geht vor; ohne eingebettetes XML
   // entscheidet die Einstellung, ob ein Modell befragt wird (Konzept 13).
   const { rows: gruppen } = await c.query<{ ki_beschreibung: string | null }>(
@@ -392,7 +431,7 @@ export async function aufbereiten(
   //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
-  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung, kategorie }
+  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung, kategorie, belegart }
 }
 
 /**

@@ -694,6 +694,19 @@ belegt.
 - zeigt einem fremden Mandanten keine Durchlaufzeit
 - zeigt einem fremden Mandanten keinen offenen Beleg
 
+### [`tests/belegart.test.ts`](../tests/belegart.test.ts)
+
+- erkennt eine Rechnung an Rechnungsnummer und Rechnungsdatum
+- haelt eine Mahnung nicht fuer eine Rechnung, obwohl sie die Rechnung nennt
+- erkennt eine Gutschrift
+- ordnet ein Angebot dem Schriftverkehr zu -- ohne Rechnungsnummer ist es keine Rechnung
+- bleibt bei Widerspruch orange und bei leerem Text rot
+- zaehlt nur die ersten zwei Seiten und den Kopf doppelt
+- stellt Belegart und Lauf um, solange keine Entscheidung vorliegt
+- laesst die Belegart stehen, wenn es keinen Ablauf dafuer gibt -- und sagt es am Beleg
+- stellt nichts um, was ein Mensch gewaehlt hat
+- weist von Hand eine Belegart ohne Ablauf ab
+
 ### [`tests/belegliste.test.ts`](../tests/belegliste.test.ts)
 
 - zeigt den eigenen Beleg

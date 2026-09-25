@@ -21,6 +21,11 @@ export interface Eingang {
   mandantId: string
   objektId?: string | null
   belegart: string
+  /**
+   * Die Belegart steht fest -- ein Mensch hat sie gesagt (Uebernahme aus
+   * der CSV). Die Erkennung aus dem Inhalt stellt sie dann nicht um.
+   */
+  belegartFest?: boolean
   eingangskanal: Eingangskanal
   dateiname: string
   mime: string
@@ -65,8 +70,8 @@ export async function dokumentAufnehmen(
   const { rows } = await c.query<{ id: string }>(
     `insert into dokument (mandant_id, objekt_id, belegart, eingangskanal,
                            inhalt_hash, storage_praefix, erfasst_von,
-                           dublette_von, status)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                           dublette_von, status, belegart_quelle)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      returning id`,
     [
       eingang.mandantId,
@@ -78,6 +83,7 @@ export async function dokumentAufnehmen(
       erfasstVon,
       dublette.originalId ?? null,
       dublette.istDublette ? 'abgelehnt' : 'in_aufbereitung',
+      eingang.belegartFest === true ? 'mensch' : 'eingang',
     ],
   )
   const dokumentId = rows[0].id

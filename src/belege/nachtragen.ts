@@ -29,11 +29,13 @@ import { alsBenutzer } from '../db'
 import type { Feldname } from '../extraktion/typen'
 import { plausibilitaetPruefen } from '../pruefung/plausibilitaet'
 import { aufbereitungEinreihen } from '../queue'
-import { aufgabenNeuZuweisen } from '../workflow/engine'
+import { aufgabenNeuZuweisen, belegartWechseln } from '../workflow/engine'
 
 export class NachtragAbgelehnt extends Error {}
 
 export interface Nachtrag {
+  /** Belegart von Hand -- stellt den Lauf um, solange keine Entscheidung darin liegt. */
+  belegart?: string | null
   objektId?: string | null
   ordnungsgruppeId?: string | null
   kreditorId?: string | null
@@ -213,6 +215,21 @@ export async function angabenNachtragen(
     }
     if (kreditorId !== null && !(await vorhanden(c, 'kreditor', kreditorId))) {
       throw new NachtragAbgelehnt('Den gewählten Kreditor gibt es nicht.')
+    }
+
+    const belegartNeu = leer(n.belegart)
+    if (belegartNeu !== null && belegartNeu !== beleg.belegart) {
+      if (!['rechnung', 'gutschrift', 'mahnung', 'schriftverkehr', 'sonstiges'].includes(belegartNeu)) {
+        throw new NachtragAbgelehnt('Diese Belegart gibt es nicht.')
+      }
+      const ausgang = await belegartWechseln(c, dokumentId, belegartNeu, 'mensch', 'von Hand gewählt')
+      if (ausgang === 'entschieden') {
+        throw new NachtragAbgelehnt('Die Belegart lässt sich nur ändern, solange der Beleg keinen Stempel trägt.')
+      }
+      if (ausgang === 'kein_ablauf') {
+        throw new NachtragAbgelehnt('Für diese Belegart gibt es keinen aktiven Ablauf — erst unter Abläufe anlegen.')
+      }
+      beleg.belegart = belegartNeu
     }
 
     const { rowCount } = await c.query(
