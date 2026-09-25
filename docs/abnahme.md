@@ -17,6 +17,7 @@ Stand: 24.09.2026, 1.021 Regeltests und 89 Browsertests grün.
 | Kriterium | Nachweis |
 |---|---|
 | Ein hochgeladener Beleg wird vom Worker aufbereitet und ist danach im Volltext auffindbar | `e2e/posteingang.spec.ts` |
+| Die Belegansicht zeigt den Weg des Belegs als Grafik: Stufen aus der Simulation, Zustände aus den Aufgaben, Stempel mit Name und Zeit; ein fremdes Haus sieht nichts | `tests/belegweg.test.ts` |
 | Dieselbe Datei ein zweites Mal ergibt einen roten, verketteten Beleg, keinen Ersatz | `e2e/posteingang.spec.ts` |
 | Mehrere Dateien auf einmal werden je ein Beleg; Ablegen per Ziehen | `e2e/posteingang.spec.ts` |
 | Ein Stapelscan wird getrennt, korrigiert und erst beim Übernehmen zu Belegen | `e2e/stapel.spec.ts`, `tests/stapel.test.ts` |

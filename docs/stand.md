@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 80 Tabellen, 198 Policies,
-124 Module, 1032 Testfaelle in 62 Dateien,
+125 Module, 1035 Testfaelle in 63 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -607,6 +607,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
+| [`src/belege/belegweg.ts`](../src/belege/belegweg.ts) | Der Belegweg -- die Kette dieses Belegs, mit dem, was darin geschehen ist |
 | [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/belege/nachtragen.ts`](../src/belege/nachtragen.ts) | Angaben von Hand nachtragen -- die manuelle Zuordnung (Konzept 13: "rot: |
@@ -698,6 +699,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegart.test.ts`](../tests/belegart.test.ts) | 10 | Erkennung, Wechsel des Ablaufs |
 | [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 33 | Feed, Akte eines Objekts, Filter, Volltext, Eigene Eingaenge, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
+| [`tests/belegweg.test.ts`](../tests/belegweg.test.ts) | 3 | Belegweg |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
 | [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts) | 4 | Benutzerkennung |
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |

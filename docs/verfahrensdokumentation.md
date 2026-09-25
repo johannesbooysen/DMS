@@ -743,6 +743,12 @@ belegt.
 - erkennt jeden gesetzten Filter
 - taucht in der Liste auf, obwohl keine Aufgabe mehr offen ist
 
+### [`tests/belegweg.test.ts`](../tests/belegweg.test.ts)
+
+- zeigt die Kette des Laufs -- die erste Stufe offen, der Rest ausstehend
+- traegt nach dem Stempel Erledigt mit Namen und Zeit ein, und die naechste Stufe wird aktuell
+- zeigt einem fremden Mandanten nichts
+
 ### [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts)
 
 - zaehlt die eigenen offenen Aufgaben

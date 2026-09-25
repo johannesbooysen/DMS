@@ -186,6 +186,27 @@ Auszug sagt, wonach man auf der Seite sucht.
 
 ---
 
+### Der Belegweg
+
+Unter den Prüfhinweisen zeigt die Belegansicht den ganzen Weg des Belegs
+als Grafik: links der Eingang, rechts das Archiv, dazwischen jede Stufe des
+Ablaufs in der Reihenfolge, die für diesen Beleg gilt — mit seinem Betrag
+und seiner Kategorie, also dieselbe Kette wie in der Simulation des
+Ablaufeditors, nur mit echten Daten. Gleichzeitige Stufen stehen
+übereinander in einer Klammer.
+
+Jede Stufe sagt, was mit ihr ist: *erledigt* (grün, mit Stempel, Name und
+Zeit), *jetzt hier* (blau, mit dem, bei dem die Aufgabe liegt, und der
+Fälligkeit), *in Klärung*, *abgelehnt*, *ausstehend* (gestrichelt) oder
+*entfallen* (wenn der Ablauf gewechselt hat). Das Wort steht immer dabei;
+die Farbe allein trägt nichts.
+
+„Als Liste" darunter zählt jeden Stempel in Folge auf, mit Kommentar. Ein
+Stempel an einer Stufe, die in der heutigen Kette nicht mehr vorkommt,
+steht dort trotzdem — die Grafik verschluckt kein Ereignis.
+
+---
+
 ## Die Begriffe
 
 Die Fachbegriffe sind durchgängig deutsch und heißen im Code genauso wie im

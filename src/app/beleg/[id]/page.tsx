@@ -20,6 +20,8 @@ import { Layerformular } from '@/app/lib/layerschicht'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Warten } from '@/app/lib/wartenmaske'
 import { archivstandLaden } from '@/archiv'
+import { belegwegLaden } from '@/belege/belegweg'
+import { Belegweg } from '@/app/lib/belegweg'
 import { zuordnungErklaeren } from '@/belege/erklaerung'
 import { alsBenutzer } from '@/db'
 import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
@@ -84,12 +86,13 @@ export default async function Belegansicht({
   // next/navigation nicht als "never" weitergereicht.
   if (kopf === null) return notFound()
 
-  const [seiten, befunde, archiv, erklaerung, warten] = await Promise.all([
+  const [seiten, befunde, archiv, erklaerung, warten, weg] = await Promise.all([
     seitentextLaden(benutzer, id),
     befundeLaden(benutzer, id),
     alsBenutzer(benutzer, (c) => archivstandLaden(c, id)),
     zuordnungErklaeren(benutzer, id),
     alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id)),
+    belegwegLaden(benutzer, id),
   ])
   // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
   // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
@@ -187,6 +190,9 @@ export default async function Belegansicht({
           )}
 
           <Befunde befunde={befunde} />
+
+          {/* Der Weg dieses Belegs als Grafik -- Stufen, Zustaende, Stempel. */}
+          {weg !== null && <Belegweg weg={weg} />}
 
           {/*
             Warum ist dieser Beleg hier? Vier Saetze mit Grund -- die Auskunft,
