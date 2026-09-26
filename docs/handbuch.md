@@ -186,6 +186,20 @@ Auszug sagt, wonach man auf der Seite sucht.
 
 ---
 
+### Die Rechnungsdaten
+
+Unter den Prüfhinweisen stehen die erkannten Felder als Tabelle: Feld,
+Wert, Herkunft. Die Herkunft sagt, woher der Wert kommt — *erkannt (92 %)*
+aus dem Modell mit seinem Vertrauen, *ZUGFeRD / XRechnung* aus dem XML,
+*geändert*, wenn jemand den erkannten Wert überschrieben hat, *eingetragen*,
+wenn es keine Erkennung dazu gibt. Ein Pflichtfeld ohne Wert steht rot als
+*fehlt*, und die Liste der fehlenden Pflichtfelder steht über der Tabelle.
+Felder ohne Wert, die keine Pflicht sind, liegen zusammengeklappt darunter.
+
+Dieselbe Tabelle steht am Arbeitsplatz über den Prüfhinweisen: Wer sachlich
+prüft, sieht, was das System gelesen hat und wie sicher — und prüft die
+Rechnung gegen etwas, nicht gegen nichts.
+
 ### Der Belegweg
 
 Unter den Prüfhinweisen zeigt die Belegansicht den ganzen Weg des Belegs

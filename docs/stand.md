@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 80 Tabellen, 198 Policies,
-125 Module, 1035 Testfaelle in 63 Dateien,
+126 Module, 1037 Testfaelle in 64 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -611,6 +611,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
 | [`src/belege/nachtragen.ts`](../src/belege/nachtragen.ts) | Angaben von Hand nachtragen -- die manuelle Zuordnung (Konzept 13: "rot: |
+| [`src/belege/rechnungsdaten.ts`](../src/belege/rechnungsdaten.ts) | Die Rechnungsdaten eines Belegs -- jedes Feld mit Wert und Herkunft |
 | [`src/belege/suchen-speichern.ts`](../src/belege/suchen-speichern.ts) | Gespeicherte Suchen -- ein Filter der Belegliste mit Namen |
 | [`src/benachrichtigung/index.ts`](../src/benachrichtigung/index.ts) | Benachrichtigungen (Konzept §24.9) |
 | [`src/benutzer-kennung.ts`](../src/benutzer-kennung.ts) | Die Benutzerkennung der Skripte: E-Mail-Adresse oder Kennung |
@@ -739,6 +740,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`tests/postausgang.test.ts`](../tests/postausgang.test.ts) | 33 | Platzhalter, Vorlagen im Bestand, Ausgang anlegen, Senden, Einrichtung, Die Mandantengrenze, Flüchtige Einträge |
 | [`tests/postfach.test.ts`](../tests/postfach.test.ts) | 20 | Persoenliches Postfach, Uebergabe zwischen den Rollen, Moegliche Stempel, Stempeln |
 | [`tests/presets.test.ts`](../tests/presets.test.ts) | 10 | Die Presets selbst, Anwenden, Das Recht |
+| [`tests/rechnungsdaten.test.ts`](../tests/rechnungsdaten.test.ts) | 2 | Rechnungsdaten |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |

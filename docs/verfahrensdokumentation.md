@@ -1478,6 +1478,11 @@ belegt.
 - hat, wer Benutzer verwaltet
 - hat sonst niemand
 
+### [`tests/rechnungsdaten.test.ts`](../tests/rechnungsdaten.test.ts)
+
+- zeigt Wert und Herkunft je Feld -- erkannt mit Vertrauen, geaendert, eingetragen, fehlt
+- zeigt einem fremden Mandanten nichts
+
 ### [`tests/rls.test.ts`](../tests/rls.test.ts)
 
 - zeigt einem Benutzer aus einem fremden Mandanten keinen einzigen Beleg des anderen

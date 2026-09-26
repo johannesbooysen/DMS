@@ -22,6 +22,8 @@ import { Nachtragsformular } from '@/app/lib/nachtragsformular'
 import { fehlendePflichtfelder, nachtragNoetig, nachtragsauswahl } from '@/belege/nachtragen'
 import { extraktionEingerichtet } from '@/extraktion/einstellung'
 import { pflichtfelderLaden } from '@/stammdaten/pflichtfeld'
+import { rechnungsdatenLaden } from '@/belege/rechnungsdaten'
+import { Rechnungsdaten } from '@/app/lib/rechnungsdaten'
 import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
 import { Zahlung } from '@/app/lib/zahlungsansicht'
 
@@ -42,11 +44,12 @@ export default async function Aufgabe({
   if (geladen === null) return notFound()
   const { zeile, stempel } = geladen
 
-  const [kopf, befunde, maske, zahlung] = await Promise.all([
+  const [kopf, befunde, maske, zahlung, rechnungsdaten] = await Promise.all([
     belegkopfLaden(benutzer, zeile.dokumentId),
     befundeLaden(benutzer, zeile.dokumentId),
     zeile.stufentyp === 'kontierung' ? kontierungsmaskeLaden(benutzer, zeile.dokumentId) : null,
     zeile.stufentyp === 'zahlung' ? zahlungsansichtLaden(benutzer, zeile.dokumentId) : null,
+    rechnungsdatenLaden(benutzer, zeile.dokumentId),
   ])
 
   // Dieselbe Aufteilung wie auf der Aufgabenseite: An der Kontierungsstufe
@@ -135,6 +138,9 @@ export default async function Aufgabe({
             extraktion={extraktionEingerichtet()}
           />
         )}
+
+        {/* Was erkannt wurde, mit Vertrauen -- die Grundlage der sachlichen Pruefung. */}
+        {rechnungsdaten !== null && <Rechnungsdaten daten={rechnungsdaten} kompakt />}
 
         <Befunde befunde={befunde} />
 

@@ -22,6 +22,8 @@ import { Warten } from '@/app/lib/wartenmaske'
 import { archivstandLaden } from '@/archiv'
 import { belegwegLaden } from '@/belege/belegweg'
 import { Belegweg } from '@/app/lib/belegweg'
+import { rechnungsdatenLaden } from '@/belege/rechnungsdaten'
+import { Rechnungsdaten } from '@/app/lib/rechnungsdaten'
 import { zuordnungErklaeren } from '@/belege/erklaerung'
 import { alsBenutzer } from '@/db'
 import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
@@ -94,6 +96,7 @@ export default async function Belegansicht({
     alsBenutzer(benutzer, (c) => wartenZumBeleg(c, id)),
     belegwegLaden(benutzer, id),
   ])
+  const rechnungsdaten = await rechnungsdatenLaden(benutzer, id)
   // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
   // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
   const gewaehrleistung =
@@ -190,6 +193,9 @@ export default async function Belegansicht({
           )}
 
           <Befunde befunde={befunde} />
+
+          {/* Die erkannten Felder mit Wert und Herkunft -- was die Pruefung beurteilt. */}
+          {rechnungsdaten !== null && <Rechnungsdaten daten={rechnungsdaten} />}
 
           {/* Der Weg dieses Belegs als Grafik -- Stufen, Zustaende, Stempel. */}
           {weg !== null && <Belegweg weg={weg} />}
