@@ -135,6 +135,17 @@ export async function extrahierenUndUebernehmen(
     [anfrage.dokumentId, text('kreditor_ust_id'), text('kreditor_name')],
   )
 
+  // Kein Kreditor, aber ein erkannter Rechnungssteller: vorschlagen, nicht
+  // anlegen. Ein Stammdatum legt ein Mensch an (Migration 20260930100000).
+  if (kreditoren[0] === undefined && text('kreditor_name') !== null) {
+    await c.query('select app.kreditor_vorschlag_melden($1, $2, $3, $4)', [
+      anfrage.dokumentId,
+      text('kreditor_name'),
+      text('kreditor_ust_id'),
+      text('iban_im_beleg'),
+    ])
+  }
+
   await c.query(
     `insert into rechnung_fakten (dokument_id, kreditor_id, rechnungsnummer, rechnungsdatum,
                                   leistung_von, leistung_bis, netto, steuer, brutto,

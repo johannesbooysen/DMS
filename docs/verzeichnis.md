@@ -190,9 +190,9 @@ Kreditoren und ihre Bankverbindungen fuehren, Vertraege zuordnen, Belege aus ueb
 
 Nach den Fristen der Belege, die auf sie verweisen.
 
-**Wo die Daten liegen** (5 Tabellen)
+**Wo die Daten liegen** (6 Tabellen)
 
-`eingang_geholt`, `eingangsquelle`, `kreditor`, `kreditor_bankverbindung`, `vertrag`
+`eingang_geholt`, `eingangsquelle`, `kreditor`, `kreditor_bankverbindung`, `kreditor_vorschlag`, `vertrag`
 
 ### Externe Belegeinsicht
 
@@ -306,7 +306,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 ## Vollständigkeit
 
-Das Schema hat **80 Tabellen**. Jede ist genau einmal
+Das Schema hat **81 Tabellen**. Jede ist genau einmal
 eingeordnet — entweder in einer Tätigkeit oder in der Liste ohne
 Personenbezug. Geprüft beim Erzeugen gegen die `create table`-Anweisungen
 der Migrationen; fehlt eine, bricht `npm run verzeichnis` ab.

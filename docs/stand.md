@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 80 Tabellen, 198 Policies,
-126 Module, 1037 Testfaelle in 64 Dateien,
+Auf einen Blick: 81 Tabellen, 200 Policies,
+127 Module, 1042 Testfaelle in 65 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -557,6 +557,16 @@ Policies: 2
 Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 
 
+### `supabase/migrations/20260930100000_kreditor_vorschlag.sql`
+
+Kreditorvorschlag: Ein Rechnungssteller, den es nicht gibt, wird
+
+Tabellen: `kreditor_vorschlag`
+
+Funktionen: `app.kreditor_vorschlag_melden`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -664,6 +674,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
 | [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
+| [`src/stammdaten/kreditor-vorschlag.ts`](../src/stammdaten/kreditor-vorschlag.ts) | Kreditorvorschlaege -- vom Rechnungssteller im Beleg zum Stammdatum |
 | [`src/stammdaten/pflichtfeld.ts`](../src/stammdaten/pflichtfeld.ts) | Pflichtfelder je Belegart -- welche Angaben ein Haus unbedingt erfasst |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
@@ -723,6 +734,7 @@ Belegart aus dem Inhalt -- woher die Belegart eines Belegs stammt
 | [`tests/konfigurationsrechte.test.ts`](../tests/konfigurationsrechte.test.ts) | 10 | Stempelrechte, Stempeltypen und Gruppen, Der Ablauf, Der Mandantenfilter |
 | [`tests/kontierung.test.ts`](../tests/kontierung.test.ts) | 34 | Kontierungsstand, Paragraf 35a, Vorschlaege aus dem Konto, Kontenrahmen, Rest uebernehmen, Summenzwang blockiert die Stufe, Pruefmeldung, Paragraf 35a, Mandanten- und Objektgrenze |
 | [`tests/kontierungsvorschlag.test.ts`](../tests/kontierungsvorschlag.test.ts) | 11 | Vorschlag, Lernen, Mandantentrennung, Uebernehmen tut, was der Vorschlag sagt |
+| [`tests/kreditor-vorschlag.test.ts`](../tests/kreditor-vorschlag.test.ts) | 5 | Vorschlag aus der Aufbereitung, Entscheidung |
 | [`tests/layer.test.ts`](../tests/layer.test.ts) | 27 | Layer von Hand, Ausblenden, Mandantengrenze, Stempel-Layer, Einsicht, Was nach draussen geht |
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |

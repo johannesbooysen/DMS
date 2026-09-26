@@ -40,6 +40,8 @@ import {
   zahlungswegUmschaltenAktion,
 } from '@/app/lib/stammdaten-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
+import { KreditorVorschlagKarte } from '@/app/lib/kreditor-vorschlag'
+import { vorschlaegeLaden } from '@/stammdaten/kreditor-vorschlag'
 import { euro, Seitenrahmen } from '@/app/lib/darstellung'
 import {
   Anlegen,
@@ -109,6 +111,7 @@ export default async function Stammdaten({
   const benutzer = await angemeldeterBenutzer()
   const { fehler } = await searchParams
 
+  const vorschlaege = await vorschlaegeLaden(benutzer)
   const [darf, objekte, kreditoren, konten, wege, gruppen, fristen] = await Promise.all([
     rechtelage(benutzer),
     objekteLaden(benutzer),
@@ -205,6 +208,17 @@ export default async function Stammdaten({
           </Anlegen>
         )}
       </Abschnitt>
+
+      {vorschlaege.length > 0 && (
+        <Abschnitt
+          titel={`Vorgeschlagene Kreditoren (${vorschlaege.length})`}
+          hinweis="Rechnungssteller aus Belegen, die es als Kreditor noch nicht gibt. Prüfen, gegebenenfalls berichtigen, dann anlegen — oder einem vorhandenen zuordnen."
+        >
+          {vorschlaege.map((v) => (
+            <KreditorVorschlagKarte key={v.id} vorschlag={v} kreditoren={kreditoren} darf={darf.stammdaten} zurueck={HIER} />
+          ))}
+        </Abschnitt>
+      )}
 
       <Abschnitt
         titel="Kreditoren und Bankverbindungen"

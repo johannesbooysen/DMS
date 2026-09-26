@@ -158,6 +158,7 @@ export const TAETIGKEITEN = [
       'eingangsquelle',
       'kreditor',
       'kreditor_bankverbindung',
+      'kreditor_vorschlag',
       'vertrag',
     ],
   },

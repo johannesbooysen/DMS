@@ -19,6 +19,9 @@ import { Kontierung } from '@/app/lib/kontierungsmaske'
 import { aufgabeLaden } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Nachtragsformular } from '@/app/lib/nachtragsformular'
+import { KreditorVorschlagKarte } from '@/app/lib/kreditor-vorschlag'
+import { vorschlagZumBeleg } from '@/stammdaten/kreditor-vorschlag'
+import { rechtelage } from '@/stammdaten'
 import { fehlendePflichtfelder, nachtragNoetig, nachtragsauswahl } from '@/belege/nachtragen'
 import { extraktionEingerichtet } from '@/extraktion/einstellung'
 import { pflichtfelderLaden } from '@/stammdaten/pflichtfeld'
@@ -51,6 +54,7 @@ export default async function Aufgabe({
     zeile.stufentyp === 'zahlung' ? zahlungsansichtLaden(benutzer, zeile.dokumentId) : null,
     rechnungsdatenLaden(benutzer, zeile.dokumentId),
   ])
+  const vorschlag = await vorschlagZumBeleg(benutzer, zeile.dokumentId)
 
   // Dieselbe Aufteilung wie auf der Aufgabenseite: An der Kontierungsstufe
   // steht der abschliessende Stempel in der Maske, rechts bleiben die
@@ -126,6 +130,17 @@ export default async function Aufgabe({
         {/* Die manuelle Zuordnung (Konzept 13): Fehlt Objekt oder Kreditor,
             steht das Formular vor der Entscheidung -- ohne Objekt hat die
             Aufgabe niemanden, und ohne Kreditor gibt es keine Freigabe. */}
+        {/* Ein Rechnungssteller, den es als Kreditor nicht gibt: vorschlagen,
+            nicht anlegen -- die Freigabe ist die Handlung eines Menschen. */}
+        {vorschlag !== null && (
+          <KreditorVorschlagKarte
+            vorschlag={vorschlag}
+            kreditoren={(await nachtragsauswahl(benutzer)).kreditoren}
+            darf={(await rechtelage(benutzer)).stammdaten}
+            zurueck={`/arbeitsplatz/${zeile.aufgabeId}`}
+          />
+        )}
+
         {nachtragNoetig({ objektnummer: zeile.objektnummer, kreditor: zeile.kreditor, belegart: kopf?.belegart ?? null }) && (
           <Nachtragsformular
             dokumentId={zeile.dokumentId}

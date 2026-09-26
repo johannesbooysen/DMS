@@ -476,6 +476,31 @@ Ablauf an — dann bleibt ein solcher Beleg sichtbar in seinem Eingangsablauf.
 
 ---
 
+## Neue Kreditoren aus Belegen
+
+Kommt eine Rechnung von einem Dienstleister, den es als Kreditor noch nicht
+gibt, legt das System ihn **nicht** an — es schlägt ihn vor. Der Vorschlag
+trägt, was die Erkennung gelesen hat: Name, USt-IdNr., IBAN. Er steht am
+Arbeitsplatz zum Beleg als Karte „Neuer Kreditor vorgeschlagen“ und unter
+*Stammdaten* → „Vorgeschlagene Kreditoren“ für alle offenen.
+
+Drei Handlungen, alle nur mit dem Recht, Stammdaten zu pflegen:
+
+- **Als Kreditor anlegen und zuordnen.** Die Felder lassen sich vorher
+  berichtigen, eine E-Mail für Systemaktionen kommt dazu. Der Kreditor
+  entsteht, die IBAN als Bankverbindung im Stand *neu* — bestätigt wird sie
+  gesondert, das ist der Betrugsschutz. Alle offenen Belege desselben
+  Rechnungsstellers werden mit zugeordnet, ihre Prüfung läuft neu, ihre
+  Aufgaben bekommen ihren Bearbeiter.
+- **Zuordnen** einem vorhandenen Kreditor, wenn nur der Name im Beleg
+  abweicht.
+- **Verwerfen**, wenn der Beleg keinen Kreditor braucht.
+
+Beim nächsten Beleg dieses Absenders greift die Zuordnung dann von selbst
+über Name oder USt-IdNr.
+
+---
+
 ## Die Ampel
 
 Zwei Werte, weil zwei verschiedene Fragen dahinterstehen.

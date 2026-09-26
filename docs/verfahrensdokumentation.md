@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-80 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+81 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -287,6 +287,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `sicherungs_probe` | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 | `uebernahme_eintrag` | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `pflichtfeld` | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
+| `kreditor_vorschlag` | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -333,7 +334,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (74): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `pflichtfeld`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (75): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `kreditor_vorschlag`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `pflichtfeld`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -524,6 +525,8 @@ Tabellen mit Policies (74): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `uebernahme_eintrag_anlegen` | `uebernahme_eintrag` | insert | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `pflichtfeld_lesen` | `pflichtfeld` | select | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
 | `pflichtfeld_schreiben` | `pflichtfeld` | all | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
+| `kreditor_vorschlag_lesen` | `kreditor_vorschlag` | select | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
+| `kreditor_vorschlag_entscheiden` | `kreditor_vorschlag` | update | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -1162,6 +1165,14 @@ belegt.
 - lernt aus einem Split nichts
 - traegt kein Muster ueber die Mandantengrenze
 - haelt die Umlagefaehigkeit des Vorschlags, nicht die Kontovorgabe
+
+### [`tests/kreditor-vorschlag.test.ts`](../tests/kreditor-vorschlag.test.ts)
+
+- meldet einen unbekannten Rechnungssteller -- und keinen bekannten
+- zeigt einem fremden Mandanten nichts
+- uebernimmt: Kreditor mit IBAN als neu, alle Belege desselben Rechnungsstellers zugeordnet
+- ordnet einem vorhandenen Kreditor zu
+- verwirft -- und laesst ohne Recht nichts zu
 
 ### [`tests/layer.test.ts`](../tests/layer.test.ts)
 

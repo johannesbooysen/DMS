@@ -15,6 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { pflichtfelderSetzen } from '@/stammdaten/pflichtfeld'
+import { vorschlagUebernehmen, vorschlagVerwerfen, vorschlagZuordnen } from '@/stammdaten/kreditor-vorschlag'
 import { redirect } from 'next/navigation'
 import {
   bankverbindungAnlegen,
@@ -264,4 +265,51 @@ export async function pflichtfelderSetzenAktion(formular: FormData): Promise<voi
   }
   revalidatePath(ziel)
   redirect(`${ziel}?hinweis=${encodeURIComponent('Pflichtfelder gespeichert.')}`)
+}
+
+/*
+ * Kreditorvorschlaege (Migration 20260930100000). `zurueck` sagt, wohin:
+ * Die Karte steht am Arbeitsplatz zum Beleg und unter Stammdaten.
+ */
+async function vorschlagVersuchen(formular: FormData, aktion: (benutzerId: string) => Promise<string>): Promise<never> {
+  const ziel = String(formular.get('zurueck') ?? '/stammdaten')
+  let hinweis: string
+  try {
+    hinweis = await aktion(await angemeldeterBenutzer())
+  } catch (fehler) {
+    if (fehler instanceof NichtErlaubt || fehler instanceof NichtMoeglich) {
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath('/stammdaten')
+  revalidatePath('/postfach')
+  revalidatePath('/arbeitsplatz')
+  redirect(`${ziel}?hinweis=${encodeURIComponent(hinweis)}`)
+}
+
+export async function kreditorVorschlagUebernehmenAktion(f: FormData): Promise<void> {
+  await vorschlagVersuchen(f, async (benutzer) => {
+    const { belege } = await vorschlagUebernehmen(benutzer, String(f.get('vorschlagId') ?? ''), {
+      name: String(f.get('name') ?? ''),
+      ustId: String(f.get('ustId') ?? ''),
+      iban: String(f.get('iban') ?? ''),
+      email: String(f.get('email') ?? ''),
+    })
+    return `Kreditor angelegt und ${belege} ${belege === 1 ? 'Beleg' : 'Belege'} zugeordnet. Die IBAN wartet auf Bestätigung.`
+  })
+}
+
+export async function kreditorVorschlagZuordnenAktion(f: FormData): Promise<void> {
+  await vorschlagVersuchen(f, async (benutzer) => {
+    const { belege } = await vorschlagZuordnen(benutzer, String(f.get('vorschlagId') ?? ''), String(f.get('kreditorId') ?? ''))
+    return `${belege} ${belege === 1 ? 'Beleg' : 'Belege'} dem Kreditor zugeordnet.`
+  })
+}
+
+export async function kreditorVorschlagVerwerfenAktion(f: FormData): Promise<void> {
+  await vorschlagVersuchen(f, async (benutzer) => {
+    await vorschlagVerwerfen(benutzer, String(f.get('vorschlagId') ?? ''))
+    return 'Vorschlag verworfen.'
+  })
 }
