@@ -69,7 +69,10 @@ export async function Belegbetrachter({
             <>
               Für diesen Beleg liegt noch keine Ansicht vor — die Aufbereitung läuft.
               <br />
-              <span className="klein">Diese Seite lädt sich alle paar Sekunden neu.</span>
+              <span className="klein">
+                Diese Seite lädt sich alle paar Sekunden neu. Texterkennung eines Scans und das
+                Lesen der Rechnungsdaten durch das Modell können einige Minuten dauern.
+              </span>
             </>
           )}
           {stand === 'gescheitert' && (

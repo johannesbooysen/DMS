@@ -356,6 +356,18 @@ Mensch schon eingetragen hat, bleibt stehen.
 `npm run vorschau` schaltet `ollama` von selbst ein, wenn Ollama auf dem
 Rechner antwortet.
 
+**Wie lange das dauert:** Ohne Grafikkarte rechnet das Modell auf der CPU,
+und ein sechsseitiger Scan braucht dann zwei bis drei Minuten. Die
+Belegansicht wartet solange und lädt sich selbst neu; der Beleg ist nicht
+hängengeblieben. Nach zehn Minuten (`DMS_EXTRAKTION_ZEITLIMIT_S`) bricht
+das System ab und lässt die Felder leer — dann von Hand.
+
+Das Kontextfenster des Modells ist auf 8192 Token gestellt
+(`DMS_OLLAMA_KONTEXT`). Mit Ollamas Vorgabe von 4096 wurde bei einem langen
+Scan der **Anfang** des Textes abgeschnitten, also genau die erste Seite mit
+Rechnungsnummer und Betrag; das Modell fand dann nur den Absender aus der
+Fußzeile.
+
 Direkt nach dem Aufnehmen zeigt die Belegansicht „die Aufbereitung läuft"
 und lädt sich alle paar Sekunden selbst neu, bis die Seiten da sind — bei
 einem Scan mit Texterkennung dauert das einige Sekunden je Seite. Ist die

@@ -30,6 +30,15 @@ const MODELL = process.env['DMS_OLLAMA_MODELL'] ?? 'qwen2.5:7b-instruct'
 /** Wie viel Text an das Modell geht. Rechnungen tragen ihr Wesentliches vorn. */
 const HOECHSTZEICHEN = 12_000
 
+/**
+ * Kontextfenster des Modells in Token. 12.000 Zeichen deutscher Text sind
+ * rund 4.000 Token, dazu Anweisung und Antwort -- 8192 laesst Luft.
+ */
+const KONTEXT_TOKEN = Number(process.env['DMS_OLLAMA_KONTEXT'] ?? 8192)
+
+/** Wie lange ein Aufruf hoechstens dauern darf. Auf einer CPU sind Minuten normal. */
+const ZEITLIMIT_S = Number(process.env['DMS_EXTRAKTION_ZEITLIMIT_S'] ?? 600)
+
 const ERWARTETE_FELDER: Feldname[] = [
   'kreditor_name',
   'kreditor_ust_id',
@@ -146,8 +155,18 @@ export const ollamaAnbieter: Extraktionsanbieter = {
           prompt: anweisung(text, anfrage.kiBeschreibung),
           format: 'json',
           stream: false,
-          options: { temperature: 0 },
+          /*
+           * `num_ctx`: Ollamas Vorgabe sind 4096 Token. Ein sechsseitiger
+           * Scan mit 12.000 Zeichen sprengt das, und Ollama schneidet dann
+           * den **Anfang** ab -- genau die erste Seite mit Rechnungsnummer
+           * und Betrag. Nachgestellt am 26.09.2026: Das Modell fand nur
+           * Name und USt-IdNr. aus der Fusszeile der letzten Seite.
+           */
+          options: { temperature: 0, num_ctx: KONTEXT_TOKEN },
         }),
+        // Ohne Zeitlimit haengt ein Beleg fuer immer in der Aufbereitung,
+        // wenn das Modell steht. Danach: keine Felder, Erfassung von Hand.
+        signal: AbortSignal.timeout(ZEITLIMIT_S * 1000),
       })
       if (!antwort.ok) return null
 
