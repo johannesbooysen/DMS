@@ -512,6 +512,12 @@ trägt, was die Erkennung gelesen hat: Name, USt-IdNr., IBAN. Er steht am
 Arbeitsplatz zum Beleg als Karte „Neuer Kreditor vorgeschlagen“ und unter
 *Stammdaten* → „Vorgeschlagene Kreditoren“ für alle offenen.
 
+Im *Posteingang* steht der Vorschlag außerdem gleich in der Zeile des
+Belegs unter „Zuletzt aufgenommen" als Marke „Neu: …" mit dem Knopf
+„Anlegen …". Er öffnet eine Seitenmaske am rechten Rand mit derselben Karte;
+die Liste bleibt darunter stehen, und nach dem Anlegen zeigt die Zeile den
+Kreditor.
+
 Drei Handlungen, alle nur mit dem Recht, Stammdaten zu pflegen:
 
 - **Als Kreditor anlegen und zuordnen.** Die Felder lassen sich vorher

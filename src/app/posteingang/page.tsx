@@ -18,6 +18,10 @@ import { Ablagezone } from '@/app/lib/ablagezone'
 import { postAufnehmenAktion } from '@/app/lib/posteingang-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { KreditorVorschlagKarte } from '@/app/lib/kreditor-vorschlag'
+import { nachtragsauswahl } from '@/belege/nachtragen'
+import { rechtelage } from '@/stammdaten'
+import { vorschlaegeLaden } from '@/stammdaten/kreditor-vorschlag'
 
 /** Wo ein frisch aufgenommener Beleg gerade steht -- in Worten. */
 const STAND: Record<string, string> = {
@@ -44,6 +48,16 @@ export default async function Posteingang({
   // Ohne sie verschwindet ein Upload in der Warteschlange, und die Frage
   // "ist er angekommen?" fuehrt in die Belegsuche.
   const eingaenge = await alsBenutzer(benutzer, (c) => eigeneEingaenge(c, benutzer))
+  // Erkannte, aber unbekannte Rechnungssteller -- gleich in der Zeile, mit
+  // der Seitenmaske zum Anlegen. Die Listen fuer die Maske kommen unter der
+  // RLS, wie am Arbeitsplatz.
+  const [vorschlaege, darf, auswahl] = await Promise.all([
+    vorschlaegeLaden(benutzer),
+    rechtelage(benutzer),
+    nachtragsauswahl(benutzer),
+  ])
+  const vorschlagJeBeleg = new Map(vorschlaege.map((v) => [v.dokumentId, v]))
+  const HIER = '/posteingang'
 
   return (
     <Seitenrahmen titel="Posteingang">
@@ -89,22 +103,52 @@ export default async function Posteingang({
               <th className="rechts">Betrag</th>
               <th>Eingang</th>
               <th>Stand</th>
+              <th>Kreditor</th>
             </tr>
           </thead>
           <tbody>
-            {eingaenge.map((z) => (
-              <tr key={z.id}>
-                <td>
-                  <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
-                </td>
-                <td>{z.objektnummer ?? '—'}</td>
-                <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
-                <td>{datum.format(new Date(z.eingangAm))}</td>
-                <td>
-                  <span className={`eingangsstand eingangsstand--${z.status}`}>{STAND[z.status] ?? z.status}</span>
-                </td>
-              </tr>
-            ))}
+            {eingaenge.map((z) => {
+              const vorschlag = vorschlagJeBeleg.get(z.id)
+              return (
+                <tr key={z.id}>
+                  <td>
+                    <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
+                  </td>
+                  <td>{z.objektnummer ?? '—'}</td>
+                  <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
+                  <td>{datum.format(new Date(z.eingangAm))}</td>
+                  <td>
+                    <span className={`eingangsstand eingangsstand--${z.status}`}>{STAND[z.status] ?? z.status}</span>
+                  </td>
+                  <td>
+                    {/*
+                      Ein erkannter, aber unbekannter Rechnungssteller steht
+                      gleich hier in der Zeile, und ein Klick oeffnet die
+                      Seitenmaske zum Anlegen. Native \`popover\`: kein
+                      Browsercode, dieselbe Karte wie unter Stammdaten.
+                    */}
+                    {z.kreditor !== null ? (
+                      z.kreditor
+                    ) : vorschlag !== undefined ? (
+                      <>
+                        <span className="marke marke--neu">Neu: {vorschlag.name}</span>{' '}
+                        <button type="button" className="winzig" popoverTarget={`vorschlag-${vorschlag.id}`}>
+                          {darf.stammdaten ? 'Anlegen …' : 'Ansehen …'}
+                        </button>
+                        <div id={`vorschlag-${vorschlag.id}`} popover="auto" className="seitenmaske">
+                          <button type="button" className="winzig seitenmaske-schliessen" popoverTarget={`vorschlag-${vorschlag.id}`} popoverTargetAction="hide">
+                            Schließen
+                          </button>
+                          <KreditorVorschlagKarte vorschlag={vorschlag} kreditoren={auswahl.kreditoren} darf={darf.stammdaten} zurueck={HIER} />
+                        </div>
+                      </>
+                    ) : (
+                      <span className="leise">—</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

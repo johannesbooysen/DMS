@@ -1407,3 +1407,38 @@ kbd {
     white-space: normal;
   }
 }
+
+/* Seitenmaske: ein natives popover als Feld am rechten Rand -- der Kreditor
+   aus dem Posteingang heraus, ohne die Seite zu verlassen. Kein Browsercode:
+   Oeffnen und Schliessen macht der Browser ueber popovertarget. */
+.seitenmaske[popover] {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(34rem, 100vw);
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 1px solid var(--farbe-linie);
+  background: var(--farbe-flaeche);
+  color: var(--farbe-text);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
+  overflow: auto;
+}
+.seitenmaske[popover]::backdrop {
+  background: rgba(20, 23, 29, 0.35);
+}
+.seitenmaske-schliessen {
+  float: right;
+  margin-left: 1rem;
+}
+.marke--neu {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--farbe-orange-hell);
+  color: var(--farbe-orange-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
