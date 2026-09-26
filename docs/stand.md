@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 81 Tabellen, 200 Policies,
-127 Module, 1042 Testfaelle in 65 Dateien,
+128 Module, 1050 Testfaelle in 66 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -567,6 +567,13 @@ Funktionen: `app.kreditor_vorschlag_melden`
 
 Policies: 2
 
+### `supabase/migrations/20260930110000_kreditor_vorschlag_email.sql`
+
+Kreditorvorschlag: die E-Mail-Adresse aus dem Beleg mitnehmen
+
+Funktionen: `app.kreditor_vorschlag_melden`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -642,6 +649,7 @@ Policies: 2
 | [`src/extraktion/einstellung.ts`](../src/extraktion/einstellung.ts) | Welche freie Erkennung eingestellt ist -- ohne die Anbieter selbst zu |
 | [`src/extraktion/index.ts`](../src/extraktion/index.ts) | Auswahl des Anbieters und Übernahme der Ergebnisse |
 | [`src/extraktion/ollama.ts`](../src/extraktion/ollama.ts) | Lokales Modell über Ollama |
+| [`src/extraktion/regeln.ts`](../src/extraktion/regeln.ts) | Regelbasierte Erkennung -- was sich mit einem Muster sicher lesen laesst, |
 | [`src/extraktion/typen.ts`](../src/extraktion/typen.ts) | Die Erkennung hinter einem Interface |
 | [`src/extraktion/zahlen.ts`](../src/extraktion/zahlen.ts) | Beträge aus Text lesen |
 | [`src/extraktion/zugferd.ts`](../src/extraktion/zugferd.ts) | Strukturierte Rechnungen: ZUGFeRD und XRechnung |
@@ -722,6 +730,7 @@ Policies: 2
 | [`tests/eskalation.test.ts`](../tests/eskalation.test.ts) | 5 | Eskalation |
 | [`tests/export.test.ts`](../tests/export.test.ts) | 14 | Archivoriginal, Beleg mit Stempeln, Stempel ohne Platz auf der Seite, Schwaerzung, Wasserzeichen, Mandantengrenze, Ohne Datei |
 | [`tests/exportvarianten.test.ts`](../tests/exportvarianten.test.ts) | 12 | Archivoriginal, Schwaerzung erzwingt Seitenbilder, Was in welche Variante geht, Variantennamen |
+| [`tests/extraktion-regeln.test.ts`](../tests/extraktion-regeln.test.ts) | 8 | Bausteine, Regeln am Beleg, Zusammenfuehren |
 | [`tests/extraktion.test.ts`](../tests/extraktion.test.ts) | 27 | ZUGFeRD: XML lesen, Vertrauen und Ampel, Antwort eines Modells lesen, Uebernahme in die Datenbank, Aufbereitung mit Erkennung, Betraege lesen |
 | [`tests/fehlerkorb-queue.test.ts`](../tests/fehlerkorb-queue.test.ts) | 1 | Toter Briefkasten |
 | [`tests/fehlerkorb.test.ts`](../tests/fehlerkorb.test.ts) | 29 | Melden, Mandantengrenze, Ausgaenge, Alle wiederholen, Zaehler, Haengengebliebene, Stapel, Haenger neu einreihen |

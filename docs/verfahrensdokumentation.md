@@ -937,6 +937,17 @@ belegt.
 - erkennt die vier aus dem Konzept
 - weist alles andere ab
 
+### [`tests/extraktion-regeln.test.ts`](../tests/extraktion-regeln.test.ts)
+
+- liest deutsche Daten mit zwei- und vierstelligem Jahr und ISO
+- prueft die IBAN ueber die Pruefziffer
+- findet Faelligkeit und Rechnungsdatum mit zweistelligem Jahr
+- findet IBAN, USt-IdNr., E-Mail und Rechnungsnummer
+- nimmt den letzten Gesamtbetrag
+- rechnet "zahlbar innerhalb von 14 Tagen" vom Rechnungsdatum
+- liefert nichts fuer einen Text ohne Merkmale
+- nimmt je Feld das hoehere Vertrauen, bei Gleichstand die Regel
+
 ### [`tests/extraktion.test.ts`](../tests/extraktion.test.ts)
 
 - liest alle Felder aus einer CrossIndustryInvoice

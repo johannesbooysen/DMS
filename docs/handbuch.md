@@ -476,6 +476,34 @@ Ablauf an — dann bleibt ein solcher Beleg sichtbar in seinem Eingangsablauf.
 
 ---
 
+## Wie die Erkennung besser und schneller wird
+
+Zwei Leser lesen jeden Beleg, und je Feld gewinnt der sicherere:
+
+- **Regeln** lesen in Millisekunden, was ein festes Muster hat: IBAN (mit
+  Prüfziffer), USt-IdNr., E-Mail, Rechnungsnummer, Rechnungsdatum,
+  Fälligkeit („Fälligkeitsdatum", „zahlbar bis", „innerhalb von 14 Tagen"),
+  Leistungszeitraum, Skonto, Gesamtbetrag. Auch mit zweistelligem Jahr
+  („30.08.26") und über eine Tabellenzeile hinweg. Sie laufen immer, auch
+  ohne Modell; ein Beleg kommt nie leer an.
+- **Das Modell** ergänzt, was Regeln nicht sicher greifen: den Namen des
+  Rechnungsstellers, Beträge in Tabellen, Zeiträume in Prosa.
+
+In den Rechnungsdaten steht bei jedem Feld, wer es gelesen hat und wie
+sicher. Was auf dem Beleg nicht steht, findet keiner von beiden — eine
+E-Mail-Adresse etwa fehlt auf vielen Rechnungen.
+
+**Schneller wird es so:**
+
+| Maßnahme | Wirkung |
+|---|---|
+| Regeln zuerst | Fälligkeit, IBAN, USt-IdNr., E-Mail und Nummer stehen sofort, das Modell läuft daneben |
+| Modell bleibt geladen (`keep_alive` 30 Minuten) | spart je Beleg das Laden, rund zwanzig Sekunden |
+| Antwortlänge begrenzt | ein Modell, das ins Erzählen kommt, schreibt nicht minutenlang |
+| Kleineres Modell (`DMS_OLLAMA_MODELL=qwen2.5:3b-instruct`) | etwa doppelt so schnell, liest schlechter — die Regeln fangen das Wichtigste |
+| Grafikkarte mit 8 GB Speicher | fünf- bis zehnmal schneller als die CPU; das ist der eigentliche Hebel |
+| ZUGFeRD oder XRechnung vom Lieferanten anfordern | kein Modell nötig, alle Felder mit Vertrauen 1 |
+
 ## Neue Kreditoren aus Belegen
 
 Kommt eine Rechnung von einem Dienstleister, den es als Kreditor noch nicht

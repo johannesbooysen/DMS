@@ -9,8 +9,9 @@
 import type { PoolClient } from 'pg'
 import { freierAnbieterName } from './einstellung'
 import { ollamaAnbieter } from './ollama'
+import { regelAnbieter } from './regeln'
 import { pflichtfelderFuerDokument, STANDARD_PFLICHTFELDER } from '../stammdaten/pflichtfeld'
-import type { ErkanntesFeld, Extraktionsanbieter, Extraktionsanfrage, Feldname } from './typen'
+import type { ErkanntesFeld, Extraktionsanbieter, Extraktionsanfrage, Extraktionsergebnis, Feldname } from './typen'
 import { zugferdAnbieter } from './zugferd'
 
 /**
@@ -31,8 +32,31 @@ function freierAnbieter(): Extraktionsanbieter | null {
 
 export { extraktionEingerichtet } from './einstellung'
 
+/**
+ * Je Feld das hoehere Vertrauen; bei Gleichstand die Regel. Jedes Feld
+ * traegt seine Quelle, damit die Anzeige "erkannt (98 %)" von "Regel"
+ * unterscheiden kann.
+ */
+export function zusammenfuehren(
+  regeln: Extraktionsergebnis | null,
+  modell: Extraktionsergebnis | null,
+): ErkanntesFeld[] {
+  const beste = new Map<Feldname, ErkanntesFeld>()
+  const aufnehmen = (felder: ErkanntesFeld[], quelle: 'regel' | 'ki' | 'zugferd', bevorzugt: boolean) => {
+    for (const f of felder) {
+      const da = beste.get(f.feldname)
+      if (da === undefined || f.confidence > da.confidence || (bevorzugt && f.confidence === da.confidence)) {
+        beste.set(f.feldname, { ...f, quelle: f.quelle ?? quelle })
+      }
+    }
+  }
+  if (modell !== null) aufnehmen(modell.felder, modell.quelle, false)
+  if (regeln !== null) aufnehmen(regeln.felder, 'regel', true)
+  return [...beste.values()]
+}
+
 export interface Extraktionsbericht {
-  quelle: 'zugferd' | 'ki' | 'keine'
+  quelle: 'zugferd' | 'ki' | 'regel' | 'keine'
   anzahl: number
   /** Minimum der Confidence über die Pflichtfelder (Konzept 14). */
   vertrauen: number | null
@@ -77,15 +101,32 @@ export async function extrahierenUndUebernehmen(
   c: PoolClient,
   anfrage: Extraktionsanfrage,
 ): Promise<Extraktionsbericht> {
-  const anbieter: Extraktionsanbieter[] = [zugferdAnbieter]
-  const frei = freierAnbieter()
-  if (frei !== null) anbieter.push(frei)
-
-  let ergebnis = null
-  for (const kandidat of anbieter) {
-    if (!(await kandidat.zustaendig(anfrage))) continue
-    ergebnis = await kandidat.extrahieren(anfrage)
-    if (ergebnis !== null) break
+  /*
+   * Reihenfolge: Die strukturierte Rechnung schlaegt alles. Sonst laufen die
+   * Regeln (immer, in Millisekunden) und das Modell (wenn eingestellt), und
+   * je Feld gewinnt das hoehere Vertrauen -- bei Gleichstand die Regel,
+   * weil eine Pruefziffer mehr weiss als ein Modell. Faellt das Modell aus
+   * oder in sein Zeitlimit, bleiben die Regelfelder; der Beleg kommt nicht
+   * leer an.
+   */
+  let ergebnis: Extraktionsergebnis | null = null
+  if (await zugferdAnbieter.zustaendig(anfrage)) {
+    ergebnis = await zugferdAnbieter.extrahieren(anfrage)
+  }
+  if (ergebnis === null) {
+    const frei = freierAnbieter()
+    const [regeln, modell] = await Promise.all([
+      (await regelAnbieter.zustaendig(anfrage)) ? regelAnbieter.extrahieren(anfrage) : null,
+      frei !== null && (await frei.zustaendig(anfrage)) ? frei.extrahieren(anfrage) : null,
+    ])
+    const felder = zusammenfuehren(regeln, modell)
+    if (felder.length > 0) {
+      ergebnis = {
+        felder,
+        quelle: modell !== null ? 'ki' : 'regel',
+        modell: modell?.modell ?? 'regeln',
+      }
+    }
   }
 
   if (ergebnis === null) {
@@ -112,8 +153,8 @@ export async function extrahierenUndUebernehmen(
         feld.confidence,
         feld.seite ?? null,
         feld.bbox ?? null,
-        ergebnis.quelle,
-        ergebnis.modell ?? null,
+        feld.quelle ?? ergebnis.quelle,
+        feld.quelle === 'regel' ? 'regeln' : (ergebnis.modell ?? null),
       ],
     )
   }
@@ -138,11 +179,12 @@ export async function extrahierenUndUebernehmen(
   // Kein Kreditor, aber ein erkannter Rechnungssteller: vorschlagen, nicht
   // anlegen. Ein Stammdatum legt ein Mensch an (Migration 20260930100000).
   if (kreditoren[0] === undefined && text('kreditor_name') !== null) {
-    await c.query('select app.kreditor_vorschlag_melden($1, $2, $3, $4)', [
+    await c.query('select app.kreditor_vorschlag_melden($1, $2, $3, $4, $5)', [
       anfrage.dokumentId,
       text('kreditor_name'),
       text('kreditor_ust_id'),
       text('iban_im_beleg'),
+      text('kreditor_email'),
     ])
   }
 
@@ -192,7 +234,7 @@ export async function extrahierenUndUebernehmen(
   ])
 
   return {
-    quelle: ergebnis.quelle === 'zugferd' ? 'zugferd' : 'ki',
+    quelle: ergebnis.quelle,
     anzahl: ergebnis.felder.length,
     vertrauen,
     ampel,

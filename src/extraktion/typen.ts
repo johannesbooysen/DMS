@@ -25,6 +25,8 @@ export type Feldname =
   | 'zahlungsziel'
   | 'skonto_prozent'
   | 'skonto_bis'
+  /** E-Mail des Rechnungsstellers -- fuer den Kreditorvorschlag, kein Rechnungsfakt. */
+  | 'kreditor_email'
 
 export interface ErkanntesFeld {
   feldname: Feldname
@@ -37,6 +39,8 @@ export interface ErkanntesFeld {
   /** Fundstelle im Beleg, sofern bekannt. */
   seite?: number | null
   bbox?: number[] | null
+  /** Je Feld, wenn Regeln und Modell zusammengefuehrt wurden; sonst gilt die Quelle des Ergebnisses. */
+  quelle?: 'zugferd' | 'ki' | 'regel'
 }
 
 export interface Extraktionsanfrage {

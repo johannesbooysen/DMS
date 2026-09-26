@@ -63,7 +63,7 @@ export function KreditorVorschlagKarte({
             </label>
             <label style={feld}>
               E-Mail
-              <input name="email" type="email" style={{ width: '13rem' }} />
+              <input name="email" type="email" defaultValue={vorschlag.email ?? ''} style={{ width: '13rem' }} />
             </label>
             <button type="submit" className="knopf-primaer">
               Als Kreditor anlegen und zuordnen

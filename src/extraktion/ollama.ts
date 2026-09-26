@@ -53,6 +53,7 @@ const ERWARTETE_FELDER: Feldname[] = [
   'zahlungsziel',
   'skonto_prozent',
   'skonto_bis',
+  'kreditor_email',
 ]
 
 const ZAHLENFELDER = new Set<Feldname>(['netto', 'steuer', 'brutto', 'skonto_prozent'])
@@ -162,7 +163,12 @@ export const ollamaAnbieter: Extraktionsanbieter = {
            * und Betrag. Nachgestellt am 26.09.2026: Das Modell fand nur
            * Name und USt-IdNr. aus der Fusszeile der letzten Seite.
            */
-          options: { temperature: 0, num_ctx: KONTEXT_TOKEN },
+          // `num_predict`: Die Antwort ist ein kurzes JSON; ein Modell, das
+          // ins Erzaehlen kommt, soll nicht minutenlang weiterschreiben.
+          // `keep_alive`: Das Modell bleibt eine halbe Stunde geladen -- das
+          // Laden kostet auf der CPU allein zwanzig Sekunden je Beleg.
+          options: { temperature: 0, num_ctx: KONTEXT_TOKEN, num_predict: 600 },
+          keep_alive: '30m',
         }),
         // Ohne Zeitlimit haengt ein Beleg fuer immer in der Aufbereitung,
         // wenn das Modell steht. Danach: keine Felder, Erfassung von Hand.

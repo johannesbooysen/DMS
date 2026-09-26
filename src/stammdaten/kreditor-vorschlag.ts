@@ -30,6 +30,7 @@ export interface Kreditorvorschlag {
   name: string
   ustId: string | null
   iban: string | null
+  email: string | null
   status: string
   angelegtAm: string
   /** Zum Anzeigen: Rechnungsnummer und Betrag des Belegs, aus dem er stammt. */
@@ -40,7 +41,7 @@ export interface Kreditorvorschlag {
 }
 
 const ABFRAGE = `
-  select v.id, v.dokument_id, v.name, v.ust_id, v.iban, v.status, v.angelegt_am,
+  select v.id, v.dokument_id, v.name, v.ust_id, v.iban, v.email, v.status, v.angelegt_am,
          f.rechnungsnummer, f.brutto,
          (select count(*) from kreditor_vorschlag w
            where w.mandant_id = v.mandant_id and w.status = 'offen' and w.id <> v.id
@@ -56,6 +57,7 @@ function zeile(z: Record<string, unknown>): Kreditorvorschlag {
     name: String(z['name']),
     ustId: text(z['ust_id']),
     iban: text(z['iban']),
+    email: text(z['email']),
     status: String(z['status']),
     angelegtAm: String(z['angelegt_am']),
     rechnungsnummer: text(z['rechnungsnummer']),
