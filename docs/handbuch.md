@@ -712,11 +712,14 @@ eingetragen wird, gilt. Danach hat die Aufgabe ihren Bearbeiter, und der
 Beleg erscheint dort, wo er hingehört.
 
 **Zuletzt aufgenommen** zeigt, was Sie selbst über den Posteingang
-hereingebracht haben, und wo es steht: *wird aufbereitet* (der Worker liest
-und rendert), *im Ablauf*, *abgelehnt* (Dublette). Ein Upload verschwindet
-damit nicht in einer Warteschlange — die Frage „ist er angekommen?" steht
-hier beantwortet, nicht in der Belegsuche. Die Liste zeigt nur die eigenen
-Uploads; was Kollegen hereinbringen, steht unter *Belege*.
+hereingebracht haben und was davon noch etwas von Ihnen braucht: *wird
+aufbereitet* (der Worker liest und rendert), ohne Objekt, ohne Kreditor,
+*abgelehnt* (Dublette). Ein Upload verschwindet damit nicht in einer
+Warteschlange — die Frage „ist er angekommen?" steht hier beantwortet, nicht
+in der Belegsuche. Sobald ein Beleg Objekt und Kreditor hat und bei seinem
+Bearbeiter liegt, verlässt er die Tabelle; darüber bleibt ein Satz mit Link,
+welche Belege im Ablauf sind. Die Liste zeigt nur die eigenen Uploads; was
+Kollegen hereinbringen, steht unter *Belege*.
 
 **Stapelscan.** Aus dem Scanner kommt eine Datei mit zwanzig Belegen. Sie wird
 zuerst gelesen, gerendert und getrennt — und erst nach Ihrer Bestätigung

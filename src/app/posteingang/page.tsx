@@ -48,7 +48,7 @@ export default async function Posteingang({
   // Die Rueckmeldung: Was man selbst hereingebracht hat, und wo es steht.
   // Ohne sie verschwindet ein Upload in der Warteschlange, und die Frage
   // "ist er angekommen?" fuehrt in die Belegsuche.
-  const eingaenge = await alsBenutzer(benutzer, (c) => eigeneEingaenge(c, benutzer))
+  const alleEingaenge = await alsBenutzer(benutzer, (c) => eigeneEingaenge(c, benutzer, 20))
   // Erkannte, aber unbekannte Rechnungssteller -- gleich in der Zeile, mit
   // der Seitenmaske zum Anlegen. Die Listen fuer die Maske kommen unter der
   // RLS, wie am Arbeitsplatz.
@@ -59,6 +59,21 @@ export default async function Posteingang({
   ])
   const vorschlagJeBeleg = new Map(vorschlaege.map((v) => [v.dokumentId, v]))
   const HIER = '/posteingang'
+
+  /*
+   * Zwei Listen aus einer: Was noch etwas vom Einliefernden braucht, steht in
+   * der Tabelle -- in Aufbereitung, ohne Objekt, ohne Kreditor (bei einer
+   * Rechnung), abgewiesen oder storniert. Was zugeordnet ist und laeuft,
+   * liegt bei seinem Bearbeiter; hier bleibt davon nur ein Satz mit Link.
+   * Beim Bedienen gefragt: "Warum ist der Beleg noch im Posteingang?" --
+   * weil die Liste die Eingangshistorie war, und die sah aus wie eine
+   * Warteschlange.
+   */
+  const brauchtRechnungsdaten = (belegart: string) => ['rechnung', 'gutschrift', 'mahnung'].includes(belegart)
+  const nochBeiMir = (z: (typeof alleEingaenge)[number]) =>
+    z.status !== 'laufend' || z.objektnummer === null || (brauchtRechnungsdaten(z.belegart) && z.kreditor === null)
+  const eingaenge = alleEingaenge.filter(nochBeiMir)
+  const weitergegeben = alleEingaenge.filter((z) => !nochBeiMir(z))
 
   return (
     <Seitenrahmen titel="Posteingang">
@@ -92,9 +107,31 @@ export default async function Posteingang({
       </p>
 
       <h2>Zuletzt aufgenommen</h2>
+      <p className="leise klein" style={{ marginTop: 0 }}>
+        Hier steht, was noch etwas von Ihnen braucht: in Aufbereitung, ohne Objekt, ohne Kreditor oder
+        abgewiesen. Was zugeordnet ist, liegt bei seinem Bearbeiter und verschwindet hier.
+        {weitergegeben.length > 0 && (
+          <>
+            {' '}
+            {weitergegeben.length === 1
+              ? 'Ein Beleg ist im Ablauf und liegt bei seinem Bearbeiter'
+              : `${weitergegeben.length} Belege sind im Ablauf und liegen bei ihren Bearbeitern`}
+            :{' '}
+            {weitergegeben.map((z, i) => (
+              <span key={z.id}>
+                {i > 0 && ', '}
+                <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
+              </span>
+            ))}
+            .
+          </>
+        )}
+      </p>
 
       {eingaenge.length === 0 ? (
-        <p className="leise">Noch nichts über diesen Posteingang aufgenommen.</p>
+        <p className="leise">
+          {weitergegeben.length === 0 ? 'Noch nichts über diesen Posteingang aufgenommen.' : 'Nichts wartet auf Sie.'}
+        </p>
       ) : (
         <table>
           <thead>
@@ -116,7 +153,9 @@ export default async function Posteingang({
                     <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
                   </td>
                   <td>
-                    {z.objektnummer ?? (
+                    {z.objektnummer ?? (z.status === 'abgelehnt' || z.status === 'storniert' ? (
+                      <span className="leise">—</span>
+                    ) : (
                       <>
                         <span className="marke marke--neu">ohne Objekt</span>{' '}
                         <button type="button" className="winzig" popoverTarget={`objekt-${z.id}`}>
@@ -169,7 +208,7 @@ export default async function Posteingang({
                           </section>
                         </div>
                       </>
-                    )}
+                    ))}
                   </td>
                   <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
                   <td>{datum.format(new Date(z.eingangAm))}</td>
