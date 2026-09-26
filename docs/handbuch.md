@@ -37,6 +37,11 @@ längst fertig da.
 
 ## Einrichtung
 
+In den Testdaten gibt es den Benutzer **Admin** mit der Rolle *Administration*:
+alle Rechte, alle Stempel. Wer die Vorschau einrichten will, meldet sich als
+Admin an; Anna, Bernd, Clara und Eva haben die Rechte ihrer Rolle, Clara gar
+keine. Im Betrieb entsteht diese Rolle über das Preset der Ersteinrichtung.
+
 Vorausgesetzt sind Node.js (ab Version 22) und Docker Desktop. Die
 ausführliche Installationsanleitung samt Windows-Eigenheiten steht in der
 [CLAUDE.md](../CLAUDE.md).

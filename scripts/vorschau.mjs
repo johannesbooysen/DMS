@@ -63,7 +63,7 @@ const umgebung = {
 }
 
 console.log('Vorschau mit Entwicklungsanmeldung auf http://localhost:3000')
-console.log('Anmelden als Anna, Bernd, Clara, Doris oder Eva -- ohne Passwort.')
+console.log('Anmelden als Admin (alle Rechte), Anna, Bernd, Clara, Doris oder Eva -- ohne Passwort.')
 console.log('Keine Seitenbilder zu sehen? npm run vorschau:befuellen\n')
 
 /*

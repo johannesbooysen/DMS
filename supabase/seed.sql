@@ -559,3 +559,36 @@ insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp,
    '67000000-0000-0000-0000-000000000021', 0, 'stufe', '66000000-0000-0000-0000-000000000011'),
   ('67000000-0000-0000-0000-000000000023', '65000000-0000-0000-0000-000000000002',
    '67000000-0000-0000-0000-000000000021', 1, 'stufe', '66000000-0000-0000-0000-000000000012');
+
+-- ---------------------------------------------------------------------------
+-- Admin: ein Benutzer mit allen Rechten, fuer die Einrichtung und zum Testen.
+--
+-- Beim Bedienen gewuenscht: Clara hatte keine Rolle, Anna nur die
+-- Objektbearbeitung -- wer die Vorschau als eine von beiden oeffnet, kann
+-- keine Stammdaten anlegen und haelt das fuer einen Fehler. Die Rolle
+-- "Administration" traegt jedes Recht, das es gibt, und jeden Stempel des
+-- Hauses. Im Betrieb ist das die Rolle der Systemverwaltung; wer sie
+-- vergibt, vergibt alles (benutzer_verwalten ist das Recht, aus dem die
+-- anderen folgen).
+-- ---------------------------------------------------------------------------
+
+insert into benutzer (id, mandant_id, name, email) values
+  ('20000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001',
+   'Admin', 'admin@example.invalid');
+
+insert into rolle (id, mandant_id, name, kurzcode, beschreibung) values
+  ('90000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001',
+   'Administration', 'ADM', 'Systemverwaltung: alle Rechte, alle Stempel. Fuer Einrichtung und Test.');
+
+insert into rolle_recht (rolle_id, aktion, belegart, ordnungsgruppe_id)
+select '90000000-0000-0000-0000-000000000004', a, null, null
+  from unnest(array['ansehen','bearbeiten','kontieren','stempeln','exportieren',
+                    'freigeben_einsicht','prozess_konfigurieren','delegieren',
+                    'stammdaten_pflegen','benutzer_verwalten','notfallzugriff']) as a;
+
+insert into stempel_recht (stempeltyp_id, rolle_id)
+select id, '90000000-0000-0000-0000-000000000004'
+  from stempeltyp where mandant_id = '10000000-0000-0000-0000-000000000001';
+
+insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
+  ('20000000-0000-0000-0000-000000000006', '90000000-0000-0000-0000-000000000004', null);

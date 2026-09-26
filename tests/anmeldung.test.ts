@@ -220,10 +220,14 @@ describe('Identitaet und Benutzer', () => {
   it('legt niemanden an, den es nicht gibt', async () => {
     // Sonst haette jeder im Microsoft-Mandanten mit dem ersten Versuch einen
     // Zugang, und die Rechtevergabe liefe der Anmeldung hinterher.
+    // Gezaehlt wird vorher und nachher, nicht gegen eine feste Zahl: Der Seed
+    // bekommt Benutzer dazu (zuletzt den Admin), und die Zusage lautet
+    // "keiner mehr", nicht "genau fuenf".
+    const [{ vorher }] = await inDerDatenbank<{ vorher: string }>('select count(*) vorher from benutzer')
     expect(await identitaetAufloesen('entra', 'oid-fremd', 'fremd@example.invalid'))
       .toBeNull()
-    const [{ n }] = await inDerDatenbank<{ n: string }>('select count(*) n from benutzer')
-    expect(Number(n)).toBe(5)
+    const [{ nachher }] = await inDerDatenbank<{ nachher: string }>('select count(*) nachher from benutzer')
+    expect(Number(nachher)).toBe(Number(vorher))
   })
 
   it('verdraengt eine bestehende Identitaet nicht ueber dieselbe Adresse', async () => {
