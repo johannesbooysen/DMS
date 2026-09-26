@@ -1268,6 +1268,13 @@ belegt.
 - verkettet auch dann, wenn der Befund harmlos ist
 - haelt eine Mahnung nicht fuer die Rechnung einer anderen Mahnung
 
+### [`tests/merkmale.test.ts`](../tests/merkmale.test.ts)
+
+- findet beschriftete Nummern und laesst Daten und Betraege liegen
+- lernt die Kundennummer, und der naechste Beleg wird von selbst zugeordnet
+- findet das Objekt an seiner Anschrift im Beleg, wenn nichts gelernt ist
+- bleibt rot, wenn zwei Anschriften im Beleg stehen
+
 ### [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts)
 
 - zeigt dem Mieter den Beleg aus seiner Mietzeit

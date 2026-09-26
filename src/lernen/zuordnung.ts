@@ -113,12 +113,14 @@ export async function objektVorschlagen(
 
   const kandidaten = kandidatenAusText(beleg.text)
   if (kandidaten.length === 0) {
-    return {
-      objektId: null,
-      begruendung: 'Im Beleg steht kein Merkmal, das eine Zuordnung erlaubt.',
-      sicherheit: 'rot',
-      mehrdeutig: false,
-    }
+    return (
+      (await nachAnschrift(c, dokumentId)) ?? {
+        objektId: null,
+        begruendung: 'Im Beleg steht kein Merkmal, das eine Zuordnung erlaubt.',
+        sicherheit: 'rot',
+        mehrdeutig: false,
+      }
+    )
   }
 
   // Über app.zuordnungstreffer, nicht direkt: Die Suche muss auch Objekte
@@ -134,12 +136,14 @@ export async function objektVorschlagen(
   }>('select * from app.zuordnungstreffer($1, $2)', [kandidaten, beleg.kreditor_id])
 
   if (treffer.length === 0) {
-    return {
-      objektId: null,
-      begruendung: 'Kein gelerntes Merkmal aus diesem Beleg ist bekannt.',
-      sicherheit: 'rot',
-      mehrdeutig: false,
-    }
+    return (
+      (await nachAnschrift(c, dokumentId)) ?? {
+        objektId: null,
+        begruendung: 'Kein gelerntes Merkmal aus diesem Beleg ist bekannt.',
+        sicherheit: 'rot',
+        mehrdeutig: false,
+      }
+    )
   }
 
   const objekte = new Set(treffer.map((t) => t.objekt_id))
@@ -160,6 +164,38 @@ export async function objektVorschlagen(
     begruendung:
       `${erster.merkmalstyp} ${erster.wert_normalisiert} ist für Objekt ` +
       `${erster.objektnummer} gelernt.`,
+    sicherheit: 'gruen',
+    mehrdeutig: false,
+  }
+}
+
+/**
+ * Rueckfall: die Anschrift des Objekts steht im Beleg.
+ *
+ * Ein Stammdatum, so deterministisch wie eine Kundennummer -- und beim
+ * ersten Beleg eines Versorgers das einzige, was da ist (Migration
+ * 20260930120000). Genau ein Objekt: gruen. Mehrere: rot, mehrdeutig --
+ * dieselbe Regel wie bei gelernten Merkmalen. Keins: null, der Aufrufer
+ * nennt seinen eigenen Grund.
+ */
+async function nachAnschrift(c: PoolClient, dokumentId: string): Promise<Zuordnungsvorschlag | null> {
+  const { rows } = await c.query<{ objekt_id: string; objektnummer: string; adresse: string }>(
+    'select * from app.objekte_im_text($1)',
+    [dokumentId],
+  )
+  if (rows.length === 0) return null
+  if (rows.length > 1) {
+    return {
+      objektId: null,
+      begruendung: `Die Anschriften mehrerer Objekte stehen im Beleg: ${rows.map((r) => r.objektnummer).join(', ')}.`,
+      sicherheit: 'rot',
+      mehrdeutig: true,
+    }
+  }
+  const o = rows[0]!
+  return {
+    objektId: o.objekt_id,
+    begruendung: `Die Anschrift „${o.adresse.split(',')[0]?.trim() ?? o.adresse}“ von Objekt ${o.objektnummer} steht im Beleg.`,
     sicherheit: 'gruen',
     mehrdeutig: false,
   }

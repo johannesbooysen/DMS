@@ -15,6 +15,7 @@ import { eigeneEingaenge } from '@/belege/liste'
 import { alsBenutzer } from '@/db'
 import { offeneStapel } from '@/stapel'
 import { Ablagezone } from '@/app/lib/ablagezone'
+import { angabenNachtragenAktion } from '@/app/lib/aktionen'
 import { postAufnehmenAktion } from '@/app/lib/posteingang-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
@@ -114,7 +115,62 @@ export default async function Posteingang({
                   <td>
                     <Ampel wert={z.ampel} /> <a href={`/beleg/${z.id}`}>{belegBezeichnung(z)}</a>
                   </td>
-                  <td>{z.objektnummer ?? '—'}</td>
+                  <td>
+                    {z.objektnummer ?? (
+                      <>
+                        <span className="marke marke--neu">ohne Objekt</span>{' '}
+                        <button type="button" className="winzig" popoverTarget={`objekt-${z.id}`}>
+                          Zuordnen …
+                        </button>
+                        <div id={`objekt-${z.id}`} popover="auto" className="seitenmaske">
+                          <button type="button" className="winzig seitenmaske-schliessen" popoverTarget={`objekt-${z.id}`} popoverTargetAction="hide">
+                            Schließen
+                          </button>
+                          <section className="karte" aria-labelledby={`objekt-titel-${z.id}`}>
+                            <h3 id={`objekt-titel-${z.id}`} style={{ marginTop: 0 }}>
+                              Objekt zuordnen: {belegBezeichnung(z)}
+                            </h3>
+                            <p className="leise klein" style={{ marginTop: 0 }}>
+                              Kein Merkmal im Beleg passte zu einem Objekt. Wer hier zuordnet, bringt dem System
+                              Kundennummer, Vertrags- oder Zählernummer aus dem Beleg bei — beim nächsten Beleg dieses
+                              Absenders geht es von selbst.
+                            </p>
+                            <form action={angabenNachtragenAktion}>
+                              <input type="hidden" name="dokumentId" value={z.id} />
+                              <input type="hidden" name="zurueck" value={HIER} />
+                              <label className="entscheidung-feld">
+                                Objekt
+                                <select name="objektId" defaultValue="" required>
+                                  <option value="" disabled>
+                                    — wählen —
+                                  </option>
+                                  {auswahl.objekte.map((o) => (
+                                    <option key={o.id} value={o.id}>
+                                      {o.objektnummer} — {o.bezeichnung}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label className="entscheidung-feld">
+                                Ordnungsgruppe
+                                <select name="ordnungsgruppeId" defaultValue="">
+                                  <option value="">— unverändert —</option>
+                                  {auswahl.gruppen.map((g) => (
+                                    <option key={g.id} value={g.id}>
+                                      {g.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <button type="submit" className="knopf-primaer" style={{ marginTop: '0.5rem' }}>
+                                Objekt zuordnen
+                              </button>
+                            </form>
+                          </section>
+                        </div>
+                      </>
+                    )}
+                  </td>
                   <td className="rechts">{z.brutto === null ? '—' : euro.format(z.brutto)}</td>
                   <td>{datum.format(new Date(z.eingangAm))}</td>
                   <td>

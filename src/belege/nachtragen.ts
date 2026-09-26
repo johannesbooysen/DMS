@@ -29,9 +29,18 @@ import { alsBenutzer } from '../db'
 import type { Feldname } from '../extraktion/typen'
 import { plausibilitaetPruefen } from '../pruefung/plausibilitaet'
 import { aufbereitungEinreihen } from '../queue'
+import { merkmaleImText } from '../lernen/merkmale'
+import { merkmalLernen } from '../lernen/zuordnung'
 import { aufgabenNeuZuweisen, belegartWechseln } from '../workflow/engine'
 
 export class NachtragAbgelehnt extends Error {}
+
+const MERKMALSNAME: Record<string, string> = {
+  kundennummer: 'Kundennummer',
+  vertragsnummer: 'Vertragsnummer',
+  zaehlernummer: 'Zählernummer',
+  objektnummer: 'Objektnummer',
+}
 
 export interface Nachtrag {
   /** Belegart von Hand -- stellt den Lauf um, solange keine Entscheidung darin liegt. */
@@ -174,7 +183,7 @@ export async function angabenNachtragen(
   benutzerId: string,
   dokumentId: string,
   n: Nachtrag,
-): Promise<{ neuZugewiesen: number; pflichtfelderVollstaendig: boolean }> {
+): Promise<{ neuZugewiesen: number; pflichtfelderVollstaendig: boolean; gelernt: string[] }> {
   const objektId = leer(n.objektId)
   const ordnungsgruppeId = leer(n.ordnungsgruppeId)
   const kreditorId = leer(n.kreditorId)
@@ -198,8 +207,8 @@ export async function angabenNachtragen(
   }
 
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows: belege } = await c.query<{ status: string; belegart: string }>(
-      'select status, belegart from dokument where id = $1',
+    const { rows: belege } = await c.query<{ status: string; belegart: string; mandant_id: string }>(
+      'select status, belegart, mandant_id from dokument where id = $1',
       [dokumentId],
     )
     const beleg = belege[0]
@@ -240,6 +249,40 @@ export async function angabenNachtragen(
       [dokumentId, objektId, ordnungsgruppeId],
     )
     if (rowCount === 0) throw new NachtragAbgelehnt('Der Beleg lässt sich nicht ändern.')
+
+    /*
+     * Wer ein Objekt von Hand setzt, bestaetigt eine Zuordnung -- und das
+     * System lernt daraus, was der Beleg an beschrifteten Nummern traegt
+     * (Kundennummer, Vertragsnummer, Zaehlernummer). Der naechste Beleg
+     * desselben Versorgers mit derselben Nummer wird gruen zugeordnet, ohne
+     * dass jemand ein Merkmal pflegt (Konzept 15). Der Grund steht am
+     * Beleg, mit dem, was gelernt wurde.
+     */
+    const gelernt: string[] = []
+    if (objektId !== null) {
+      const { rows: texte } = await c.query<{ text: string | null; kreditor_id: string | null }>(
+        `select (select string_agg(s.text, ' ' order by s.seite) from dokument_seite s where s.dokument_id = d.id) as text,
+                f.kreditor_id
+           from dokument d left join rechnung_fakten f on f.dokument_id = d.id
+          where d.id = $1`,
+        [dokumentId],
+      )
+      const funde = merkmaleImText(texte[0]?.text ?? '')
+      for (const fund of funde) {
+        await merkmalLernen(c, {
+          mandantId: beleg.mandant_id,
+          kreditorId: kreditorId ?? texte[0]?.kreditor_id ?? null,
+          merkmalstyp: fund.typ,
+          wert: fund.wert,
+          objektId,
+        })
+        gelernt.push(`${MERKMALSNAME[fund.typ] ?? fund.typ} ${fund.wert}`)
+      }
+      await c.query('update dokument set objekt_begruendung = $2 where id = $1', [
+        dokumentId,
+        gelernt.length === 0 ? 'von Hand zugeordnet' : `von Hand zugeordnet; gelernt: ${gelernt.join(', ')}`,
+      ])
+    }
 
     let pflichtfelderVollstaendig = true
     if (beleg.belegart !== 'schriftverkehr' && beleg.belegart !== 'sonstiges') {
@@ -284,7 +327,7 @@ export async function angabenNachtragen(
     // Die Pruefung gegen den neuen Stand, dann die Aufgaben an ihre Traeger.
     await plausibilitaetPruefen(c, dokumentId)
     const neuZugewiesen = await aufgabenNeuZuweisen(c, dokumentId)
-    return { neuZugewiesen, pflichtfelderVollstaendig }
+    return { neuZugewiesen, pflichtfelderVollstaendig, gelernt }
   })
 }
 

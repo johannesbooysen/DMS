@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 81 Tabellen, 200 Policies,
-128 Module, 1050 Testfaelle in 66 Dateien,
+129 Module, 1054 Testfaelle in 67 Dateien,
 8 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -574,6 +574,13 @@ Kreditorvorschlag: die E-Mail-Adresse aus dem Beleg mitnehmen
 Funktionen: `app.kreditor_vorschlag_melden`
 
 
+### `supabase/migrations/20260930120000_objekt_adresse_im_text.sql`
+
+Objekt ueber seine Anschrift im Belegtext finden
+
+Funktionen: `app.objekte_im_text`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -665,6 +672,7 @@ Funktionen: `app.kreditor_vorschlag_melden`
 | [`src/layer/platzierung.ts`](../src/layer/platzierung.ts) | Wohin ein Stempel auf der Seite darf |
 | [`src/lernen/belegart.ts`](../src/lernen/belegart.ts) | Belegart aus dem Inhalt erkennen |
 | [`src/lernen/kategorie.ts`](../src/lernen/kategorie.ts) | Kategorie (Ordnungsgruppe) eines Belegs bestimmen |
+| [`src/lernen/merkmale.ts`](../src/lernen/merkmale.ts) | Beschriftete Merkmale im Belegtext -- was gelernt werden kann |
 | [`src/lernen/zuordnung.ts`](../src/lernen/zuordnung.ts) | Objektzuordnung aus gelernten Merkmalen |
 | [`src/nebenlauf/index.ts`](../src/nebenlauf/index.ts) | Nebenläufe: Wartecontainer und Bauteile |
 | [`src/notfall/index.ts`](../src/notfall/index.ts) | Notfallzugriff (Konzept §24.10) |
@@ -748,6 +756,7 @@ Funktionen: `app.kreditor_vorschlag_melden`
 | [`tests/lernen.test.ts`](../tests/lernen.test.ts) | 15 | Normalisieren, Kandidaten aus dem Text, Zuordnung aus gelernten Merkmalen, Mandantengrenze, Korrektur, Nachlauf |
 | [`tests/loeschen.test.ts`](../tests/loeschen.test.ts) | 21 | Wann geloescht werden darf, Die Ausnahme reicht nicht weiter, als sie soll, Das Loeschprotokoll, Die Dateien werden abgeraeumt, Die Kandidatenliste |
 | [`tests/mahnung.test.ts`](../tests/mahnung.test.ts) | 8 | Mahnung ohne Rechnung, Mahnung zu einer laufenden Rechnung, Mahnung zu einer erledigten Rechnung, Mahnung zu einer Rechnung in Klaerung, Verkettung |
+| [`tests/merkmale.test.ts`](../tests/merkmale.test.ts) | 4 | Merkmale im Text, Lernen beim Zuordnen, Anschrift als Rueckfall |
 | [`tests/mietersicht.test.ts`](../tests/mietersicht.test.ts) | 13 | Mietersicht, Umlageflag, Summenzwang |
 | [`tests/nachtragen.test.ts`](../tests/nachtragen.test.ts) | 11 | Ohne Zustaendigkeit, Angaben nachtragen, Pflichtfelder beim Nachtragen, Aufbereitung erneut |
 | [`tests/nebenlauf.test.ts`](../tests/nebenlauf.test.ts) | 26 | Wartecontainer, Warten beenden, Faelligkeit, Gewaehrleistung, Erneuerung haelt die Kette, Die Sichtbarkeitsgrenze |

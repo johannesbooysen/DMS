@@ -59,6 +59,9 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
   const dokumentId = String(formular.get('dokumentId') ?? '')
   const aufgabeId = String(formular.get('aufgabeId') ?? '')
   const text = (name: string) => String(formular.get(name) ?? '')
+  // Aus dem Posteingang kommt `zurueck`; sonst geht es zur Aufgabe.
+  const zurueck = text('zurueck')
+  const ziel = zurueck !== '' ? zurueck : `/arbeitsplatz/${aufgabeId}`
   // Betraege in deutscher Schreibweise; ein unlesbarer wird genannt, nicht
   // stillschweigend zu null.
   const betrag = (name: string, was: string): number | null => {
@@ -66,7 +69,7 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
     if (roh === '') return null
     const wert = betragLesen(roh)
     if (wert === null) {
-      redirect(`/arbeitsplatz/${aufgabeId}?fehler=${encodeURIComponent(`${was} ist nicht lesbar.`)}`)
+      redirect(`${ziel}?fehler=${encodeURIComponent(`${was} ist nicht lesbar.`)}`)
     }
     return wert
   }
@@ -74,7 +77,7 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
   const netto = betrag('netto', 'Der Nettobetrag')
   const steuer = betrag('steuer', 'Der Steuerbetrag')
   const skontoProzent = betrag('skontoProzent', 'Der Skontosatz')
-  let ergebnis: { neuZugewiesen: number; pflichtfelderVollstaendig: boolean }
+  let ergebnis: { neuZugewiesen: number; pflichtfelderVollstaendig: boolean; gelernt: string[] }
   try {
     ergebnis = await angabenNachtragen(await angemeldeterBenutzer(), dokumentId, {
       belegart: text('belegart'),
@@ -95,15 +98,17 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
     })
   } catch (fehler) {
     if (fehler instanceof NachtragAbgelehnt) {
-      redirect(`/arbeitsplatz/${aufgabeId}?fehler=${encodeURIComponent(fehler.message)}`)
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
     }
     throw fehler
   }
   revalidatePath('/postfach')
   revalidatePath('/arbeitsplatz')
+  revalidatePath('/posteingang')
   redirect(
-    `/arbeitsplatz/${aufgabeId}?hinweis=${encodeURIComponent(
-      ergebnis.neuZugewiesen > 0 ? 'Angaben übernommen — die Aufgabe hat jetzt ihren Bearbeiter.' : 'Angaben übernommen.',
+    `${ziel}?hinweis=${encodeURIComponent(
+      (ergebnis.neuZugewiesen > 0 ? 'Angaben übernommen — die Aufgabe hat jetzt ihren Bearbeiter.' : 'Angaben übernommen.') +
+        (ergebnis.gelernt.length > 0 ? ` Gelernt für das nächste Mal: ${ergebnis.gelernt.join(', ')}.` : ''),
     )}`,
   )
 }

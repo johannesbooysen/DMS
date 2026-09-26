@@ -417,6 +417,19 @@ im Beleg, ist die Zuordnung eindeutig — auch wenn derselbe Lieferant für
 zwanzig Objekte tätig ist. Der Lieferant allein sagt nichts, die Kundennummer
 alles.
 
+**Die Anschrift des Objekts zählt wie eine Kundennummer.** Ist nichts
+gelernt, sucht das System Straße und Hausnummer der Objekte im Beleg.
+Genau ein Treffer ist grün, zwei sind rot — eine Sammelrechnung über zwei
+Häuser gehört angesehen.
+
+**Der erste Beleg braucht einen Menschen, der zweite nicht mehr.** Ordnet
+jemand einen Beleg von Hand einem Objekt zu (im Posteingang über „Zuordnen
+…", am Arbeitsplatz über „Angaben nachtragen"), merkt sich das System die
+beschrifteten Nummern aus dem Beleg — Kundennummer, Vertragsnummer,
+Zählernummer — für dieses Objekt und diesen Kreditor. Der Hinweis nach dem
+Zuordnen sagt, was gelernt wurde, und der Grund steht am Beleg unter *Warum
+hier*. Der nächste Beleg desselben Versorgers mit derselben Nummer ist grün.
+
 **Mehrere Kandidaten sind schlechter als keiner.** Deuten die Merkmale eines
 Belegs auf zwei Objekte, wird das **rot**, nicht orange. Ein Beleg, der zu zwei
 Objekten passt, gehört angesehen.
@@ -517,6 +530,11 @@ Belegs unter „Zuletzt aufgenommen" als Marke „Neu: …" mit dem Knopf
 „Anlegen …". Er öffnet eine Seitenmaske am rechten Rand mit derselben Karte;
 die Liste bleibt darunter stehen, und nach dem Anlegen zeigt die Zeile den
 Kreditor.
+
+Genauso steht ein Beleg **ohne Objekt** in der Zeile mit der Marke „ohne
+Objekt" und dem Knopf „Zuordnen …": Die Seitenmaske nimmt Objekt und
+Ordnungsgruppe entgegen, und das System lernt dabei die Nummern aus dem
+Beleg für das nächste Mal.
 
 Drei Handlungen, alle nur mit dem Recht, Stammdaten zu pflegen:
 
