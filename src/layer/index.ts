@@ -19,7 +19,7 @@
 
 import { alsBenutzer } from '@/db'
 import { alsZeitpunkt } from '@/datum'
-import type { Kasten } from './platzierung'
+import { ueberschneidet, type Kasten } from './platzierung'
 import { gestaltungLesen, type Gestaltung } from './gestaltung'
 
 export * from './platzierung'
@@ -230,9 +230,10 @@ export async function platzierungLaden(benutzerId: string, dokumentId: string): 
       breite: number | null
       hoehe: number | null
       textkaesten: Kasten[] | null
+      freie_bloecke: Kasten[] | null
       platz: Kasten | null
     }>(
-      `select s.breite, s.hoehe, s.textkaesten, app.stempelplatz($1) as platz
+      `select s.breite, s.hoehe, s.textkaesten, s.freie_bloecke, app.stempelplatz($1) as platz
          from dokument_seite s
         where s.dokument_id = $1 and s.seite = 1`,
       [dokumentId],
@@ -244,13 +245,23 @@ export async function platzierungLaden(benutzerId: string, dokumentId: string): 
         where dokument_id = $1 and seite = 1 and typ = 'stempel' and geloescht_am is null`,
       [dokumentId],
     )
+    const liegen = belegt.map((k) => ({ x: Number(k.x), y: Number(k.y), breite: Number(k.breite), hoehe: Number(k.hoehe) }))
+    /*
+     * app.stempelplatz zaehlt nur ab: der n-te Block fuer den n-ten Stempel.
+     * Hat ein Mensch den ersten Stempel auf den zweiten Block gezogen, laege
+     * der Vorschlag auf ihm -- beim Bedienen genau so gesehen ("Dort liegt
+     * schon ein Stempel", bevor man etwas getan hatte). Deshalb der erste
+     * freie Block, auf dem nichts liegt; erst wenn keiner frei ist, der
+     * abgezaehlte oder oben links.
+     */
+    const frei = (s.freie_bloecke ?? []).find((b) => !liegen.some((l) => ueberschneidet(b, l)))
     return {
       seite: 1,
-      vorschlag: s.platz ?? { x: 40, y: 40, breite: 190, hoehe: 64 },
+      vorschlag: frei ?? s.platz ?? { x: 40, y: 40, breite: 190, hoehe: 64 },
       seitenBreite: Number(s.breite),
       seitenHoehe: Number(s.hoehe),
       textkaesten: s.textkaesten,
-      belegt: belegt.map((k) => ({ x: Number(k.x), y: Number(k.y), breite: Number(k.breite), hoehe: Number(k.hoehe) })),
+      belegt: liegen,
     }
   })
 }

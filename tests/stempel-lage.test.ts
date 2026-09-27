@@ -29,6 +29,7 @@ const STEMPEL_SACHLICH = '60000000-0000-0000-0000-000000000001'
 const SEITE = { breite: 595, hoehe: 842 }
 const FREIER_PLATZ = { x: 380, y: 40, breite: 190, hoehe: 64 }
 const TEXTZEILE = { x: 40, y: 100, breite: 300, hoehe: 12 }
+const ZWEITER_PLATZ = { x: 380, y: 120, breite: 190, hoehe: 64 }
 
 let beleg: string
 let laufId: string
@@ -56,7 +57,7 @@ async function belegAnlegen(mitMassen: boolean): Promise<void> {
         id,
         mitMassen ? SEITE.breite : null,
         mitMassen ? SEITE.hoehe : null,
-        JSON.stringify([FREIER_PLATZ]),
+        JSON.stringify([FREIER_PLATZ, ZWEITER_PLATZ]),
         mitMassen ? JSON.stringify([TEXTZEILE]) : null,
       ],
     )
@@ -163,6 +164,15 @@ describe('Was die Seite zum Platzieren hergibt', () => {
     await stempelSetzen(ANNA, { aufgabeId, stempeltypId, lage: { seite: 1, x: 300, y: 400, breite: 200, hoehe: 70 } })
     const nachher = await platzierungLaden(ANNA, beleg)
     expect(nachher?.belegt).toEqual([{ x: 300, y: 400, breite: 200, hoehe: 70 }])
+  })
+
+  it('schlaegt einen Block vor, auf dem nichts liegt -- auch wenn der abgezaehlte belegt ist', async () => {
+    // Der erste Stempel wurde von Hand auf den zweiten Block gezogen; das
+    // Abzaehlen (app.stempelplatz) naehme jetzt genau diesen Block.
+    const { aufgabeId, stempeltypId } = await annasAufgabe()
+    await stempelSetzen(ANNA, { aufgabeId, stempeltypId, lage: { seite: 1, ...ZWEITER_PLATZ } })
+    const danach = await platzierungLaden(ANNA, beleg)
+    expect(danach?.vorschlag).toEqual(FREIER_PLATZ)
   })
 
   it('liefert null ohne Seitenmasse -- dann waehlt die Datenbank', async () => {

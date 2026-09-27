@@ -1692,6 +1692,7 @@ belegt.
 - haelt die Grenze auch im Trigger -- an der Anwendung vorbei
 - traegt die Lage am Ereignis, nicht in der Hash-Kette
 - liefert Vorschlag, Masse, Textkaesten und die schon gesetzten Stempel
+- schlaegt einen Block vor, auf dem nichts liegt -- auch wenn der abgezaehlte belegt ist
 - liefert null ohne Seitenmasse -- dann waehlt die Datenbank
 
 ### [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts)
