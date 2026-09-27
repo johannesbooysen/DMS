@@ -26,10 +26,21 @@ const RADIUS: Record<Gestaltung['form'], string> = {
   oval: '50%',
 }
 
+/**
+ * Linienstaerke in Punkten -> rem. Zwei Punkte waren bisher 0,18rem; ein
+ * doppelter Rahmen braucht mindestens drei Bildpunkte, sonst zeichnet der
+ * Browser ihn einfach.
+ */
 export function rahmenStil(g: Gestaltung, farbe: string): string {
   const art = g.rahmen === 'gestrichelt' ? 'dashed' : g.rahmen === 'doppelt' ? 'double' : 'solid'
-  const staerke = g.rahmen === 'doppelt' ? '0.3rem' : '0.18rem'
+  const punkte = g.rahmen === 'doppelt' ? Math.max(g.linie * 1.5, 3) : g.linie
+  const staerke = `${(punkte * 0.09).toFixed(3)}rem`
   return `${staerke} ${art} ${farbe}`
+}
+
+/** Die Schriftfarbe: die eigene, wenn gesetzt, sonst die des Rahmens -- beide lesbar gemacht. */
+export function schriftfarbe(g: Gestaltung, farbe: string): string {
+  return lesefarbe(g.schriftfarbe ?? farbe)
 }
 
 /**
@@ -90,7 +101,7 @@ export function Stempelbild({
         border: rahmen ?? rahmenStil(gestaltung, farbe),
         borderRadius: RADIUS[gestaltung.form],
         boxSizing: 'border-box',
-        color: lesefarbe(farbe),
+        color: schriftfarbe(gestaltung, farbe),
         display: 'flex',
         flexDirection: 'column',
         height: '100%',

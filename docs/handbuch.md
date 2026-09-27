@@ -1236,9 +1236,16 @@ den ein Zeitablauf jemanden versetzt.
 
 Wie ein Stempel aussieht — welche Felder er trägt (Stempeltext,
 Mitarbeiter, Datum, Uhrzeit, Kommentar, Objektnummer, Betrag, Stufe), Form,
-Rahmen, Schrift, Neigung und Farbe — stellen Sie unter **Konfiguration →
-Stempel** ein, mit Vorschau. Die Einstellung gilt für die nächsten Stempel;
-ein gesetzter ändert sich nicht.
+Rahmen, **Linienstärke** in Punkten, Schrift, Neigung, **Rahmenfarbe** und
+**Schriftfarbe** — stellen Sie unter **Konfiguration → Stempel** ein, mit
+Vorschau. Die Schriftfarbe ist eigenständig; *Schrift wie Rahmen* leitet sie
+wie bisher aus der Rahmenfarbe ab. Zu helle Schrift wird in beiden Fällen
+abgedunkelt, bis sie lesbar ist. Oben auf der Seite steht **Für alle
+Stempel**: eine Gestaltung für alle Stempeltypen des Hauses auf einmal;
+Rahmenfarbe und Sichtbarkeit bleiben dabei je Stempel, danach lässt sich
+jeder weiter einzeln anpassen. Die Einstellung gilt für die nächsten
+Stempel; ein gesetzter ändert sich nicht. Auch der PDF-Export zeichnet
+Linienstärke und Schriftfarbe so.
 
 Die Gruppe *Konfiguration* in der Seitenleiste führt alle Einrichtungsseiten
 direkt: Abläufe, Stempel, Pflichtfelder, Kategorien, Vorlagen, Stammdaten,

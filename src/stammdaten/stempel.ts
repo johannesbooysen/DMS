@@ -112,7 +112,8 @@ export async function stempeltypAnlegen(benutzerId: string, f: Eingaben): Promis
   })
 }
 
-export async function gestaltungSetzen(benutzerId: string, f: Eingaben): Promise<void> {
+/** Die Gestaltung aus der Maske -- gemeinsam fuer einen Typ und fuer alle. */
+function gestaltungAusMaske(f: Eingaben): Gestaltung {
   const felder = (f['felder'] ?? '').split(',').map((s) => s.trim()).filter((s) => s !== '')
   const geprueft = gestaltungPruefen({
     felder,
@@ -120,8 +121,36 @@ export async function gestaltungSetzen(benutzerId: string, f: Eingaben): Promise
     rahmen: f['rahmen'] ?? '',
     drehung: Number(f['drehung'] ?? 0),
     schrift: f['schrift'] ?? '',
+    linie: f['linie'] === undefined || f['linie'] === '' ? undefined : Number(String(f['linie']).replace(',', '.')),
+    // Das Kaestchen "wie Rahmen" schlaegt das Farbfeld: Ein Farbfeld hat
+    // immer einen Wert, "keine eigene Farbe" braucht deshalb ein eigenes Ja.
+    schriftfarbe: f['schriftfarbeAutomatisch'] === 'ja' ? '' : (f['schriftfarbe'] ?? ''),
   })
   if ('fehler' in geprueft) throw new NichtMoeglich(geprueft.fehler)
+  return geprueft.gestaltung
+}
+
+/**
+ * Eine Gestaltung fuer alle Stempeltypen des Hauses -- die Sammeleinstellung.
+ *
+ * Farbe und Sichtbarkeit bleiben je Typ: Rot fuer Ablehnung und Gruen fuer
+ * Freigabe sind Bedeutung, kein Design. Gezaehlt wird die Wirkung; ohne das
+ * Recht aendert sich keine Zeile.
+ */
+export async function gestaltungFuerAlleSetzen(benutzerId: string, f: Eingaben): Promise<number> {
+  const gestaltung = gestaltungAusMaske(f)
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rowCount } = await c.query(
+      `update stempeltyp set gestaltung = $1::jsonb where mandant_id = app.mein_mandant()`,
+      [JSON.stringify(gestaltung)],
+    )
+    mussGewirktHaben(rowCount)
+    return rowCount ?? 0
+  })
+}
+
+export async function gestaltungSetzen(benutzerId: string, f: Eingaben): Promise<void> {
+  const geprueft = { gestaltung: gestaltungAusMaske(f) }
   const farbe = farbeLesen(f['farbe'])
   const sichtbar = f['sichtbar'] === 'ja'
 

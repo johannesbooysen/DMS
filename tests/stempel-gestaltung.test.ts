@@ -23,7 +23,7 @@ import {
   textZusammensetzen,
   VORGABE,
 } from '../src/layer/gestaltung'
-import { gestaltungSetzen, stempeltypAnlegen, stempeltypenLaden } from '../src/stammdaten/stempel'
+import { gestaltungFuerAlleSetzen, gestaltungSetzen, stempeltypAnlegen, stempeltypenLaden } from '../src/stammdaten/stempel'
 import { laufStarten } from '../src/workflow/engine'
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
@@ -125,6 +125,17 @@ describe('Weissliste', () => {
     expect(gestaltungLesen({ felder: ['stufe'], drehung: 40 }).drehung).toBe(15)
   })
 
+  it('haelt Linienstaerke und Schriftfarbe in der Weissliste', () => {
+    const g = gestaltungPruefen({ felder: ['text'], form: 'rechteck', rahmen: 'durchgezogen', drehung: 0, schrift: 'normal', linie: 3.5, schriftfarbe: '#112233' })
+    expect('gestaltung' in g && g.gestaltung).toMatchObject({ linie: 3.5, schriftfarbe: '#112233' })
+    expect(gestaltungPruefen({ felder: ['text'], form: 'rechteck', rahmen: 'durchgezogen', drehung: 0, schrift: 'normal', linie: 9 })).toHaveProperty('fehler')
+    expect(gestaltungPruefen({ felder: ['text'], form: 'rechteck', rahmen: 'durchgezogen', drehung: 0, schrift: 'normal', schriftfarbe: 'rot' })).toHaveProperty('fehler')
+    // Ohne Angabe: Vorgabe -- und "wie Rahmen" ist null, keine Farbe.
+    const ohne = gestaltungPruefen({ felder: ['text'], form: 'rechteck', rahmen: 'durchgezogen', drehung: 0, schrift: 'normal', schriftfarbe: '' })
+    expect('gestaltung' in ohne && ohne.gestaltung).toMatchObject({ linie: VORGABE.linie, schriftfarbe: null })
+    expect(gestaltungLesen({ linie: 40, schriftfarbe: 'gruen' })).toMatchObject({ linie: 6, schriftfarbe: null })
+  })
+
   it('rueckt Datum und Uhrzeit zusammen', () => {
     expect(
       textZusammensetzen(['text', 'datum', 'uhrzeit', 'mitarbeiter'], {
@@ -167,6 +178,26 @@ describe('Der Trigger', () => {
       drehung: '0', schrift: 'klein', farbe: '#B3271E', sichtbar: 'ja',
     })
     expect(await stempeltext(beleg)).toBe(vorher)
+  })
+})
+
+describe('Sammeleinstellung', () => {
+  it('setzt eine Gestaltung fuer alle Typen des Hauses -- Farbe bleibt je Typ', async () => {
+    const vorher = await stempeltypenLaden(EVA)
+    const betroffen = await gestaltungFuerAlleSetzen(EVA, {
+      felder: 'text,datum', form: 'oval', rahmen: 'doppelt', drehung: '4', schrift: 'gross', linie: '3', schriftfarbe: '#222222',
+    })
+    expect(betroffen).toBe(vorher.length)
+    const nachher = await stempeltypenLaden(EVA)
+    for (const t of nachher) {
+      expect(t.gestaltung).toMatchObject({ form: 'oval', rahmen: 'doppelt', linie: 3, schriftfarbe: '#222222', felder: ['text', 'datum'] })
+      expect(t.farbe).toBe(vorher.find((v) => v.id === t.id)?.farbe)
+    }
+  })
+
+  it('bleibt ohne das Recht wirkungslos', async () => {
+    const eingabe = { felder: 'text', form: 'oval', rahmen: 'durchgezogen', drehung: '0', schrift: 'normal' }
+    await expect(gestaltungFuerAlleSetzen(BERND, eingabe)).rejects.toThrow(/nicht.*änderbar|Recht/)
   })
 })
 

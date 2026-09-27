@@ -1675,10 +1675,13 @@ belegt.
 - meldet Unbekanntes beim Einstellen
 - setzt den Stempeltext immer zuerst und ordnet die Felder
 - ersetzt Verdorbenes aus der Datenbank durch die Vorgabe
+- haelt Linienstaerke und Schriftfarbe in der Weissliste
 - rueckt Datum und Uhrzeit zusammen
 - setzt den Text aus den gewaehlten Feldern zusammen
 - nimmt ohne Einstellung die Vorgabe: Text, Mitarbeiter, Datum mit Uhrzeit
 - aendert einen gesetzten Stempel nicht, wenn der Designer spaeter bedient wird
+- setzt eine Gestaltung fuer alle Typen des Hauses -- Farbe bleibt je Typ
+- bleibt ohne das Recht wirkungslos
 - laesst nur gestalten, wer Ablaeufe konfigurieren darf
 - legt einen Stempeltyp nur mit dem Recht an -- und nie mit Zielfeld
 - weist eine Farbe ab, die keine ist

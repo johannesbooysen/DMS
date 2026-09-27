@@ -51,9 +51,20 @@ export interface Gestaltung {
   /** Grad, gegen den Uhrzeigersinn positiv. Klein gehalten: schief ist schlecht lesbar. */
   drehung: number
   schrift: (typeof SCHRIFTEN)[number]
+  /** Linienstaerke des Rahmens in Punkten (LINIE_MIN bis LINIE_MAX). */
+  linie: number
+  /**
+   * Schriftfarbe als #RRGGBB -- oder null: dann aus der Rahmenfarbe des
+   * Stempeltyps abgeleitet, abgedunkelt bis sie lesbar ist (lesefarbe).
+   * Beim Bedienen gewuenscht: "die Schriftfarbe soll unabhaengig von der
+   * Rahmenfarbe bestimmt werden koennen."
+   */
+  schriftfarbe: string | null
 }
 
 export const DREHUNG_MAX = 15
+export const LINIE_MIN = 0.5
+export const LINIE_MAX = 6
 
 /** Was gilt, solange niemand etwas eingestellt hat -- die Antwort auf Frage 9. */
 export const VORGABE: Gestaltung = {
@@ -62,7 +73,11 @@ export const VORGABE: Gestaltung = {
   rahmen: 'durchgezogen',
   drehung: -3,
   schrift: 'normal',
+  linie: 2,
+  schriftfarbe: null,
 }
+
+const HEXFARBE = /^#[0-9a-f]{6}$/i
 
 /**
  * Liest eine Gestaltung aus der Datenbank -- tolerant.
@@ -76,12 +91,16 @@ export function gestaltungLesen(roh: unknown): Gestaltung {
   const felderRoh = Array.isArray(o['felder']) ? o['felder'] : VORGABE.felder
   const felder = felderRoh.filter((f): f is Feld => (FELDER as readonly string[]).includes(String(f)))
   const drehung = Number(o['drehung'])
+  const linie = Number(o['linie'])
+  const schriftfarbe = typeof o['schriftfarbe'] === 'string' && HEXFARBE.test(o['schriftfarbe']) ? o['schriftfarbe'].toUpperCase() : null
   return {
     felder: felder.length === 0 ? VORGABE.felder : mitTextZuerst(felder),
     form: (FORMEN as readonly string[]).includes(String(o['form'])) ? (o['form'] as Gestaltung['form']) : VORGABE.form,
     rahmen: (RAHMEN as readonly string[]).includes(String(o['rahmen'])) ? (o['rahmen'] as Gestaltung['rahmen']) : VORGABE.rahmen,
     drehung: Number.isFinite(drehung) ? Math.max(-DREHUNG_MAX, Math.min(DREHUNG_MAX, drehung)) : VORGABE.drehung,
     schrift: (SCHRIFTEN as readonly string[]).includes(String(o['schrift'])) ? (o['schrift'] as Gestaltung['schrift']) : VORGABE.schrift,
+    linie: Number.isFinite(linie) ? Math.max(LINIE_MIN, Math.min(LINIE_MAX, linie)) : VORGABE.linie,
+    schriftfarbe,
   }
 }
 
@@ -98,7 +117,19 @@ export function gestaltungPruefen(eingabe: {
   rahmen: string
   drehung: number
   schrift: string
+  /** Punkte; fehlt sie, gilt die Vorgabe. */
+  linie?: number
+  /** #RRGGBB, leer oder fehlend heisst: aus der Rahmenfarbe. */
+  schriftfarbe?: string | null
 }): { gestaltung: Gestaltung } | { fehler: string } {
+  const linie = eingabe.linie === undefined ? VORGABE.linie : eingabe.linie
+  if (!Number.isFinite(linie) || linie < LINIE_MIN || linie > LINIE_MAX) {
+    return { fehler: `Die Linienstärke bleibt zwischen ${LINIE_MIN} und ${LINIE_MAX} Punkten.` }
+  }
+  const schriftfarbeRoh = (eingabe.schriftfarbe ?? '').trim()
+  if (schriftfarbeRoh !== '' && !HEXFARBE.test(schriftfarbeRoh)) {
+    return { fehler: 'Die Schriftfarbe muss als #rrggbb angegeben sein.' }
+  }
   const unbekannt = eingabe.felder.filter((f) => !(FELDER as readonly string[]).includes(f))
   if (unbekannt.length > 0) return { fehler: `Unbekanntes Feld: ${unbekannt.join(', ')}.` }
   if (!(FORMEN as readonly string[]).includes(eingabe.form)) return { fehler: 'Unbekannte Form.' }
@@ -114,6 +145,8 @@ export function gestaltungPruefen(eingabe: {
       rahmen: eingabe.rahmen as Gestaltung['rahmen'],
       drehung: Math.round(eingabe.drehung),
       schrift: eingabe.schrift as Gestaltung['schrift'],
+      linie: Math.round(linie * 2) / 2,
+      schriftfarbe: schriftfarbeRoh === '' ? null : schriftfarbeRoh.toUpperCase(),
     },
   }
 }

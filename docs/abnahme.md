@@ -63,6 +63,7 @@ Stand: 24.09.2026, 1.021 Regeltests und 89 Browsertests grün.
 | Ein Suchbegriff trifft Rechnungsnummer, Kreditor, Betrag, IBAN und Text; die exakte Nummer steht vor dem Textfund; ein fremder Mandant findet nichts | `tests/belegliste.test.ts` (Feldsuche) |
 | Schnellsuche in der Kopfzeile jeder Seite, Taste `/` | `src/app/lib/darstellung.tsx`, `src/app/lib/suchtaste.tsx` |
 | Belegsuche: dritte Spalte mit dem Belegweg senkrecht; die offene Stufe ist für den, der dort stempeln darf, ein Link in die Bearbeitung | `tests/belegweg.test.ts` (Aufgabe und Stempelbarkeit), `src/app/lib/belegweg.tsx` |
+| Stempel-Designer: Linienstärke und eigenständige Schriftfarbe je Typ, Sammeleinstellung für alle Typen (Farbe bleibt je Typ), Weißliste beim Lesen und Prüfen | `tests/stempel-gestaltung.test.ts` |
 | Stempeln: wählen, Abdruck auf dem Beleg platzieren, Speichern; die gewählte Lage steht am Ereignis, eine Lage über Text wird abgewiesen (Anwendung und Trigger); beide Entscheidungsseiten zeigen alle bisherigen Stempel | `tests/stempel-lage.test.ts`, `e2e/stempeln.spec.ts`, `e2e/klaerung.spec.ts`, ADR 0009 |
 | Suche im Beleg nennt Seite und Auszug; Notizen liegen neben dem Original | `e2e/belegansicht.spec.ts` |
 | Vier Exportvarianten; das Archivoriginal Byte für Byte; Schwärzungen nie im Klartext | `e2e/export.spec.ts`, `tests/export.test.ts` |

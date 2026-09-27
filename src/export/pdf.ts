@@ -169,7 +169,10 @@ function layerZeichnen(seite: PDFPage, schrift: PDFFont, l: Exportlayer): void {
   const g = l.typ === 'stempel' ? l.gestaltung ?? null : null
   const farbe =
     l.typ === 'stempel' ? hexZuRgb(l.farbe ?? '#3B4A80') : rgb(0.42, 0.42, 0.42)
-  const rahmenStaerke = g?.rahmen === 'doppelt' ? 0.9 : 1.2
+  // Punkte aus dem Designer -> Strichstaerke; zwei Punkte waren bisher 1,2.
+  const linie = g?.linie ?? 2
+  const rahmenStaerke = (g?.rahmen === 'doppelt' ? linie * 0.45 : linie * 0.6)
+  const schriftfarbe = l.typ === 'stempel' && g?.schriftfarbe != null ? hexZuRgb(g.schriftfarbe) : farbe
   seite.drawRectangle({
     x: l.x,
     y,
@@ -198,7 +201,7 @@ function layerZeichnen(seite: PDFPage, schrift: PDFFont, l: Exportlayer): void {
     y: y + l.hoehe - 4,
     breite: l.breite - 8,
     hoehe: l.hoehe - 8,
-    farbe,
+    farbe: schriftfarbe,
     groesse,
   })
 }

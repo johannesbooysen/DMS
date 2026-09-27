@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 81 Tabellen, 200 Policies,
-129 Module, 1075 Testfaelle in 68 Dateien,
+129 Module, 1078 Testfaelle in 68 Dateien,
 9 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -789,7 +789,7 @@ Funktionen: `app.stempel_layer_setzen`
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 19 | Eingangsquellen einrichten, Vorlagen |
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 22 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 32 | Trennblatt erkennen, Barcode-Trennblatt, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
-| [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
+| [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 13 | Weissliste, Der Trigger, Sammeleinstellung, Recht |
 | [`tests/stempel-lage.test.ts`](../tests/stempel-lage.test.ts) | 9 | Die Lage aus der Hand des Menschen, Was die Seite zum Platzieren hergibt |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |

@@ -23,16 +23,21 @@ import Link from 'next/link'
 import { darfGestalten, stempeltypenLaden } from '@/stammdaten/stempel'
 import {
   stempelGestaltungAktion,
+  stempelGestaltungAlleAktion,
   stempeltypAnlegenAktion,
   stempeltypUmschaltenAktion,
 } from '@/app/lib/stammdaten-aktionen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Seitenrahmen } from '@/app/lib/darstellung'
-import { Stempelbild } from '@/app/lib/stempelbild'
+import { lesefarbe, Stempelbild } from '@/app/lib/stempelbild'
 import { Anlegen, Auswahl, Eingabe, Fehler, Handlung, NurLesend } from '@/app/lib/stammdaten-teile'
 import {
   beispieltext,
   DREHUNG_MAX,
+  LINIE_MAX,
+  LINIE_MIN,
+  VORGABE,
+  type Gestaltung,
   FELD_BESCHRIFTUNG,
   FELDER,
   FORMEN,
@@ -58,6 +63,29 @@ const BESCHRIFTUNG = {
   schrift: { klein: 'Klein', normal: 'Normal', gross: 'Groß' },
 } as const
 
+/** Form, Rahmen, Linie, Schrift, Neigung, Schriftfarbe -- dieselben Felder je Typ und fuer alle. */
+function Gestaltungsfelder({ g, farbe }: { g: Gestaltung; farbe: string }) {
+  return (
+    <>
+      <Auswahl name="form" label="Form" optionen={FORMEN.map((f) => ({ wert: f, text: BESCHRIFTUNG.form[f] }))} wert={g.form} breite="8rem" />
+      <Auswahl name="rahmen" label="Rahmen" optionen={RAHMEN.map((r) => ({ wert: r, text: BESCHRIFTUNG.rahmen[r] }))} wert={g.rahmen} breite="8rem" />
+      <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.75rem', gap: '0.15rem' }}>
+        <span className="leise">Linienstärke (Punkte, {String(LINIE_MIN).replace('.', ',')}–{LINIE_MAX})</span>
+        <input type="number" name="linie" step="0.5" min={LINIE_MIN} max={LINIE_MAX} defaultValue={String(g.linie)} style={{ width: '5rem' }} />
+      </label>
+      <Auswahl name="schrift" label="Schrift" optionen={SCHRIFTEN.map((s) => ({ wert: s, text: BESCHRIFTUNG.schrift[s] }))} wert={g.schrift} breite="7rem" />
+      <Eingabe name="drehung" label={`Neigung in Grad (−${DREHUNG_MAX} bis ${DREHUNG_MAX})`} typ="number" wert={String(g.drehung)} breite="5rem" />
+      {/* Die Schriftfarbe ist eigenstaendig; "wie Rahmen" heisst: aus der
+          Rahmenfarbe abgeleitet, wie bisher. Das Farbfeld zeigt dann, was
+          daraus wuerde. */}
+      <Eingabe name="schriftfarbe" label="Schriftfarbe" typ="color" wert={g.schriftfarbe ?? lesefarbe(farbe)} breite="4rem" />
+      <label className="winzig">
+        <input type="checkbox" name="schriftfarbeAutomatisch" value="ja" defaultChecked={g.schriftfarbe === null} /> Schrift wie Rahmen
+      </label>
+    </>
+  )
+}
+
 export default async function Stempeldesigner({
   searchParams,
 }: {
@@ -82,6 +110,59 @@ export default async function Stempeldesigner({
         nach einem Stempel geht, steht nicht hier, sondern im{' '}
         <Link href="/konfiguration">Ablauf</Link>.
       </p>
+
+      {darf && (
+        <section
+          style={{
+            background: 'var(--farbe-flaeche-leise)',
+            border: '1px solid var(--farbe-linie)',
+            borderRadius: '0.3rem',
+            marginBottom: '1.25rem',
+            padding: '1rem',
+          }}
+          aria-labelledby="alle-stempel-titel"
+        >
+          <h2 id="alle-stempel-titel">Für alle Stempel</h2>
+          <p style={{ color: 'var(--farbe-text-leise)', fontSize: '0.85rem', margin: '0 0 0.75rem', maxWidth: '46rem' }}>
+            Eine Gestaltung für alle Stempeltypen des Hauses auf einmal. Rahmenfarbe und
+            Sichtbarkeit bleiben je Stempel — Rot für Ablehnung und Grün für Freigabe sind
+            Bedeutung, kein Design. Danach lässt sich jeder Stempel weiter einzeln anpassen.
+          </p>
+          <form action={stempelGestaltungAlleAktion} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <input type="hidden" name="zurueck" value={HIER} />
+            <fieldset style={{ border: '1px solid var(--farbe-linie)', borderRadius: '0.2rem', padding: '0.5rem 0.75rem' }}>
+              <legend style={{ fontSize: '0.8rem', color: 'var(--farbe-text-leise)' }}>Was auf dem Stempel steht</legend>
+              <div className="reihe">
+                {FELDER.map((f) => (
+                  <label key={f} className="klein">
+                    <input type="checkbox" name="feld" value={f} defaultChecked={VORGABE.felder.includes(f)} disabled={f === 'text'} />{' '}
+                    {FELD_BESCHRIFTUNG[f]}
+                  </label>
+                ))}
+                <input type="hidden" name="feld" value="text" />
+              </div>
+            </fieldset>
+            <div style={{ alignItems: 'flex-end', display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+              <Gestaltungsfelder g={VORGABE} farbe="#3B4A80" />
+            </div>
+            <div>
+              <button
+                type="submit"
+                style={{
+                  background: 'var(--farbe-akzent)',
+                  border: 0,
+                  borderRadius: '0.2rem',
+                  color: 'var(--farbe-marke-text)',
+                  cursor: 'pointer',
+                  padding: '0.4rem 0.9rem',
+                }}
+              >
+                Für alle Stempel übernehmen
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
 
       {typen.map((t) => (
         <section
@@ -158,35 +239,8 @@ export default async function Stempeldesigner({
                 </fieldset>
 
                 <div style={{ alignItems: 'flex-end', display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-                  <Auswahl
-                    name="form"
-                    label="Form"
-                    optionen={FORMEN.map((f) => ({ wert: f, text: BESCHRIFTUNG.form[f] }))}
-                    wert={t.gestaltung.form}
-                    breite="8rem"
-                  />
-                  <Auswahl
-                    name="rahmen"
-                    label="Rahmen"
-                    optionen={RAHMEN.map((r) => ({ wert: r, text: BESCHRIFTUNG.rahmen[r] }))}
-                    wert={t.gestaltung.rahmen}
-                    breite="8rem"
-                  />
-                  <Auswahl
-                    name="schrift"
-                    label="Schrift"
-                    optionen={SCHRIFTEN.map((s) => ({ wert: s, text: BESCHRIFTUNG.schrift[s] }))}
-                    wert={t.gestaltung.schrift}
-                    breite="7rem"
-                  />
-                  <Eingabe
-                    name="drehung"
-                    label={`Neigung in Grad (−${DREHUNG_MAX} bis ${DREHUNG_MAX})`}
-                    typ="number"
-                    wert={String(t.gestaltung.drehung)}
-                    breite="5rem"
-                  />
-                  <Eingabe name="farbe" label="Farbe" typ="color" wert={t.farbe} breite="4rem" />
+                  <Gestaltungsfelder g={t.gestaltung} farbe={t.farbe} />
+                  <Eingabe name="farbe" label="Rahmenfarbe" typ="color" wert={t.farbe} breite="4rem" />
                   <label className="winzig">
                     <input type="checkbox" name="sichtbar" value="ja" defaultChecked={t.sichtbarAufBeleg} /> auf dem
                     Beleg sichtbar

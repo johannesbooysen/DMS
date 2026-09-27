@@ -48,7 +48,7 @@ import {
   zuordnungSetzen,
 } from '@/stammdaten/kategorien'
 import { quelleAnlegen, quelleUmschalten, vorlageAnlegen, vorlageSpeichern, vorlageUmschalten } from '@/stammdaten/quellen'
-import { gestaltungSetzen, stempeltypAnlegen, stempeltypUmschalten } from '@/stammdaten/stempel'
+import { gestaltungFuerAlleSetzen, gestaltungSetzen, stempeltypAnlegen, stempeltypUmschalten } from '@/stammdaten/stempel'
 import {
   anwenden as presetAnwenden,
   NichtErlaubt as PresetNichtErlaubt,
@@ -244,6 +244,13 @@ export async function stempelGestaltungAktion(f: FormData): Promise<void> {
 }
 export async function stempeltypUmschaltenAktion(f: FormData): Promise<void> {
   await versuchen(f, stempeltypUmschalten)
+}
+/** Die Sammeleinstellung: eine Gestaltung fuer alle Stempeltypen. */
+export async function stempelGestaltungAlleAktion(f: FormData): Promise<void> {
+  f.set('felder', f.getAll('feld').map(String).join(','))
+  await versuchen(f, async (benutzerId, eingaben) => {
+    await gestaltungFuerAlleSetzen(benutzerId, eingaben)
+  })
 }
 
 /*
