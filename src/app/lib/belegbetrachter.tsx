@@ -20,6 +20,7 @@ import Link from 'next/link'
 import { aufbereitungsstand, seitentextLaden } from '@/app/lib/belege'
 import { stempelVerschiebenAktion } from '@/app/lib/layer-aktionen'
 import { Layerschicht, Notizliste } from '@/app/lib/layerschicht'
+import { Stempelplatzieren } from '@/app/lib/stempelsitzung'
 import { Seitentasten } from '@/app/lib/seitentasten'
 import { Zoomrahmen } from '@/app/lib/zoomrahmen'
 import { layerLaden, textkaestenLaden, verschiebbareStempel } from '@/layer'
@@ -30,6 +31,7 @@ export async function Belegbetrachter({
   dokumentId,
   seitenzahl,
   bearbeitbar = false,
+  platzierbar = false,
   treffer = [],
   verweis = true,
 }: {
@@ -38,6 +40,11 @@ export async function Belegbetrachter({
   seitenzahl: number
   /** Eigene Stempel verschieben, Notizen ausblenden -- die Belegansicht. */
   bearbeitbar?: boolean
+  /**
+   * Entscheidungsseite: Der gewaehlte Stempel liegt vor dem Speichern als
+   * Abdruck ueber der Seite (`Stempelsitzung` darueber im Baum).
+   */
+  platzierbar?: boolean
   /** Seiten mit Suchtreffern -- sie bekommen eine Marke. */
   treffer?: number[]
   /** Verweis in die Belegansicht rechts in der Leiste (am Arbeitsplatz). */
@@ -132,6 +139,7 @@ export async function Belegbetrachter({
                 seitenzahl={anzahl}
                 dokumentId={dokumentId}
               />
+              {platzierbar && <Stempelplatzieren seite={nr} />}
               {treffer.includes(nr) && <span className="betrachter-treffer">Treffer</span>}
             </div>
             <figcaption className="betrachter-fuss">

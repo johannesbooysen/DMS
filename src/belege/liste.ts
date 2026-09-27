@@ -29,6 +29,7 @@
  */
 
 import type { PoolClient } from 'pg'
+import { betragLesen } from '../extraktion/zahlen'
 
 export interface Belegzeile {
   id: string
@@ -218,19 +219,35 @@ export async function objektakte(
 }
 
 /**
- * Gefilterte Liste, wahlweise mit Volltext.
+ * Was ein Suchbegriff bedeutet: ein Betrag, eine Kennung oder Woerter.
  *
- * Ohne Objektfilter läuft sie über alle sichtbaren Belege — das ist die
- * teure Variante (gemessen 27,6 ms bei einer Million). Sie ist trotzdem
- * richtig so: Wer nach „alle roten Ampeln" fragt, will genau das, und Top-N
- * je Objekt gäbe hier ein falsches Ergebnis — die zehn ältesten roten Belege
- * eines Objekts wären unsichtbar, wenn ein anderes Objekt frischere hat.
+ * "3.226,03" ist ein Betrag und trifft Brutto oder Netto exakt. "DE20 5121
+ * 0600 …" ist eine Kennung ohne Leerzeichen und trifft die IBAN. Alles
+ * andere sind Woerter -- und Woerter trifft die Suche in **beidem**: in den
+ * Feldern (Rechnungsnummer, Kreditor, Korrespondent, Betreff, Objektnummer)
+ * als Teilstueck und im Seitentext als Volltext.
  */
-export async function suchen(c: PoolClient, filter: Belegfilter): Promise<Belegzeile[]> {
-  const werte: unknown[] = []
-  const bedingungen: string[] = []
-  const p = (wert: unknown): string => `$${werte.push(wert)}`
+export function suchbegriffLesen(roh: string): { begriff: string; betrag: number | null; kennung: string | null } {
+  const begriff = roh.trim()
+  const betrag = /^-?\d{1,3}(\.\d{3})*,\d{2}$|^-?\d+[.,]\d{2}$/.test(begriff) ? betragLesen(begriff) : null
+  const kompakt = begriff.replace(/\s+/g, '')
+  const kennung = /^[A-Za-z]{2}\d{2}[A-Za-z0-9]{8,30}$/.test(kompakt) ? kompakt.toUpperCase() : null
+  return { begriff, betrag, kennung }
+}
 
+/**
+ * Die Bedingungen einer Suche -- **einmal**, fuer Treffer und Zaehlung.
+ *
+ * Vorher standen sie zweimal, und die Zaehlung haette bei der naechsten
+ * Erweiterung etwas anderes gezaehlt als die Liste zeigt.
+ *
+ * Die Feldsuche steht als `d.id in (… union …)`: Jede Teilabfrage kann
+ * ihren eigenen Index nehmen (Trigramm auf Nummer, Name, IBAN; B-Baum auf
+ * Betrag; GIN auf dem Seitentext). Ein `or` ueber die verbundenen Tabellen
+ * koennte das nicht und liefe ueber jede sichtbare Zeile.
+ */
+function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): string[] {
+  const bedingungen: string[] = []
   if (filter.objektId) bedingungen.push(`d.objekt_id = ${p(filter.objektId)}`)
   if (filter.ordnungsgruppeId) {
     bedingungen.push(`d.ordnungsgruppe_id = ${p(filter.ordnungsgruppeId)}`)
@@ -243,22 +260,74 @@ export async function suchen(c: PoolClient, filter: Belegfilter): Promise<Belegz
   // weil eingang_am ein Zeitstempel ist und 14:32 Uhr größer als 00:00 Uhr ist.
   if (filter.bis) bedingungen.push(`d.eingang_am < ${p(filter.bis)}::date + 1`)
 
-  const suchbegriff = filter.volltext?.trim()
-  if (suchbegriff) {
-    /*
-     * `websearch_to_tsquery` und nicht `plainto_tsquery`: Es versteht
-     * Anführungszeichen für Wortgruppen und `-` für Ausschluss, so wie
-     * Menschen es von Suchfeldern kennen -- und es wirft bei unsinniger
-     * Eingabe keinen Fehler, sondern findet nichts.
-     */
-    bedingungen.push(`exists (
-      select 1 from dokument_seite s
-       where s.dokument_id = d.id
-         and s.text_tsv @@ websearch_to_tsquery('german', ${p(suchbegriff)})
-    )`)
+  const roh = filter.volltext?.trim()
+  if (roh) {
+    const { begriff, betrag, kennung } = suchbegriffLesen(roh)
+    const teil = p(`%${begriff}%`)
+    const teile: string[] = [
+      `select f.dokument_id from rechnung_fakten f where f.rechnungsnummer ilike ${teil}`,
+      `select f.dokument_id from rechnung_fakten f join kreditor k on k.id = f.kreditor_id where k.name ilike ${teil}`,
+      `select sv.dokument_id from schriftverkehr_fakten sv where sv.korrespondent ilike ${teil} or sv.betreff ilike ${teil}`,
+      `select d2.id from dokument d2 join objekt o2 on o2.id = d2.objekt_id where o2.objektnummer = ${p(begriff)}`,
+      /*
+       * `websearch_to_tsquery` und nicht `plainto_tsquery`: Es versteht
+       * Anführungszeichen für Wortgruppen und `-` für Ausschluss, so wie
+       * Menschen es von Suchfeldern kennen -- und es wirft bei unsinniger
+       * Eingabe keinen Fehler, sondern findet nichts.
+       */
+      `select s.dokument_id from dokument_seite s where s.text_tsv @@ websearch_to_tsquery('german', ${p(begriff)})`,
+    ]
+    if (kennung !== null) {
+      teile.push(`select f.dokument_id from rechnung_fakten f where replace(f.iban_im_beleg, ' ', '') ilike ${p(`%${kennung}%`)}`)
+    }
+    if (betrag !== null) {
+      teile.push(`select f.dokument_id from rechnung_fakten f where f.brutto = ${p(betrag)} or f.netto = ${p(betrag)}`)
+    }
+    bedingungen.push(`d.id in (${teile.join(' union ')})`)
   }
+  return bedingungen
+}
 
+/**
+ * Die Rangfolge der Treffer: exakte Nummer vor Nummernanfang vor Name vor
+ * Betrag vor Textfund -- danach das Alter. Wer eine Rechnungsnummer tippt,
+ * will genau diese Rechnung oben sehen, nicht die juengste, in deren Text
+ * die Ziffernfolge zufaellig vorkommt.
+ */
+function rangAus(filter: Belegfilter, p: (wert: unknown) => string): string {
+  const roh = filter.volltext?.trim()
+  if (!roh) return ''
+  const { begriff, betrag } = suchbegriffLesen(roh)
+  const genau = p(begriff)
+  const anfang = p(`${begriff}%`)
+  const teil = p(`%${begriff}%`)
+  const betragsrang = betrag === null ? '' : `when f.brutto = ${p(betrag)} or f.netto = ${p(betrag)} then 3`
+  return `case when lower(f.rechnungsnummer) = lower(${genau}) then 0
+               when f.rechnungsnummer ilike ${anfang} then 1
+               when k.name ilike ${teil} or sv.korrespondent ilike ${teil} then 2
+               ${betragsrang}
+               else 5 end,`
+}
+
+/**
+ * Gefilterte Liste, wahlweise mit Suchbegriff.
+ *
+ * Ohne Objektfilter läuft sie über alle sichtbaren Belege — das ist die
+ * teure Variante (gemessen 27,6 ms bei einer Million). Sie ist trotzdem
+ * richtig so: Wer nach „alle roten Ampeln" fragt, will genau das, und Top-N
+ * je Objekt gäbe hier ein falsches Ergebnis — die zehn ältesten roten Belege
+ * eines Objekts wären unsichtbar, wenn ein anderes Objekt frischere hat.
+ *
+ * Der Suchbegriff trifft Felder **und** Text (`bedingungenAus`), die
+ * Treffer stehen nach Rang (`rangAus`), dann nach Alter.
+ */
+export async function suchen(c: PoolClient, filter: Belegfilter): Promise<Belegzeile[]> {
+  const werte: unknown[] = []
+  const p = (wert: unknown): string => `$${werte.push(wert)}`
+  const bedingungen = bedingungenAus(filter, p)
+  const suchbegriff = filter.volltext?.trim()
   const wo = bedingungen.length === 0 ? '' : `where ${bedingungen.join(' and ')}`
+  const rang = rangAus(filter, p)
   const limit = p(filter.limit ?? 50)
   const versatz = p(filter.versatz ?? 0)
 
@@ -283,7 +352,7 @@ export async function suchen(c: PoolClient, filter: Belegfilter): Promise<Belegz
     `select ${SPALTEN}, ${fundstelle}
        from dokument d ${VERBINDUNGEN}
        ${wo}
-      order by d.eingang_am desc
+      order by ${rang} d.eingang_am desc
       limit ${limit} offset ${versatz}`,
     werte,
   )
@@ -299,28 +368,8 @@ export async function suchen(c: PoolClient, filter: Belegfilter): Promise<Belegz
  */
 export async function zaehlen(c: PoolClient, filter: Belegfilter): Promise<number> {
   const werte: unknown[] = []
-  const bedingungen: string[] = []
   const p = (wert: unknown): string => `$${werte.push(wert)}`
-
-  if (filter.objektId) bedingungen.push(`d.objekt_id = ${p(filter.objektId)}`)
-  if (filter.ordnungsgruppeId) {
-    bedingungen.push(`d.ordnungsgruppe_id = ${p(filter.ordnungsgruppeId)}`)
-  }
-  if (filter.belegart) bedingungen.push(`d.belegart = ${p(filter.belegart)}`)
-  if (filter.ampel) bedingungen.push(`d.ampel_gesamt = ${p(filter.ampel)}`)
-  if (filter.status) bedingungen.push(`d.status = ${p(filter.status)}`)
-  if (filter.von) bedingungen.push(`d.eingang_am >= ${p(filter.von)}::date`)
-  if (filter.bis) bedingungen.push(`d.eingang_am < ${p(filter.bis)}::date + 1`)
-
-  const suchbegriff = filter.volltext?.trim()
-  if (suchbegriff) {
-    bedingungen.push(`exists (
-      select 1 from dokument_seite s
-       where s.dokument_id = d.id
-         and s.text_tsv @@ websearch_to_tsquery('german', ${p(suchbegriff)})
-    )`)
-  }
-
+  const bedingungen = bedingungenAus(filter, p)
   const wo = bedingungen.length === 0 ? '' : `where ${bedingungen.join(' and ')}`
   const { rows } = await c.query<{ n: string }>(
     `select count(*) as n from dokument d ${wo}`,

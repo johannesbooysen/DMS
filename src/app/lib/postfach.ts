@@ -16,7 +16,8 @@ import { musterLernen } from '@/kontierung/vorschlag'
 import { UebergabeNichtMoeglich, zahlungUebergeben } from '@/zahlung'
 import { postablage } from '@/app/lib/zahlungsmittel'
 import { ABLAGE } from '@/app/lib/belege'
-import { stempeln } from '@/workflow/engine'
+import { type Stempelplatz, stempeln } from '@/workflow/engine'
+import { gestaltungLesen, textZusammensetzen, type Gestaltung } from '@/layer/gestaltung'
 
 export interface Postfachzeile {
   aufgabeId: string
@@ -205,7 +206,15 @@ export interface Stempelknopf {
   entscheidung: string
   farbe: string | null
   kommentarPflicht: boolean
+  /** Aussehen des Stempeltyps -- fuer den Abdruck, bevor er gespeichert ist. */
+  gestaltung: Gestaltung
+  /** Der Text, wie ihn der Trigger setzen wird: heutiges Datum, Name des Handelnden. */
+  vorschautext: string
 }
+
+const BETRAG = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const TAG = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin' })
+const UHR = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' })
 
 export async function aufgabeLaden(
   benutzerId: string,
@@ -224,15 +233,40 @@ export async function aufgabeLaden(
       'select * from app.moegliche_stempel($1, $2)',
       [gefunden.laufId, gefunden.stufeId],
     )
+    // Gestaltung und Name des Handelnden fuer den Abdruck vor dem Speichern:
+    // derselbe Text, den der Trigger schreiben wird -- mit Datum und Uhrzeit
+    // von jetzt, was beim Speichern um Sekunden abweichen kann.
+    const [{ rows: typen }, { rows: ich }] = await Promise.all([
+      c.query<{ id: string; gestaltung: unknown }>('select id, gestaltung from stempeltyp where id = any($1::uuid[])', [
+        knoepfe.map((k) => String(k['stempeltyp_id'])),
+      ]),
+      c.query<{ name: string }>('select name from benutzer where id = app.mein_benutzer()'),
+    ])
+    const jetzt = new Date()
     return {
       zeile: gefunden,
-      stempel: knoepfe.map((k) => ({
-        stempeltypId: String(k['stempeltyp_id']),
-        name: String(k['name']),
-        entscheidung: String(k['entscheidung']),
-        farbe: k['farbe'] == null ? null : String(k['farbe']),
-        kommentarPflicht: Boolean(k['kommentar_pflicht']),
-      })),
+      stempel: knoepfe.map((k) => {
+        const name = String(k['name'])
+        const gestaltung = gestaltungLesen(typen.find((t) => t.id === String(k['stempeltyp_id']))?.gestaltung)
+        return {
+          stempeltypId: String(k['stempeltyp_id']),
+          name,
+          entscheidung: String(k['entscheidung']),
+          farbe: k['farbe'] == null ? null : String(k['farbe']),
+          kommentarPflicht: Boolean(k['kommentar_pflicht']),
+          gestaltung,
+          vorschautext: textZusammensetzen(gestaltung.felder, {
+            text: name,
+            mitarbeiter: ich[0]?.name ?? null,
+            datum: TAG.format(jetzt),
+            uhrzeit: UHR.format(jetzt),
+            kommentar: null,
+            objekt: gefunden.objektnummer === null ? null : `Objekt ${gefunden.objektnummer}`,
+            betrag: gefunden.brutto === null ? null : `${BETRAG.format(gefunden.brutto)} EUR`,
+            stufe: gefunden.stufe,
+          }),
+        }
+      }),
     }
   })
 }
@@ -253,6 +287,8 @@ export async function stempelSetzen(
     stempeltypId: string
     kommentar?: string | null
     wiedervorlageAm?: string | null
+    /** Vom Menschen gewaehlte Lage des Abdrucks; ohne sie waehlt die Datenbank. */
+    lage?: Stempelplatz | null
   },
 ): Promise<void> {
   return alsBenutzer(benutzerId, async (c) => {
@@ -274,6 +310,19 @@ export async function stempelSetzen(
     const gewaehlt = erlaubt.find((e) => e.stempeltyp_id === eingabe.stempeltypId)
     if (gewaehlt === undefined) {
       throw new StempelAbgelehnt('Dieser Stempel ist an dieser Stufe nicht möglich')
+    }
+
+    // Die Lage vorab pruefen -- dieselbe Funktion, die der Trigger ruft. So
+    // kommt der Grund als Satz zum Anwender statt als Datenbankfehler.
+    if (eingabe.lage != null) {
+      const l = eingabe.lage
+      const { rows: befund } = await c.query<{ grund: string | null }>(
+        'select app.stempel_lage_pruefen($1, null, $2, $3, $4, $5, $6) as grund',
+        [aufgabe.dokument_id, Math.round(l.seite), Math.round(l.x), Math.round(l.y), Math.round(l.breite), Math.round(l.hoehe)],
+      )
+      if (befund[0]?.grund != null) {
+        throw new StempelAbgelehnt(`Der Stempel kann dort nicht stehen: ${befund[0].grund}`)
+      }
     }
 
     // Der Summenzwang blockiert die Kontierungsstufe -- nicht die Ampel, die
@@ -369,6 +418,7 @@ export async function stempelSetzen(
       stempeltypId: eingabe.stempeltypId,
       entscheidung: gewaehlt.entscheidung as 'freigabe' | 'ablehnung' | 'rueckgabe' | 'klaerung',
       kommentar: kommentar === '' ? null : kommentar,
+      lage: eingabe.lage ?? null,
     })
   })
 }

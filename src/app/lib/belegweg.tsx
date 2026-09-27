@@ -173,6 +173,103 @@ export function BelegwegGrafik({ weg }: { weg: Belegweg }) {
   )
 }
 
+/**
+ * Derselbe Weg, senkrecht und als HTML -- fuer die schmale Spalte rechts in
+ * der Belegsuche.
+ *
+ * Kein SVG, weil hier geklickt wird: Eine Stufe mit offener Aufgabe, an der
+ * der Betrachter stempeln darf, ist ein Link auf die Aufgabenseite. Ein Link
+ * im HTML ist ein Link fuer Tastatur, Vorleseprogramm und Browsertest; im
+ * SVG waere er ein Sonderfall. Die Farben sind dieselben Token wie in der
+ * Grafik, und das Zustandswort steht dabei.
+ */
+export function BelegwegSenkrecht({ weg, titel = 'Stand' }: { weg: Belegweg; titel?: string }) {
+  const stufen = weg.schritte.flatMap((s) => s.stufen)
+  const aktuelle = stufen.filter((s) => s.zustand === 'aktuell' || s.zustand === 'klaerung')
+  return (
+    <section className="belegweg-senkrecht" aria-labelledby="belegweg-stand-titel">
+      <h2 id="belegweg-stand-titel">{titel}</h2>
+      {weg.schritte.length === 0 ? (
+        <p className="leise klein">
+          {weg.laufStatus === 'ohne_lauf' ? 'Kein Ablauf — übernommen oder direkt archiviert.' : 'Kein Stufenbaum für diesen Ablauf.'}
+        </p>
+      ) : (
+        <>
+          <p className="leise klein" style={{ marginTop: 0 }}>
+            {aktuelle.length === 0
+              ? weg.laufStatus === 'abgeschlossen'
+                ? 'Alle Stufen durch.'
+                : weg.laufStatus === 'storniert'
+                  ? 'Storniert.'
+                  : 'Keine offene Stufe.'
+              : aktuelle.map((s) => (s.bei === null ? s.bezeichnung : `${s.bezeichnung} bei ${s.bei}`)).join(' · ')}
+          </p>
+          <ol className="belegweg-kette">
+            <li className="belegweg-ende belegweg-ende--voll">
+              <span>Eingang</span>
+              <span className="leise klein">{datum.format(new Date(weg.eingangAm))}</span>
+            </li>
+            {weg.schritte.map((schritt, i) => (
+              <li key={i} className={schritt.stufen.length > 1 ? 'belegweg-schritt belegweg-schritt--gleichzeitig' : 'belegweg-schritt'}>
+                {schritt.stufen.length > 1 && <span className="belegweg-gleichzeitig klein leise">gleichzeitig</span>}
+                {schritt.stufen.map((stufe) => {
+                  const z = ZUSTAND[stufe.zustand]
+                  const letzter = stufe.stempel.at(-1)
+                  const inhalt = (
+                    <>
+                      <strong>{stufe.bezeichnung}</strong>
+                      <span className="klein" style={{ color: z.text }}>
+                        {letzter !== undefined
+                          ? `${letzter.name} · ${letzter.von}`
+                          : stufe.bei !== null
+                            ? `${z.wort} · bei ${stufe.bei}`
+                            : z.wort}
+                      </span>
+                      <span className="klein leise">
+                        {letzter !== undefined
+                          ? wann(letzter.zeitpunkt)
+                          : stufe.faelligAm !== null && (stufe.zustand === 'aktuell' || stufe.zustand === 'klaerung')
+                            ? `fällig ${datum.format(new Date(stufe.faelligAm))}`
+                            : ''}
+                      </span>
+                      {stufe.stempelbar && <span className="klein belegweg-hinweis">Stempeln →</span>}
+                    </>
+                  )
+                  const stil = {
+                    background: z.fuellung,
+                    borderColor: z.rand,
+                    borderWidth: stufe.zustand === 'aktuell' ? 2 : 1,
+                    borderStyle: z.strich === undefined ? 'solid' : 'dashed',
+                  }
+                  return stufe.stempelbar && stufe.aufgabeId !== null ? (
+                    <a
+                      key={stufe.id}
+                      href={`/aufgabe/${stufe.aufgabeId}`}
+                      className="belegweg-stufe belegweg-stufe--link"
+                      style={stil}
+                      aria-label={`${stufe.bezeichnung}: ${z.wort} — zum Stempeln`}
+                    >
+                      {inhalt}
+                    </a>
+                  ) : (
+                    <div key={stufe.id} className="belegweg-stufe" style={stil}>
+                      {inhalt}
+                    </div>
+                  )
+                })}
+              </li>
+            ))}
+            <li className={weg.archiviertAm === null ? 'belegweg-ende' : 'belegweg-ende belegweg-ende--voll'}>
+              <span>Archiv</span>
+              <span className="leise klein">{weg.archiviertAm === null ? 'noch offen' : datum.format(new Date(weg.archiviertAm))}</span>
+            </li>
+          </ol>
+        </>
+      )}
+    </section>
+  )
+}
+
 export function Belegweg({ weg }: { weg: Belegweg }) {
   return (
     <section aria-labelledby="belegweg-titel">

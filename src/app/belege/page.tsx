@@ -28,6 +28,8 @@ import { alsAbfrage, suchenLaden, suchfilterLesen } from '@/belege/suchen-speich
 import type { Belegzeile } from '@/belege/liste'
 import { belegkopfLaden } from '@/app/lib/belege'
 import { Belegbetrachter } from '@/app/lib/belegbetrachter'
+import { BelegwegSenkrecht } from '@/app/lib/belegweg'
+import { belegwegLaden } from '@/belege/belegweg'
 import { uebersichtLaden } from '@/app/lib/belegliste'
 import { Listentasten } from '@/app/lib/listentasten'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
@@ -129,6 +131,11 @@ export default async function Belegsuche({
 
   const ziele = uebersicht.zeilen.map((z) => zeilenziel(aktuelleAbfrage, z.id))
 
+  // Die dritte Spalte: Wo der Beleg steht -- dieselben Zeilen wie der
+  // Belegweg in der Belegansicht, senkrecht, und die offene Stufe als Weg
+  // ins Stempeln fuer den, der dort stempeln darf.
+  const weg = offen === null ? null : await belegwegLaden(benutzer, offen.id)
+
   return (
     <Seitenrahmen titel="Belege" breit>
       <div className="belegsuche">
@@ -141,9 +148,9 @@ export default async function Belegsuche({
 
           <form method="get" className="belegsuche-filter">
             <label className="feld belegsuche-volltext">
-              Volltext
+              Suchbegriff
               <span className="suchfeld">
-                <input name="q" defaultValue={filter.volltext ?? ''} placeholder="Wort oder &quot;Wortgruppe&quot;" />
+                <input name="q" defaultValue={filter.volltext ?? ''} placeholder="Nummer, Betrag, Name, IBAN oder Wort" />
                 <button type="submit" className="knopf-primaer">
                   Suchen
                 </button>
@@ -351,6 +358,10 @@ export default async function Belegsuche({
             </>
           )}
         </section>
+
+        <aside className="belegsuche-stand" aria-label="Stand">
+          {weg !== null && <BelegwegSenkrecht weg={weg} />}
+        </aside>
       </div>
     </Seitenrahmen>
   )

@@ -74,7 +74,7 @@ test('Ein Stapel wird getrennt, korrigiert und übernommen', async ({ page }) =>
 
   await test.step('Bis hierher gibt es keinen einzigen Beleg', async () => {
     await navigiere(page, 'Belege')
-    await page.getByLabel('Volltext').fill('Stapelprobe')
+    await page.getByLabel('Suchbegriff').fill('Stapelprobe')
     await page.getByRole('button', { name: 'Suchen' }).click()
 
     // Konzept 24.1: Erst beim Übernehmen entstehen Dokumente.
@@ -92,7 +92,7 @@ test('Ein Stapel wird getrennt, korrigiert und übernommen', async ({ page }) =>
   await test.step('Und zwar zwei, jeder mit eigenem Text', async () => {
     await expect(async () => {
       await navigiere(page, 'Belege')
-      await page.getByLabel('Volltext').fill('Stapelprobe')
+      await page.getByLabel('Suchbegriff').fill('Stapelprobe')
       await page.getByRole('button', { name: 'Suchen' }).click()
       expect(await page.getByText(/Stapelprobe/).count()).toBe(2)
     }).toPass({ timeout: 90_000 })

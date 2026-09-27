@@ -30,7 +30,7 @@ let ordner = ''
 /** Sucht so lange, bis der Worker den Beleg aufbereitet hat. */
 async function sucheBisTreffer(seite: Page, wort: string): Promise<void> {
   await navigiere(seite, 'Belege')
-  await seite.getByLabel('Volltext').fill(wort)
+  await seite.getByLabel('Suchbegriff').fill(wort)
   await expect(async () => {
     await seite.getByRole('button', { name: 'Suchen' }).click()
     await expect(seite.getByRole('navigation', { name: 'Treffer' }).getByText(new RegExp(wort)).first()).toBeVisible({

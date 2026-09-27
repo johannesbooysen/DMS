@@ -86,3 +86,55 @@ describe('Belegweg', () => {
     expect(await belegwegLaden(DORIS, beleg)).toBeNull()
   })
 })
+
+describe('Stand in der Belegsuche: Aufgabe und Stempelbarkeit je Stufe', () => {
+  const ADMIN = '20000000-0000-0000-0000-000000000006'
+
+  it('traegt an der offenen Stufe die Aufgabe, und wer dort stempeln darf, sieht das', async () => {
+    const weg = await belegwegLaden(ANNA, beleg)
+    const erste = weg!.schritte[0]!.stufen[0]!
+    expect(erste.zustand).toBe('aktuell')
+    expect(erste.aufgabeId).not.toBeNull()
+    expect(erste.stempelbar).toBe(true)
+    // Die Aufgabe ist dieselbe, die das Postfach fuehren wuerde.
+    const { rows } = await alsBenutzer(ANNA, (c) =>
+      c.query<{ n: string }>(`select count(*) as n from aufgabe where id = $1 and lauf_id = $2 and status = 'offen'`, [erste.aufgabeId, laufId]),
+    )
+    expect(Number(rows[0]!.n)).toBe(1)
+  })
+
+  it('laesst ausstehende Stufen ohne Aufgabe und ohne Weg', async () => {
+    const weg = await belegwegLaden(ANNA, beleg)
+    for (const s of weg!.schritte.slice(1).flatMap((s) => s.stufen)) {
+      expect(s.aufgabeId).toBeNull()
+      expect(s.stempelbar).toBe(false)
+    }
+  })
+
+  it('gibt dem Administrator den Weg ins Stempeln, auch wenn die Aufgabe bei Anna liegt', async () => {
+    const weg = await belegwegLaden(ADMIN, beleg)
+    const erste = weg!.schritte[0]!.stufen[0]!
+    expect(erste.bei).toBe('Anna Ahrens')
+    expect(erste.aufgabeId).not.toBeNull()
+    expect(erste.stempelbar).toBe(true)
+  })
+
+  it('wandert nach dem Stempel zur naechsten Stufe', async () => {
+    await alsBenutzer(ANNA, (c) =>
+      stempeln(c, {
+        laufId,
+        stufeId: '66000000-0000-0000-0000-000000000001',
+        benutzerId: ANNA,
+        stempeltypId: STEMPEL_SACHLICH,
+        entscheidung: 'freigabe',
+        kommentar: null,
+      }),
+    )
+    const weg = await belegwegLaden(ANNA, beleg)
+    expect(weg!.schritte[0]!.stufen[0]!.aufgabeId).toBeNull()
+    expect(weg!.schritte[0]!.stufen[0]!.stempelbar).toBe(false)
+    const offene = weg!.schritte.flatMap((s) => s.stufen).filter((s) => s.aufgabeId !== null)
+    expect(offene.length).toBeGreaterThanOrEqual(1)
+    expect(offene.every((s) => s.zustand === 'aktuell')).toBe(true)
+  })
+})

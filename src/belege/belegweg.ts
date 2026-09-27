@@ -45,6 +45,14 @@ export interface Wegstufe {
   faelligAm: string | null
   erledigtAm: string | null
   stempel: Stempelschritt[]
+  /** Die offene Aufgabe an dieser Stufe -- das Ziel eines Klicks ins Stempeln. */
+  aufgabeId: string | null
+  /**
+   * Ob der Betrachter dort stempeln darf -- gefragt bei `app.moegliche_stempel`,
+   * derselben Quelle, aus der die Aufgabenseite ihre Knoepfe bezieht. Nur dann
+   * wird die Stufe ein Link; sonst steht sie da, aber fuehrt nirgendwohin.
+   */
+  stempelbar: boolean
 }
 
 export interface Belegweg {
@@ -99,14 +107,18 @@ export async function belegwegLaden(benutzerId: string, dokumentId: string): Pro
     const kette = wurzel === null ? [] : simulieren(wurzel, kontext)
 
     const { rows: aufgaben } = await c.query<{
+      id: string
       stufe_id: string
       status: string
       faellig_am: string | null
       erledigt_am: string | null
       bei: string | null
+      stempelbar: boolean
     }>(
-      `select a.stufe_id, a.status, a.faellig_am, a.erledigt_am,
-              coalesce(b.name, r.name, g.name) as bei
+      `select a.id, a.stufe_id, a.status, a.faellig_am, a.erledigt_am,
+              coalesce(b.name, r.name, g.name) as bei,
+              a.status in ('offen', 'in_arbeit')
+                and exists (select 1 from app.moegliche_stempel(a.lauf_id, a.stufe_id)) as stempelbar
          from aufgabe a
          left join benutzer b on b.id = a.zugewiesen_benutzer
          left join rolle r on r.id = a.zugewiesen_rolle
@@ -146,6 +158,8 @@ export async function belegwegLaden(benutzerId: string, dokumentId: string): Pro
           faelligAm: a?.faellig_am ?? null,
           erledigtAm: a?.erledigt_am ?? null,
           stempel,
+          aufgabeId: zustand === 'aktuell' || zustand === 'klaerung' ? (a?.id ?? null) : null,
+          stempelbar: (zustand === 'aktuell' || zustand === 'klaerung') && (a?.stempelbar ?? false),
         }
       }),
     }))

@@ -933,20 +933,64 @@ Unter *Belege* steht die Suche. Sie ist der Weg zu jedem Beleg, der
 **nicht** gerade als Aufgabe im Postfach liegt — also zu allen abgeschlossenen
 und archivierten.
 
-Die Seite ist geteilt wie der Arbeitsplatz: **links** die Filter und die
-Treffer, **rechts** der gewählte Beleg mit allen Seiten und Stempeln. Ein
-Klick auf einen Treffer zeigt ihn rechts, die Liste bleibt stehen; mit
-**↓** und **↑** (oder j/k) geht es zum nächsten und vorigen Treffer. Ohne
-Wahl ist der erste Treffer offen. *Belegansicht öffnen* über dem Beleg
-führt in die volle Ansicht mit Angaben, Notizen und Ausgabe.
+Die Seite hat drei Spalten: **links** die Filter und die Treffer, **in der
+Mitte** der gewählte Beleg mit allen Seiten und Stempeln, **rechts** sein
+Stand im Ablauf. Ein Klick auf einen Treffer zeigt ihn, die Liste bleibt
+stehen; mit **↓** und **↑** (oder j/k) geht es zum nächsten und vorigen
+Treffer. Ohne Wahl ist der erste Treffer offen. *Belegansicht öffnen* über
+dem Beleg führt in die volle Ansicht mit Angaben, Notizen und Ausgabe.
+
+### Der Stand rechts
+
+Die rechte Spalte ist der Belegweg von oben nach unten: Eingang, jede Stufe
+des Ablaufs, Archiv. Jede Stufe trägt ihr Zustandswort — *erledigt* mit
+Stempel, Name und Zeit, *jetzt hier* mit dem, bei dem die Aufgabe liegt,
+und dem Fälligkeitstag, *ausstehend*, *in Klärung*, *abgelehnt*,
+*entfallen*. Stufen, die gleichzeitig laufen, stehen eingerückt
+untereinander.
+
+Wer an der offenen Stufe **stempeln darf**, sieht dort *Stempeln →*, und
+die Stufe ist ein Link: Ein Klick führt direkt in die Bearbeitung des
+Belegs, mit Beleg, Befunden und Stempelknöpfen. Ob jemand stempeln darf,
+entscheidet dieselbe Regel wie im Postfach — das Stempelrecht der eigenen
+Rollen für dieses Objekt. Ein Administrator mit allen Stempelrechten kommt
+so von jedem Treffer aus in jede offene Stufe, auch wenn die Aufgabe bei
+jemand anderem liegt; eine Objektbearbeiterin sieht die Stufe, aber nicht
+den Weg hinein, wenn der Stempel nicht ihrer ist.
 
 Der gewählte Beleg steht mit in der Adresse (`beleg=`) — ein Verweis auf
 eine Suche mit offenem Beleg lässt sich weitergeben, und wer ihn nicht sehen
 darf, sieht rechts nur den Hinweis, dass es ihn nicht gibt.
 
+### Schnellsuche
+
+Oben auf **jeder** Seite steht ein Suchfeld. Tippen, Enter — und Sie stehen
+in der Belegsuche mit den Treffern links und dem ersten Treffer rechts. Die
+Taste **/** springt von überall in dieses Feld, solange Sie nicht gerade in
+einem anderen Feld schreiben.
+
+Was Sie eingeben, wird als das gelesen, was es ist:
+
+| Eingabe | Was gefunden wird |
+|---|---|
+| `RG-2026-4711` oder `4711` | Rechnungsnummer, ganz oder als Teil |
+| `park` | Kreditor, Korrespondent oder Betreff, als Teil des Namens |
+| `3.226,03` | Brutto- oder Nettobetrag, genau |
+| `DE02 1203 0000 0000 2020 51` | IBAN im Beleg, mit oder ohne Leerzeichen |
+| `42` | Objektnummer |
+| `Dachrinne` | Wort im Belegtext |
+
+Ein Begriff trifft überall zugleich: *4711* findet die Rechnung mit dieser
+Nummer **und** das Schreiben, in dessen Text sie steht. Die Reihenfolge
+ist deshalb kein Zufall: Zuerst der Beleg, dessen Nummer genau passt, dann
+Nummern, die so beginnen, dann Namenstreffer, dann der Betrag, zuletzt
+Textfunde — und innerhalb jeder Gruppe das Neueste zuerst. Wer eine
+Rechnungsnummer tippt, sieht diese Rechnung oben, nicht das jüngste
+Schreiben, das sie zufällig erwähnt.
+
 **Ohne Filter** zeigt sie das Neueste aus Ihren Objekten. **Sobald ein Filter
 gesetzt ist**, wird gesucht: nach Objekt, Ordnungsgruppe, Belegart, Ampel,
-Eingangszeitraum und Volltext. Der Unterschied ist nicht nur die Anzeige — es
+Eingangszeitraum und Suchbegriff. Der Unterschied ist nicht nur die Anzeige — es
 sind zwei verschiedene Abfragen, und die zweite ist die teurere. Wer nach
 „alle roten Ampeln" fragt, will alle, nicht die neuesten je Objekt.
 
@@ -954,9 +998,10 @@ Ordnungsgruppe und Spezialgebiet erscheinen als farbige Marken. Die Farbe
 kommt aus den Stammdaten — eine neue Ordnungsgruppe bringt ihre Marke mit,
 ohne dass jemand die Oberfläche anfasst.
 
-### Volltext
+### Wörter im Belegtext
 
-Gesucht wird im Seitentext, mit deutscher Stammformreduktion:
+Ein Suchbegriff, der weder Nummer noch Betrag ist, wird zusätzlich im
+Seitentext gesucht, mit deutscher Stammformreduktion:
 *Dachrinnenreinigungen* findet *Dachrinnenreinigung*. Das Suchfeld versteht,
 was Menschen von Suchfeldern erwarten:
 
@@ -1186,6 +1231,29 @@ den ein Zeitablauf jemanden versetzt.
 ---
 
 ## Stempel, Notizen und Schwärzungen
+
+### Stempeln: wählen, platzieren, speichern
+
+Auf der Entscheidungsseite (Arbeitsplatz oder einzelne Aufgabe) entscheidet
+nicht mehr der Klick auf den Stempelknopf. Der Klick **wählt** den Stempel,
+und der Abdruck erscheint sofort auf dem Beleg, gestrichelt, an dem Platz,
+den das System vorschlägt. Sie können ihn mit der Maus verschieben, an der
+Ecke rechts unten vergrößern oder mit den Pfeiltasten bewegen (mit Umschalt
+vergrößern). Liegt er über Text, über dem Seitenrand oder auf einem
+anderen Stempel, wird er rot und sagt, warum, und *Speichern* bleibt
+gesperrt. Erst **Speichern** setzt den Stempel; *Abbrechen* nimmt die Wahl
+zurück, ohne dass etwas passiert ist.
+
+Kommentar und Wiedervorlage füllen Sie wie bisher vor dem Speichern aus.
+Wo der Beleg keine Seitenmaße hat (etwa vor der Aufbereitung), gibt es
+keinen Abdruck zum Ziehen; dann wählt das System den Platz beim Speichern,
+und die Seite sagt das.
+
+Der Beleg auf der Entscheidungsseite zeigt **alle bisherigen Stempel**: Wer
+rechnerisch prüft, sieht „Sachlich richtig" mit Name und Datum auf der
+ersten Seite, wo die Vorprüferin ihn hingesetzt hat. Verschieben lässt sich
+ein Stempel danach nur noch von dem, der ihn gesetzt hat, und nur bis zur
+nächsten Stufe (siehe unten).
 
 Alles, was am Beleg angebracht wird, liegt **neben** dem PDF — nie darin. Vier
 Dinge folgen daraus, und alle vier sind der Grund für die Bauart:

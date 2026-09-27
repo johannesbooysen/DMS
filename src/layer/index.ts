@@ -203,6 +203,58 @@ export async function stempelVerschieben(benutzerId: string, lage: Stempellage):
   })
 }
 
+/** Was die Entscheidungsseite braucht, um einen Stempel vorab zu platzieren. */
+export interface Platzierung {
+  seite: number
+  vorschlag: Kasten
+  seitenBreite: number
+  seitenHoehe: number
+  textkaesten: Kasten[]
+  /** Schon gesetzte Stempel auf dieser Seite -- dort liegt keiner darueber. */
+  belegt: Kasten[]
+}
+
+/**
+ * Seite 1 mit Massen, Textkaesten, dem naechsten freien Platz und den
+ * Stempeln, die schon liegen. `null`, wenn die Seite keine Masse oder keine
+ * Textkaesten hat -- dann kann die Datenbank die Lage nicht pruefen, und der
+ * Trigger waehlt den Platz wie bisher.
+ *
+ * Der Vorschlag ist derselbe Block, den der Trigger naehme (app.stempelplatz);
+ * ist keiner mehr frei, beginnt der Abdruck oben links, und die Rueckmeldung
+ * sagt, wo Text steht.
+ */
+export async function platzierungLaden(benutzerId: string, dokumentId: string): Promise<Platzierung | null> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<{
+      breite: number | null
+      hoehe: number | null
+      textkaesten: Kasten[] | null
+      platz: Kasten | null
+    }>(
+      `select s.breite, s.hoehe, s.textkaesten, app.stempelplatz($1) as platz
+         from dokument_seite s
+        where s.dokument_id = $1 and s.seite = 1`,
+      [dokumentId],
+    )
+    const s = rows[0]
+    if (s === undefined || s.breite === null || s.hoehe === null || s.textkaesten === null) return null
+    const { rows: belegt } = await c.query<Kasten>(
+      `select x, y, breite, hoehe from dokument_layer
+        where dokument_id = $1 and seite = 1 and typ = 'stempel' and geloescht_am is null`,
+      [dokumentId],
+    )
+    return {
+      seite: 1,
+      vorschlag: s.platz ?? { x: 40, y: 40, breite: 190, hoehe: 64 },
+      seitenBreite: Number(s.breite),
+      seitenHoehe: Number(s.hoehe),
+      textkaesten: s.textkaesten,
+      belegt: belegt.map((k) => ({ x: Number(k.x), y: Number(k.y), breite: Number(k.breite), hoehe: Number(k.hoehe) })),
+    }
+  })
+}
+
 /** Die Stempel dieses Belegs, die der Handelnde jetzt verschieben darf. */
 export async function verschiebbareStempel(
   benutzerId: string,

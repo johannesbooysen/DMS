@@ -11,6 +11,8 @@
 import { notFound } from 'next/navigation'
 import { stempelnAktion } from '@/app/lib/aktionen'
 import { Belegbetrachter } from '@/app/lib/belegbetrachter'
+import { Stempelsitzung, Stempelwahl } from '@/app/lib/stempelsitzung'
+import { platzierungLaden } from '@/layer'
 import { befundeLaden } from '@/app/lib/belege'
 import { belegkopfLaden } from '@/app/lib/belege'
 import { Ampel, Befunde, belegBezeichnung, datum, euro } from '@/app/lib/darstellung'
@@ -55,6 +57,7 @@ export default async function Aufgabe({
     rechnungsdatenLaden(benutzer, zeile.dokumentId),
   ])
   const vorschlag = await vorschlagZumBeleg(benutzer, zeile.dokumentId)
+  const platzierung = await platzierungLaden(benutzer, zeile.dokumentId)
 
   // Dieselbe Aufteilung wie auf der Aufgabenseite: An der Kontierungsstufe
   // steht der abschliessende Stempel in der Maske, rechts bleiben die
@@ -66,12 +69,13 @@ export default async function Aufgabe({
   const brauchtKommentar = knoepfe.some((s) => s.kommentarPflicht)
 
   return (
-    <>
+    <Stempelsitzung platzierung={platzierung}>
       <section className="arbeitsplatz-beleg" aria-label="Beleg">
         <Belegbetrachter
           benutzer={benutzer}
           dokumentId={zeile.dokumentId}
           seitenzahl={kopf?.seitenzahl ?? 0}
+          platzierbar
         />
       </section>
 
@@ -197,22 +201,10 @@ export default async function Aufgabe({
               </label>
             )}
 
-            <div className="stempelknoepfe">
-              {knoepfe.map((s) => (
-                <button
-                  key={s.stempeltypId}
-                  type="submit"
-                  name="stempeltypId"
-                  value={s.stempeltypId}
-                  style={{ background: s.farbe ?? '#333' }}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
+            <Stempelwahl stempel={knoepfe} />
           </form>
         )}
       </aside>
-    </>
+    </Stempelsitzung>
   )
 }

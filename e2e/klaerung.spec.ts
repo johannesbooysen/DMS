@@ -23,6 +23,7 @@ test('Ohne Kommentar und Wiedervorlage gibt es keine Klärung', async ({ page })
   const entscheidung = page.getByRole('complementary', { name: 'Entscheidung' })
   await expect(entscheidung.getByRole('heading', { name: 'Sachliche Pruefung' })).toBeVisible()
   await entscheidung.getByRole('button', { name: 'Zur Klaerung' }).click()
+  await entscheidung.getByRole('button', { name: 'Speichern' }).click()
 
   // Abgewiesen, mit Grund -- und die Aufgabe steht noch.
   // Next legt eine zweite Live-Region an (Routenansage); die Meldung ist die mit dem Grund.
@@ -40,6 +41,7 @@ test('Mit beidem landet der Beleg im Klärungspostfach -- und kommt mit dem näc
     await entscheidung.getByLabel('Kommentar').fill('Leistungszeitraum beim Lieferanten nachfragen')
     await entscheidung.getByLabel(/Wiedervorlage/).fill('2026-10-15')
     await entscheidung.getByRole('button', { name: 'Zur Klaerung' }).click()
+    await entscheidung.getByRole('button', { name: 'Speichern' }).click()
   })
 
   await test.step('Das Klärungspostfach zeigt ihn mit Kommentar und Datum', async () => {
@@ -56,6 +58,7 @@ test('Mit beidem landet der Beleg im Klärungspostfach -- und kommt mit dem näc
     await expect(entscheidung.getByRole('heading', { name: 'Sachliche Pruefung' })).toBeVisible()
     await entscheidung.getByLabel('Kommentar').fill('Lieferant hat den Zeitraum bestätigt')
     await entscheidung.getByRole('button', { name: 'Sachlich richtig' }).click()
+    await entscheidung.getByRole('button', { name: 'Speichern' }).click()
 
     await navigiere(page, 'Postfächer')
     await expect(page.getByRole('heading', { name: 'Klärung (0)' })).toBeVisible()

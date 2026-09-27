@@ -5,9 +5,8 @@
  *
  * Die Seiten selbst -- Bilder, Layer, Stempel -- kommen vom Server als
  * `children`; hier steht nur der eine Zustand, den der Server nicht haben
- * kann: wie gross der Betrachter sie gerade sehen will. Derselbe Grund und
- * dieselben Grenzen wie in `belegvorschau.tsx`: Knoepfe statt Schieberegler,
- * weil `lib` ohne `DOM` gesetzt ist.
+ * kann: wie gross der Betrachter sie gerade sehen will. Knoepfe statt
+ * Schieberegler, weil `lib` ohne `DOM` gesetzt ist (siehe CLAUDE.md).
  *
  * Die Breite wirkt auf den Stapel, nicht auf das Bild: Die Layer liegen in
  * Prozent ueber dem Bild und wandern deshalb mit.

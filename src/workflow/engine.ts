@@ -24,6 +24,15 @@ import {
 } from './baum'
 import { systemaktionAusfuehren } from './systemaktion'
 
+/** Wo der Abdruck hin soll, in PDF-Punkten -- vom Menschen gewaehlt (ADR 0009). */
+export interface Stempelplatz {
+  seite: number
+  x: number
+  y: number
+  breite: number
+  hoehe: number
+}
+
 export interface Stempelvorgang {
   laufId: string
   stufeId: string
@@ -31,6 +40,8 @@ export interface Stempelvorgang {
   stempeltypId?: string | null
   entscheidung: 'freigabe' | 'ablehnung' | 'rueckgabe' | 'klaerung'
   kommentar?: string | null
+  /** Ohne Lage waehlt die Datenbank den Platz (app.stempelplatz). */
+  lage?: Stempelplatz | null
 }
 
 export interface Stempelergebnis {
@@ -487,11 +498,12 @@ export async function stempeln(
   // Stammdaten nicht erklärt (ADR 0002).
   await c.query(
     `insert into stempel_ereignis (lauf_id, stufe_id, benutzer_id, stempeltyp_id,
-                                   entscheidung, kommentar, wegen_delegation)
+                                   entscheidung, kommentar, wegen_delegation, lage)
      values ($1, $2, $3, $4, $5, $6,
              (select a.wegen_delegation from aufgabe a
                where a.lauf_id = $1 and a.stufe_id = $2
-               order by a.erstellt_am desc limit 1))`,
+               order by a.erstellt_am desc limit 1),
+             $7::jsonb)`,
     [
       vorgang.laufId,
       vorgang.stufeId,
@@ -499,6 +511,7 @@ export async function stempeln(
       vorgang.stempeltypId ?? null,
       vorgang.entscheidung,
       vorgang.kommentar ?? null,
+      vorgang.lage == null ? null : JSON.stringify(vorgang.lage),
     ],
   )
 

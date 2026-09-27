@@ -340,6 +340,15 @@ th {
   white-space: nowrap;
 }
 
+/* Schnellsuche in der Kopfzeile: ein Feld, jede Seite, Taste "/" */
+.schnellsuche {
+  flex: 1 1 auto;
+  max-width: 28rem;
+}
+.schnellsuche input {
+  width: 100%;
+}
+
 .kopfzeile-rechts {
   color: var(--farbe-text-leise);
   font-size: 0.85rem;
@@ -1035,8 +1044,116 @@ kbd {
 
 .belegsuche {
   display: grid;
-  grid-template-columns: 26rem minmax(0, 1fr);
+  grid-template-columns: 26rem minmax(0, 1fr) 17rem;
   height: calc(100vh - var(--kopf-hoehe));
+}
+
+/* Dritte Spalte: der Stand des Belegs als senkrechte Kette */
+.belegsuche-stand {
+  background: var(--farbe-flaeche);
+  border-left: 1px solid var(--farbe-linie);
+  padding: 0.75rem 1rem 1rem;
+}
+
+.belegweg-senkrecht h2 {
+  margin-top: 0;
+}
+
+.belegweg-kette {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.belegweg-kette > li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+/* Die Linie von oben nach unten, hinter den Kaesten */
+.belegweg-kette > li::before {
+  background: var(--farbe-linie-stark);
+  content: '';
+  left: 0.4rem;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+.belegweg-kette > li:first-child::before {
+  top: 0.6rem;
+}
+
+.belegweg-kette > li:last-child::before {
+  bottom: auto;
+  height: 0.6rem;
+}
+
+.belegweg-ende {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.75rem;
+  padding-top: 0.15rem;
+}
+
+.belegweg-ende > span:first-child {
+  font-weight: 600;
+}
+
+.belegweg-ende::after {
+  background: var(--farbe-flaeche);
+  border: 2px solid var(--farbe-akzent);
+  border-radius: 50%;
+  content: '';
+  height: 0.7rem;
+  left: 0.1rem;
+  position: absolute;
+  top: 0.3rem;
+  width: 0.7rem;
+}
+
+.belegweg-ende--voll::after {
+  background: var(--farbe-akzent);
+}
+
+.belegweg-schritt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 0.75rem;
+}
+
+.belegweg-schritt--gleichzeitig {
+  border-left: 2px solid var(--farbe-linie-stark);
+  margin-left: 0.4rem;
+  padding-left: 0.85rem;
+}
+
+.belegweg-schritt--gleichzeitig::before {
+  display: none;
+}
+
+.belegweg-stufe {
+  border: 1px solid var(--farbe-linie-stark);
+  border-radius: 6px;
+  color: var(--farbe-text);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.45rem 0.6rem;
+  text-decoration: none;
+}
+
+.belegweg-stufe--link:hover,
+.belegweg-stufe--link:focus-visible {
+  box-shadow: 0 0 0 3px var(--farbe-akzent-hell);
+  outline: none;
+}
+
+.belegweg-hinweis {
+  color: var(--farbe-akzent);
+  font-weight: 600;
 }
 
 .belegsuche > * {

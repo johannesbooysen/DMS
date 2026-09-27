@@ -27,6 +27,13 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
    * einzelnen Aufgabenseite aus bleibt es beim Postfach.
    */
   const vomArbeitsplatz = formular.get('herkunft') === 'arbeitsplatz'
+  // Die Lage kommt mit, wenn der Abdruck vorab platziert wurde; sonst
+  // waehlt die Datenbank den Platz (Kontierungsmaske, Seite ohne Masse).
+  const zahl = (name: string) => Number(formular.get(name) ?? 0)
+  const lage =
+    formular.get('x') === null
+      ? null
+      : { seite: zahl('seite'), x: zahl('x'), y: zahl('y'), breite: zahl('breite'), hoehe: zahl('hoehe') }
 
   try {
     await stempelSetzen(await angemeldeterBenutzer(), {
@@ -34,6 +41,7 @@ export async function stempelnAktion(formular: FormData): Promise<void> {
       stempeltypId,
       kommentar,
       wiedervorlageAm: wiedervorlageAm === '' ? null : wiedervorlageAm,
+      lage,
     })
   } catch (fehler) {
     if (fehler instanceof StempelAbgelehnt) {

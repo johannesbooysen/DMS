@@ -745,12 +745,24 @@ belegt.
 - erkennt einen leeren Filter als ungefiltert
 - erkennt jeden gesetzten Filter
 - taucht in der Liste auf, obwohl keine Aufgabe mehr offen ist
+- findet einen Beleg ueber die Rechnungsnummer
+- findet ein Teilstueck der Nummer
+- findet einen Beleg ueber den Kreditornamen -- auch ein Teilstueck
+- findet einen Beleg ueber den Betrag -- deutsch geschrieben
+- findet einen Beleg ueber die IBAN, mit oder ohne Leerzeichen
+- stellt die exakte Nummer vor den Textfund
+- zaehlt Feldtreffer genauso wie die Liste
+- zeigt einem fremden Mandanten keinen Feldtreffer
 
 ### [`tests/belegweg.test.ts`](../tests/belegweg.test.ts)
 
 - zeigt die Kette des Laufs -- die erste Stufe offen, der Rest ausstehend
 - traegt nach dem Stempel Erledigt mit Namen und Zeit ein, und die naechste Stufe wird aktuell
 - zeigt einem fremden Mandanten nichts
+- traegt an der offenen Stufe die Aufgabe, und wer dort stempeln darf, sieht das
+- laesst ausstehende Stufen ohne Aufgabe und ohne Weg
+- gibt dem Administrator den Weg ins Stempeln, auch wenn die Aufgabe bei Anna liegt
+- wandert nach dem Stempel zur naechsten Stufe
 
 ### [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts)
 
@@ -1670,6 +1682,17 @@ belegt.
 - laesst nur gestalten, wer Ablaeufe konfigurieren darf
 - legt einen Stempeltyp nur mit dem Recht an -- und nie mit Zielfeld
 - weist eine Farbe ab, die keine ist
+
+### [`tests/stempel-lage.test.ts`](../tests/stempel-lage.test.ts)
+
+- setzt den Abdruck dorthin, wo er platziert wurde
+- nimmt ohne Lage den errechneten Platz -- wie bisher
+- weist eine Lage ueber Text mit Grund ab, und die Aufgabe bleibt offen
+- weist zu kleine und ueber den Rand ragende Lagen ab
+- haelt die Grenze auch im Trigger -- an der Anwendung vorbei
+- traegt die Lage am Ereignis, nicht in der Hash-Kette
+- liefert Vorschlag, Masse, Textkaesten und die schon gesetzten Stempel
+- liefert null ohne Seitenmasse -- dann waehlt die Datenbank
 
 ### [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts)
 

@@ -438,3 +438,77 @@ describe('Der archivierte Beleg bleibt auffindbar', () => {
     expect(treffer.map((z) => z.id)).toContain(beleg)
   })
 })
+
+describe('Feldsuche', () => {
+  /** Ein zweiter Beleg mit eigener Nummer, eigenem Betrag und IBAN im Beleg. */
+  let zweiter: string
+  beforeEach(async () => {
+    zweiter = await belegAnlegen({ text: 'Wartung der Heizungsanlage, Kessel Nordflügel.' })
+    await direkt(
+      `update rechnung_fakten
+          set rechnungsnummer = 'RG-2026-4711', brutto = 3226.03, netto = 2711.79, steuer = 514.24,
+              iban_im_beleg = 'DE02 1203 0000 0000 2020 51'
+        where dokument_id = $1`,
+      [zweiter],
+    )
+  })
+
+  it('findet einen Beleg ueber die Rechnungsnummer', async () => {
+    const treffer = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: 'RG-2026-4711' }))
+    expect(treffer.map((z) => z.id)).toContain(zweiter)
+    expect(treffer.map((z) => z.id)).not.toContain(beleg)
+  })
+
+  it('findet ein Teilstueck der Nummer', async () => {
+    const treffer = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: '4711' }))
+    expect(treffer.map((z) => z.id)).toContain(zweiter)
+  })
+
+  it('findet einen Beleg ueber den Kreditornamen -- auch ein Teilstueck', async () => {
+    const { rows } = await alsBenutzer(ANNA, (c) =>
+      c.query<{ name: string }>(`select name from kreditor where id = $1`, [KREDITOR]),
+    )
+    const teil = rows[0].name.slice(1, 5).toLowerCase()
+    const treffer = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: teil }))
+    expect(treffer.map((z) => z.id)).toContain(zweiter)
+    expect(treffer.map((z) => z.id)).toContain(beleg)
+  })
+
+  it('findet einen Beleg ueber den Betrag -- deutsch geschrieben', async () => {
+    const treffer = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: '3.226,03' }))
+    expect(treffer.map((z) => z.id)).toContain(zweiter)
+    expect(treffer.map((z) => z.id)).not.toContain(beleg)
+    const netto = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: '2711,79' }))
+    expect(netto.map((z) => z.id)).toContain(zweiter)
+  })
+
+  it('findet einen Beleg ueber die IBAN, mit oder ohne Leerzeichen', async () => {
+    const mit = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: 'DE02 1203 0000 0000 2020 51' }))
+    expect(mit.map((z) => z.id)).toContain(zweiter)
+    const ohne = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: 'de021203000000002020 51' }))
+    expect(ohne.map((z) => z.id)).toContain(zweiter)
+  })
+
+  it('stellt die exakte Nummer vor den Textfund', async () => {
+    // Der aeltere Beleg traegt die Nummer, der juengere nur das Wort im Text:
+    // Alter allein wuerde den juengeren nach oben stellen.
+    const juenger = await belegAnlegen({ text: 'Bezug: RG-2026-4711 vom Vormonat.' })
+    const treffer = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: 'RG-2026-4711' }))
+    const ids = treffer.map((z) => z.id)
+    expect(ids).toContain(juenger)
+    expect(ids.indexOf(zweiter)).toBeLessThan(ids.indexOf(juenger))
+  })
+
+  it('zaehlt Feldtreffer genauso wie die Liste', async () => {
+    const liste = await alsBenutzer(ANNA, (c) => suchen(c, { volltext: '4711' }))
+    const anzahl = await alsBenutzer(ANNA, (c) => zaehlen(c, { volltext: '4711' }))
+    expect(anzahl).toBe(liste.length)
+  })
+
+  it('zeigt einem fremden Mandanten keinen Feldtreffer', async () => {
+    const treffer = await alsBenutzer(DORIS, (c) => suchen(c, { volltext: 'RG-2026-4711' }))
+    expect(treffer.map((z) => z.id)).not.toContain(zweiter)
+    const betrag = await alsBenutzer(DORIS, (c) => suchen(c, { volltext: '3.226,03' }))
+    expect(betrag.map((z) => z.id)).not.toContain(zweiter)
+  })
+})

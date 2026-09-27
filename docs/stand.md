@@ -9,8 +9,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 81 Tabellen, 200 Policies,
-129 Module, 1054 Testfaelle in 67 Dateien,
-8 Architekturentscheidungen, 3 markierte offene Stellen.
+129 Module, 1074 Testfaelle in 68 Dateien,
+9 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -581,6 +581,18 @@ Objekt ueber seine Anschrift im Belegtext finden
 Funktionen: `app.objekte_im_text`
 
 
+### `supabase/migrations/20261001100000_suche_felder.sql`
+
+Suche ueber Felder: Rechnungsnummer, Kreditorname, IBAN, Betrag
+
+
+### `supabase/migrations/20261001120000_stempel_lage.sql`
+
+Der Stempel wird platziert, bevor er gilt (ADR 0009)
+
+Funktionen: `app.stempel_layer_setzen`
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -726,8 +738,8 @@ Funktionen: `app.objekte_im_text`
 | [`tests/ausfuehrbarkeit.test.ts`](../tests/ausfuehrbarkeit.test.ts) | 6 | Niemand darf stempeln, Zustaendigkeit ohne Menschen, Genau eine Person |
 | [`tests/auswertung.test.ts`](../tests/auswertung.test.ts) | 19 | Durchlaufzeiten, Verfallene Skonti, Aelteste offene Belege, Mandantentrennung |
 | [`tests/belegart.test.ts`](../tests/belegart.test.ts) | 10 | Erkennung, Wechsel des Ablaufs |
-| [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 33 | Feed, Akte eines Objekts, Filter, Volltext, Eigene Eingaenge, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar |
-| [`tests/belegweg.test.ts`](../tests/belegweg.test.ts) | 3 | Belegweg |
+| [`tests/belegliste.test.ts`](../tests/belegliste.test.ts) | 41 | Feed, Akte eines Objekts, Filter, Volltext, Eigene Eingaenge, Die Sichtbarkeitsgrenze -- in jeder Sicht, Feed oder Suche, Der archivierte Beleg bleibt auffindbar, Feldsuche |
+| [`tests/belegweg.test.ts`](../tests/belegweg.test.ts) | 7 | Belegweg, Stand in der Belegsuche: Aufgabe und Stempelbarkeit je Stufe |
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
 | [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts) | 4 | Benutzerkennung |
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
@@ -778,6 +790,7 @@ Funktionen: `app.objekte_im_text`
 | [`tests/stammdaten.test.ts`](../tests/stammdaten.test.ts) | 22 | Die geschlossene Luecke, Der Betrugsschutz, Anlegen und Pruefen, Die Rechtelage der Oberflaeche, Mandantentrennung |
 | [`tests/stapel.test.ts`](../tests/stapel.test.ts) | 32 | Trennblatt erkennen, Barcode-Trennblatt, Gruppieren, Stapel aufnehmen, Trennung korrigieren, Uebernehmen, Verwerfen, Die Mandantengrenze, Ein Stapel ohne Trennblatt |
 | [`tests/stempel-gestaltung.test.ts`](../tests/stempel-gestaltung.test.ts) | 10 | Weissliste, Der Trigger, Recht |
+| [`tests/stempel-lage.test.ts`](../tests/stempel-lage.test.ts) | 8 | Die Lage aus der Hand des Menschen, Was die Seite zum Platzieren hergibt |
 | [`tests/stempel-verschieben.test.ts`](../tests/stempel-verschieben.test.ts) | 15 | Wer und bis wann, Wohin, Der Riegel selbst |
 | [`tests/stufen.test.ts`](../tests/stufen.test.ts) | 5 | Zaehler und Liste, Mandantentrennung |
 | [`tests/uebernahme.test.ts`](../tests/uebernahme.test.ts) | 11 | Die Zuordnung, Die Probe, Die Uebernahme |
@@ -799,11 +812,12 @@ Funktionen: `app.objekte_im_text`
 | [ADR 0006 — Object Lock schützt Fassungen, nicht Schlüssel](adr/0006-objektsperre.md) | unbekannt |
 | [ADR 0007 — Ein Server, ein Image, zwei Prozesse](adr/0007-betriebsumgebung.md) | unbekannt |
 | [0008 — Stempel verschieben: Herkunft bleibt das Ereignis, Lage wird frei](adr/0008-stempel-verschieben.md) | unbekannt |
+| [ADR 0009: Stempel platzieren, bevor er gilt](adr/0009-stempel-platzieren.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 
 | Fundstelle |
 |---|
 | [`src/worker/aufbereitung.ts:424`](../src/worker/aufbereitung.ts) |
-| [`src/workflow/engine.ts:93`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:195`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:104`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:206`](../src/workflow/engine.ts) |

@@ -15,6 +15,7 @@
 import type { ReactNode } from 'react'
 
 import { abmeldenAktion } from '@/app/lib/anmelde-aktionen'
+import { Suchtaste } from '@/app/lib/suchtaste'
 import { Navigationslink } from '@/app/lib/navigationslink'
 import { angemeldeterBenutzerOderNichts } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
@@ -202,6 +203,22 @@ export async function Seitenrahmen({
       <div className="hauptbereich">
         <header className="kopfzeile">
           <h1>{titel}</h1>
+          {/*
+            Die Schnellsuche steht auf jeder Seite: Nummer, Betrag, Name, IBAN
+            oder Wort, Enter, Treffer. Ein GET-Formular auf die Belegsuche --
+            derselbe Filter, dieselbe Adresse. Die Taste "/" springt hinein.
+          */}
+          <form method="get" action="/belege" role="search" className="schnellsuche">
+            <input
+              id="schnellsuche"
+              name="q"
+              type="search"
+              placeholder="Suchen: Nummer, Betrag, Name, Wort … ( / )"
+              aria-label="Belege suchen"
+              autoComplete="off"
+            />
+          </form>
+          <Suchtaste feldId="schnellsuche" />
           {zaehler !== null && zaehler.offen > 0 && (
             <span className="kopfzeile-rechts">
               {zaehler.offen} offen

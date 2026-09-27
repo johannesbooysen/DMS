@@ -51,6 +51,8 @@ test('Anna stempelt sachlich richtig, der Beleg geht an die Buchhaltung', async 
 
   await test.step('Nach dem Stempeln ist Annas Postfach leer', async () => {
     await page.getByRole('button', { name: 'Sachlich richtig' }).click()
+    // Der Knopf waehlt; der Abdruck liegt auf dem Beleg; Speichern entscheidet.
+    await page.getByRole('button', { name: 'Speichern' }).click()
 
     await expect(page.getByRole('heading', { name: 'Postfächer' })).toBeVisible()
     /*

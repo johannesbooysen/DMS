@@ -102,7 +102,7 @@ export function Stempelbewegen({
     lage.hoehe !== stempel.hoehe ||
     seite !== stempel.seite
 
-  const hinweis = pruefen(lage, seitenBreite, seitenHoehe, textkaesten)
+  const hinweis = lagePruefen(lage, seitenBreite, seitenHoehe, textkaesten)
 
   const prozent = {
     left: `${(lage.x / seitenBreite) * 100}%`,
@@ -279,11 +279,13 @@ function runden(wert: number): number {
  * Die Vorschau der Prüfung -- derselbe Maßstab wie in `app.stempel_lage_pruefen`,
  * damit Rot hier auch Rot dort heißt. Die Datenbank prüft trotzdem selbst.
  */
-function pruefen(
+export function lagePruefen(
   l: { x: number; y: number; breite: number; hoehe: number },
   seitenBreite: number,
   seitenHoehe: number,
   textkaesten: Kasten[],
+  /** Andere Stempel derselben Seite -- beim Platzieren, bevor es einen Layer gibt. */
+  andere: Kasten[] = [],
 ): string | null {
   if (l.breite < STEMPEL_MINDESTMASSE.breite || l.hoehe < STEMPEL_MINDESTMASSE.hoehe) {
     return 'Zu klein, um lesbar zu bleiben.'
@@ -300,6 +302,11 @@ function pruefen(
   for (const k of textkaesten) {
     if (l.x < k.x + k.breite + a && l.x + l.breite > k.x - a && l.y < k.y + k.hoehe + a && l.y + l.hoehe > k.y - a) {
       return 'Hier steht Text.'
+    }
+  }
+  for (const k of andere) {
+    if (l.x < k.x + k.breite && l.x + l.breite > k.x && l.y < k.y + k.hoehe && l.y + l.hoehe > k.y) {
+      return 'Dort liegt schon ein Stempel.'
     }
   }
   return null

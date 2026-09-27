@@ -109,7 +109,7 @@ test('Der Seitentext ist durchsuchbar', async ({ page }) => {
    * der Test wäre auch dann grün gewesen, wenn die Aufbereitung gar nicht
    * gelaufen wäre. Genau so ist er einmal grün gewesen.
    */
-  await page.getByLabel('Volltext').fill('Umsatzsteuer')
+  await page.getByLabel('Suchbegriff').fill('Umsatzsteuer')
   await page.getByRole('button', { name: 'Suchen' }).click()
 
   await expect(page.getByRole('link', { name: BELEG }).first()).toBeVisible()

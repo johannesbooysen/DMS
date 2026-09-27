@@ -9,7 +9,9 @@
 
 import { notFound } from 'next/navigation'
 import { stempelnAktion } from '@/app/lib/aktionen'
-import { Belegvorschau } from '@/app/lib/belegvorschau'
+import { Belegbetrachter } from '@/app/lib/belegbetrachter'
+import { Stempelsitzung, Stempelwahl } from '@/app/lib/stempelsitzung'
+import { platzierungLaden } from '@/layer'
 import { befundeLaden } from '@/app/lib/belege'
 import { kontierungsmaskeLaden } from '@/app/lib/kontierung-daten'
 import { Kontierung } from '@/app/lib/kontierungsmaske'
@@ -35,6 +37,7 @@ export default async function Aufgabenansicht({
   if (geladen === null) return notFound()
   const { zeile, stempel } = geladen
   const befunde = await befundeLaden(await angemeldeterBenutzer(), zeile.dokumentId)
+  const platzierung = await platzierungLaden(await angemeldeterBenutzer(), zeile.dokumentId)
 
   // Die Maske erscheint nur an der Kontierungsstufe. Anderswo waere sie kein
   // Angebot, sondern eine Ablenkung -- wer freigibt, kontiert nicht.
@@ -118,6 +121,7 @@ export default async function Aufgabenansicht({
         `flexWrap` statt fester Spalten: Auf einem schmalen Bildschirm
         rutscht die Entscheidung unter den Beleg, statt beide zu quetschen.
       */}
+      <Stempelsitzung platzierung={platzierung}>
       <div
         style={{
           alignItems: 'flex-start',
@@ -127,7 +131,10 @@ export default async function Aufgabenansicht({
         }}
       >
         <div style={{ flex: '3 1 24rem', minWidth: 0 }}>
-          <Belegvorschau dokumentId={zeile.dokumentId} />
+          {/* Der Beleg mit allen Seiten und allen bisherigen Stempeln -- wer
+              rechnerisch prueft, sieht "Sachlich richtig" auf dem Beleg. Der
+              gewaehlte Stempel liegt als Abdruck darueber, bis er gespeichert ist. */}
+          <Belegbetrachter benutzer={await angemeldeterBenutzer()} dokumentId={zeile.dokumentId} seitenzahl={0} platzierbar />
         </div>
 
         <div style={{ flex: '2 1 20rem', minWidth: 0 }}>
@@ -159,32 +166,14 @@ export default async function Aufgabenansicht({
                 </p>
               )}
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                {rechts.map((s) => (
-                  <button
-                    key={s.stempeltypId}
-                    type="submit"
-                    name="stempeltypId"
-                    value={s.stempeltypId}
-                    style={{
-                      background: s.farbe ?? '#333',
-                      border: 0,
-                      borderRadius: '0.25rem',
-                      // Stempelfarbe aus den Stammdaten: dunkel, Schrift fest weiss.
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontSize: '0.95rem',
-                      padding: '0.6rem 1rem',
-                    }}
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
+              {/* Waehlen, auf dem Beleg platzieren, Speichern -- die Knoepfe
+                  entscheiden nicht mehr selbst (stempelsitzung.tsx). */}
+              <Stempelwahl stempel={rechts} />
             </form>
           )}
         </div>
       </div>
+      </Stempelsitzung>
     </Seitenrahmen>
   )
 }

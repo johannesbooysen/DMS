@@ -33,7 +33,7 @@ async function sucheBisTreffer(
   wort: string,
 ): Promise<void> {
   await navigiere(seite, 'Belege')
-  await seite.getByLabel('Volltext').fill(wort)
+  await seite.getByLabel('Suchbegriff').fill(wort)
 
   // Kein festes Warten: auf einem langsamen Rechner zu kurz, auf einem
   // schnellen Zeitverschwendung.
