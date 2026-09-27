@@ -1234,6 +1234,16 @@ den ein Zeitablauf jemanden versetzt.
 
 ### Stempeln: wählen, platzieren, speichern
 
+Wie ein Stempel aussieht — welche Felder er trägt (Stempeltext,
+Mitarbeiter, Datum, Uhrzeit, Kommentar, Objektnummer, Betrag, Stufe), Form,
+Rahmen, Schrift, Neigung und Farbe — stellen Sie unter **Konfiguration →
+Stempel** ein, mit Vorschau. Die Einstellung gilt für die nächsten Stempel;
+ein gesetzter ändert sich nicht.
+
+Die Gruppe *Konfiguration* in der Seitenleiste führt alle Einrichtungsseiten
+direkt: Abläufe, Stempel, Pflichtfelder, Kategorien, Vorlagen, Stammdaten,
+Benutzer, Eingangsquellen, Vertretung.
+
 Auf der Entscheidungsseite (Arbeitsplatz oder einzelne Aufgabe) entscheidet
 nicht mehr der Klick auf den Stempelknopf. Der Klick **wählt** den Stempel,
 und der Abdruck erscheint sofort auf dem Beleg, gestrichelt, an dem Platz,

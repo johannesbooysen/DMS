@@ -54,10 +54,19 @@ const BEREICHE: ReadonlyArray<readonly [string, ReadonlyArray<readonly [string, 
     ],
   ],
   [
-    'Einrichtung',
+    // "Konfiguration" statt "Einrichtung", und jede Konfigurationsseite
+    // steht direkt hier: Beim Bedienen gefragt "wo kann das Stempeldesign
+    // geaendert werden?" -- es stand als Satz am Ende der Stammdatenseite.
+    // Was man sucht, muss in der Leiste stehen, nicht hinter einer Seite.
+    'Konfiguration',
     [
       ['/konfiguration', 'Abläufe'],
+      ['/stammdaten/stempel', 'Stempel'],
+      ['/stammdaten/pflichtfelder', 'Pflichtfelder'],
+      ['/stammdaten/kategorien', 'Kategorien'],
+      ['/stammdaten/vorlagen', 'Vorlagen'],
       ['/stammdaten', 'Stammdaten'],
+      ['/stammdaten/benutzer', 'Benutzer'],
       ['/eingang', 'Eingangsquellen'],
       ['/vertretung', 'Vertretung'],
     ],
@@ -70,6 +79,8 @@ const BEREICHE: ReadonlyArray<readonly [string, ReadonlyArray<readonly [string, 
     ],
   ],
 ]
+
+const ALLE_ZIELE: readonly string[] = BEREICHE.flatMap(([, eintraege]) => eintraege.map(([ziel]) => ziel))
 
 /**
  * Die Zahl neben dem Postfach.
@@ -172,7 +183,7 @@ export async function Seitenrahmen({
                 "Belege" zweimal, einmal hier und einmal ueber der Liste. */}
             <div className="seitenleiste-titel">{bereich}</div>
             {eintraege.map(([ziel, name]) => (
-              <Navigationslink key={ziel} href={ziel}>
+              <Navigationslink key={ziel} href={ziel} alle={ALLE_ZIELE}>
                 <span>{name}</span>
                 {/* Die Zahl steht nur am Postfach und nur, wenn es etwas zu
                     zaehlen gibt. Eine Null neben jedem Eintrag waere Rauschen,

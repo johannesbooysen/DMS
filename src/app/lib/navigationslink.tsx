@@ -13,9 +13,24 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-export function Navigationslink({ href, children }: { href: string; children: ReactNode }) {
+export function Navigationslink({
+  href,
+  alle = [],
+  children,
+}: {
+  href: string
+  /**
+   * Alle Ziele der Leiste. Gilt tut der laengste, der zum Pfad passt: Unter
+   * /stammdaten/stempel leuchtet "Stempel", nicht auch "Stammdaten" -- seit
+   * die Unterseiten eigene Eintraege haben, waeren es sonst zwei.
+   */
+  alle?: readonly string[]
+  children: ReactNode
+}) {
   const pfad = usePathname()
-  const aktiv = pfad === href || pfad.startsWith(`${href}/`)
+  const passt = (ziel: string) => pfad === ziel || pfad.startsWith(`${ziel}/`)
+  const laengster = [...alle].filter(passt).sort((a, b) => b.length - a.length)[0]
+  const aktiv = laengster === undefined ? passt(href) : laengster === href
   return (
     <Link href={href} aria-current={aktiv ? 'page' : undefined}>
       {children}
