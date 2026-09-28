@@ -592,3 +592,11 @@ select id, '90000000-0000-0000-0000-000000000004'
 
 insert into benutzer_rolle_objekt (benutzer_id, rolle_id, objekt_id) values
   ('20000000-0000-0000-0000-000000000006', '90000000-0000-0000-0000-000000000004', null);
+
+-- Der Eingangsstempel (Migration 20261002100000): entscheidung 'eingang',
+-- an keiner Stufe, gesetzt beim Abschluss des Posteingangs mit
+-- Paginiernummer, Mitarbeiter und Datum.
+insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe, gestaltung) values
+  ('60000000-0000-0000-0000-000000000090', '10000000-0000-0000-0000-000000000001',
+   'Posteingang', 'EING', 'eingang', '#5A6270',
+   '{"felder":["text","paginiernummer","mitarbeiter","datum"],"form":"rechteck","rahmen":"durchgezogen","drehung":0,"schrift":"normal","linie":2,"schriftfarbe":null}'::jsonb);

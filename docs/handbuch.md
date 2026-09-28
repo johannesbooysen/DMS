@@ -688,6 +688,27 @@ geben](#benutzer-anlegen-heißt-nicht-zugang-geben).
 
 ## Posteingang
 
+### Eingangsstempel und Paginiernummer
+
+Sobald die Aufbereitung eines Belegs abgeschlossen ist (Seiten gerendert,
+Text gelesen), bekommt er zwei Dinge, ohne dass jemand etwas tut:
+
+- einen **Eingangsstempel** auf der ersten Seite — *Posteingang*, die
+  Paginiernummer, wer den Beleg hereingebracht hat und das Datum. Er ist ein
+  gewöhnlicher Stempeltyp (*Posteingang*, Entscheidung „Eingang") und lässt
+  sich unter *Konfiguration → Stempel* gestalten oder deaktivieren; er hängt
+  an keiner Stufe und ist keine Entscheidung, deshalb steht er nicht in der
+  Stempelkette und lässt sich nicht verschieben.
+- eine **Paginiernummer**: fortlaufend, lückenlos, je Haus und Jahr, danach
+  unveränderlich. Präfix, Jahr im Nummernkreis, Stellen und an/aus stellen
+  Sie unter *Konfiguration → Paginierung* ein; der Zählerstand selbst lässt
+  sich nicht stellen. Die Nummer steht in der Trefferliste, im Kopf des
+  Belegs und findet ihn in der Suche.
+
+Bestandsübernahmen aus Amagno bekommen weder Stempel noch Nummer: Ein Beleg
+von damals ist nicht heute eingegangen. Belege, die vor dieser Fassung
+hereinkamen, bleiben ohne — nachträglich nummeriert wird nicht.
+
 Unter *Posteingang* kommen Belege ins System. Zwei Wege, und welcher es ist,
 entscheidet ein Mensch — nicht eine Erkennung:
 

@@ -178,7 +178,7 @@ async function layerLesen(c: PoolClient, dokumentId: string): Promise<
             t.farbe, t.gestaltung
        from dokument_layer l
        left join stempel_ereignis e on e.id = l.stempel_ereignis_id
-       left join stempeltyp t on t.id = e.stempeltyp_id
+       left join stempeltyp t on t.id = coalesce(e.stempeltyp_id, l.stempeltyp_id)
       where l.dokument_id = $1 and l.geloescht_am is null
       order by
         -- Schwaerzungen zuletzt: Sie liegen ueber allem anderen.

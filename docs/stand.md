@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 81 Tabellen, 200 Policies,
-129 Module, 1078 Testfaelle in 68 Dateien,
+Auf einen Blick: 83 Tabellen, 203 Policies,
+130 Module, 1089 Testfaelle in 69 Dateien,
 9 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -600,6 +600,16 @@ Die Feldsuche als security-definer-Funktion -- gemessen, nicht angenommen
 Funktionen: `app.suchtreffer`
 
 
+### `supabase/migrations/20261002100000_eingangsstempel_paginierung.sql`
+
+Eingangsstempel und Paginiernummer -- der Abschluss des Posteingangs
+
+Tabellen: `paginierung`, `paginierung_zaehler`
+
+Funktionen: `app.paginiernummer_fest`, `app.stempel_feldwert`, `app.stempeltext`, `app.stempel_layer_setzen`, `app.eingang_abschliessen`, `app.suchtreffer`
+
+Policies: 3
+
 ## Module
 
 | Datei | Aufgabe |
@@ -710,6 +720,7 @@ Funktionen: `app.suchtreffer`
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
 | [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
 | [`src/stammdaten/kreditor-vorschlag.ts`](../src/stammdaten/kreditor-vorschlag.ts) | Kreditorvorschlaege -- vom Rechnungssteller im Beleg zum Stammdatum |
+| [`src/stammdaten/paginierung.ts`](../src/stammdaten/paginierung.ts) | Die Paginierung -- Einstellung der Eingangsnummer je Haus |
 | [`src/stammdaten/pflichtfeld.ts`](../src/stammdaten/pflichtfeld.ts) | Pflichtfelder je Belegart -- welche Angaben ein Haus unbedingt erfasst |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
@@ -750,6 +761,7 @@ Funktionen: `app.suchtreffer`
 | [`tests/benachrichtigung.test.ts`](../tests/benachrichtigung.test.ts) | 16 | Der Zaehler, Der Wunsch, Die Sammelmail, Die Weissliste |
 | [`tests/benutzer-kennung.test.ts`](../tests/benutzer-kennung.test.ts) | 4 | Benutzerkennung |
 | [`tests/betrieb.test.ts`](../tests/betrieb.test.ts) | 8 | Das Lebenszeichen, Der Worker-Dienstname |
+| [`tests/eingang-abschluss.test.ts`](../tests/eingang-abschluss.test.ts) | 11 | Abschluss des Posteingangs, Die Einstellung |
 | [`tests/eingang.test.ts`](../tests/eingang.test.ts) | 24 | Überwachter Ordner, Mail: was aus einer Nachricht wird, Mail als Quelle, Mail als Schriftverkehr, Mehrere Quellen, Mandantengrenze, Eigene Quellenart |
 | [`tests/einsicht.test.ts`](../tests/einsicht.test.ts) | 43 | Token, Der Ablauf ist hart, Mietersicht -- gerechnet, nicht freigegeben, Eigentuemer und Beirat, Was nie nach draussen geht, Der Umfang wird je Aufruf geprueft, Die Datei selbst, Zugriffsprotokoll, Die Grenze im Haus, Rechte, Link per Mail |
 | [`tests/engine.test.ts`](../tests/engine.test.ts) | 22 | Kontext, Lauf, Betragsgrenze, Paralleler Block, Verzweigung, Systemaktion, Sperre vor der Zahlung, Simulation, Auswahl des Ablaufs |
@@ -825,6 +837,6 @@ Funktionen: `app.suchtreffer`
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:424`](../src/worker/aufbereitung.ts) |
+| [`src/worker/aufbereitung.ts:439`](../src/worker/aufbereitung.ts) |
 | [`src/workflow/engine.ts:104`](../src/workflow/engine.ts) |
 | [`src/workflow/engine.ts:206`](../src/workflow/engine.ts) |

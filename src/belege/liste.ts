@@ -49,6 +49,8 @@ export interface Belegzeile {
   ordnungsgruppe: { name: string; farbe: string | null } | null
   spezialgebiet: { name: string; farbe: string | null } | null
   seitenzahl: number | null
+  /** Fortlaufende Eingangsnummer, vergeben beim Abschluss des Posteingangs. */
+  paginiernummer: string | null
   /** Nur bei Volltextsuche gefüllt. */
   fundstelle: { seite: number; auszug: string } | null
 }
@@ -89,7 +91,7 @@ export interface Belegfilter {
  * Serverfehler ab. Beim Bedienen gefunden.
  */
 const SPALTEN = `
-  d.id, d.belegart, d.eingang_am,
+  d.id, d.belegart, d.eingang_am, d.paginiernummer,
   d.status, d.ampel_gesamt, d.seitenzahl, d.objekt_id,
   o.objektnummer,
   og.name as og_name, og.farbe as og_farbe,
@@ -136,6 +138,7 @@ function zeile(z: Record<string, unknown>): Belegzeile {
         ? null
         : { name: String(z['sg_name']), farbe: text(z['sg_farbe']) },
     seitenzahl: z['seitenzahl'] == null ? null : Number(z['seitenzahl']),
+    paginiernummer: text(z['paginiernummer']),
     fundstelle:
       z['treffer_seite'] == null
         ? null
@@ -292,7 +295,7 @@ function rangAus(filter: Belegfilter, p: (wert: unknown) => string): string {
   const anfang = p(`${begriff}%`)
   const teil = p(`%${begriff}%`)
   const betragsrang = betrag === null ? '' : `when f.brutto = ${p(betrag)} or f.netto = ${p(betrag)} then 3`
-  return `case when lower(f.rechnungsnummer) = lower(${genau}) then 0
+  return `case when lower(f.rechnungsnummer) = lower(${genau}) or d.paginiernummer = ${genau} then 0
                when f.rechnungsnummer ilike ${anfang} then 1
                when k.name ilike ${teil} or sv.korrespondent ilike ${teil} then 2
                ${betragsrang}

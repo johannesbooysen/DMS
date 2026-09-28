@@ -55,6 +55,7 @@ const ENTSCHEIDUNG: Record<string, string> = {
   rueckgabe: 'Rückgabe',
   klaerung: 'Klärung',
   systemaktion: 'Systemaktion',
+  eingang: 'Eingang — beim Abschluss des Posteingangs, ohne Entscheidung',
 }
 
 const BESCHRIFTUNG = {

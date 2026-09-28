@@ -131,6 +131,16 @@ async function texterkennungAnwenden(
   return seitenLesen(ergebnis.pdf)
 }
 
+/**
+ * Abschluss des Posteingangs (Migration 20261002100000): Paginiernummer und
+ * Eingangsstempel, beides in der Datenbank, beides idempotent. Nicht fuer
+ * Bestandsuebernahmen -- das entscheidet die Funktion am Eingangskanal.
+ */
+export async function eingangAbschliessen(c: PoolClient, dokumentId: string): Promise<string | null> {
+  const { rows } = await c.query<{ nummer: string | null }>('select app.eingang_abschliessen($1) as nummer', [dokumentId])
+  return rows[0]?.nummer ?? null
+}
+
 export async function aufbereiten(
   c: PoolClient,
   ablage: Ablage,
@@ -176,6 +186,7 @@ export async function aufbereiten(
       await c.query(`update dokument set seitenzahl = 0, status = 'laufend' where id = $1`, [
         dokumentId,
       ])
+      await eingangAbschliessen(c, dokumentId)
       return { seiten: 0, weg: 'zugferd' }
     }
 
@@ -200,6 +211,7 @@ export async function aufbereiten(
       await c.query(`update dokument set seitenzahl = 1, status = 'laufend' where id = $1`, [
         dokumentId,
       ])
+      await eingangAbschliessen(c, dokumentId)
       return { seiten: 1, weg: 'mail' }
     }
 
@@ -311,6 +323,9 @@ export async function aufbereiten(
     dokumentId,
     seiten.length,
   ])
+  // Der Posteingang ist abgeschlossen: Paginiernummer und Eingangsstempel,
+  // in derselben Transaktion wie der Wechsel auf 'laufend'.
+  await eingangAbschliessen(c, dokumentId)
 
   /*
    * Belegart aus dem Inhalt -- vor der Extraktion, weil die Extraktion

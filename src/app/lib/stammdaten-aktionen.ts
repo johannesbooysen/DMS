@@ -15,6 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { pflichtfelderSetzen } from '@/stammdaten/pflichtfeld'
+import { paginierungSetzen } from '@/stammdaten/paginierung'
 import { vorschlagUebernehmen, vorschlagVerwerfen, vorschlagZuordnen } from '@/stammdaten/kreditor-vorschlag'
 import { redirect } from 'next/navigation'
 import {
@@ -272,6 +273,26 @@ export async function pflichtfelderSetzenAktion(formular: FormData): Promise<voi
   }
   revalidatePath(ziel)
   redirect(`${ziel}?hinweis=${encodeURIComponent('Pflichtfelder gespeichert.')}`)
+}
+
+/** Die Paginierung (Migration 20261002100000): Form der Eingangsnummer, nie der Zaehler. */
+export async function paginierungSetzenAktion(formular: FormData): Promise<void> {
+  const ziel = '/stammdaten/paginierung'
+  try {
+    await paginierungSetzen(await angemeldeterBenutzer(), {
+      aktiv: formular.get('aktiv') === 'ja',
+      praefix: String(formular.get('praefix') ?? ''),
+      mitJahr: formular.get('mitJahr') === 'ja',
+      stellen: Number(formular.get('stellen') ?? 6),
+    })
+  } catch (fehler) {
+    if (fehler instanceof NichtErlaubt || fehler instanceof NichtMoeglich) {
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath(ziel)
+  redirect(`${ziel}?hinweis=${encodeURIComponent('Paginierung gespeichert.')}`)
 }
 
 /*

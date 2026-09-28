@@ -64,7 +64,7 @@ export async function layerLaden(
               t.farbe, t.gestaltung, b.name as erstellt_von
          from dokument_layer l
          left join stempel_ereignis e on e.id = l.stempel_ereignis_id
-         left join stempeltyp t on t.id = e.stempeltyp_id
+         left join stempeltyp t on t.id = coalesce(e.stempeltyp_id, l.stempeltyp_id)
          left join benutzer b on b.id = l.erstellt_von
         where l.dokument_id = $1 and l.geloescht_am is null
         order by l.seite, l.erstellt_am`,

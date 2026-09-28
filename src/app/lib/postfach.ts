@@ -264,6 +264,9 @@ export async function aufgabeLaden(
             objekt: gefunden.objektnummer === null ? null : `Objekt ${gefunden.objektnummer}`,
             betrag: gefunden.brutto === null ? null : `${BETRAG.format(gefunden.brutto)} EUR`,
             stufe: gefunden.stufe,
+            // Die Nummer steht nicht in der Postfachzeile; im Abdruck vor dem
+            // Speichern fehlt sie, der Trigger setzt sie beim Speichern.
+            paginiernummer: null,
           }),
         }
       }),

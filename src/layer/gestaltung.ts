@@ -26,6 +26,7 @@ export const FELDER = [
   'objekt',
   'betrag',
   'stufe',
+  'paginiernummer',
 ] as const
 export type Feld = (typeof FELDER)[number]
 
@@ -38,6 +39,7 @@ export const FELD_BESCHRIFTUNG: Record<Feld, string> = {
   objekt: 'Objektnummer',
   betrag: 'Betrag',
   stufe: 'Stufe',
+  paginiernummer: 'Paginiernummer',
 }
 
 export const FORMEN = ['rechteck', 'abgerundet', 'oval'] as const
@@ -173,6 +175,7 @@ export function beispieltext(name: string, g: Gestaltung): string {
     objekt: 'Objekt 42',
     betrag: '1.240,00 EUR',
     stufe: 'Sachliche Pruefung',
+    paginiernummer: '2026-000123',
   }
   return textZusammensetzen(g.felder, werte)
 }

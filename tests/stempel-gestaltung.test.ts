@@ -90,14 +90,28 @@ async function stempeltext(beleg: string): Promise<string> {
   return layer.text ?? ''
 }
 
-beforeEach(() => {
+/*
+ * Die Gestaltungen vor dem Test merken und danach zurueckschreiben -- je Typ.
+ * Der erste Entwurf setzte alle auf {} zurueck und loeschte damit in der
+ * Entwicklungsdatenbank, was jemand im Designer eingestellt hatte, samt
+ * dem Eingangsstempel aus dem Seed. Ein Test raeumt auf, was er angefasst
+ * hat, nicht die Welt.
+ */
+let gestaltungenVorher: Array<{ id: string; gestaltung: unknown }> = []
+
+beforeEach(async () => {
   belege.length = 0
+  gestaltungenVorher = (
+    await alsEigentuemer((c) => c.query<{ id: string; gestaltung: unknown }>('select id, gestaltung from stempeltyp'))
+  ).rows
 })
 
 afterEach(async () => {
   for (const b of belege) await belegEntfernen(b)
   await alsEigentuemer(async (c) => {
-    await c.query(`update stempeltyp set gestaltung = '{}'::jsonb`)
+    for (const t of gestaltungenVorher) {
+      await c.query(`update stempeltyp set gestaltung = $2::jsonb where id = $1`, [t.id, JSON.stringify(t.gestaltung)])
+    }
     await c.query(`delete from stempeltyp where kurzcode = 'TESTDESIGN'`)
   })
 })
@@ -140,7 +154,7 @@ describe('Weissliste', () => {
     expect(
       textZusammensetzen(['text', 'datum', 'uhrzeit', 'mitarbeiter'], {
         text: 'Sachlich richtig', datum: '22.09.2026', uhrzeit: '09:10', mitarbeiter: 'Anna Ahrens',
-        kommentar: null, objekt: null, betrag: null, stufe: null,
+        kommentar: null, objekt: null, betrag: null, stufe: null, paginiernummer: null,
       }),
     ).toBe('Sachlich richtig · 22.09.2026 09:10 · Anna Ahrens')
     expect(beispieltext('Freigabe', VORGABE)).toBe('Freigabe · Anna Ahrens · 22.09.2026 09:10')

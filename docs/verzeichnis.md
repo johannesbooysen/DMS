@@ -286,6 +286,8 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 | `mandant` | Das verwaltende Haus selbst. |
 | `objekt` | Liegenschaft: Nummer, Bezeichnung, Anschrift des Objekts. |
 | `ordnungsgruppe` | Stammdatum. |
+| `paginierung` | Stammdatum: Form der Paginiernummer je Mandant (Praefix, Jahr, Stellen). Keine Personen. |
+| `paginierung_zaehler` | Zaehlerstand der Paginiernummer je Mandant und Jahr. Zahlen, keine Personen. |
 | `pflichtfeld` | Stammdatum: welche Felder je Belegart erfasst sein muessen. Feldnamen, keine Personen. |
 | `prozess_override` | Abweichende Ablaufkonfiguration je Objekt. |
 | `prozessdefinition` | Ablaufkonfiguration. |
@@ -306,7 +308,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 ## Vollständigkeit
 
-Das Schema hat **81 Tabellen**. Jede ist genau einmal
+Das Schema hat **83 Tabellen**. Jede ist genau einmal
 eingeordnet — entweder in einer Tätigkeit oder in der Liste ohne
 Personenbezug. Geprüft beim Erzeugen gegen die `create table`-Anweisungen
 der Migrationen; fehlt eine, bricht `npm run verzeichnis` ab.

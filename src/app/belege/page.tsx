@@ -291,6 +291,7 @@ export default async function Belegsuche({
                       <span className="trefferliste-titel">
                         <Ampel wert={z.ampel} />
                         <span>{belegBezeichnung(z)}</span>
+                        {z.paginiernummer !== null && <span className="leise klein"> · Nr. {z.paginiernummer}</span>}
                       </span>
                       <span className="trefferliste-zeile">
                         <span>
@@ -337,6 +338,7 @@ export default async function Belegsuche({
                     <Ampel wert={offen.ampel} /> {belegBezeichnung(offen)}
                   </h2>
                   <p className="klein leise">
+                    {offen.paginiernummer !== null && `Nr. ${offen.paginiernummer} · `}
                     {offen.objektnummer !== null && `Objekt ${offen.objektnummer} · `}
                     {offen.ordnungsgruppe !== null && `${offen.ordnungsgruppe.name} · `}
                     {offen.brutto !== null && `${euro.format(offen.brutto)} · `}

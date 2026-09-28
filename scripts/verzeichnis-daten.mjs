@@ -239,6 +239,8 @@ export const OHNE_PERSONENBEZUG = {
   objekt: 'Liegenschaft: Nummer, Bezeichnung, Anschrift des Objekts.',
   ordnungsgruppe: 'Stammdatum.',
   pflichtfeld: 'Stammdatum: welche Felder je Belegart erfasst sein muessen. Feldnamen, keine Personen.',
+  paginierung: 'Stammdatum: Form der Paginiernummer je Mandant (Praefix, Jahr, Stellen). Keine Personen.',
+  paginierung_zaehler: 'Zaehlerstand der Paginiernummer je Mandant und Jahr. Zahlen, keine Personen.',
   prozess_override: 'Abweichende Ablaufkonfiguration je Objekt.',
   prozessdefinition: 'Ablaufkonfiguration.',
   prozessknoten: 'Ablaufkonfiguration.',

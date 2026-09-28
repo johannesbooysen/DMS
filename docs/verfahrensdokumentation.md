@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-81 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+83 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -288,6 +288,8 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `uebernahme_eintrag` | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `pflichtfeld` | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
 | `kreditor_vorschlag` | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
+| `paginierung` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
+| `paginierung_zaehler` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -327,6 +329,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `sicherungs_probe_unveraenderlich` | `sicherungs_probe` | before update or delete | [`20260924100000_sicherungs_probe.sql`](../supabase/migrations/20260924100000_sicherungs_probe.sql) |
 | `uebernahme_eintrag_unveraenderlich` | `uebernahme_eintrag` | before update or delete | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `kontierung_35a_archiv_schutz` | `kontierung_35a` | before insert or update or delete | [`20260926110000_kontierung_35a_schutz.sql`](../supabase/migrations/20260926110000_kontierung_35a_schutz.sql) |
+| `dokument_paginiernummer_fest` | `dokument` | before update of paginiernummer | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -334,7 +337,7 @@ Row Level Security ist in diesem System die Sicherheitsgrenze, nicht ein
 Feature. Jede Abfrage läuft unter der Rolle `dms_app` — nicht als
 Tabelleneigentümer —, sodass die Policies nicht umgangen werden können.
 
-Tabellen mit Policies (75): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `kreditor_vorschlag`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `person`, `person_bezug`, `pflichtfeld`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
+Tabellen mit Policies (77): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungsfrist`, `aufgabe`, `ausgang`, `bauteil`, `belegmerkmal`, `benachrichtigung`, `benutzer`, `benutzer_rolle_objekt`, `delegation`, `dokument`, `dokument_beziehung`, `dokument_datei`, `dokument_lauf`, `dokument_merkmal`, `dokument_seite`, `einheit`, `einschraenkung`, `einsicht_gewaehrung`, `extraktion_feld`, `gespeicherte_suche`, `gruppe`, `gruppe_mitglied`, `klaerung`, `kontenrahmen`, `kontierung`, `kontierung_35a`, `kontierungs_muster`, `konto`, `korrektur_ereignis`, `kreditor`, `kreditor_bankverbindung`, `kreditor_vorschlag`, `layer_position_ereignis`, `loeschung`, `mandant`, `notfallzugriff`, `objekt`, `objekt_zustaendigkeit`, `ordnungsgruppe`, `paginierung`, `paginierung_zaehler`, `person`, `person_bezug`, `pflichtfeld`, `plausibilitaet_befund`, `prozess_override`, `prozessdefinition`, `prozessdefinition_ereignis`, `prozessknoten`, `prozessstufe`, `prozessstufe_stempeltyp`, `rechnung_fakten`, `rolle`, `rolle_recht`, `schriftverkehr_fakten`, `sitzung`, `spezialgebiet`, `spezialgebiet_zustaendigkeit`, `stapel`, `stapel_seite`, `stempel_ereignis`, `stempel_recht`, `stempeltyp`, `uebernahme_eintrag`, `umlageschluessel`, `verfahrensdokumentation`, `vertrag`, `vorgang`, `vorlage`, `wartecontainer`, `zahlung`, `zahlungsweg`, `zugriff_protokoll`, `zuordnungs_merkmal`, `zuweisung_ereignis`
 
 | Policy | Tabelle | Art | Quelle |
 |---|---|---|---|
@@ -527,6 +530,9 @@ Tabellen mit Policies (75): `anmelde_ereignis`, `archiv_eintrag`, `aufbewahrungs
 | `pflichtfeld_schreiben` | `pflichtfeld` | all | [`20260928100000_pflichtfeld.sql`](../supabase/migrations/20260928100000_pflichtfeld.sql) |
 | `kreditor_vorschlag_lesen` | `kreditor_vorschlag` | select | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
 | `kreditor_vorschlag_entscheiden` | `kreditor_vorschlag` | update | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
+| `paginierung_lesen` | `paginierung` | select | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
+| `paginierung_schreiben` | `paginierung` | all | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
+| `paginierung_zaehler_lesen` | `paginierung_zaehler` | select | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 
 ## 5. Ein- und Ausgang
 
@@ -800,6 +806,20 @@ belegt.
 - laesst sich nicht von Hand setzen
 - zeigt allen dasselbe -- die Tabelle hat bewusst keinen Mandanten
 - ist der, den der Worker eintraegt
+
+### [`tests/eingang-abschluss.test.ts`](../tests/eingang-abschluss.test.ts)
+
+- vergibt die Nummer nach Vorgabe und setzt den Eingangsstempel mit Nummer, Name und Datum
+- zaehlt lueckenlos weiter, und ein zweiter Aufruf vergibt nichts zweimal
+- folgt der Einstellung des Hauses -- Praefix, ohne Jahr, drei Stellen
+- vergibt nichts, wenn die Paginierung aus ist -- der Stempel kommt trotzdem, ohne Nummer
+- laesst eine vergebene Nummer nie mehr aendern
+- gibt einer Bestandsuebernahme weder Nummer noch Stempel
+- stempelt nicht ohne aktiven Eingangs-Stempeltyp -- die Nummer gibt es trotzdem
+- ist kein Ereignis in der Stempelkette und laesst sich nicht verschieben
+- schreibt nur, wer Stammdaten pflegt
+- weist ein unbrauchbares Praefix und falsche Stellen ab
+- zeigt einem fremden Mandanten nichts
 
 ### [`tests/eingang.test.ts`](../tests/eingang.test.ts)
 

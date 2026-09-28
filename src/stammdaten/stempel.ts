@@ -29,7 +29,7 @@ export interface Stempeltypzeile {
   stufen: number
 }
 
-const ENTSCHEIDUNGEN = ['freigabe', 'ablehnung', 'rueckgabe', 'klaerung', 'systemaktion'] as const
+const ENTSCHEIDUNGEN = ['freigabe', 'ablehnung', 'rueckgabe', 'klaerung', 'systemaktion', 'eingang'] as const
 
 function mussGewirktHaben(zeilen: number | null): void {
   if (zeilen === 0) {

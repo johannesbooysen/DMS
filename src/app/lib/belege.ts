@@ -36,6 +36,7 @@ export interface Belegkopf {
   betreff: string | null
   brutto: number | null
   rechnungsnummer: string | null
+  paginiernummer: string | null
 }
 
 export async function belegkopfLaden(
@@ -44,7 +45,7 @@ export async function belegkopfLaden(
 ): Promise<Belegkopf | null> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, string | number | null>>(
-      `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt,
+      `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt, d.paginiernummer,
               d.objekt_id, o.objektnummer, og.name as ordnungsgruppe,
               k.name as kreditor, f.brutto, f.rechnungsnummer,
               sv.korrespondent, sv.betreff
@@ -73,6 +74,7 @@ export async function belegkopfLaden(
       betreff: z['betreff'] == null ? null : String(z['betreff']),
       brutto: z['brutto'] === null ? null : Number(z['brutto']),
       rechnungsnummer: z['rechnungsnummer'] === null ? null : String(z['rechnungsnummer']),
+      paginiernummer: z['paginiernummer'] == null ? null : String(z['paginiernummer']),
     }
   })
 }
