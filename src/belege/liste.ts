@@ -241,10 +241,10 @@ export function suchbegriffLesen(roh: string): { begriff: string; betrag: number
  * Vorher standen sie zweimal, und die Zaehlung haette bei der naechsten
  * Erweiterung etwas anderes gezaehlt als die Liste zeigt.
  *
- * Die Feldsuche steht als `d.id in (… union …)`: Jede Teilabfrage kann
- * ihren eigenen Index nehmen (Trigramm auf Nummer, Name, IBAN; B-Baum auf
- * Betrag; GIN auf dem Seitentext). Ein `or` ueber die verbundenen Tabellen
- * koennte das nicht und liefe ueber jede sichtbare Zeile.
+ * Die Feldsuche laeuft ueber app.suchtreffer -- je Feld sein Index
+ * (Trigramm auf Nummer und Name, B-Baum auf IBAN und Betrag, GIN auf dem
+ * Seitentext), ohne Zeilenrechte auf den Satelliten; die Sichtbarkeit
+ * prueft die Policy auf dokument hier aussen.
  */
 function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): string[] {
   const bedingungen: string[] = []
@@ -262,28 +262,18 @@ function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): stri
 
   const roh = filter.volltext?.trim()
   if (roh) {
+    /*
+     * Die Treffer holt app.suchtreffer (Migration 20261001130000): eine
+     * security-definer-Funktion, die nur Belegkennungen zurueckgibt. Der
+     * erste Entwurf stand hier als `d.id in (select … union …)` ueber die
+     * Satellitentabellen -- und lief gegen eine Million Belege in 5 bis 8
+     * Sekunden, weil unter der Zeilenrechte-Schranke von rechnung_fakten
+     * kein `ilike` in einen Index darf (nicht leakproof). Welche der
+     * Kennungen der Fragende sehen darf, entscheidet weiterhin die Policy
+     * auf dokument, hier in der aeusseren Abfrage.
+     */
     const { begriff, betrag, kennung } = suchbegriffLesen(roh)
-    const teil = p(`%${begriff}%`)
-    const teile: string[] = [
-      `select f.dokument_id from rechnung_fakten f where f.rechnungsnummer ilike ${teil}`,
-      `select f.dokument_id from rechnung_fakten f join kreditor k on k.id = f.kreditor_id where k.name ilike ${teil}`,
-      `select sv.dokument_id from schriftverkehr_fakten sv where sv.korrespondent ilike ${teil} or sv.betreff ilike ${teil}`,
-      `select d2.id from dokument d2 join objekt o2 on o2.id = d2.objekt_id where o2.objektnummer = ${p(begriff)}`,
-      /*
-       * `websearch_to_tsquery` und nicht `plainto_tsquery`: Es versteht
-       * Anführungszeichen für Wortgruppen und `-` für Ausschluss, so wie
-       * Menschen es von Suchfeldern kennen -- und es wirft bei unsinniger
-       * Eingabe keinen Fehler, sondern findet nichts.
-       */
-      `select s.dokument_id from dokument_seite s where s.text_tsv @@ websearch_to_tsquery('german', ${p(begriff)})`,
-    ]
-    if (kennung !== null) {
-      teile.push(`select f.dokument_id from rechnung_fakten f where replace(f.iban_im_beleg, ' ', '') ilike ${p(`%${kennung}%`)}`)
-    }
-    if (betrag !== null) {
-      teile.push(`select f.dokument_id from rechnung_fakten f where f.brutto = ${p(betrag)} or f.netto = ${p(betrag)}`)
-    }
-    bedingungen.push(`d.id in (${teile.join(' union ')})`)
+    bedingungen.push(`d.id in (select app.suchtreffer(${p(begriff)}, ${p(betrag)}, ${p(kennung)}))`)
   }
   return bedingungen
 }

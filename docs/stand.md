@@ -593,6 +593,13 @@ Der Stempel wird platziert, bevor er gilt (ADR 0009)
 Funktionen: `app.stempel_layer_setzen`
 
 
+### `supabase/migrations/20261001130000_suche_funktion.sql`
+
+Die Feldsuche als security-definer-Funktion -- gemessen, nicht angenommen
+
+Funktionen: `app.suchtreffer`
+
+
 ## Module
 
 | Datei | Aufgabe |

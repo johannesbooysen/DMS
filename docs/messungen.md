@@ -133,7 +133,7 @@ die Akte eines Objekts 0,7 ms — und leitet daraus drei Designentscheidungen
 ab. Diese Entscheidungen stehen jetzt im Code, also mussten sie nachgemessen
 werden.
 
-**Aufbau:** `npx tsx scripts/belegliste-messen.ts 1000000`. 1.000.000
+**Aufbau:** `npx tsx scripts/belegliste-messen.ts 1000000` (seit der Feldsuche auch `--vorhanden`, um vorhandene Messdaten weiterzuverwenden, und `--ohne-naiv`, um den langsamen Vergleichsfall auszulassen). 1.000.000
 Dokumente auf 500 Objekten, der Messbenutzer ist für 50 davon zuständig —
 dieselbe Verteilung wie im Konzept. 100.000 Belege mit Seitentext. Lokale
 Supabase-Instanz (PostgreSQL 17) auf Windows 11 unter Docker Desktop,
@@ -235,6 +235,90 @@ Der Feed und die Akte sind inzwischen nachgemessen (siehe oben) — mit einem
 Fund, der im Konzept fehlte. Offen bleiben Postfach und Mietersicht unter
 Last; beide hängen an denselben Policies und sollten nach derselben Methode
 geprüft werden.
+
+---
+
+## Feldsuche gegen eine Million Belege
+
+**Anforderung:** Die Suche soll Rechnungsnummer, Kreditorname, Betrag,
+IBAN und Seitentext mit einem Begriff treffen und dabei mit dem Bestand
+wachsen (Konzept 21, Plan „Arbeitsweise DMS überdacht", Schritt 1). Ohne
+Zahl keine Optimierung — also erst gemessen, wie der erste Entwurf lief.
+
+**Aufbau:** Dieselben 1.000.000 Belege wie oben, jetzt mit Rechnungsdaten
+(Nummer `M-<n>`, 2.000 Kreditoren `Messfirma <n> GmbH`, Beträge, IBAN)
+für jeden Beleg — `scripts/belegliste-messen.ts` legt sie seit dieser
+Messung mit an. In einer eigenen Datenbank `messung` im selben Container,
+weil die Entwicklungsdatenbank echte Testbelege trug und `db:reset` sie
+gelöscht hätte. Sieben Läufe nach zwei Aufwärmläufen, als `dms_app` mit
+gesetztem `app.benutzer_id`; der Messbenutzer sieht 100.000 der Belege.
+Der absichtlich langsame Vergleichsfall (Feed naiv) ist mit 73,8 s oben
+dokumentiert und lief nicht mit (`--ohne-naiv`).
+
+**Gemessen am 27. und 28. September 2026:**
+
+| Abfrage | Erster Entwurf | Mit `app.suchtreffer` |
+|---|---|---|
+| Suche: exakte Rechnungsnummer (`M-500000`) | 5.861,2 ms | **26,6 ms** |
+| Suche: Nummernteil (`4711`) | 850,6 ms | **18,0 ms** |
+| Suche: Namensteil (`firma 17`, 111 Kreditoren, ~55.000 Belege) | 4.945,2 ms | **425,4 ms** |
+| Suche: Betrag (`11,90`, 10 Treffer) | 8.488,3 ms | **26,3 ms** |
+| Suche: IBAN (vollständig) | 8.123,8 ms | **24,9 ms** |
+| Volltext (ein Wort, in allen 100.000 Texten) | 700,8 ms | 285,4 ms |
+| Feed Top-N je Objekt (Vergleich) | 416,3 ms | 184,8 ms |
+
+Die Spalte „Erster Entwurf" entstand unter Last (Vorschau, Worker und
+Testläufe auf demselben Rechner, der Feed lag bei 416 statt 160 ms); die
+zweite Spalte auf dem ruhigen Rechner. Der Faktor zwei bis drei aus der
+Last erklärt die Sekunden nicht — die erklärt der Plan.
+
+### Was die Messung gefunden hat
+
+**Unter einer Zeilenrechte-Policy nutzt ein `ilike` keinen Index.** Der
+erste Entwurf suchte als `d.id in (select … from rechnung_fakten f where
+f.rechnungsnummer ilike … union …)` — mit Trigramm-Indizes auf Nummer,
+Name und IBAN (Migration 20261001100000). `EXPLAIN ANALYZE` zeigte für
+die Betragssuche 800.000 gelesene Blöcke: PostgreSQL ging über alle
+100.000 sichtbaren Belege und prüfte je Zeile die Rechnungsdaten samt
+Rechteprüfung (`exists (select 1 from dokument …)`), statt vom Index auf
+`brutto` aus zu starten. Die Policy ist eine Sicherheitsschranke; unter sie
+darf der Planer nur leakproof-Operatoren schieben. `=` ist einer, `~~*`
+(`ilike`), `~~` und `@@` sind es nicht. Die Trigramm-Indizes standen da
+und wurden **nie** benutzt.
+
+**Die Lösung ist dieselbe wie bei `app.meine_objekte()`:** eine
+`security definer`-Funktion, die ohne Zeilenrechte auf den Satelliten
+sucht und **nur Belegkennungen** zurückgibt (`app.suchtreffer`, Migration
+20261001130000). Welche davon der Fragende sehen darf, entscheidet die
+Policy auf `dokument` in der äußeren Abfrage — die Sicherheitsgrenze bleibt
+an einer Stelle. Ein Mandantenfilter steht trotzdem in jedem Zweig.
+
+**Die IBAN wird genau gesucht, nicht als Anfang.** Der Zwischenstand
+verglich `like p_kennung || '%'` gegen einen B-Baum mit `text_pattern_ops`:
+949,9 ms. In einer `security definer`-Funktion wird nichts inline
+ausgeführt, das Muster bleibt ein Parameter, der Plan ist generisch, und
+ein B-Baum kann mit einem unbekannten Muster nichts anfangen. Mit `=` auf
+der normalisierten IBAN: 24,9 ms. Wer nach einer IBAN sucht, hat sie vom
+Kontoauszug kopiert; ein Teilstück braucht niemand.
+
+**Der Namensteil bleibt der teure Fall** (425 ms): `firma 17` trifft 111
+der 2.000 Kreditoren und damit rund 55.000 Belege, von denen der
+Messbenutzer 5.500 sieht — sortiert nach Rang und Alter, dann die ersten
+50. Das ist die Natur der Frage, nicht ein Planfehler; in echten Daten
+trifft ein Namensteil selten mehr als eine Handvoll Kreditoren. Ein
+Trigramm-Index auf `kreditor.name` greift, die Kosten liegen im Verbund
+mit `dokument`.
+
+**Verworfen:** Ein `or` über die verbundenen Tabellen statt der Vereinigung
+(hätte den Trigramm-Index ebenso wenig nutzen dürfen) und ein
+Trigramm-Index auf der IBAN (alle IBANs eines Landes beginnen gleich, die
+Trigramme trennen nicht).
+
+**Für die Zielgröße** — 500 Objekte, 25.000 Belege im Jahr — liegt jede
+Suche nach Nummer, Betrag oder IBAN beim Vierzigfachen des Jahresvolumens
+unter 30 ms; der Volltext bleibt mit 285 ms für das ungünstigste Wort der
+teuerste Weg. Der Suchvektor am Dokument (Plan, Schritt 2) ist damit noch
+nicht nötig; gemessen wird erneut, wenn echte Belege vorliegen.
 
 ---
 

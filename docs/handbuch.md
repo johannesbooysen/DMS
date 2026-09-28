@@ -976,7 +976,7 @@ Was Sie eingeben, wird als das gelesen, was es ist:
 | `RG-2026-4711` oder `4711` | Rechnungsnummer, ganz oder als Teil |
 | `park` | Kreditor, Korrespondent oder Betreff, als Teil des Namens |
 | `3.226,03` | Brutto- oder Nettobetrag, genau |
-| `DE02 1203 0000 0000 2020 51` | IBAN im Beleg, mit oder ohne Leerzeichen |
+| `DE02 1203 0000 0000 2020 51` | IBAN im Beleg, vollständig, mit oder ohne Leerzeichen |
 | `42` | Objektnummer |
 | `Dachrinne` | Wort im Belegtext |
 

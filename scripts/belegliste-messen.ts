@@ -1,7 +1,7 @@
 /**
  * Die Belegliste unter Last messen.
  *
- *   npx tsx scripts/belegliste-messen.ts [anzahl]
+ *   npx tsx scripts/belegliste-messen.ts [anzahl] [--vorhanden] [--ohne-naiv]
  *
  * Konzept 21 hat gegen eine Million Dokumente gemessen und daraus drei
  * Designentscheidungen abgeleitet. Diese Entscheidungen stehen jetzt in
@@ -25,7 +25,16 @@
 
 import { verbindungspool, poolSchliessen } from '../src/db'
 
-const ANZAHL = Number(process.argv[2] ?? 1_000_000)
+const ANZAHL = Number(process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 1_000_000)
+/**
+ * `--vorhanden`: die Messdaten liegen schon (etwa aus einem abgebrochenen
+ * Lauf) -- nicht aufbauen, nur messen. `--ohne-naiv`: den absichtlich
+ * langsamen Vergleichsfall auslassen; er ist mit 73,8 s dokumentiert, und
+ * neun Durchlaeufe davon kosten eine Viertelstunde, in der sich nichts
+ * Neues zeigt. Beides fuer Nachmessungen einzelner Abfragen.
+ */
+const VORHANDEN = process.argv.includes('--vorhanden')
+const OHNE_NAIV = process.argv.includes('--ohne-naiv')
 const OBJEKTE = 500
 const OBJEKTE_JE_BENUTZER = 50
 /** So viele Belege bekommen Seitentext — Volltext über alles wäre zu groß. */
@@ -252,29 +261,31 @@ const VERBINDUNG_SUCHE = `${VERBINDUNG}
   left join rechnung_fakten f on f.dokument_id = d.id
   left join kreditor k on k.id = f.kreditor_id`
 
-await pruefenObFrei()
-await aufbauen()
+if (!VORHANDEN) {
+  await pruefenObFrei()
+  await aufbauen()
+}
 
 try {
 const rang = (begriff: string) =>
   `case when lower(f.rechnungsnummer) = lower('${begriff}') then 0
         when f.rechnungsnummer ilike '${begriff}%' then 1
         when k.name ilike '%${begriff}%' then 2 else 5 end`
-const felder = (begriff: string, extra = '') =>
-  `d.id in (select f.dokument_id from rechnung_fakten f where f.rechnungsnummer ilike '%${begriff}%'
-            union select f.dokument_id from rechnung_fakten f join kreditor k on k.id = f.kreditor_id where k.name ilike '%${begriff}%'
-            union select sv.dokument_id from schriftverkehr_fakten sv where sv.korrespondent ilike '%${begriff}%' or sv.betreff ilike '%${begriff}%'
-            union select d2.id from dokument d2 join objekt o2 on o2.id = d2.objekt_id where o2.objektnummer = '${begriff}'
-            union select s.dokument_id from dokument_seite s where s.text_tsv @@ websearch_to_tsquery('german', '${begriff}')${extra})`
+const felder = (begriff: string, betrag = 'null', kennung = 'null') =>
+  `d.id in (select app.suchtreffer('${begriff}', ${betrag}, ${kennung}))`
 
 
   const ergebnisse = [
-    await messen(
-      'Feed naiv (any(array) + order by + limit)',
-      `select ${SPALTEN} from dokument d ${VERBINDUNG}
-        where d.objekt_id = any (app.meine_objekte())
-        order by d.eingang_am desc limit 50`,
-    ),
+    ...(OHNE_NAIV
+      ? []
+      : [
+          await messen(
+            'Feed naiv (any(array) + order by + limit)',
+            `select ${SPALTEN} from dokument d ${VERBINDUNG}
+              where d.objekt_id = any (app.meine_objekte())
+              order by d.eingang_am desc limit 50`,
+          ),
+        ]),
     await messen(
       'Feed Top-N je Objekt (LATERAL)',
       `select ${SPALTEN}
@@ -306,9 +317,9 @@ const felder = (begriff: string, extra = '') =>
                          and s.text_tsv @@ websearch_to_tsquery('german', 'Dachrinnenreinigung'))
         order by d.eingang_am desc limit 50`,
     ),
-    // Die Feldsuche (Migration 20261001100000) -- so, wie `suchen` sie baut:
-    // `d.id in (… union …)`, damit jede Teilabfrage ihren Index nimmt, und
-    // ein Rang, der die exakte Nummer vor den Textfund stellt.
+    // Die Feldsuche ueber app.suchtreffer (Migration 20261001130000) -- so,
+    // wie `suchen` sie baut, mit dem Rang, der die exakte Nummer vor den
+    // Textfund stellt.
     await messen(
       'Suche: exakte Rechnungsnummer (M-500000)',
       `select ${SPALTEN} from dokument d ${VERBINDUNG_SUCHE}
@@ -330,13 +341,13 @@ const felder = (begriff: string, extra = '') =>
     await messen(
       'Suche: Betrag (11,90)',
       `select ${SPALTEN} from dokument d ${VERBINDUNG_SUCHE}
-        where ${felder('11,90', ' union select f.dokument_id from rechnung_fakten f where f.brutto = 11.90 or f.netto = 11.90')}
+        where ${felder('11,90', '11.90')}
         order by ${rang('11,90')}, d.eingang_am desc limit 50`,
     ),
     await messen(
       'Suche: IBAN (DE00000000000000500000)',
       `select ${SPALTEN} from dokument d ${VERBINDUNG_SUCHE}
-        where ${felder('DE00000000000000500000', " union select f.dokument_id from rechnung_fakten f where replace(f.iban_im_beleg, ' ', '') ilike '%DE00000000000000500000%'")}
+        where ${felder('DE00000000000000500000', 'null', "'DE00000000000000500000'")}
         order by ${rang('DE00000000000000500000')}, d.eingang_am desc limit 50`,
     ),
     await messen(
