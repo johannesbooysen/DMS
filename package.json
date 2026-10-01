@@ -47,7 +47,7 @@
     "@aws-sdk/client-s3": "^3.1126.0",
     "@napi-rs/canvas": "^1.0.8",
     "fast-xml-parser": "^5.11.1",
-    "imapflow": "^1.7.8",
+    "imapflow": "^2.1.0",
     "mailparser": "^3.9.20",
     "next": "^16.3.4",
     "nodemailer": "^9.1.0",
