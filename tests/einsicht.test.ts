@@ -279,7 +279,7 @@ describe('Was nie nach draussen geht', () => {
   it('ein eingeschraenkter Beleg', async () => {
     const { gewaehrungId } = await gewaehren()
     await alsBenutzer(ANNA, (c) =>
-      c.query('select app.verarbeitung_einschraenken($1, $2)', [
+      c.query('select dms.verarbeitung_einschraenken($1, $2)', [
         D1_JAN_BIS_MAERZ,
         'Loeschantrag',
       ]),

@@ -7,6 +7,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { adminStempelEntziehen, adminStempelZurueck, type Stempelrecht } from './hilfe/admin-stempel'
 import { Client } from 'pg'
 import {
@@ -15,9 +16,6 @@ import {
   verwendeteFelder,
   type Bedingung,
 } from '../src/workflow/bedingung'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 /*
  * **Eva und nicht Anna.** Diese Datei prueft die Blockbaum-Regeln des
@@ -39,7 +37,7 @@ let client: Client
 let adminRechte: Stempelrecht[] = []
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
   // Als Eigentuemer, ausserhalb von alsKonfigurator: Die Warnung "genau eine
   // Person" gibt es nur ohne den Admin-Stempel (tests/hilfe/admin-stempel.ts).
@@ -64,7 +62,7 @@ async function alsKonfigurator<T>(aktion: (c: Client) => Promise<T>): Promise<T>
 
 async function befunde(c: Client): Promise<string[]> {
   const { rows } = await c.query<{ schwere: string; befund: string }>(
-    'select schwere, befund from app.prozessbaum_pruefen($1)',
+    'select schwere, befund from dms.prozessbaum_pruefen($1)',
     [DEFINITION],
   )
   return rows.map((r) => `${r.schwere}: ${r.befund}`)

@@ -65,7 +65,7 @@ export async function stempeltypenLaden(benutzerId: string): Promise<Stempeltypz
 
 export async function darfGestalten(benutzerId: string): Promise<boolean> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ darf: boolean }>(`select app.darf('prozess_konfigurieren') as darf`)
+    const { rows } = await c.query<{ darf: boolean }>(`select dms.darf('prozess_konfigurieren') as darf`)
     return rows[0]?.darf === true
   })
 }
@@ -92,7 +92,7 @@ export async function stempeltypAnlegen(benutzerId: string, f: Eingaben): Promis
     try {
       const { rowCount } = await c.query(
         `insert into stempeltyp (mandant_id, name, kurzcode, entscheidung, farbe)
-         select app.mein_mandant(), $1, $2, $3, $4
+         select dms.mein_mandant(), $1, $2, $3, $4
           where not exists (select 1 from stempeltyp where kurzcode = $2)`,
         [name, kurzcode, entscheidung, farbe],
       )
@@ -141,7 +141,7 @@ export async function gestaltungFuerAlleSetzen(benutzerId: string, f: Eingaben):
   const gestaltung = gestaltungAusMaske(f)
   return alsBenutzer(benutzerId, async (c) => {
     const { rowCount } = await c.query(
-      `update stempeltyp set gestaltung = $1::jsonb where mandant_id = app.mein_mandant()`,
+      `update stempeltyp set gestaltung = $1::jsonb where mandant_id = dms.mein_mandant()`,
       [JSON.stringify(gestaltung)],
     )
     mussGewirktHaben(rowCount)

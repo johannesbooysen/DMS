@@ -12,7 +12,7 @@
  * unberührt — genau deshalb steht danach in `benutzer_rolle_objekt` keine
  * Zuständigkeit, die es fachlich nie gab.
  *
- * Die ganze Wirkung sitzt in `app.meine_objekte()` und `app.darf()`; hier
+ * Die ganze Wirkung sitzt in `dms.meine_objekte()` und `dms.darf()`; hier
  * steht nur das Anlegen, Beenden und Anzeigen. Wer die Regel sucht, findet
  * sie in der Migration `20260908100000`, nicht in diesem Modul.
  */
@@ -64,7 +64,7 @@ export async function laufende(c: PoolClient): Promise<Zugriff[]> {
   const { rows } = await c.query<ZugriffZeile>(
     `select id, benutzer_id, benutzer, objekt_id, objektnummer, objektname,
             grund, beginn, ende, eigener
-       from app.notfallzugriff_offen()`,
+       from dms.notfallzugriff_offen()`,
   )
   return rows.map((z) => ({
     id: z.id,
@@ -115,8 +115,8 @@ export async function einrichten(c: PoolClient, antrag: Antrag): Promise<string>
     const { rows } = await c.query<{ id: string }>(
       `insert into notfallzugriff
          (mandant_id, benutzer_id, objekt_id, grund, ende, angelegt_von)
-       values (app.mein_mandant(), $1, $2, $3,
-               now() + make_interval(days => $4::integer), app.mein_benutzer())
+       values (dms.mein_mandant(), $1, $2, $3,
+               now() + make_interval(days => $4::integer), dms.mein_benutzer())
        returning id`,
       [antrag.benutzerId, antrag.objektId, grund, antrag.tage],
     )
@@ -148,7 +148,7 @@ const NICHT_ERLAUBT =
 export async function beenden(c: PoolClient, id: string): Promise<void> {
   const ergebnis = await c.query(
     `update notfallzugriff
-        set beendet_am = now(), beendet_von = app.mein_benutzer()
+        set beendet_am = now(), beendet_von = dms.mein_benutzer()
       where id = $1 and beendet_am is null`,
     [id],
   )
@@ -184,7 +184,7 @@ export async function objekteZurAuswahl(
   const { rows } = await c.query<{ id: string; objektnummer: string; name: string }>(
     `select id, objektnummer, bezeichnung as name
        from objekt
-      where mandant_id = app.mein_mandant()
+      where mandant_id = dms.mein_mandant()
       order by objektnummer`,
   )
   return rows
@@ -196,7 +196,7 @@ export async function benutzerZurAuswahl(
 ): Promise<{ id: string; name: string }[]> {
   const { rows } = await c.query<{ id: string; name: string }>(
     `select id, name from benutzer
-      where mandant_id = app.mein_mandant() and aktiv
+      where mandant_id = dms.mein_mandant() and aktiv
       order by name`,
   )
   return rows
@@ -209,6 +209,6 @@ export async function benutzerZurAuswahl(
  * Knopf zeigt und danach abweist, ist ärgerlicher als eine ohne Knopf.
  */
 export async function darfEinrichten(c: PoolClient): Promise<boolean> {
-  const { rows } = await c.query<{ d: boolean }>("select app.darf('notfallzugriff') as d")
+  const { rows } = await c.query<{ d: boolean }>("select dms.darf('notfallzugriff') as d")
   return rows[0]?.d === true
 }

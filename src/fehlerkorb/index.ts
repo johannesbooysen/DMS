@@ -75,7 +75,7 @@ export async function fehlerMelden(
 ): Promise<string | null> {
   return alsSystem(benutzerId, async (c) => {
     const { rows } = await c.query<{ verarbeitungsfehler_melden: string | null }>(
-      'select app.verarbeitungsfehler_melden($1, $2, $3, $4, $5, $6)',
+      'select dms.verarbeitungsfehler_melden($1, $2, $3, $4, $5, $6)',
       [
         eingabe.dokumentId ?? null,
         eingabe.stapelId ?? null,
@@ -135,7 +135,7 @@ export async function haengendeLaden(
 ): Promise<Haengerzeile[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.aufbereitung_haengt($1)',
+      'select * from dms.aufbereitung_haengt($1)',
       [minuten],
     )
     return rows.map((z) => ({
@@ -265,7 +265,7 @@ export async function fehlerVerwerfen(
     if (!(await erledigen(c, fehlerId, 'verworfen'))) return false
 
     if (quelle.dokumentId !== null) {
-      await c.query('select app.dokument_stornieren($1, $2)', [
+      await c.query('select dms.dokument_stornieren($1, $2)', [
         quelle.dokumentId,
         grund.trim(),
       ])
@@ -313,7 +313,7 @@ async function erledigen(
   ausgang: Ausgang,
 ): Promise<boolean> {
   const { rows } = await c.query<{ verarbeitungsfehler_erledigen: boolean }>(
-    'select app.verarbeitungsfehler_erledigen($1, $2)',
+    'select dms.verarbeitungsfehler_erledigen($1, $2)',
     [fehlerId, ausgang],
   )
   return rows[0]?.verarbeitungsfehler_erledigen === true
@@ -354,7 +354,7 @@ export async function alleWiederholen(benutzerId: string): Promise<number> {
 export async function fehlerkorbZaehler(c: import('pg').PoolClient, minuten = 30): Promise<number> {
   const { rows } = await c.query<{ n: string }>(
     `select (select count(*) from verarbeitungsfehler where erledigt_am is null)
-          + (select count(*) from app.aufbereitung_haengt($1)) as n`,
+          + (select count(*) from dms.aufbereitung_haengt($1)) as n`,
     [minuten],
   )
   return Number(rows[0]?.n ?? 0)

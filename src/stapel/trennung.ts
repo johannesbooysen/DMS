@@ -91,7 +91,7 @@ export function trennungVorschlagen(
 }
 
 /**
- * Ordnet Seiten den Belegen zu — dieselbe Rechnung wie `app.stapel_gruppieren`,
+ * Ordnet Seiten den Belegen zu — dieselbe Rechnung wie `dms.stapel_gruppieren`,
  * nur für die Vorschau ohne Datenbank.
  *
  * Der Beleg beginnt **nach** dem Trennblatt. Ein Stapel, der mit einem

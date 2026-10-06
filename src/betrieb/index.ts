@@ -47,7 +47,7 @@ export interface Gesundheit {
 /** Trägt das Lebenszeichen eines Dienstes ein. */
 export async function lebenszeichenSetzen(dienst: string): Promise<void> {
   await alsAnmeldung(async (c) => {
-    await c.query('select app.lebenszeichen_setzen($1, $2)', [
+    await c.query('select dms.lebenszeichen_setzen($1, $2)', [
       dienst,
       process.env['DMS_FASSUNG'] ?? null,
     ])
@@ -69,7 +69,7 @@ export async function gesundheit(erwartet: string[] = [WORKER]): Promise<Gesundh
         dienst: string
         alter_s: number
         fassung: string | null
-      }>('select dienst, alter_s, fassung from app.lebenszeichen()')
+      }>('select dienst, alter_s, fassung from dms.lebenszeichen()')
       return rows.map((r) => ({
         dienst: r.dienst,
         alterS: Number(r.alter_s),

@@ -60,7 +60,7 @@ export async function fassungFreigeben(
   await ablage.schreiben(storageKey, Buffer.from(angaben.text, 'utf8'))
 
   const { rows } = await c.query<{ verfahrensdoku_freigeben: string }>(
-    'select app.verfahrensdoku_freigeben($1, $2::date, $3, $4, $5)',
+    'select dms.verfahrensdoku_freigeben($1, $2::date, $3, $4, $5)',
     [angaben.version, angaben.gueltigAb, angaben.titel, inhaltHash, storageKey],
   )
   const id = rows[0]?.verfahrensdoku_freigeben
@@ -132,7 +132,7 @@ export async function luecken(
 ): Promise<Array<{ dokumentId: string; archiviertAm: string }>> {
   const { rows } = await c.query<{ dokument_id: string; archiviert_am: string }>(
     `select dokument_id, to_char(archiviert_am, 'YYYY-MM-DD') as archiviert_am
-       from app.archiv_ohne_verfahrensdoku()`,
+       from dms.archiv_ohne_verfahrensdoku()`,
   )
   return rows.map((z) => ({
     dokumentId: z.dokument_id,

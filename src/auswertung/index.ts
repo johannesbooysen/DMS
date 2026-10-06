@@ -73,7 +73,7 @@ export interface Zeitraum {
  * gemessen dreimal so teuer und ging auf die Platte (siehe
  * docs/messungen.md); von einer Weboberfläche aus ist das die Abfrage, die
  * den Server anhält, und sie entsteht aus einem leeren Eingabefeld. Wer sie
- * wirklich will, ruft `app.durchlaufzeiten(null, null)` in SQL auf — dann
+ * wirklich will, ruft `dms.durchlaufzeiten(null, null)` in SQL auf — dann
  * hat er es entschieden statt vergessen.
  */
 export async function durchlaufzeiten(
@@ -87,7 +87,7 @@ async function zeitenLesen(c: PoolClient, zeitraum: Zeitraum): Promise<Stufenzei
   const { rows } = await c.query<Record<string, unknown>>(
     // coalesce auf die Vorgabe: `null` hiesse hier "gesamte Geschichte", und
     // das soll nur bekommen, wer es ausdruecklich verlangt.
-    `select * from app.durchlaufzeiten(
+    `select * from dms.durchlaufzeiten(
               coalesce($1::date, current_date - 90), $2::date)`,
     [zeitraum.von ?? null, zeitraum.bis ?? null],
   )
@@ -117,7 +117,7 @@ export async function skonto(
 ): Promise<{ summe: Skontosumme[]; faelle: Skontoverlust[] }> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows: summe } = await c.query<Record<string, unknown>>(
-      'select * from app.skonto_summe($1::date, $2::date)',
+      'select * from dms.skonto_summe($1::date, $2::date)',
       [zeitraum.von ?? null, zeitraum.bis ?? null],
     )
     const { rows: faelle } = await c.query<Record<string, unknown>>(
@@ -128,7 +128,7 @@ export async function skonto(
               to_char(skonto_bis, 'YYYY-MM-DD') as skonto_bis,
               to_char(gezahlt_am, 'YYYY-MM-DD') as gezahlt_am,
               lage, verlust
-         from app.skonto_verluste($1::date, $2::date, $3)`,
+         from dms.skonto_verluste($1::date, $2::date, $3)`,
       [zeitraum.von ?? null, zeitraum.bis ?? null, grenze],
     )
 
@@ -161,7 +161,7 @@ export async function aeltesteOffene(
 ): Promise<OffenerBeleg[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.aelteste_offene($1)',
+      'select * from dms.aelteste_offene($1)',
       [grenze],
     )
     return rows.map((z) => ({

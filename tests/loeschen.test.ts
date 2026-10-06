@@ -7,7 +7,7 @@
  * weiter reichen, als sie soll.
  *
  * Die Trigger fragen dafür eine **nachprüfbare Tatsache**
- * (`app.loeschung_faellig`) und keine Fahne, die jemand setzen kann. Ein
+ * (`dms.loeschung_faellig`) und keine Fahne, die jemand setzen kann. Ein
  * Sitzungsschalter wäre bequemer und wäre genau die Hintertür, gegen die es
  * die Trigger gibt. Diese Datei prüft, dass es keine gibt.
  */
@@ -95,7 +95,7 @@ async function archivierterBeleg(
         [neu],
       )
     }
-    await c.query('select app.dokument_archivieren($1)', [neu])
+    await c.query('select dms.dokument_archivieren($1)', [neu])
     return neu
   })
   return { id, schluessel }
@@ -180,7 +180,7 @@ describe('Die Ausnahme reicht nicht weiter, als sie soll', () => {
     const { id } = await archivierterBeleg(2026)
 
     /*
-     * Der Kern. Die Schutztrigger fragen `app.loeschung_faellig` -- eine
+     * Der Kern. Die Schutztrigger fragen `dms.loeschung_faellig` -- eine
      * Tatsache, keine Fahne. Wer die Funktion umgeht, kommt trotzdem nicht
      * durch.
      */
@@ -355,7 +355,7 @@ describe('Die Kandidatenliste', () => {
     const { id } = await archivierterBeleg(2010)
 
     /*
-     * Der Fund dieses Blocks: `app.loeschkandidaten` verbindet auf
+     * Der Fund dieses Blocks: `dms.loeschkandidaten` verbindet auf
      * `einschraenkung` und kannte deshalb nur Belege mit Anspruch. Belege,
      * nach denen niemand gefragt hat, deren Frist aber vorbei ist, fielen
      * durch -- und die Loeschpflicht nach Fristablauf war unerfuellbar.
@@ -364,7 +364,7 @@ describe('Die Kandidatenliste', () => {
     expect(faellig.find((f) => f.dokumentId === id)?.grund).toBe('fristablauf')
 
     const alt = await direkt<{ dokument_id: string }>(
-      'select dokument_id from app.loeschkandidaten()',
+      'select dokument_id from dms.loeschkandidaten()',
     )
     expect(alt.some((z) => z.dokument_id === id)).toBe(false)
   })

@@ -130,7 +130,7 @@ export async function vorschlagUebernehmen(
     try {
       const { rows } = await c.query<{ id: string }>(
         `insert into kreditor (mandant_id, name, ust_id, email)
-         values (app.mein_mandant(), $1, $2, $3) returning id`,
+         values (dms.mein_mandant(), $1, $2, $3) returning id`,
         [name, ustId, email],
       )
       kreditorId = rows[0]!.id
@@ -170,7 +170,7 @@ export async function vorschlagVerwerfen(benutzerId: string, vorschlagId: string
   await alsBenutzer(benutzerId, async (c) => {
     const { rowCount } = await c.query(
       `update kreditor_vorschlag
-          set status = 'verworfen', entschieden_am = now(), entschieden_von = app.mein_benutzer()
+          set status = 'verworfen', entschieden_am = now(), entschieden_von = dms.mein_benutzer()
         where id = $1 and status = 'offen'`,
       [vorschlagId],
     )
@@ -202,7 +202,7 @@ async function zuordnen(
 ): Promise<number> {
   const { rows: betroffen, rowCount } = await c.query<{ dokument_id: string }>(
     `update kreditor_vorschlag
-        set status = $3, kreditor_id = $4, entschieden_am = now(), entschieden_von = app.mein_benutzer()
+        set status = $3, kreditor_id = $4, entschieden_am = now(), entschieden_von = dms.mein_benutzer()
       where status = 'offen'
         and (id = $1 or lower(name) = lower($2) or ($5::text is not null and ust_id = $5))
       returning dokument_id`,

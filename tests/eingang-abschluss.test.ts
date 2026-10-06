@@ -153,7 +153,7 @@ describe('Abschluss des Posteingangs', () => {
     const { rows } = await alsBenutzer(ANNA, (c) =>
       c.query<{ n: string; verschiebbar: string | null }>(
         `select (select count(*) from stempel_ereignis e join dokument_lauf l on l.id = e.lauf_id where l.dokument_id = $1) as n,
-                (select app.stempel_verschiebbar(l.id) from dokument_layer l where l.dokument_id = $1 and l.typ = 'stempel' limit 1) as verschiebbar`,
+                (select dms.stempel_verschiebbar(l.id) from dokument_layer l where l.dokument_id = $1 and l.typ = 'stempel' limit 1) as verschiebbar`,
         [id],
       ),
     )

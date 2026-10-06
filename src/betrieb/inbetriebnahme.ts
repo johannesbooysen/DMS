@@ -281,13 +281,13 @@ export async function datenbankPruefen(c: PoolClient, migrationsverzeichnis: str
   }
 
   const { rows: schutz } = await c.query<{ gegenstand: string; befund: string }>(
-    'select gegenstand, befund from app.schutz_pruefen()',
+    'select gegenstand, befund from dms.schutz_pruefen()',
   )
   for (const z of schutz) befunde.push(hart(`${z.gegenstand}: ${z.befund}`))
   if (schutz.length === 0) geprueft.push('RLS, Policies und Unveränderlichkeitstrigger vollständig')
 
   const { rows: kette } = await c.query<{ folge: string; befund: string }>(
-    'select folge, befund from app.kette_pruefen(500)',
+    'select folge, befund from dms.kette_pruefen(500)',
   )
   for (const z of kette) befunde.push(hart(`Hash-Kette bei Ereignis ${z.folge}: ${z.befund}`))
   const { rows: zaehler } = await c.query<{ ereignisse: string; mandanten: string; verwalter: string }>(

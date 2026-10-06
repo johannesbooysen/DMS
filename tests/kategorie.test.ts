@@ -103,7 +103,7 @@ async function alsEigentuemer(sql: string, werte: unknown[] = []): Promise<void>
  * Wie `alsEigentuemer`, aber mit gesetztem Benutzer.
  *
  * Der Eigentuemer umgeht die RLS -- **Trigger fireen trotzdem**. Ohne
- * Benutzerkontext ist `app.darf_prozess()` falsch, und schon das Aufraeumen
+ * Benutzerkontext ist `dms.darf_prozess()` falsch, und schon das Aufraeumen
  * von `prozessdefinition_id` scheitert am Rechtetrigger. Der Kontext gilt nur
  * bis zum Ende der Transaktion, damit die Kennung nicht ueber die
  * wiederverwendete Verbindung in andere Tests sickert.

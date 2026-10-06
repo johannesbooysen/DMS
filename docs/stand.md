@@ -629,6 +629,11 @@ Die Schutzpruefung bewertet nur Tabellen, die dem DMS gehoeren
 Funktionen: `app.schutz_pruefen`
 
 
+### `supabase/migrations/20261006140000_schema_dms.sql`
+
+Umzug in das Schema dms (ADR 0010, Weg B, Schritt 2)
+
+
 ## Module
 
 | Datei | Aufgabe |

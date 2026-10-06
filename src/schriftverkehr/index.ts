@@ -12,7 +12,7 @@
  * Stufenfolge steht im Seed und ist Konfiguration.
  *
  * Was der Umbau gefunden hat, steht in der Migration `20260902180000`:
- * `app.freigabe_hash` band über einen inneren Verbund an `rechnung_fakten`
+ * `dms.freigabe_hash` band über einen inneren Verbund an `rechnung_fakten`
  * und lieferte für jede andere Belegart `null` — Freigaben, die an nichts
  * hängen.
  */

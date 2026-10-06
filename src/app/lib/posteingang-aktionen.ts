@@ -24,7 +24,7 @@ import {
 /** Der Mandant des Angemeldeten — kein Feld im Formular. */
 async function meinMandant(benutzerId: string): Promise<string> {
   return alsBenutzer(benutzerId, async (c) => {
-    const { rows } = await c.query<{ m: string }>('select app.mein_mandant() as m')
+    const { rows } = await c.query<{ m: string }>('select dms.mein_mandant() as m')
     return rows[0].m
   })
 }

@@ -276,7 +276,7 @@ function runden(wert: number): number {
 }
 
 /**
- * Die Vorschau der Prüfung -- derselbe Maßstab wie in `app.stempel_lage_pruefen`,
+ * Die Vorschau der Prüfung -- derselbe Maßstab wie in `dms.stempel_lage_pruefen`,
  * damit Rot hier auch Rot dort heißt. Die Datenbank prüft trotzdem selbst.
  */
 export function lagePruefen(

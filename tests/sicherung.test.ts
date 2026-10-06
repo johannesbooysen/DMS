@@ -206,7 +206,7 @@ describe('Die Hash-Kette', () => {
       try {
         await c.query(`set timezone = '${zone}'`)
         await c.query("set datestyle = 'German, DMY'")
-        const { rows } = await c.query('select count(*) as n from app.kette_pruefen(500)')
+        const { rows } = await c.query('select count(*) as n from dms.kette_pruefen(500)')
         expect(Number(rows[0].n), zone).toBe(0)
       } finally {
         await c.query('reset all')
@@ -250,7 +250,7 @@ describe('Die Schutzmechanismen', () => {
       await direkt(
         `create trigger archiv_eintrag_unveraenderlich
            before update or delete on archiv_eintrag
-           for each row execute function app.archiv_eintrag_schutz()`,
+           for each row execute function dms.archiv_eintrag_schutz()`,
       )
     }
   })

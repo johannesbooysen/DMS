@@ -89,7 +89,7 @@ export async function stapelAufbereiten(
   }
 
   const { rows: gruppen } = await c.query<{ stapel_gruppieren: number }>(
-    'select app.stapel_gruppieren($1)',
+    'select dms.stapel_gruppieren($1)',
     [stapelId],
   )
 

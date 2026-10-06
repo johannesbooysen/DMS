@@ -16,6 +16,7 @@
  */
 
 import { mkdtemp, readdir, rm } from 'node:fs/promises'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -32,9 +33,6 @@ import {
 } from '../src/ocr'
 import { pdfBauen, rechnungsvorlage, scanvorlage } from './hilfe/pdf-bauen'
 
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
-
 const MANDANT_NORD = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
 const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
@@ -46,7 +44,7 @@ let rechnung: Buffer
 let scan: Buffer
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
   wurzel = await mkdtemp(join(tmpdir(), 'dms-ocr-test-'))
   ablage = new DateisystemAblage(wurzel)

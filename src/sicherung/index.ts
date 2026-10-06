@@ -55,7 +55,7 @@ export interface Pruefbericht {
  */
 export async function kettePruefen(c: PoolClient): Promise<Befund[]> {
   const { rows } = await c.query<{ ereignis_id: string; folge: string; befund: string }>(
-    'select ereignis_id, folge, befund from app.kette_pruefen(500)',
+    'select ereignis_id, folge, befund from dms.kette_pruefen(500)',
   )
   return rows.map((z) => ({
     art: z.befund,
@@ -71,7 +71,7 @@ export async function kettePruefen(c: PoolClient): Promise<Befund[]> {
 /** Greifen RLS, Policies und die Trigger noch? */
 export async function schutzPruefen(c: PoolClient): Promise<Befund[]> {
   const { rows } = await c.query<{ gegenstand: string; art: string; befund: string }>(
-    'select gegenstand, art, befund from app.schutz_pruefen()',
+    'select gegenstand, art, befund from dms.schutz_pruefen()',
   )
   return rows.map((z) => ({
     art: z.art,
@@ -320,7 +320,7 @@ export async function letzteProbe(c: PoolClient): Promise<Probe | null> {
     dateien: number
     befunde: number
     fassung: string | null
-  }>('select * from app.letzte_sicherungsprobe()')
+  }>('select * from dms.letzte_sicherungsprobe()')
   const z = rows[0]
   if (z === undefined) return null
   return {

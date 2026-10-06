@@ -4,7 +4,7 @@
  * Ein Durchgang im Worker: Aufgaben, die laenger als die an der Stufe
  * hinterlegte Spanne ueber ihrer Faelligkeit liegen, bekommt die dort
  * hinterlegte Person persoenlich -- einmal, protokolliert. Die eigentliche
- * Regel steht in `app.eskalation_durchgang()` (Migration 20260926130000),
+ * Regel steht in `dms.eskalation_durchgang()` (Migration 20260926130000),
  * weil sie ueber alle Mandanten laeuft und der Worker keinen Benutzer hat:
  * `security definer`, wie die Sammelmail.
  *
@@ -23,7 +23,7 @@ export interface Eskalationsbilanz {
 export async function eskalationDurchgang(): Promise<Eskalationsbilanz> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ aufgabe_id: string }>(
-      'select aufgabe_id from app.eskalation_durchgang()',
+      'select aufgabe_id from dms.eskalation_durchgang()',
     )
     return { eskaliert: rows.length }
   })

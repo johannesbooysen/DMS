@@ -49,7 +49,7 @@ export async function sitzungAnlegen(
   const token = tokenErzeugen()
   const angelegt = await alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ sitzung_anlegen: string | null }>(
-      'select app.sitzung_anlegen($1, $2, $3, $4)',
+      'select dms.sitzung_anlegen($1, $2, $3, $4)',
       [benutzerId, hash(token), anbietername, SITZUNG_DAUER_MIN],
     )
     return rows[0]?.sitzung_anlegen ?? null
@@ -62,7 +62,7 @@ export async function sitzungAufloesen(token: string): Promise<Angemeldet | null
 
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ benutzer_id: string; mandant_id: string }>(
-      'select * from app.sitzung_aufloesen($1, $2)',
+      'select * from dms.sitzung_aufloesen($1, $2)',
       [hash(token), SITZUNG_UNTAETIG_MIN],
     )
     const treffer = rows[0]
@@ -73,7 +73,7 @@ export async function sitzungAufloesen(token: string): Promise<Angemeldet | null
 
 export async function sitzungBeenden(token: string): Promise<void> {
   if (token === '') return
-  await alsAnmeldung((c) => c.query('select app.sitzung_beenden($1)', [hash(token)]))
+  await alsAnmeldung((c) => c.query('select dms.sitzung_beenden($1)', [hash(token)]))
 }
 
 /**
@@ -90,7 +90,7 @@ export async function identitaetAufloesen(
 ): Promise<string | null> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ identitaet_aufloesen: string | null }>(
-      'select app.identitaet_aufloesen($1, $2, $3)',
+      'select dms.identitaet_aufloesen($1, $2, $3)',
       [anbieter, externeKennung, email],
     )
     return rows[0]?.identitaet_aufloesen ?? null
@@ -103,7 +103,7 @@ export async function anmeldungProtokollieren(
   hinweis: string | null = null,
 ): Promise<void> {
   await alsAnmeldung((c) =>
-    c.query('select app.anmeldung_protokollieren($1, $2, $3)', [ergebnis, anbieter, hinweis]),
+    c.query('select dms.anmeldung_protokollieren($1, $2, $3)', [ergebnis, anbieter, hinweis]),
   )
 }
 

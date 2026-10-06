@@ -76,7 +76,7 @@ export async function einsichtAufloesen(token: string): Promise<Gewaehrung | nul
 
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.einsicht_aufloesen($1)',
+      'select * from dms.einsicht_aufloesen($1)',
       [hash(token)],
     )
     const g = rows[0]
@@ -103,7 +103,7 @@ export async function einsichtBelege(
 ): Promise<Einsichtsbeleg[]> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.einsicht_belege($1, $2, $3)',
+      'select * from dms.einsicht_belege($1, $2, $3)',
       [gewaehrungId, optionen.limit ?? 50, optionen.versatz ?? 0],
     )
     return rows.map((z) => ({
@@ -131,7 +131,7 @@ export async function einsichtDarfBeleg(
 ): Promise<boolean> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ einsicht_darf_beleg: boolean }>(
-      'select app.einsicht_darf_beleg($1, $2)',
+      'select dms.einsicht_darf_beleg($1, $2)',
       [gewaehrungId, dokumentId],
     )
     return rows[0]?.einsicht_darf_beleg === true
@@ -156,7 +156,7 @@ export async function einsichtDatei(
       storage_key: string
       mime: string
       storage_fassung: string | null
-    }>('select * from app.einsicht_datei($1, $2, $3, $4)', [
+    }>('select * from dms.einsicht_datei($1, $2, $3, $4)', [
       gewaehrungId,
       dokumentId,
       variante,
@@ -176,7 +176,7 @@ export async function einsichtProtokollieren(
   ip: string | null = null,
 ): Promise<void> {
   await alsAnmeldung((c) =>
-    c.query('select app.einsicht_protokollieren($1, $2, $3, $4)', [
+    c.query('select dms.einsicht_protokollieren($1, $2, $3, $4)', [
       gewaehrungId,
       dokumentId,
       aktion,
@@ -233,10 +233,10 @@ export async function einsichtLayer(
      * damit 0, und jede Schwärzung wäre an der falschen Stelle gelandet.
      *
      * Genau derselbe Fehler steckte schon einmal in `einsichtDatei`. Deshalb
-     * jetzt beides in `app.einsicht_layer`, mit der Prüfung darin.
+     * jetzt beides in `dms.einsicht_layer`, mit der Prüfung darin.
      */
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.einsicht_layer($1, $2, $3)',
+      'select * from dms.einsicht_layer($1, $2, $3)',
       [gewaehrungId, dokumentId, seite],
     )
     return {
@@ -264,7 +264,7 @@ export async function einsichtLayer(
 export async function pdfDarfHinaus(dokumentId: string): Promise<boolean> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ hat_schwaerzung: boolean }>(
-      'select app.hat_schwaerzung($1)',
+      'select dms.hat_schwaerzung($1)',
       [dokumentId],
     )
     return rows[0]?.hat_schwaerzung !== true
@@ -305,7 +305,7 @@ export async function einsichtGewaehren(
   const token = tokenErzeugen()
   const gewaehrungId = await alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ einsicht_gewaehren: string | null }>(
-      `select app.einsicht_gewaehren($1, $2, $3, $4, $5,
+      `select dms.einsicht_gewaehren($1, $2, $3, $4, $5,
                                      current_date + $6::integer,
                                      $7::text[], $8, $9, $10)`,
       [
@@ -366,7 +366,7 @@ export async function einsichtWiderrufen(
 ): Promise<boolean> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ einsicht_widerrufen: boolean }>(
-      'select app.einsicht_widerrufen($1)',
+      'select dms.einsicht_widerrufen($1)',
       [gewaehrungId],
     )
     return rows[0]?.einsicht_widerrufen === true
@@ -450,7 +450,7 @@ export async function einsichtBelegeMitClient(
   gewaehrungId: string,
 ): Promise<Einsichtsbeleg[]> {
   const { rows } = await c.query<Record<string, unknown>>(
-    'select * from app.einsicht_belege($1, 50, 0)',
+    'select * from dms.einsicht_belege($1, 50, 0)',
     [gewaehrungId],
   )
   return rows.map((z) => ({

@@ -167,8 +167,8 @@ export async function quelleAnlegen(benutzerId: string, f: Eingaben): Promise<vo
       `insert into eingangsquelle (mandant_id, art, bezeichnung, einstellungen,
                                    objekt_id, ordnungsgruppe_id, belegart,
                                    takt_sekunden, angelegt_von)
-       values (app.mein_mandant(), $1, $2, $3::jsonb, $4, $5, $6, $7,
-               app.mein_benutzer())`,
+       values (dms.mein_mandant(), $1, $2, $3::jsonb, $4, $5, $6, $7,
+               dms.mein_benutzer())`,
       [
         art,
         bezeichnung,
@@ -347,7 +347,7 @@ export async function vorlageAnlegen(benutzerId: string, f: Eingaben): Promise<v
     }
     await c.query(
       `insert into vorlage (mandant_id, schluessel, name, betreff, text)
-       values (app.mein_mandant(), $1, $2, $3, $4)`,
+       values (dms.mein_mandant(), $1, $2, $3, $4)`,
       [schluessel, name, betreff, inhalt],
     )
   })

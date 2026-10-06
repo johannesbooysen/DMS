@@ -4,7 +4,7 @@
  * Der Seed hat seit dem 26.09.2026 einen Admin mit jedem Stempel des Hauses
  * (CLAUDE.md: "Die Testdaten haben einen Admin"). Damit kann an keiner Stufe
  * mehr **genau eine** Person entscheiden -- die Warnung "genau einer Person"
- * aus app.prozessbaum_pruefen ist im Seed verschwunden, und das ist richtig
+ * aus dms.prozessbaum_pruefen ist im Seed verschwunden, und das ist richtig
  * so. Tests, die diese Warnung pruefen, brauchen den Seed ohne Admin-Stempel:
  * Sie entziehen sie hier vorher und geben sie nachher zurueck -- mit den
  * urspruenglichen Kennungen, damit nichts anderes davon etwas merkt.

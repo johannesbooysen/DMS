@@ -504,7 +504,7 @@ describe('Eigenanteil bei Selbstbeteiligung', () => {
 
     // Und der Summenzwang stimmt weiterhin -- er kennt die Zahlungen nicht.
     const [{ stimmt }] = await direkt<{ stimmt: boolean }>(
-      'select app.kontierung_summe_stimmt($1) as stimmt',
+      'select dms.kontierung_summe_stimmt($1) as stimmt',
       [beleg],
     )
     expect(stimmt).toBe(true)

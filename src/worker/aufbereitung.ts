@@ -110,7 +110,7 @@ async function texterkennungAnwenden(
     // Direkt auf der laufenden Verbindung, nicht ueber `fehlerMelden`: Der
     // Eintrag soll mit der Aufbereitung zusammen festgeschrieben werden.
     // Die Funktion ist `security definer` und braucht dafuer keine Rolle.
-    await c.query('select app.verarbeitungsfehler_melden($1, null, $2, $3, 0, null)', [
+    await c.query('select dms.verarbeitungsfehler_melden($1, null, $2, $3, 0, null)', [
       dokumentId,
       AUFBEREITUNG,
       grund,
@@ -137,7 +137,7 @@ async function texterkennungAnwenden(
  * Bestandsuebernahmen -- das entscheidet die Funktion am Eingangskanal.
  */
 export async function eingangAbschliessen(c: PoolClient, dokumentId: string): Promise<string | null> {
-  const { rows } = await c.query<{ nummer: string | null }>('select app.eingang_abschliessen($1) as nummer', [dokumentId])
+  const { rows } = await c.query<{ nummer: string | null }>('select dms.eingang_abschliessen($1) as nummer', [dokumentId])
   return rows[0]?.nummer ?? null
 }
 
@@ -391,7 +391,7 @@ export async function aufbereiten(
       // Mit Begruendung: Sie wird im Moment der Zuordnung aufgeschrieben,
       // weil sich spaeter nicht mehr sicher nachrechnen laesst, welches
       // Merkmal damals griff (Migration 20260922100000).
-      await c.query('select app.dokument_zuordnen($1, $2, $3)', [
+      await c.query('select dms.dokument_zuordnen($1, $2, $3)', [
         dokumentId,
         zuordnung.objektId,
         zuordnung.begruendung,

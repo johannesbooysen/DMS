@@ -35,7 +35,7 @@ export interface Definitionszeile {
 
 export async function rechtPruefen(c: PoolClient): Promise<void> {
   const { rows } = await c.query<{ darf: boolean }>(
-    `select app.darf('prozess_konfigurieren') as darf`,
+    `select dms.darf('prozess_konfigurieren') as darf`,
   )
   if (rows[0]?.darf !== true) {
     throw new NichtErlaubt('Kein Recht, Abläufe zu konfigurieren')
@@ -53,7 +53,7 @@ export async function definitionenLaden(benutzerId: string): Promise<Definitions
          from prozessdefinition p
          left join benutzer b on b.id = p.entwurf_von
          left join ordnungsgruppe og on og.id = p.ordnungsgruppe_id
-        where p.mandant_id = app.mein_mandant()
+        where p.mandant_id = dms.mein_mandant()
         order by p.belegart, og.name nulls first, p.version desc`,
     )
     return rows.map((z) => ({
@@ -103,7 +103,7 @@ export async function entwurfAnlegen(benutzerId: string, vorlageId: string): Pro
               (select coalesce(max(p.version), 0) + 1 from prozessdefinition p
                 where p.mandant_id = v.mandant_id and p.belegart = v.belegart
                   and p.ordnungsgruppe_id is not distinct from v.ordnungsgruppe_id),
-              'entwurf', app.mein_benutzer(), app.mein_benutzer(), now()
+              'entwurf', dms.mein_benutzer(), dms.mein_benutzer(), now()
          from prozessdefinition v
         where v.id = $1
        returning id`,
@@ -200,7 +200,7 @@ export async function entwurfAnlegen(benutzerId: string, vorlageId: string): Pro
 
     await c.query(
       `insert into prozessdefinition_ereignis (definition_id, art, benutzer_id, hinweis)
-       values ($1, 'angelegt', app.mein_benutzer(), $2)`,
+       values ($1, 'angelegt', dms.mein_benutzer(), $2)`,
       [entwurfId, `Kopie von Version ${vorlageId}`],
     )
 
@@ -218,7 +218,7 @@ export async function entwurfPruefen(c: PoolClient, definitionId: string): Promi
   if (d.status !== 'entwurf') {
     throw new NichtMoeglich('Nur ein Entwurf lässt sich bearbeiten, keine aktive Fassung')
   }
-  const { rows: ich } = await c.query<{ id: string }>('select app.mein_benutzer() as id')
+  const { rows: ich } = await c.query<{ id: string }>('select dms.mein_benutzer() as id')
   if (d.entwurf_von !== null && d.entwurf_von !== ich[0]?.id) {
     throw new NichtMoeglich('Dieser Entwurf wird gerade von jemand anderem bearbeitet')
   }
@@ -352,7 +352,7 @@ export async function entwurfPruefung(
 ): Promise<Befund[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Befund>(
-      'select schwere, befund from app.prozessbaum_pruefen($1)',
+      'select schwere, befund from dms.prozessbaum_pruefen($1)',
       [definitionId],
     )
     return rows
@@ -376,7 +376,7 @@ export async function entwurfAktivieren(
     await entwurfPruefen(c, definitionId)
 
     const { rows: befunde } = await c.query<Befund>(
-      `select schwere, befund from app.prozessbaum_pruefen($1) where schwere = 'fehler'`,
+      `select schwere, befund from dms.prozessbaum_pruefen($1) where schwere = 'fehler'`,
       [definitionId],
     )
     if (befunde.length > 0) {
@@ -406,7 +406,7 @@ export async function entwurfAktivieren(
 
     await c.query(
       `insert into prozessdefinition_ereignis (definition_id, art, benutzer_id)
-       values ($1, 'aktiviert', app.mein_benutzer())`,
+       values ($1, 'aktiviert', dms.mein_benutzer())`,
       [definitionId],
     )
   })

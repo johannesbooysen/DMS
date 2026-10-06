@@ -8,7 +8,7 @@
  * übermalt ist, ist weg.
  *
  * Deshalb geht ein geschwärzter Beleg nach draußen nur als Bild. Die Sperre
- * dafür steht in `app.hat_schwaerzung`.
+ * dafür steht in `dms.hat_schwaerzung`.
  *
  * Das Original wird dabei nie verändert (Konzept 16) — gezeichnet wird auf
  * eine Kopie des vorgerenderten WebP, im Augenblick der Auslieferung.

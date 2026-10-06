@@ -483,7 +483,7 @@ describe('Mandanten- und Objektgrenze', () => {
   /*
    * Nicht Bernd: Er traegt die Buchhaltungsrolle mandantenweit und darf
    * Objekt 42 zu Recht sehen -- die Rolle traegt das Recht `ansehen`, und
-   * `app.meine_objekte()` wertet sie aus. Clara ist die richtige Gegenprobe:
+   * `dms.meine_objekte()` wertet sie aus. Clara ist die richtige Gegenprobe:
    * gleicher Mandant, keine Objektzustaendigkeit, keine ansehende Rolle.
    * Doris ist der zweite Mandant.
    */

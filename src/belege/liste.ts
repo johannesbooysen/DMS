@@ -9,13 +9,13 @@
  * fallen beim Entwickeln mit Seed-Daten nicht auf, weil dort alles schnell
  * ist:
  *
- *   1. Die RLS löst die Objektsichtbarkeit über `app.meine_objekte()` auf.
+ *   1. Die RLS löst die Objektsichtbarkeit über `dms.meine_objekte()` auf.
  *      **Aber `stable` allein genügt nicht** — die Funktion muss als
- *      unkorrelierte Unterabfrage `(select app.meine_objekte())` stehen, sonst
+ *      unkorrelierte Unterabfrage `(select dms.meine_objekte())` stehen, sonst
  *      ruft PostgreSQL sie je Zeile auf. Beim eigenen Messen kostete das
  *      92 Sekunden statt 140 Millisekunden; die Begründung steht in der
  *      Migration `20260831210000_policies_initplan.sql`. Aus demselben Grund
- *      steht `app.meine_objekte()` unten im **FROM** und nicht im WHERE.
+ *      steht `dms.meine_objekte()` unten im **FROM** und nicht im WHERE.
  *   2. Der objektübergreifende Feed braucht **Top-N je Objekt** über LATERAL.
  *      `objekt_id = any(array) order by … limit` materialisiert erst alle
  *      Treffer: 64 ms gegen 13 ms.
@@ -179,7 +179,7 @@ export async function feed(
    */
   const { rows } = await c.query<Record<string, unknown>>(
     `with sichtbar as (
-       select d.* from unnest(app.meine_objekte()) as mein(objekt_id)
+       select d.* from unnest(dms.meine_objekte()) as mein(objekt_id)
          cross join lateral (
            select dd.* from dokument dd
             where dd.objekt_id = mein.objekt_id
@@ -244,7 +244,7 @@ export function suchbegriffLesen(roh: string): { begriff: string; betrag: number
  * Vorher standen sie zweimal, und die Zaehlung haette bei der naechsten
  * Erweiterung etwas anderes gezaehlt als die Liste zeigt.
  *
- * Die Feldsuche laeuft ueber app.suchtreffer -- je Feld sein Index
+ * Die Feldsuche laeuft ueber dms.suchtreffer -- je Feld sein Index
  * (Trigramm auf Nummer und Name, B-Baum auf IBAN und Betrag, GIN auf dem
  * Seitentext), ohne Zeilenrechte auf den Satelliten; die Sichtbarkeit
  * prueft die Policy auf dokument hier aussen.
@@ -266,7 +266,7 @@ function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): stri
   const roh = filter.volltext?.trim()
   if (roh) {
     /*
-     * Die Treffer holt app.suchtreffer (Migration 20261001130000): eine
+     * Die Treffer holt dms.suchtreffer (Migration 20261001130000): eine
      * security-definer-Funktion, die nur Belegkennungen zurueckgibt. Der
      * erste Entwurf stand hier als `d.id in (select … union …)` ueber die
      * Satellitentabellen -- und lief gegen eine Million Belege in 5 bis 8
@@ -276,7 +276,7 @@ function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): stri
      * auf dokument, hier in der aeusseren Abfrage.
      */
     const { begriff, betrag, kennung } = suchbegriffLesen(roh)
-    bedingungen.push(`d.id in (select app.suchtreffer(${p(begriff)}, ${p(betrag)}, ${p(kennung)}))`)
+    bedingungen.push(`d.id in (select dms.suchtreffer(${p(begriff)}, ${p(betrag)}, ${p(kennung)}))`)
   }
   return bedingungen
 }

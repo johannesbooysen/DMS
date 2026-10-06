@@ -48,7 +48,7 @@ export interface Wegstufe {
   /** Die offene Aufgabe an dieser Stufe -- das Ziel eines Klicks ins Stempeln. */
   aufgabeId: string | null
   /**
-   * Ob der Betrachter dort stempeln darf -- gefragt bei `app.moegliche_stempel`,
+   * Ob der Betrachter dort stempeln darf -- gefragt bei `dms.moegliche_stempel`,
    * derselben Quelle, aus der die Aufgabenseite ihre Knoepfe bezieht. Nur dann
    * wird die Stufe ein Link; sonst steht sie da, aber fuehrt nirgendwohin.
    */
@@ -118,7 +118,7 @@ export async function belegwegLaden(benutzerId: string, dokumentId: string): Pro
       `select a.id, a.stufe_id, a.status, a.faellig_am, a.erledigt_am,
               coalesce(b.name, r.name, g.name) as bei,
               a.status in ('offen', 'in_arbeit')
-                and exists (select 1 from app.moegliche_stempel(a.lauf_id, a.stufe_id)) as stempelbar
+                and exists (select 1 from dms.moegliche_stempel(a.lauf_id, a.stufe_id)) as stempelbar
          from aufgabe a
          left join benutzer b on b.id = a.zugewiesen_benutzer
          left join rolle r on r.id = a.zugewiesen_rolle

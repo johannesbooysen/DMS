@@ -54,7 +54,7 @@ async function siehtObjekt(benutzerId: string, objektId: string): Promise<boolea
 
 async function darf(benutzerId: string, aktion: string, objektId: string): Promise<boolean> {
   const { rows } = await alsBenutzer(benutzerId, (c) =>
-    c.query<{ d: boolean }>('select app.darf($1, $2) as d', [aktion, objektId]),
+    c.query<{ d: boolean }>('select dms.darf($1, $2) as d', [aktion, objektId]),
   )
   return rows[0]?.d === true
 }

@@ -11,7 +11,7 @@
  * `freigabenNachpruefen` **vor** der Sperre und nicht erst, wenn jemand sich
  * wundert.
  *
- * Die Prüfung selbst steht in SQL (`app.zahlung_moeglich`), nicht hier. Sie
+ * Die Prüfung selbst steht in SQL (`dms.zahlung_moeglich`), nicht hier. Sie
  * ist die Sicherheitsgrenze und muss auch dann greifen, wenn jemand an dieser
  * Datei vorbeigeht.
  */
@@ -39,7 +39,7 @@ export async function freigabenNachpruefen(
   laufId: string,
 ): Promise<number> {
   const { rows } = await c.query<{ freigaben_nachpruefen: number }>(
-    'select app.freigaben_nachpruefen($1)',
+    'select dms.freigaben_nachpruefen($1)',
     [laufId],
   )
   return rows[0]?.freigaben_nachpruefen ?? 0
@@ -58,7 +58,7 @@ export async function zahlungMoeglich(
     laeufe[0] === undefined ? 0 : await freigabenNachpruefen(c, laeufe[0].id)
 
   const { rows } = await c.query<{ moeglich: boolean; hindernis: string | null }>(
-    'select * from app.zahlung_moeglich($1)',
+    'select * from dms.zahlung_moeglich($1)',
     [dokumentId],
   )
   const ergebnis = rows[0]

@@ -2,7 +2,7 @@
  * Die Paginierung -- Einstellung der Eingangsnummer je Haus.
  *
  * Vergeben wird die Nummer beim Abschluss des Posteingangs
- * (app.eingang_abschliessen, Migration 20261002100000); hier steht nur, wie
+ * (dms.eingang_abschliessen, Migration 20261002100000); hier steht nur, wie
  * sie aussieht: Praefix, Jahr im Nummernkreis, Stellen, an oder aus. Fehlt
  * die Zeile, gelten die Vorgaben -- eine frische Installation paginiert von
  * Anfang an, ohne dass jemand etwas einstellen muss.
@@ -29,10 +29,10 @@ export async function paginierungLaden(benutzerId: string): Promise<Paginierung>
   return alsBenutzer(benutzerId, async (c) => {
     const [{ rows }, { rows: staende }] = await Promise.all([
       c.query<{ aktiv: boolean; praefix: string; mit_jahr: boolean; stellen: number }>(
-        'select aktiv, praefix, mit_jahr, stellen from paginierung where mandant_id = app.mein_mandant()',
+        'select aktiv, praefix, mit_jahr, stellen from paginierung where mandant_id = dms.mein_mandant()',
       ),
       c.query<{ jahr: number; naechste: string }>(
-        'select jahr, naechste from paginierung_zaehler where mandant_id = app.mein_mandant() order by jahr desc',
+        'select jahr, naechste from paginierung_zaehler where mandant_id = dms.mein_mandant() order by jahr desc',
       ),
     ])
     const z = rows[0]
@@ -69,14 +69,14 @@ export async function paginierungSetzen(
     // zur selben Auskunft.
     const { rowCount } = await c.query(
       `update paginierung set aktiv = $1, praefix = $2, mit_jahr = $3, stellen = $4
-        where mandant_id = app.mein_mandant()`,
+        where mandant_id = dms.mein_mandant()`,
       [eingabe.aktiv, praefix, eingabe.mitJahr, eingabe.stellen],
     )
     if (rowCount === 0) {
       try {
         const { rowCount: eingefuegt } = await c.query(
           `insert into paginierung (mandant_id, aktiv, praefix, mit_jahr, stellen)
-           select app.mein_mandant(), $1, $2, $3, $4`,
+           select dms.mein_mandant(), $1, $2, $3, $4`,
           [eingabe.aktiv, praefix, eingabe.mitJahr, eingabe.stellen],
         )
         if (eingefuegt === 0) throw new NichtErlaubt('Die Paginierung einstellen darf, wer Stammdaten pflegt.')

@@ -192,7 +192,7 @@ function klemme(wert: number, klein: number, gross: number): number {
 
 /**
  * Untergrenze fuer einen verschobenen Stempel -- kleiner wird er unleserlich.
- * Dieselben Werte stehen in `app.stempel_lage_pruefen`; wer sie hier aendert,
+ * Dieselben Werte stehen in `dms.stempel_lage_pruefen`; wer sie hier aendert,
  * aendert sie dort.
  */
 export const STEMPEL_MINDESTMASSE = { breite: 120, hoehe: 40 } as const

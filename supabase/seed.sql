@@ -1,3 +1,6 @@
+-- Seit Migration 20261006140000 liegen alle DMS-Tabellen im Schema dms.
+set search_path = dms, public;
+
 -- Seed-Daten. Ausschliesslich synthetisch: erfundene Namen, Adressen,
 -- Objektnummern und Bankverbindungen. Keine echten Personendaten, auch nicht
 -- abgewandelt (Projektregel, siehe CLAUDE.md).

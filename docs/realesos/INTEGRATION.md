@@ -9,6 +9,9 @@
 | Datei | Zweck | Risikoklasse | Rollback |
 |---|---|---|---|
 | `20261006120000_create_dms_schema.sql` | Schema `dms`, Grundrechte, `dms.events`, `dms.log_event()`, Bucket `dms-files` | M | `20261006120000_rollback_create_dms_schema.sql` |
+| 69 DMS-Migrationen `20260828100000` bis `20261002100000` | Das fachliche Schema des DMS (Tabellen, Policies, Funktionen, Trigger) — Liste mit Tabellen in [docs/stand.md](../stand.md); wird für die Einbindung zu **einer** Grundmigration aus dem Zielschema zusammengefasst (Vorschrift § 5.2) | L | Neuaufbau |
+| `20261006130000_schutz_pruefen_dms.sql` | Schutzprüfung nur für DMS-Tabellen; entzieht `dms_app` die Rechte auf den 28 RealesOS-Tabellen | M | Rechte neu vergeben (nicht vorgesehen) |
+| `20261006140000_schema_dms.sql` | Umzug aller DMS-Tabellen und -Funktionen nach `dms` an Ort und Stelle (OIDs bleiben), Funktionstexte neu geschrieben, Schema `app` entfernt | L | nur per Neuaufbau |
 
 ## 3. Tabellen und Löschregeln
 | Tabelle | `tenant_id` | weitere Fremdschlüssel | Begründung |

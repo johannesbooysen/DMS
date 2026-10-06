@@ -138,7 +138,7 @@ export async function systemaktionAusfuehren(
 ): Promise<boolean> {
   const melden = async (grund: string): Promise<false> => {
     // Grund ohne Belegdaten: Bezeichnung der Stufe und Art des Fehlers.
-    await c.query('select app.verarbeitungsfehler_melden($1, null, $2, $3)', [
+    await c.query('select dms.verarbeitungsfehler_melden($1, null, $2, $3)', [
       dokumentId,
       'systemaktion',
       `Systemaktion „${stufe.bezeichnung}“: ${grund}`,

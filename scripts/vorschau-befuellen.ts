@@ -68,7 +68,7 @@ interface Offen {
  * Ein Einrichtungsskript gehoert aber ohnehin auf dieselbe Ebene wie Seed
  * und Migration: unter den Eigentuemer, ausserhalb der RLS. Der
  * Benutzerkontext wird trotzdem gesetzt -- `aufbereiten` schreibt Spalten,
- * die nach `app.mein_benutzer()` fragen, und ein leeres Feld dort waere ein
+ * die nach `dms.mein_benutzer()` fragen, und ein leeres Feld dort waere ein
  * Beleg ohne Urheber.
  */
 async function alsEinrichter<T>(aktion: (c: PoolClient) => Promise<T>): Promise<T> {

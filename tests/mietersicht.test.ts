@@ -10,10 +10,8 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { Client } from 'pg'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
 const MEIKE_BIS_MAERZ = '85000000-0000-0000-0000-000000000001'
@@ -28,7 +26,7 @@ const KONTO_HAUSREINIGUNG = '37000000-0000-0000-0000-000000000001'
 let client: Client
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
 })
 
@@ -49,7 +47,7 @@ async function inTransaktion<T>(aktion: (c: Client) => Promise<T>): Promise<T> {
 async function belegeFuer(personId: string): Promise<string[]> {
   return inTransaktion(async (c) => {
     const { rows } = await c.query<{ dokument_id: string }>(
-      'select dokument_id from app.belege_fuer_mieter($1, $2)',
+      'select dokument_id from dms.belege_fuer_mieter($1, $2)',
       [personId, OBJEKT_42],
     )
     return rows.map((r) => r.dokument_id)
@@ -87,7 +85,7 @@ describe('Mietersicht', () => {
          returning id`,
       )
       const { rows: belege } = await c.query(
-        'select dokument_id from app.belege_fuer_mieter($1, $2)',
+        'select dokument_id from dms.belege_fuer_mieter($1, $2)',
         [rows[0].id, OBJEKT_42],
       )
       return belege
@@ -119,7 +117,7 @@ describe('Mietersicht', () => {
         [KONTO_HAUSREINIGUNG],
       )
       const { rows } = await c.query<{ dokument_id: string }>(
-        'select dokument_id from app.belege_fuer_mieter($1, $2)',
+        'select dokument_id from dms.belege_fuer_mieter($1, $2)',
         [MEIKE_BIS_MAERZ, OBJEKT_42],
       )
       return rows.map((r) => r.dokument_id)
@@ -190,7 +188,7 @@ describe('Umlageflag', () => {
 describe('Summenzwang', () => {
   it('bestaetigt eine vollstaendige Kontierung', async () => {
     const { rows } = await client.query<{ stimmt: boolean }>(
-      'select app.kontierung_summe_stimmt($1) as stimmt',
+      'select dms.kontierung_summe_stimmt($1) as stimmt',
       [D1_JAN_BIS_MAERZ],
     )
     expect(rows[0].stimmt).toBe(true)
@@ -202,7 +200,7 @@ describe('Summenzwang', () => {
         D1_JAN_BIS_MAERZ,
       ])
       const { rows } = await c.query<{ stimmt: boolean }>(
-        'select app.kontierung_summe_stimmt($1) as stimmt',
+        'select dms.kontierung_summe_stimmt($1) as stimmt',
         [D1_JAN_BIS_MAERZ],
       )
       return rows[0].stimmt
@@ -219,7 +217,7 @@ describe('Summenzwang', () => {
         [D1_JAN_BIS_MAERZ, KONTO_HAUSREINIGUNG],
       )
       const { rows } = await c.query<{ stimmt: boolean }>(
-        'select app.kontierung_summe_stimmt($1) as stimmt',
+        'select dms.kontierung_summe_stimmt($1) as stimmt',
         [D1_JAN_BIS_MAERZ],
       )
       return rows[0].stimmt

@@ -56,7 +56,7 @@ export async function vorlageSpeichernAktion(formular: FormData): Promise<void> 
     c.query(
       `update vorlage
           set betreff = $2, text = $3,
-              geaendert_am = now(), geaendert_von = app.mein_benutzer()
+              geaendert_am = now(), geaendert_von = dms.mein_benutzer()
         where id = $1`,
       [id, betreff, text],
     ),

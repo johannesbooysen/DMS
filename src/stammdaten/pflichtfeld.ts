@@ -100,7 +100,7 @@ export async function pflichtfelderSetzen(
 
   await alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ darf: boolean; mandant: string | null }>(
-      'select app.darf_stammdaten() as darf, app.mein_mandant() as mandant',
+      'select dms.darf_stammdaten() as darf, dms.mein_mandant() as mandant',
     )
     if (rows[0]?.darf !== true || rows[0].mandant === null) {
       throw new NichtErlaubt(

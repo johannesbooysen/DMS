@@ -123,7 +123,7 @@ export async function objektVorschlagen(
     )
   }
 
-  // Über app.zuordnungstreffer, nicht direkt: Die Suche muss auch Objekte
+  // Über dms.zuordnungstreffer, nicht direkt: Die Suche muss auch Objekte
   // finden, die der Fragende nicht sehen darf. Sonst wäre dieselbe
   // Zuordnung für den einen mehrdeutig und für den anderen eindeutig — und
   // das Ergebnis hinge vom Zufall der Zuständigkeit ab. Die Begründung steht
@@ -133,7 +133,7 @@ export async function objektVorschlagen(
     merkmalstyp: string
     wert_normalisiert: string
     objektnummer: string
-  }>('select * from app.zuordnungstreffer($1, $2)', [kandidaten, beleg.kreditor_id])
+  }>('select * from dms.zuordnungstreffer($1, $2)', [kandidaten, beleg.kreditor_id])
 
   if (treffer.length === 0) {
     return (
@@ -180,7 +180,7 @@ export async function objektVorschlagen(
  */
 async function nachAnschrift(c: PoolClient, dokumentId: string): Promise<Zuordnungsvorschlag | null> {
   const { rows } = await c.query<{ objekt_id: string; objektnummer: string; adresse: string }>(
-    'select * from app.objekte_im_text($1)',
+    'select * from dms.objekte_im_text($1)',
     [dokumentId],
   )
   if (rows.length === 0) return null
@@ -303,10 +303,10 @@ export async function zuordnungKorrigieren(
     ],
   )
 
-  // Über app.dokument_zuordnen statt per UPDATE: Die Zuordnung kann den Beleg
+  // Über dms.dokument_zuordnen statt per UPDATE: Die Zuordnung kann den Beleg
   // aus der eigenen Sicht nehmen, und das lässt RLS bei einer gewöhnlichen
   // Änderung nicht zu (Migration 20260831170000).
-  await c.query('select app.dokument_zuordnen($1, $2)', [
+  await c.query('select dms.dokument_zuordnen($1, $2)', [
     eingabe.dokumentId,
     eingabe.richtigesObjekt,
   ])
@@ -336,7 +336,7 @@ export async function nachlaufOhneZuordnung(
     const vorschlag = await objektVorschlagen(c, zeile.id)
     if (vorschlag.sicherheit !== 'gruen' || vorschlag.objektId === null) continue
 
-    await c.query('select app.dokument_zuordnen($1, $2)', [
+    await c.query('select dms.dokument_zuordnen($1, $2)', [
       zeile.id,
       vorschlag.objektId,
     ])

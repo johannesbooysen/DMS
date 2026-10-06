@@ -7,6 +7,7 @@
  */
 
 import { mkdtemp, rm } from 'node:fs/promises'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -16,9 +17,6 @@ import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
 import { queueBeenden, queueStarten, AUFBEREITUNG } from '../src/queue'
 import { aufbereiten } from '../src/worker/aufbereitung'
 import { pdfBauen, rechnungsvorlage } from './hilfe/pdf-bauen'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
@@ -30,7 +28,7 @@ let ablage: DateisystemAblage
 let rechnung: Buffer
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
   wurzel = await mkdtemp(join(tmpdir(), 'dms-kette-'))
   ablage = new DateisystemAblage(wurzel)

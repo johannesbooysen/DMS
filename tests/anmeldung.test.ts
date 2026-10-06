@@ -173,7 +173,7 @@ describe('Eine Sitzung verfaellt', () => {
 
     const anzahl = await alsAnmeldung(async (c) => {
       const { rows } = await c.query<{ sitzungen_widerrufen: number }>(
-        'select app.sitzungen_widerrufen($1)',
+        'select dms.sitzungen_widerrufen($1)',
         [ANNA],
       )
       return rows[0].sitzungen_widerrufen
@@ -433,7 +433,7 @@ describe('Sichtbarkeit der Sitzungen', () => {
   })
 
   it('laesst niemanden eine Sitzung von Hand anlegen', async () => {
-    // Sitzungen entstehen ausschliesslich ueber app.sitzung_anlegen. Ohne
+    // Sitzungen entstehen ausschliesslich ueber dms.sitzung_anlegen. Ohne
     // insert-Policy laeuft das Statement ins Leere -- was hier zaehlt, ist,
     // dass hinterher keine Sitzung existiert.
     await expect(

@@ -80,7 +80,7 @@ export async function postAnlegen(
   const text = vorlageFuellen(vorlage.text, werte)
 
   const { rows } = await c.query<{ ausgang_anlegen: string }>(
-    'select app.ausgang_anlegen($1, $2, $3, $4, $5, $6, $7, $8)',
+    'select dms.ausgang_anlegen($1, $2, $3, $4, $5, $6, $7, $8)',
     [
       eingabe.dokumentId ?? null,
       eingabe.anlass,
@@ -110,7 +110,7 @@ export async function postSenden(
 
   const offen = await alsAnmeldung(async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.ausgang_offen($1)',
+      'select * from dms.ausgang_offen($1)',
       [grenze],
     )
     return rows
@@ -160,7 +160,7 @@ async function vermerken(
   fehler: string | null,
 ): Promise<void> {
   await alsAnmeldung((c) =>
-    c.query('select app.ausgang_vermerken($1, $2, $3)', [ausgangId, erfolg, fehler]),
+    c.query('select dms.ausgang_vermerken($1, $2, $3)', [ausgangId, erfolg, fehler]),
   )
 }
 
@@ -175,7 +175,7 @@ export async function postWiederholen(
     const { rowCount } = await c.query(
       `update ausgang set status = 'offen', fehler = null
         where id = $1 and status = 'fehlgeschlagen'
-          and mandant_id = (select app.mein_mandant())`,
+          and mandant_id = (select dms.mein_mandant())`,
       [ausgangId],
     )
     return (rowCount ?? 0) > 0

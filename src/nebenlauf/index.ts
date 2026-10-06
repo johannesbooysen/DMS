@@ -63,7 +63,7 @@ export async function wartenBeginnen(
 
   const id = await alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ warten_beginnen: string | null }>(
-      'select app.warten_beginnen($1, $2, $3, $4::date, $5)',
+      'select dms.warten_beginnen($1, $2, $3, $4::date, $5)',
       [
         eingabe.dokumentId,
         eingabe.art.trim(),
@@ -94,7 +94,7 @@ export async function wartenBeenden(
 ): Promise<boolean> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ warten_beenden: boolean }>(
-      'select app.warten_beenden($1, $2)',
+      'select dms.warten_beenden($1, $2)',
       [containerId, ergebnis],
     )
     return rows[0]?.warten_beenden === true
@@ -195,7 +195,7 @@ export async function gewaehrleistungOffen(
 ): Promise<Bauteilzeile[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.gewaehrleistung_offen($1, coalesce($2::date, current_date))',
+      'select * from dms.gewaehrleistung_offen($1, coalesce($2::date, current_date))',
       [objektId, stichtag ?? null],
     )
     return rows.map((z) => ({

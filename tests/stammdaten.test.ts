@@ -4,7 +4,7 @@
  * **Der Fund.** Die Policies auf den Stammdatentabellen lauteten `for all`
  * mit reinem Mandantenfilter: Lesen und Schreiben waren dasselbe Recht.
  * Anna, eine Objektbearbeiterin mit Zuständigkeit für ein einziges Objekt,
- * konnte sich die Rolle Geschäftsleitung zuweisen — `app.darf` sprang von
+ * konnte sich die Rolle Geschäftsleitung zuweisen — `dms.darf` sprang von
  * `false` auf `true`. Das Rechtemodell aus Konzept §17 war damit eine
  * Empfehlung, keine Grenze.
  *
@@ -138,7 +138,7 @@ describe('Der Betrugsschutz', () => {
     const [b] = await direkt<{ id: string }>('select id from kreditor_bankverbindung limit 1')
 
     /*
-     * `app.zahlung_moeglich` verlangt eine verifizierte Bankverbindung. Wer
+     * `dms.zahlung_moeglich` verlangt eine verifizierte Bankverbindung. Wer
      * selbst verifizieren kann, hat die Sperre nicht -- und die Sperre ist
      * der Betrugsschutz aus Konzept §14.
      */

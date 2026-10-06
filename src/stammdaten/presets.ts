@@ -252,7 +252,7 @@ export async function anwenden(
     for (const r of p.rollen) {
       const { rows: da } = await c.query<{ id: string }>(
         `select id from rolle
-          where mandant_id = coalesce($2::uuid, app.mein_mandant()) and kurzcode = $1`,
+          where mandant_id = coalesce($2::uuid, dms.mein_mandant()) and kurzcode = $1`,
         [r.kurzcode, mandantId],
       )
 
@@ -260,7 +260,7 @@ export async function anwenden(
       if (rolleId === undefined) {
         const { rows } = await c.query<{ id: string }>(
           `insert into rolle (mandant_id, name, kurzcode, beschreibung)
-           values (coalesce($4::uuid, app.mein_mandant()), $1, $2, $3) returning id`,
+           values (coalesce($4::uuid, dms.mein_mandant()), $1, $2, $3) returning id`,
           [r.name, r.kurzcode, r.beschreibung, mandantId],
         )
         rolleId = rows[0]?.id
@@ -285,7 +285,7 @@ export async function anwenden(
       for (const kurzcode of r.stempel) {
         const { rows: st } = await c.query<{ id: string }>(
           `select id from stempeltyp
-            where mandant_id = coalesce($2::uuid, app.mein_mandant()) and kurzcode = $1`,
+            where mandant_id = coalesce($2::uuid, dms.mein_mandant()) and kurzcode = $1`,
           [kurzcode, mandantId],
         )
         const typId = st[0]?.id

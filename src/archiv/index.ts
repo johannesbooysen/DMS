@@ -67,7 +67,7 @@ export async function archivieren(
   // Aufbewahrungsfrist ist das ein Tag zu früh gelöscht. Ein Test hat es
   // gefunden, der Typ nicht.
   const { rows } = await c.query<{ bis: string | null }>(
-    `select to_char(app.dokument_archivieren($1), 'YYYY-MM-DD') as bis`,
+    `select to_char(dms.dokument_archivieren($1), 'YYYY-MM-DD') as bis`,
     [dokumentId],
   )
   return rows[0]?.bis ?? null
@@ -87,7 +87,7 @@ export async function stornieren(
   ersetztDurch?: string | null,
 ): Promise<boolean> {
   const { rows } = await c.query<{ dokument_stornieren: boolean }>(
-    'select app.dokument_stornieren($1, $2)',
+    'select dms.dokument_stornieren($1, $2)',
     [dokumentId, grund],
   )
   if (rows[0]?.dokument_stornieren !== true) return false
@@ -117,7 +117,7 @@ export async function einschraenken(
 ): Promise<string | null> {
   const { rows } = await c.query<{ bis: string | null }>(
     `select to_char(
-              app.verarbeitung_einschraenken($1, $2, coalesce($3::date, current_date)),
+              dms.verarbeitung_einschraenken($1, $2, coalesce($3::date, current_date)),
               'YYYY-MM-DD') as bis`,
     [dokumentId, grund, beantragtAm ?? null],
   )
@@ -168,7 +168,7 @@ export async function loeschkandidaten(
 ): Promise<Array<{ dokumentId: string; grund: string; frist: string }>> {
   const { rows } = await c.query<Record<string, unknown>>(
     `select dokument_id, grund, to_char(frist, 'YYYY-MM-DD') as frist
-       from app.loeschkandidaten(coalesce($1::date, current_date))`,
+       from dms.loeschkandidaten(coalesce($1::date, current_date))`,
     [stichtag ?? null],
   )
   return rows.map((z) => ({

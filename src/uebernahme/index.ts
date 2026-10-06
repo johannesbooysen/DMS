@@ -357,7 +357,7 @@ async function kreditorFinden(c: PoolClient, name: string): Promise<string> {
   // ein RLS-Fehler zurueck, und der sagt, was fehlt.
   try {
     const { rows: neu } = await c.query<{ id: string }>(
-      'insert into kreditor (mandant_id, name) values (app.mein_mandant(), $1) returning id',
+      'insert into kreditor (mandant_id, name) values (dms.mein_mandant(), $1) returning id',
       [name],
     )
     const id = neu[0]?.id

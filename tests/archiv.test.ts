@@ -350,7 +350,7 @@ describe('DSGVO gegen GoBD', () => {
   })
 
   it('zeigt einem fremden Mandanten keine Loeschkandidaten', async () => {
-    // `app.loeschkandidaten` ist security definer -- es muss auch die Belege
+    // `dms.loeschkandidaten` ist security definer -- es muss auch die Belege
     // finden, die niemand mehr sehen darf. Genau deshalb steht der
     // Mandantenfilter dort von Hand.
     await archiviereBeleg()

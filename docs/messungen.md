@@ -144,7 +144,7 @@ gemessen als dms_app mit gesetztem `app.benutzer_id`.
 
 | Abfrage | Median | Min | Max |
 |---|---|---|---|
-| Feed naiv (`= any(app.meine_objekte())` im WHERE) | 73.840,2 ms | 73.191,0 ms | 120.458,1 ms |
+| Feed naiv (`= any(dms.meine_objekte())` im WHERE) | 73.840,2 ms | 73.191,0 ms | 120.458,1 ms |
 | **Feed Top-N je Objekt (LATERAL)** | **159,6 ms** | 144,9 ms | 204,1 ms |
 | Akte eines Objekts | **8,7 ms** | 7,4 ms | 9,8 ms |
 | Gefilterte Liste (Ampel rot) | **35,6 ms** | 32,3 ms | 36,9 ms |
@@ -164,17 +164,17 @@ Feed brauchte trotzdem **92 Sekunden**.
 Der Ausführungsplan zeigte, warum:
 
 ```
-Filter: (... AND (objekt_id = ANY (app.meine_objekte())) ...)
+Filter: (... AND (objekt_id = ANY (dms.meine_objekte())) ...)
 ```
 
 `stable` sichert nur zu, dass die Funktion innerhalb eines Statements
 dasselbe liefert. PostgreSQL *darf* das Ergebnis wiederverwenden — im
-Zeilenfilter einer Policy tut es das nicht. `app.meine_objekte()` braucht
+Zeilenfilter einer Policy tut es das nicht. `dms.meine_objekte()` braucht
 allein 10 ms; bei 100.000 gefilterten Zeilen sind das über tausend Sekunden
 Funktionsaufrufe für eine Trefferliste.
 
 Die Abhilfe ist eine Klammer: Als unkorrelierte Unterabfrage
-`(select app.meine_objekte())` wird daraus ein InitPlan, einmal je Statement
+`(select dms.meine_objekte())` wird daraus ein InitPlan, einmal je Statement
 berechnet. Der Cast `::uuid[]` gehört dazu — ohne ihn liest der Parser die
 Mengenform `ANY (subquery)` und der Index fällt weg.
 
@@ -188,7 +188,7 @@ Betroffen waren **49 von 65 Policies**. Alle wurden umgestellt
 
 **LATERAL ist nicht nur schneller — es ist die Form ohne den Fehler.** Die
 naive Variante bleibt auch nach der Policy-Umstellung bei 74 Sekunden, weil
-sie `app.meine_objekte()` selbst im WHERE aufruft. Im LATERAL steht die
+sie `dms.meine_objekte()` selbst im WHERE aufruft. Im LATERAL steht die
 Funktion im FROM und wird einmal ausgewertet. Das ist eine schärfere
 Begründung als „materialisiert erst alle Treffer".
 
@@ -257,7 +257,7 @@ dokumentiert und lief nicht mit (`--ohne-naiv`).
 
 **Gemessen am 27. und 28. September 2026:**
 
-| Abfrage | Erster Entwurf | Mit `app.suchtreffer` |
+| Abfrage | Erster Entwurf | Mit `dms.suchtreffer` |
 |---|---|---|
 | Suche: exakte Rechnungsnummer (`M-500000`) | 5.861,2 ms | **26,6 ms** |
 | Suche: Nummernteil (`4711`) | 850,6 ms | **18,0 ms** |
@@ -286,9 +286,9 @@ darf der Planer nur leakproof-Operatoren schieben. `=` ist einer, `~~*`
 (`ilike`), `~~` und `@@` sind es nicht. Die Trigramm-Indizes standen da
 und wurden **nie** benutzt.
 
-**Die Lösung ist dieselbe wie bei `app.meine_objekte()`:** eine
+**Die Lösung ist dieselbe wie bei `dms.meine_objekte()`:** eine
 `security definer`-Funktion, die ohne Zeilenrechte auf den Satelliten
-sucht und **nur Belegkennungen** zurückgibt (`app.suchtreffer`, Migration
+sucht und **nur Belegkennungen** zurückgibt (`dms.suchtreffer`, Migration
 20261001130000). Welche davon der Fragende sehen darf, entscheidet die
 Policy auf `dokument` in der äußeren Abfrage — die Sicherheitsgrenze bleibt
 an einer Stelle. Ein Mandantenfilter steht trotzdem in jedem Zweig.
@@ -339,11 +339,11 @@ einschließlich Verbindung.
 
 | Abfrage | Zeit | Zeilen |
 |---|---|---|
-| `app.durchlaufzeiten()` — Vorgabe 90 Tage | **185–234 ms** | 5 |
-| `app.durchlaufzeiten(null, null)` — gesamte Geschichte | 662–776 ms | 5 |
-| `app.skonto_summe()` | **49 ms** | 1 |
-| `app.skonto_verluste()` — 50 größte | **46 ms** | 50 |
-| `app.aelteste_offene()` | **41 ms** | 25 |
+| `dms.durchlaufzeiten()` — Vorgabe 90 Tage | **185–234 ms** | 5 |
+| `dms.durchlaufzeiten(null, null)` — gesamte Geschichte | 662–776 ms | 5 |
+| `dms.skonto_summe()` | **49 ms** | 1 |
+| `dms.skonto_verluste()` — 50 größte | **46 ms** | 50 |
+| `dms.aelteste_offene()` | **41 ms** | 25 |
 
 ### Was die Messung entschieden hat
 
@@ -373,10 +373,10 @@ Ereignisse des Zeitraums sortieren.
 Zeilen in 86 ms. Das ist schnell und trotzdem falsch: Wer 7.918 Zeilen an
 eine Seite gibt, hat keine Auswertung gebaut, sondern einen Datenauszug — die
 Frage „was hat uns das gekostet" beantwortet er nicht. Seitdem liefert
-`app.skonto_summe` die Zahl (49 ms) und `app.skonto_verluste` die 50 größten
+`dms.skonto_summe` die Zahl (49 ms) und `dms.skonto_verluste` die 50 größten
 Einzelfälle (46 ms), beide aus derselben Definition.
 
-## `app.meine_objekte()` nach dem Notfallzugriff
+## `dms.meine_objekte()` nach dem Notfallzugriff
 
 **Anlass:** §24.10 fügt der Funktion einen dritten `exists`-Zweig hinzu. Sie
 läuft einmal je Statement in jeder objektbezogenen Policy; §21 nennt ~2 ms,
@@ -386,7 +386,7 @@ und die falsche Variante kostete dort 264 ms.
 
 | | Ausführungszeit |
 |---|---|
-| `select app.meine_objekte()` nach der Änderung | **1,4 ms** |
+| `select dms.meine_objekte()` nach der Änderung | **1,4 ms** |
 
 Unverändert im Rahmen der dokumentierten ~2 ms.
 

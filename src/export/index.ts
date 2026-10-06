@@ -149,7 +149,7 @@ async function kopfLesen(c: PoolClient, dokumentId: string): Promise<Belegkopf |
             -- auf -- ohne die Kennung kaeme hier die neuere heraus.
             (select a.storage_fassung from archiv_eintrag a
               where a.dokument_id = d.id) as storage_fassung,
-            app.hat_schwaerzung(d.id) as hat_schwaerzung,
+            dms.hat_schwaerzung(d.id) as hat_schwaerzung,
             k.name as kreditor,
             rf.rechnungsnummer
        from dokument d

@@ -11,6 +11,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { Client } from 'pg'
 import {
   fehlendePflichtstempel,
@@ -19,9 +20,6 @@ import {
   stempeln,
 } from '../src/workflow/engine'
 import { baumLaden, simulieren } from '../src/workflow/baum'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const MANDANT = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
@@ -34,7 +32,7 @@ const DEFINITION_SEED = '65000000-0000-0000-0000-000000000001'
 let client: Client
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
 })
 

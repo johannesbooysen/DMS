@@ -2,7 +2,7 @@
  * Belegliste für einen externen Empfänger.
  *
  * Erreichbar **ohne Anmeldung**, allein über den Token in der Adresse. Alles,
- * was hier gezeigt wird, hat `app.einsicht_belege` gerechnet — es gibt keine
+ * was hier gezeigt wird, hat `dms.einsicht_belege` gerechnet — es gibt keine
  * Liste freigegebener Belege, die hier nachgeschlagen würde.
  *
  * Die Seite sagt bewusst nicht, warum ein Token nicht gilt. „Abgelaufen"

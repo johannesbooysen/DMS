@@ -46,7 +46,7 @@ export interface Loeschzeile {
 /**
  * Belege, deren Aufbewahrung abgelaufen ist.
  *
- * Mit und ohne Löschanspruch — `app.loeschkandidaten` kennt nur die mit
+ * Mit und ohne Löschanspruch — `dms.loeschkandidaten` kennt nur die mit
  * Anspruch, und die anderen fielen bisher durch.
  */
 export async function loeschfaellige(
@@ -62,7 +62,7 @@ export async function loeschfaellige(
               to_char(aufbewahrung_bis, 'YYYY-MM-DD') as aufbewahrung_bis,
               to_char(archiviert_am, 'YYYY-MM-DD') as archiviert_am,
               belegart, objektnummer
-         from app.loeschfaellig(coalesce($1::date, current_date))`,
+         from dms.loeschfaellig(coalesce($1::date, current_date))`,
       [stichtag ?? null],
     )
     return rows.map((z) => ({
@@ -92,7 +92,7 @@ export async function endgueltigLoeschen(
   try {
     const gefunden = await alsBenutzer(benutzerId, async (c) => {
       const { rows } = await c.query<{ ok: boolean }>(
-        'select app.dokument_endgueltig_loeschen($1) as ok',
+        'select dms.dokument_endgueltig_loeschen($1) as ok',
         [dokumentId],
       )
       return rows[0]?.ok === true
@@ -168,7 +168,7 @@ export async function loeschdateienAbraeumen(
       dokument_id: string
       storage_key: string
       storage_fassung: string | null
-    }>('select dokument_id, storage_key, storage_fassung from app.loeschung_dateien_offen($1)', [
+    }>('select dokument_id, storage_key, storage_fassung from dms.loeschung_dateien_offen($1)', [
       grenze,
     ])
     return rows
@@ -191,7 +191,7 @@ export async function loeschdateienAbraeumen(
       await ablage.entfernen(zeile.storage_key, zeile.storage_fassung)
 
       await alsAnmeldung((c) =>
-        c.query('select app.loeschung_datei_vermerken($1)', [zeile.dokument_id]),
+        c.query('select dms.loeschung_datei_vermerken($1)', [zeile.dokument_id]),
       )
       entfernt += 1
     } catch {
@@ -212,7 +212,7 @@ export async function loeschdateienAbraeumen(
  */
 export async function loeschfaelligeAnzahl(c: PoolClient): Promise<number> {
   const { rows } = await c.query<{ n: string }>(
-    'select count(*) as n from app.loeschfaellig(current_date, 100000)',
+    'select count(*) as n from dms.loeschfaellig(current_date, 100000)',
   )
   return Number(rows[0]?.n ?? 0)
 }

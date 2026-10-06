@@ -57,8 +57,7 @@ function dumpBefehl(zieldatei: string): { befehl: string; argumente: string[] } 
      * Einschraenkung ist das Zurueckholen **fehlerfrei**, und damit ist
      * jeder Fehler ein Befund.
      */
-    '--schema=public',
-    '--schema=app',
+    '--schema=dms',
     url,
   ]
 

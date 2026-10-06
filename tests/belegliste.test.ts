@@ -384,7 +384,7 @@ describe('Die Sichtbarkeitsgrenze -- in jeder Sicht', () => {
       expect(claraSieht.map((z) => z.id)).toContain(schaden)
 
       const claraFeed = await alsBenutzer(CLARA, (c) => feed(c))
-      // Der Feed laeuft ueber `app.meine_objekte()` -- und ein Spezialgebiet
+      // Der Feed laeuft ueber `dms.meine_objekte()` -- und ein Spezialgebiet
       // macht kein Objekt sichtbar. Das ist richtig so: Clara soll den
       // Schadensfall sehen, nicht die Akte des Objekts.
       expect(claraFeed.map((z) => z.id)).not.toContain(schaden)
@@ -427,7 +427,7 @@ describe('Der archivierte Beleg bleibt auffindbar', () => {
   it('taucht in der Liste auf, obwohl keine Aufgabe mehr offen ist', async () => {
     // Das ist der Grund fuer diese ganze Datei: Vorher war ein Beleg nur
     // ueber eine offene Aufgabe erreichbar und nach dem Abschluss weg.
-    await alsBenutzer(ANNA, (c) => c.query('select app.dokument_archivieren($1)', [beleg]))
+    await alsBenutzer(ANNA, (c) => c.query('select dms.dokument_archivieren($1)', [beleg]))
 
     const [d] = await direkt<{ status: string }>('select status from dokument where id = $1', [
       beleg,

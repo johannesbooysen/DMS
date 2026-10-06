@@ -170,7 +170,7 @@ sie ohnehin findet:
 - **Belege, die vor der ersten Freigabe archiviert wurden**, tragen keine
   Fassung. Diese Lücke lässt sich nicht nachträglich schließen — sie wäre eine
   Behauptung über ein Verfahren, das damals nicht beschrieben war. Sichtbar
-  über `app.archiv_ohne_verfahrensdoku()`.
+  über `dms.archiv_ohne_verfahrensdoku()`.
 - **Das System läuft auf einem Rechner.** Fällt er aus, steht es, bis er
   wiederhergestellt ist. Das ist für diese Größenordnung eine bewusste
   Entscheidung ([ADR 0007](adr/0007-betriebsumgebung.md)) und trägt nur,

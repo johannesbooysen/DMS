@@ -13,10 +13,22 @@ import { Pool, type PoolClient } from 'pg'
 export const VERBINDUNG =
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
+/**
+ * Jede Verbindung sucht zuerst im Schema dms (ADR 0010, Migration
+ * 20261006140000). Gesetzt an der Verbindung und nicht an der Datenbank:
+ * Eine Datenbank-Einstellung traefe auch RealesOS-Migrationen, die
+ * unqualifiziert `create table` schreiben, und verlegte deren Tabellen.
+ * Wer einen eigenen `Client` baut (Tests, Skripte), nimmt diese Optionen.
+ */
+export const VERBINDUNGSOPTIONEN = {
+  connectionString: VERBINDUNG,
+  options: '-c search_path=dms,public',
+} as const
+
 let pool: Pool | undefined
 
 export function verbindungspool(): Pool {
-  pool ??= new Pool({ connectionString: VERBINDUNG })
+  pool ??= new Pool(VERBINDUNGSOPTIONEN)
   return pool
 }
 

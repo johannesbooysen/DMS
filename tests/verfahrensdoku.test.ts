@@ -177,7 +177,7 @@ describe('Die geltende Fassung', () => {
      * Die Funktion mit drei Parametern darf es nicht mehr geben.
      */
     await expect(
-      direkt("select app.dokument_archivieren($1, null, 'erfunden')", [beleg]),
+      direkt("select dms.dokument_archivieren($1, null, 'erfunden')", [beleg]),
     ).rejects.toThrow(/does not exist|existiert nicht/)
   })
 })
@@ -200,7 +200,7 @@ describe('Eine freigegebene Fassung', () => {
     // andere Zusicherung als die, die er im Namen traegt.
     await expect(
       alsBenutzer(ANNA, (c) =>
-        c.query("select app.verfahrensdoku_freigeben('x', current_date, 't', '', 'k')"),
+        c.query("select dms.verfahrensdoku_freigeben('x', current_date, 't', '', 'k')"),
       ),
     ).rejects.toThrow(/beweist nichts/)
   })
@@ -209,7 +209,7 @@ describe('Eine freigegebene Fassung', () => {
     // Ohne Benutzerkontext gibt es keinen Mandanten -- und eine
     // Verfahrensdokumentation ohne Haus beschreibt niemandes Verfahren.
     await expect(
-      direkt("select app.verfahrensdoku_freigeben('x', current_date, 't', 'h', 'k')"),
+      direkt("select dms.verfahrensdoku_freigeben('x', current_date, 't', 'h', 'k')"),
     ).rejects.toThrow(/gehoert zu einem Mandanten/)
   })
 
@@ -311,11 +311,11 @@ describe('Mandantentrennung', () => {
     )
     expect(z?.verfahrensdoku_version).toBe('2026-01-01')
 
-    // Und keine fremde: `app.verfahrensdoku_gueltig` bekommt den Mandanten
+    // Und keine fremde: `dms.verfahrensdoku_gueltig` bekommt den Mandanten
     // des Belegs, nicht den des Handelnden -- beim Archivieren ist das
     // dasselbe, in einer spaeteren Systemaufgabe waere es das nicht.
     const fremde = await direkt<{ v: string | null }>(
-      'select app.verfahrensdoku_gueltig($1, current_date) as v',
+      'select dms.verfahrensdoku_gueltig($1, current_date) as v',
       [randomUUID()],
     )
     expect(fremde[0]?.v).toBeNull()

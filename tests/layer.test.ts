@@ -127,7 +127,7 @@ describe('Layer von Hand', () => {
     // Ein Stempel ohne Ereignis waere ein Beleg, der dem Protokoll
     // widerspricht.
     await expect(
-      direkt(`select app.layer_anlegen($1, 'stempel', 1, 1, 1, 10, 10, null, 'alle')`, [
+      direkt(`select dms.layer_anlegen($1, 'stempel', 1, 1, 1, 10, 10, null, 'alle')`, [
         dokumentId,
       ]),
     ).rejects.toThrow(/Ereignis/)

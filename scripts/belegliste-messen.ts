@@ -272,7 +272,7 @@ const rang = (begriff: string) =>
         when f.rechnungsnummer ilike '${begriff}%' then 1
         when k.name ilike '%${begriff}%' then 2 else 5 end`
 const felder = (begriff: string, betrag = 'null', kennung = 'null') =>
-  `d.id in (select app.suchtreffer('${begriff}', ${betrag}, ${kennung}))`
+  `d.id in (select dms.suchtreffer('${begriff}', ${betrag}, ${kennung}))`
 
 
   const ergebnisse = [
@@ -282,14 +282,14 @@ const felder = (begriff: string, betrag = 'null', kennung = 'null') =>
           await messen(
             'Feed naiv (any(array) + order by + limit)',
             `select ${SPALTEN} from dokument d ${VERBINDUNG}
-              where d.objekt_id = any (app.meine_objekte())
+              where d.objekt_id = any (dms.meine_objekte())
               order by d.eingang_am desc limit 50`,
           ),
         ]),
     await messen(
       'Feed Top-N je Objekt (LATERAL)',
       `select ${SPALTEN}
-         from unnest(app.meine_objekte()) as mein(objekt_id)
+         from unnest(dms.meine_objekte()) as mein(objekt_id)
          cross join lateral (
            select dd.* from dokument dd
             where dd.objekt_id = mein.objekt_id
@@ -317,7 +317,7 @@ const felder = (begriff: string, betrag = 'null', kennung = 'null') =>
                          and s.text_tsv @@ websearch_to_tsquery('german', 'Dachrinnenreinigung'))
         order by d.eingang_am desc limit 50`,
     ),
-    // Die Feldsuche ueber app.suchtreffer (Migration 20261001130000) -- so,
+    // Die Feldsuche ueber dms.suchtreffer (Migration 20261001130000) -- so,
     // wie `suchen` sie baut, mit dem Rang, der die exakte Nummer vor den
     // Textfund stellt.
     await messen(

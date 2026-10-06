@@ -215,7 +215,7 @@ describe('Durchlaufzeiten', () => {
 
     // In SQL geht sie sehr wohl -- dort hat man sie dann entschieden.
     const roh = await direkt<{ anzahl: string }>(
-      'select anzahl from app.durchlaufzeiten(null, null)',
+      'select anzahl from dms.durchlaufzeiten(null, null)',
     )
     expect(roh.some((z) => Number(z.anzahl) > 0)).toBe(true)
   })

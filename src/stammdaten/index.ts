@@ -154,7 +154,7 @@ export async function objektAnlegen(benutzerId: string, f: Eingaben): Promise<vo
     await c.query(
       `insert into objekt (mandant_id, objektnummer, bezeichnung, adresse,
                            verwaltungsart, eskalationsgrenze_brutto)
-       values (app.mein_mandant(), $1, $2, $3, $4, $5)`,
+       values (dms.mein_mandant(), $1, $2, $3, $4, $5)`,
       [nummer, bezeichnung, text(f['adresse']), art, zahl(f['eskalationsgrenze'])],
     )
   })
@@ -247,7 +247,7 @@ export async function kreditorAnlegen(benutzerId: string, f: Eingaben): Promise<
   const email = emailLesen(f['email'])
   await schreiben(benutzerId, async (c) => {
     await c.query(
-      'insert into kreditor (mandant_id, name, email) values (app.mein_mandant(), $1, $2)',
+      'insert into kreditor (mandant_id, name, email) values (dms.mein_mandant(), $1, $2)',
       [name, email],
     )
   })
@@ -279,7 +279,7 @@ export async function kreditorAendern(benutzerId: string, f: Eingaben): Promise<
 /**
  * Eine Bankverbindung bestätigen oder sperren.
  *
- * Über `app.bankverbindung_verifizieren` und nicht über ein `update`: Das
+ * Über `dms.bankverbindung_verifizieren` und nicht über ein `update`: Das
  * ist der Betrugsschutz aus Konzept §14, und die Datenbank hält fest, wer
  * die Aussage getroffen hat. Im Schadensfall wird genau danach gefragt.
  */
@@ -292,7 +292,7 @@ export async function bankverbindungEntscheiden(
 
   await schreiben(benutzerId, async (c) => {
     const { rows } = await c.query<{ ok: boolean }>(
-      'select app.bankverbindung_verifizieren($1, $2) as ok',
+      'select dms.bankverbindung_verifizieren($1, $2) as ok',
       [id, verifiziert],
     )
     if (rows[0]?.ok !== true) {
@@ -412,7 +412,7 @@ export async function zahlungswegAnlegen(benutzerId: string, f: Eingaben): Promi
   const art = pflicht(f['art'], 'Die Art')
   await schreiben(benutzerId, async (c) => {
     await c.query(
-      'insert into zahlungsweg (mandant_id, name, art) values (app.mein_mandant(), $1, $2)',
+      'insert into zahlungsweg (mandant_id, name, art) values (dms.mein_mandant(), $1, $2)',
       [name, art],
     )
   })
@@ -458,7 +458,7 @@ export async function ordnungsgruppeAnlegen(benutzerId: string, f: Eingaben): Pr
   await schreiben(benutzerId, async (c) => {
     await c.query(
       `insert into ordnungsgruppe (mandant_id, name, kurzcode, farbe)
-       values (app.mein_mandant(), $1, $2, $3)`,
+       values (dms.mein_mandant(), $1, $2, $3)`,
       [name, kurzcode.toUpperCase(), text(f['farbe'])],
     )
   })
@@ -515,7 +515,7 @@ export async function fristSetzen(benutzerId: string, f: Eingaben): Promise<void
   await schreiben(benutzerId, async (c) => {
     await c.query(
       `insert into aufbewahrungsfrist (mandant_id, belegart, jahre, grund, aktiv)
-       values (app.mein_mandant(), $1, $2, $3, true)
+       values (dms.mein_mandant(), $1, $2, $3, true)
        on conflict (mandant_id, belegart)
        do update set jahre = excluded.jahre, grund = excluded.grund, aktiv = true`,
       [belegart, jahre, grund],
@@ -583,11 +583,11 @@ export async function benutzerAnlegen(benutzerId: string, f: Eingaben): Promise<
   await schreiben(benutzerId, async (c) => {
     /*
      * Ohne `auth_id`. Die entsteht bei der ersten Anmeldung ueber Entra ID
-     * -- `app.identitaet_aufloesen` verknuepft sie mit dem hier angelegten
+     * -- `dms.identitaet_aufloesen` verknuepft sie mit dem hier angelegten
      * Benutzer (ADR 0004). Ein hier eingetragener Wert waere geraten.
      */
     await c.query(
-      'insert into benutzer (mandant_id, name, email) values (app.mein_mandant(), $1, $2)',
+      'insert into benutzer (mandant_id, name, email) values (dms.mein_mandant(), $1, $2)',
       [name, email],
     )
   })
@@ -740,8 +740,8 @@ export interface Rechtelage {
 export async function rechtelage(benutzerId: string): Promise<Rechtelage> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ s: boolean; b: boolean; p: boolean }>(
-      `select app.darf('stammdaten_pflegen') as s, app.darf('benutzer_verwalten') as b,
-              app.darf('prozess_konfigurieren') as p`,
+      `select dms.darf('stammdaten_pflegen') as s, dms.darf('benutzer_verwalten') as b,
+              dms.darf('prozess_konfigurieren') as p`,
     )
     return { stammdaten: rows[0]?.s === true, benutzer: rows[0]?.b === true, prozess: rows[0]?.p === true }
   })

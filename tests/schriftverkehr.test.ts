@@ -12,7 +12,7 @@
  * aus der Konfiguration, dieselbe Engine, dieselben Rechte, dieselbe
  * Archivierung, dieselbe Aufbewahrungslogik.
  *
- * Und der Fund: `app.freigabe_hash` band über einen inneren Verbund an
+ * Und der Fund: `dms.freigabe_hash` band über einen inneren Verbund an
  * `rechnung_fakten` und lieferte für jede andere Belegart `null`.
  */
 
@@ -161,7 +161,7 @@ describe('Der Freigabe-Hash -- der Fund', () => {
      * gehangen.
      */
     const [z] = await direkt<{ h: string | null }>(
-      'select app.freigabe_hash($1) as h',
+      'select dms.freigabe_hash($1) as h',
       [id],
     )
     expect(z?.h).not.toBeNull()
@@ -170,10 +170,10 @@ describe('Der Freigabe-Hash -- der Fund', () => {
 
   it('verfaellt, wenn der Beleg das Objekt wechselt', async () => {
     const id = await schriftstueck({ richtung: 'eingehend', betreff: 'Anhoerung' })
-    const [vorher] = await direkt<{ h: string }>('select app.freigabe_hash($1) as h', [id])
+    const [vorher] = await direkt<{ h: string }>('select dms.freigabe_hash($1) as h', [id])
 
     await direkt('update dokument set objekt_id = $2 where id = $1', [id, OBJEKT_ANDERS])
-    const [nachher] = await direkt<{ h: string }>('select app.freigabe_hash($1) as h', [id])
+    const [nachher] = await direkt<{ h: string }>('select dms.freigabe_hash($1) as h', [id])
 
     // Genau die Zusicherung, um derentwillen es den Hash gibt -- und genau
     // die, die fuer Schriftverkehr nicht galt.
@@ -182,12 +182,12 @@ describe('Der Freigabe-Hash -- der Fund', () => {
 
   it('verfaellt, wenn sich die Antwortfrist aendert', async () => {
     const id = await schriftstueck({ richtung: 'eingehend', fristAm: '2026-09-30' })
-    const [vorher] = await direkt<{ h: string }>('select app.freigabe_hash($1) as h', [id])
+    const [vorher] = await direkt<{ h: string }>('select dms.freigabe_hash($1) as h', [id])
 
     await alsBenutzer(ANNA, (c) =>
       schriftstueckSchreiben(c, id, { richtung: 'eingehend', fristAm: '2026-12-31' }),
     )
-    const [nachher] = await direkt<{ h: string }>('select app.freigabe_hash($1) as h', [id])
+    const [nachher] = await direkt<{ h: string }>('select dms.freigabe_hash($1) as h', [id])
     expect(nachher.h).not.toBe(vorher.h)
   })
 
@@ -197,7 +197,7 @@ describe('Der Freigabe-Hash -- der Fund', () => {
      *
      * Die Formel wurde erweitert. Haette sich der Hash einer Rechnung dabei
      * geaendert, waere jede bestehende Freigabe im System entwertet worden:
-     * `app.freigaben_nachpruefen` haette je Stempel ein Ereignis `verfallen`
+     * `dms.freigaben_nachpruefen` haette je Stempel ein Ereignis `verfallen`
      * geschrieben und alle laufenden Belege auf die erste Stufe
      * zurueckgeworfen -- eine Migration, die den Betrieb anhaelt, und zwar
      * wegen einer Verbesserung.
@@ -207,7 +207,7 @@ describe('Der Freigabe-Hash -- der Fund', () => {
      * einverstanden, statt sie zu pruefen.
      */
     const id = await rechnung()
-    const [z] = await direkt<{ h: string }>('select app.freigabe_hash($1) as h', [id])
+    const [z] = await direkt<{ h: string }>('select dms.freigabe_hash($1) as h', [id])
 
     const [erwartet] = await direkt<{ h: string }>(
       `select encode(sha256(convert_to(
@@ -254,7 +254,7 @@ describe('Derselbe Weg wie eine Rechnung', () => {
   it('hat keine Zahlungsstufe', async () => {
     /*
      * Deshalb kommt ein Schriftstueck nie in die Naehe von
-     * `app.zahlung_moeglich`, und die Frage nach dem Rechnungsbetrag stellt
+     * `dms.zahlung_moeglich`, und die Frage nach dem Rechnungsbetrag stellt
      * sich gar nicht. Das ist die Antwort auf "was passiert mit dem
      * Summenzwang bei einem Beleg ohne Betrag" -- er wird nie gefragt.
      */
@@ -272,12 +272,12 @@ describe('Derselbe Weg wie eine Rechnung', () => {
     /*
      * Festgehalten, damit es eine Entscheidung bleibt und nicht zu einem
      * Zufall wird, den beim naechsten Mal jemand "repariert":
-     * `app.kontierung_summe_stimmt` liefert fuer einen Beleg ohne
-     * Rechnungsdaten `null`, und `app.zahlung_moeglich` macht daraus ein
+     * `dms.kontierung_summe_stimmt` liefert fuer einen Beleg ohne
+     * Rechnungsdaten `null`, und `dms.zahlung_moeglich` macht daraus ein
      * Nein. Richtig im Ergebnis -- ein Schriftstueck wird nicht gezahlt.
      */
     const [z] = await direkt<{ moeglich: boolean }>(
-      'select moeglich from app.zahlung_moeglich($1)',
+      'select moeglich from dms.zahlung_moeglich($1)',
       [id],
     )
     expect(z?.moeglich).not.toBe(true)

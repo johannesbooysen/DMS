@@ -39,7 +39,7 @@ export default async function Stapelpruefung({
   const { kopf, seiten } = geladen
 
   // Die Gruppierung ergibt sich aus den Seiten -- sie wird hier nur
-  // dargestellt, nicht gerechnet. Gerechnet hat sie `app.stapel_gruppieren`.
+  // dargestellt, nicht gerechnet. Gerechnet hat sie `dms.stapel_gruppieren`.
   const belege = new Map<number, typeof seiten>()
   for (const s of seiten) {
     if (s.belegNr === null) continue

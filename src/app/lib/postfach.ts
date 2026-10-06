@@ -98,7 +98,7 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
 export async function persoenlichesPostfach(benutzerId: string): Promise<Postfachzeile[]> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query(
-      `${ZEILEN_ABFRAGE} and a.zugewiesen_benutzer = app.mein_benutzer()
+      `${ZEILEN_ABFRAGE} and a.zugewiesen_benutzer = dms.mein_benutzer()
         order by a.faellig_am nulls last, d.eingang_am`,
     )
     return rows.map(zeile)
@@ -140,18 +140,18 @@ export async function poolPostfach(benutzerId: string): Promise<Postfachzeile[]>
     const { rows } = await c.query(
       `${ZEILEN_ABFRAGE}
          and (
-           a.zugewiesen_gruppe = any (app.meine_gruppen())
+           a.zugewiesen_gruppe = any (dms.meine_gruppen())
            or exists (
              select 1 from benutzer_rolle_objekt bro
               where bro.rolle_id = a.zugewiesen_rolle
-                and bro.benutzer_id = app.mein_benutzer()
+                and bro.benutzer_id = dms.mein_benutzer()
                 and (bro.objekt_id = d.objekt_id or bro.objekt_id is null)
                 and bro.gueltig_von <= current_date
                 and (bro.gueltig_bis is null or bro.gueltig_bis >= current_date)
            )
          )
          and (a.sperre_bis is null or a.sperre_bis < now()
-              or a.uebernommen_von = app.mein_benutzer())
+              or a.uebernommen_von = dms.mein_benutzer())
         order by a.faellig_am nulls last, d.eingang_am`,
     )
     return rows.map(zeile)
@@ -183,7 +183,7 @@ export async function klaerungsPostfach(benutzerId: string): Promise<Klaerungsze
          left join kreditor k on k.id = f.kreditor_id
          left join schriftverkehr_fakten sv on sv.dokument_id = d.id
         where kl.erledigt_am is null
-          and kl.verantwortlich_benutzer = app.mein_benutzer()
+          and kl.verantwortlich_benutzer = dms.mein_benutzer()
         order by kl.wiedervorlage_am`,
     )
     return rows.map((z) => ({
@@ -230,7 +230,7 @@ export async function aufgabeLaden(
     const gefunden = zeile(z)
 
     const { rows: knoepfe } = await c.query<Record<string, unknown>>(
-      'select * from app.moegliche_stempel($1, $2)',
+      'select * from dms.moegliche_stempel($1, $2)',
       [gefunden.laufId, gefunden.stufeId],
     )
     // Gestaltung und Name des Handelnden fuer den Abdruck vor dem Speichern:
@@ -240,7 +240,7 @@ export async function aufgabeLaden(
       c.query<{ id: string; gestaltung: unknown }>('select id, gestaltung from stempeltyp where id = any($1::uuid[])', [
         knoepfe.map((k) => String(k['stempeltyp_id'])),
       ]),
-      c.query<{ name: string }>('select name from benutzer where id = app.mein_benutzer()'),
+      c.query<{ name: string }>('select name from benutzer where id = dms.mein_benutzer()'),
     ])
     const jetzt = new Date()
     return {
@@ -279,7 +279,7 @@ export class StempelAbgelehnt extends Error {}
 /**
  * Setzt einen Stempel — nach serverseitiger Prüfung.
  *
- * Geprüft wird gegen `app.moegliche_stempel`, also gegen dieselbe Quelle, aus
+ * Geprüft wird gegen `dms.moegliche_stempel`, also gegen dieselbe Quelle, aus
  * der die Oberfläche ihre Schaltflächen bezieht. Ein untergeschobener
  * Stempeltyp scheitert hier, nicht erst an der Datenbank.
  */
@@ -308,7 +308,7 @@ export async function stempelSetzen(
       stempeltyp_id: string
       entscheidung: string
       kommentar_pflicht: boolean
-    }>('select * from app.moegliche_stempel($1, $2)', [aufgabe.lauf_id, aufgabe.stufe_id])
+    }>('select * from dms.moegliche_stempel($1, $2)', [aufgabe.lauf_id, aufgabe.stufe_id])
 
     const gewaehlt = erlaubt.find((e) => e.stempeltyp_id === eingabe.stempeltypId)
     if (gewaehlt === undefined) {
@@ -320,7 +320,7 @@ export async function stempelSetzen(
     if (eingabe.lage != null) {
       const l = eingabe.lage
       const { rows: befund } = await c.query<{ grund: string | null }>(
-        'select app.stempel_lage_pruefen($1, null, $2, $3, $4, $5, $6) as grund',
+        'select dms.stempel_lage_pruefen($1, null, $2, $3, $4, $5, $6) as grund',
         [aufgabe.dokument_id, Math.round(l.seite), Math.round(l.x), Math.round(l.y), Math.round(l.breite), Math.round(l.hoehe)],
       )
       if (befund[0]?.grund != null) {
@@ -409,7 +409,7 @@ export async function stempelSetzen(
         `insert into klaerung (dokument_id, grund, kommentar, eroeffnet_von,
                                verantwortlich_benutzer, stufe_beim_eintritt,
                                wiedervorlage_am)
-         values ($1, 'Rueckfrage', $2, app.mein_benutzer(), app.mein_benutzer(), $3, $4)`,
+         values ($1, 'Rueckfrage', $2, dms.mein_benutzer(), dms.mein_benutzer(), $3, $4)`,
         [aufgabe.dokument_id, kommentar, aufgabe.stufe_id, eingabe.wiedervorlageAm],
       )
     }

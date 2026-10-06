@@ -107,7 +107,7 @@ console.log(
   '\nAb jetzt traegt jeder archivierte Beleg diese Fassung. Was vorher\n' +
     'archiviert wurde, bleibt ohne -- das ist keine Luecke, die sich\n' +
     'nachtraeglich schliessen liesse, und sie steht sichtbar in\n' +
-    '`app.archiv_ohne_verfahrensdoku()`.',
+    '`dms.archiv_ohne_verfahrensdoku()`.',
 )
 
 await poolSchliessen()

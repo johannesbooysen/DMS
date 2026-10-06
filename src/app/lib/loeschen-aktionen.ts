@@ -7,7 +7,7 @@
  * Handlung im ganzen System, die Daten unwiederbringlich entfernt. Sie soll
  * beim Suchen auffallen.
  *
- * Geprüft wird nichts hier — `app.dokument_endgueltig_loeschen` prüft Recht,
+ * Geprüft wird nichts hier — `dms.dokument_endgueltig_loeschen` prüft Recht,
  * Frist und Löschsperre selbst und schreibt das Protokoll in derselben
  * Transaktion. Eine zweite Prüfung an dieser Stelle wäre eine zweite
  * Wahrheit, und die beiden liefen auseinander.

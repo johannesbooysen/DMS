@@ -81,7 +81,7 @@ export async function sucheSpeichern(
   return alsBenutzer(benutzerId, async (c) => {
     const { rowCount } = await c.query(
       `insert into gespeicherte_suche (mandant_id, benutzer_id, name, filter)
-       values (app.mein_mandant(), app.mein_benutzer(), $1, $2::jsonb)
+       values (dms.mein_mandant(), dms.mein_benutzer(), $1, $2::jsonb)
        on conflict (benutzer_id, name) do update set filter = excluded.filter`,
       [bereinigt, JSON.stringify(filter)],
     )

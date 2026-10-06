@@ -70,7 +70,7 @@ afterEach(async () => {
   // Text absichtlich, und der nächste prüfte sonst gegen eine verbogene
   // Vorlage. Genau das ist hier einmal passiert.
   await direkt('delete from vorlage')
-  await direkt('select app.vorlagen_grundbestand(m.id) from mandant m')
+  await direkt('select dms.vorlagen_grundbestand(m.id) from mandant m')
   versandZuruecksetzen()
 })
 

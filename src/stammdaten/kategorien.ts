@@ -82,8 +82,8 @@ function mussGewirktHaben(zeilen: number | null): void {
 export async function rechtelageKategorien(benutzerId: string): Promise<Rechtelage> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ s: boolean; p: boolean }>(
-      `select app.darf('stammdaten_pflegen') as s,
-              app.darf('prozess_konfigurieren') as p`,
+      `select dms.darf('stammdaten_pflegen') as s,
+              dms.darf('prozess_konfigurieren') as p`,
     )
     return { stammdaten: rows[0]?.s === true, prozess: rows[0]?.p === true }
   })

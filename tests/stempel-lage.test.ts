@@ -3,7 +3,7 @@
  *
  * Zusicherungen:
  *   - Eine mitgegebene Lage landet so im Layer, wie der Mensch sie gewaehlt hat.
- *   - Ohne Lage bleibt es beim errechneten Platz (app.stempelplatz).
+ *   - Ohne Lage bleibt es beim errechneten Platz (dms.stempelplatz).
  *   - Eine Lage ueber Text oder unter dem Mindestmass wird abgewiesen -- als
  *     Satz aus stempelSetzen und als Grenze im Trigger, wenn jemand die
  *     Anwendung umgeht.
@@ -168,7 +168,7 @@ describe('Was die Seite zum Platzieren hergibt', () => {
 
   it('schlaegt einen Block vor, auf dem nichts liegt -- auch wenn der abgezaehlte belegt ist', async () => {
     // Der erste Stempel wurde von Hand auf den zweiten Block gezogen; das
-    // Abzaehlen (app.stempelplatz) naehme jetzt genau diesen Block.
+    // Abzaehlen (dms.stempelplatz) naehme jetzt genau diesen Block.
     const { aufgabeId, stempeltypId } = await annasAufgabe()
     await stempelSetzen(ANNA, { aufgabeId, stempeltypId, lage: { seite: 1, ...ZWEITER_PLATZ } })
     const danach = await platzierungLaden(ANNA, beleg)

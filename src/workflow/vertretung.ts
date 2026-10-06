@@ -69,8 +69,8 @@ export async function meineVertretungen(
 ): Promise<{ abgegeben: Vertretung[]; uebernommen: Vertretung[] }> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      `${ABFRAGE} where d.von_benutzer = app.mein_benutzer()
-                     or d.an_benutzer = app.mein_benutzer()
+      `${ABFRAGE} where d.von_benutzer = dms.mein_benutzer()
+                     or d.an_benutzer = dms.mein_benutzer()
         order by d.gueltig_von desc`,
     )
     const alle = rows.map(zeile)
@@ -107,7 +107,7 @@ export async function vertretungAnlegen(
                                  ordnungsgruppe_id, stufentyp, gueltig_von, gueltig_bis,
                                  grund, erstellt_von)
          select b.mandant_id, $1, $2, $3, $4, $5,
-                coalesce($6::timestamptz, now()), $7::timestamptz, $8, app.mein_benutzer()
+                coalesce($6::timestamptz, now()), $7::timestamptz, $8, dms.mein_benutzer()
            from benutzer b where b.id = $1
          returning id`,
         [
@@ -166,7 +166,7 @@ export async function benutzerListe(
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ id: string; name: string }>(
       `select id, name from benutzer
-        where mandant_id = app.mein_mandant() and aktiv and id <> app.mein_benutzer()
+        where mandant_id = dms.mein_mandant() and aktiv and id <> dms.mein_benutzer()
         order by name`,
     )
     return rows

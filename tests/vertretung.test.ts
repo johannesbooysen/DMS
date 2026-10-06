@@ -220,7 +220,7 @@ describe('Vertretung uebertraegt keine Rechte', () => {
 
     const rechte = await alsBenutzer(BERND, async (c) => {
       const { rows } = await c.query<{ darf: boolean }>(
-        `select app.darf('bearbeiten') as darf`,
+        `select dms.darf('bearbeiten') as darf`,
       )
       return rows[0].darf
     })

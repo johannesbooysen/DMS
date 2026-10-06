@@ -122,7 +122,7 @@ export async function layerAnlegen(
 
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ layer_anlegen: string | null }>(
-      'select app.layer_anlegen($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'select dms.layer_anlegen($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [
         wunsch.dokumentId,
         wunsch.typ,
@@ -146,7 +146,7 @@ export async function layerAusblenden(
 ): Promise<boolean> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ layer_ausblenden: boolean }>(
-      'select app.layer_ausblenden($1)',
+      'select dms.layer_ausblenden($1)',
       [layerId],
     )
     return rows[0]?.layer_ausblenden === true
@@ -158,7 +158,7 @@ export async function layerAusblenden(
  *
  * Die Regel ist knapp und absichtlich nicht verhandelbar: Schwärzungen immer
  * (sie verdecken), Stempel und ausdrücklich freigegebene Notizen ja, alles
- * andere nein. Sie steht hier **und** in `app.einsicht_*`; wer sie ändert,
+ * andere nein. Sie steht hier **und** in `dms.einsicht_*`; wer sie ändert,
  * ändert sie an beiden Stellen.
  */
 export function gehtNachDraussen(l: Layerzeile): boolean {
@@ -187,7 +187,7 @@ export interface Stempellage {
 export async function stempelVerschieben(benutzerId: string, lage: Stempellage): Promise<void> {
   return alsBenutzer(benutzerId, async (c) => {
     try {
-      await c.query('select app.stempel_verschieben($1, $2, $3, $4, $5, $6)', [
+      await c.query('select dms.stempel_verschieben($1, $2, $3, $4, $5, $6)', [
         lage.layerId,
         Math.round(lage.seite),
         Math.round(lage.x),
@@ -220,7 +220,7 @@ export interface Platzierung {
  * Textkaesten hat -- dann kann die Datenbank die Lage nicht pruefen, und der
  * Trigger waehlt den Platz wie bisher.
  *
- * Der Vorschlag ist derselbe Block, den der Trigger naehme (app.stempelplatz);
+ * Der Vorschlag ist derselbe Block, den der Trigger naehme (dms.stempelplatz);
  * ist keiner mehr frei, beginnt der Abdruck oben links, und die Rueckmeldung
  * sagt, wo Text steht.
  */
@@ -233,7 +233,7 @@ export async function platzierungLaden(benutzerId: string, dokumentId: string): 
       freie_bloecke: Kasten[] | null
       platz: Kasten | null
     }>(
-      `select s.breite, s.hoehe, s.textkaesten, s.freie_bloecke, app.stempelplatz($1) as platz
+      `select s.breite, s.hoehe, s.textkaesten, s.freie_bloecke, dms.stempelplatz($1) as platz
          from dokument_seite s
         where s.dokument_id = $1 and s.seite = 1`,
       [dokumentId],
@@ -247,7 +247,7 @@ export async function platzierungLaden(benutzerId: string, dokumentId: string): 
     )
     const liegen = belegt.map((k) => ({ x: Number(k.x), y: Number(k.y), breite: Number(k.breite), hoehe: Number(k.hoehe) }))
     /*
-     * app.stempelplatz zaehlt nur ab: der n-te Block fuer den n-ten Stempel.
+     * dms.stempelplatz zaehlt nur ab: der n-te Block fuer den n-ten Stempel.
      * Hat ein Mensch den ersten Stempel auf den zweiten Block gezogen, laege
      * der Vorschlag auf ihm -- beim Bedienen genau so gesehen ("Dort liegt
      * schon ein Stempel", bevor man etwas getan hatte). Deshalb der erste
@@ -275,7 +275,7 @@ export async function verschiebbareStempel(
     const { rows } = await c.query<{ id: string }>(
       `select l.id from dokument_layer l
         where l.dokument_id = $1 and l.typ = 'stempel' and l.geloescht_am is null
-          and app.stempel_verschiebbar(l.id) is null`,
+          and dms.stempel_verschiebbar(l.id) is null`,
       [dokumentId],
     )
     return new Set(rows.map((z) => z.id))

@@ -86,7 +86,7 @@ export async function eingangAbholen(
 ): Promise<{ quellen: number; aufgenommen: number; gescheitert: number }> {
   const faellig = await alsAnmeldung(async (c) => {
     const { rows } = await c.query<Record<string, unknown>>(
-      'select * from app.eingangsquellen_faellig($1)',
+      'select * from dms.eingangsquellen_faellig($1)',
       [grenze],
     )
     return rows.map(
@@ -222,7 +222,7 @@ async function eineQuelle(
 async function schonGeholt(quelleId: string, herkunft: string): Promise<boolean> {
   return alsAnmeldung(async (c) => {
     const { rows } = await c.query<{ eingang_schon_geholt: boolean }>(
-      'select app.eingang_schon_geholt($1, $2)',
+      'select dms.eingang_schon_geholt($1, $2)',
       [quelleId, herkunft],
     )
     return rows[0]?.eingang_schon_geholt === true
@@ -235,7 +235,7 @@ async function vormerken(
   herkunft: string,
   dokumentId: string,
 ): Promise<void> {
-  await c.query('select app.eingang_vormerken($1, $2, $3)', [quelleId, herkunft, dokumentId])
+  await c.query('select dms.eingang_vormerken($1, $2, $3)', [quelleId, herkunft, dokumentId])
 }
 
 async function vermerken(
@@ -244,7 +244,7 @@ async function vermerken(
   fehler: string | null,
 ): Promise<void> {
   await alsAnmeldung((c) =>
-    c.query('select app.eingangsquelle_vermerken($1, $2, $3)', [quelleId, anzahl, fehler]),
+    c.query('select dms.eingangsquelle_vermerken($1, $2, $3)', [quelleId, anzahl, fehler]),
   )
 }
 

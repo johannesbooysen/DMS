@@ -78,7 +78,7 @@ export async function stapelAufnehmen(
     const { rows } = await c.query<{ id: string }>(
       `insert into stapel (mandant_id, eingangskanal, dateiname, storage_key,
                            inhalt_hash, status, erfasst_von)
-       values ($1, $2, $3, $4, $5, 'aufbereitung', app.mein_benutzer())
+       values ($1, $2, $3, $4, $5, 'aufbereitung', dms.mein_benutzer())
        on conflict (mandant_id, inhalt_hash) do nothing
        returning id`,
       [
@@ -184,7 +184,7 @@ export async function trennungAendern(
 ): Promise<number> {
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<{ stapel_trennen: number }>(
-      'select app.stapel_trennen($1, $2, $3)',
+      'select dms.stapel_trennen($1, $2, $3)',
       [stapelId, seite, trenner],
     )
     return rows[0]?.stapel_trennen ?? -1

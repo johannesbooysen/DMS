@@ -69,7 +69,7 @@ export async function objektsperrenSetzen(
       // frueh -- und niemand koennte es richtigstellen (Projektregel).
       `select dokument_id, storage_key,
               to_char(aufbewahrung_bis, 'YYYY-MM-DD') as bis
-         from app.objektsperre_offen($1)`,
+         from dms.objektsperre_offen($1)`,
       [grenze],
     )
     return rows
@@ -98,7 +98,7 @@ export async function objektsperrenSetzen(
       )
 
       await alsAnmeldung((c) =>
-        c.query('select app.objektsperre_vermerken($1, $2::date, $3)', [
+        c.query('select dms.objektsperre_vermerken($1, $2::date, $3)', [
           eintrag.dokument_id,
           eintrag.bis,
           fassung,

@@ -53,7 +53,7 @@ async function belegMitVorschlag(name: string, ustId: string | null, iban: strin
     )
     const id = rows[0]!.id
     await laufStarten(c, id)
-    await c.query('select app.kreditor_vorschlag_melden($1, $2, $3, $4)', [id, name, ustId, iban])
+    await c.query('select dms.kreditor_vorschlag_melden($1, $2, $3, $4)', [id, name, ustId, iban])
     belege.push(id)
     return id
   })

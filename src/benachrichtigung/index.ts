@@ -56,7 +56,7 @@ export interface Zaehler {
  */
 export async function zaehlerLaden(c: PoolClient): Promise<Zaehler> {
   const { rows } = await c.query<{ offen: string; ueberfaellig: string }>(
-    'select offen, ueberfaellig from app.aufgaben_zaehler()',
+    'select offen, ueberfaellig from dms.aufgaben_zaehler()',
   )
   return {
     offen: Number(rows[0]?.offen ?? 0),
@@ -74,7 +74,7 @@ export async function wunschLaden(c: PoolClient): Promise<Wunsch> {
   const { rows } = await c.query<{ taeglich: boolean; stunde: number }>(
     `select coalesce(n.taeglich, true) as taeglich, coalesce(n.stunde, 7) as stunde
        from (select 1) x
-       left join benachrichtigung n on n.benutzer_id = app.mein_benutzer()`,
+       left join benachrichtigung n on n.benutzer_id = dms.mein_benutzer()`,
   )
   return {
     taeglich: rows[0]?.taeglich ?? true,
@@ -91,7 +91,7 @@ export async function wunschSpeichern(
   }
   await c.query(
     `insert into benachrichtigung (benutzer_id, taeglich, stunde, geaendert_am)
-     values (app.mein_benutzer(), $1, $2, now())
+     values (dms.mein_benutzer(), $1, $2, now())
      on conflict (benutzer_id)
      do update set taeglich = excluded.taeglich, stunde = excluded.stunde,
                    geaendert_am = now()`,
@@ -113,7 +113,7 @@ export interface Versandbilanz {
  * unnötig, weil beides in dieselbe Transaktion passt.
  *
  * **Wer fällig ist, fragt der Worker ohne Benutzer** — er hat keinen, und
- * `app.benachrichtigung_faellig` ist dafür `security definer` und gibt nur
+ * `dms.benachrichtigung_faellig` ist dafür `security definer` und gibt nur
  * Zahlen heraus. **Eingetragen wird dann unter dem Empfänger**: Sonst fände
  * `postAnlegen` die Vorlage nicht, und der Ausgang landete ohne Mandanten.
  */
@@ -130,7 +130,7 @@ export async function sammelmailsEintragen(stunde?: number): Promise<Versandbila
       ueberfaellig: string
     }>(
       `select benutzer_id, name, email, anzahl, ueberfaellig
-         from app.benachrichtigung_faellig(
+         from dms.benachrichtigung_faellig(
                 coalesce($1::integer, extract(hour from now())::integer))`,
       [stunde ?? null],
     )
@@ -146,7 +146,7 @@ export async function sammelmailsEintragen(stunde?: number): Promise<Versandbila
        * Unter den Rechten des Empfängers, nicht als System.
        *
        * Mein erster Entwurf nahm `alsAnmeldung` — also `dms_app` ohne
-       * Benutzer. Dann ist `app.mein_mandant()` leer, die Policy auf
+       * Benutzer. Dann ist `dms.mein_mandant()` leer, die Policy auf
        * `vorlage` liefert nichts, und `postAnlegen` findet die Vorlage
        * nicht. Es entstand kein einziger Ausgang, und der Fehler verschwand
        * im `catch` darunter — gefunden nur, weil ein Test die Zeilen
@@ -169,7 +169,7 @@ export async function sammelmailsEintragen(stunde?: number): Promise<Versandbila
             link: `${basis}/postfach`,
           },
         })
-        await c.query('select app.benachrichtigung_vermerken($1)', [z.benutzer_id])
+        await c.query('select dms.benachrichtigung_vermerken($1)', [z.benutzer_id])
       })
       eingetragen += 1
     } catch {

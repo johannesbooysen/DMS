@@ -6,6 +6,7 @@
  */
 
 import { mkdtemp, rm } from 'node:fs/promises'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -13,9 +14,6 @@ import { Client } from 'pg'
 import { DateisystemAblage, inhaltHash } from '../src/ablage'
 import { dokumentAufnehmen, type Eingang } from '../src/ingest/aufnehmen'
 import { dubletteSuchen } from '../src/ingest/dublette'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const MANDANT_NORD = '10000000-0000-0000-0000-000000000001'
 const ANNA = '20000000-0000-0000-0000-000000000001'
@@ -28,7 +26,7 @@ let ablageWurzel: string
 let ablage: DateisystemAblage
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
   ablageWurzel = await mkdtemp(join(tmpdir(), 'dms-ablage-'))
   ablage = new DateisystemAblage(ablageWurzel)

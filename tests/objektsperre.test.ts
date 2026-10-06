@@ -81,7 +81,7 @@ async function direkt<T>(frage: string, werte: unknown[] = []): Promise<T[]> {
 /**
  * Legt einen Beleg mit Datei an.
  *
- * Die Datei ist Pflicht: `app.objektsperre_offen` verbindet über
+ * Die Datei ist Pflicht: `dms.objektsperre_offen` verbindet über
  * `dokument_datei`, und ein Beleg ohne Original hat nichts zu sperren.
  */
 async function belegAnlegen(): Promise<{ id: string; schluessel: string }> {
@@ -140,7 +140,7 @@ describe('Der Vermerk in der Datenbank', () => {
 
     /*
      * Eine leere Spalte ist ehrlicher als ein Datum, das nichts bewirkt.
-     * Genau deshalb traegt `app.dokument_archivieren` die Sperre nicht selbst
+     * Genau deshalb traegt `dms.dokument_archivieren` die Sperre nicht selbst
      * ein -- sie ist zu diesem Zeitpunkt noch nicht gesetzt.
      */
     expect(stand?.archiviertAm).not.toBeNull()
@@ -151,18 +151,18 @@ describe('Der Vermerk in der Datenbank', () => {
     await alsBenutzer(ANNA, (c) => archivieren(c, beleg))
 
     const offen = await direkt<{ dokument_id: string }>(
-      'select dokument_id from app.objektsperre_offen(500)',
+      'select dokument_id from dms.objektsperre_offen(500)',
     )
     expect(offen.some((z) => z.dokument_id === beleg)).toBe(true)
 
-    await direkt('select app.objektsperre_vermerken($1, $2::date, $3)', [
+    await direkt('select dms.objektsperre_vermerken($1, $2::date, $3)', [
       beleg,
       '2036-12-31',
       'v1',
     ])
 
     const danach = await direkt<{ dokument_id: string }>(
-      'select dokument_id from app.objektsperre_offen(500)',
+      'select dokument_id from dms.objektsperre_offen(500)',
     )
     // Der Archiveintrag ist die Warteschlange -- gesetzt heisst erledigt.
     expect(danach.some((z) => z.dokument_id === beleg)).toBe(false)
@@ -172,7 +172,7 @@ describe('Der Vermerk in der Datenbank', () => {
     await alsBenutzer(ANNA, (c) => archivieren(c, beleg))
 
     const [erst] = await direkt<{ objektsperre_vermerken: boolean }>(
-      'select app.objektsperre_vermerken($1, $2::date, $3)',
+      'select dms.objektsperre_vermerken($1, $2::date, $3)',
       [beleg, '2036-12-31', 'v1'],
     )
     expect(erst?.objektsperre_vermerken).toBe(true)
@@ -184,7 +184,7 @@ describe('Der Vermerk in der Datenbank', () => {
      * darf der zweite Vermerk nicht abbrechen.
      */
     const [nochmal] = await direkt<{ objektsperre_vermerken: boolean }>(
-      'select app.objektsperre_vermerken($1, $2::date, $3)',
+      'select dms.objektsperre_vermerken($1, $2::date, $3)',
       [beleg, '2040-12-31', 'v2'],
     )
     expect(nochmal?.objektsperre_vermerken).toBe(false)
@@ -196,7 +196,7 @@ describe('Der Vermerk in der Datenbank', () => {
 
   it('laesst eine gesetzte Sperre nicht mehr aendern', async () => {
     await alsBenutzer(ANNA, (c) => archivieren(c, beleg))
-    await direkt('select app.objektsperre_vermerken($1, $2::date, $3)', [
+    await direkt('select dms.objektsperre_vermerken($1, $2::date, $3)', [
       beleg,
       '2036-12-31',
       'v1',
@@ -226,7 +226,7 @@ describe('Der Vermerk in der Datenbank', () => {
 
   it('laesst die Loeschsperre weiterhin setzen', async () => {
     await alsBenutzer(ANNA, (c) => archivieren(c, beleg))
-    await direkt('select app.objektsperre_vermerken($1, $2::date, $3)', [
+    await direkt('select dms.objektsperre_vermerken($1, $2::date, $3)', [
       beleg,
       '2036-12-31',
       'v1',

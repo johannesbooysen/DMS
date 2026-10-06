@@ -9,7 +9,7 @@
  *
  * **Der schwerste Fall steht als erster Test.** Anna konnte ihrer eigenen
  * Rolle den Freigabestempel der Geschäftsleitung zuweisen. Danach erzeugt
- * sie die Freigaben selbst, die `app.zahlung_moeglich()` verlangt — die
+ * sie die Freigaben selbst, die `dms.zahlung_moeglich()` verlangt — die
  * harte Sperre vor der Zahlung wäre keine mehr gewesen.
  *
  * Über die Gruppen führt derselbe Weg ein zweites Mal: `stempel_recht`

@@ -40,7 +40,7 @@ export interface Stempelvorgang {
   stempeltypId?: string | null
   entscheidung: 'freigabe' | 'ablehnung' | 'rueckgabe' | 'klaerung'
   kommentar?: string | null
-  /** Ohne Lage waehlt die Datenbank den Platz (app.stempelplatz). */
+  /** Ohne Lage waehlt die Datenbank den Platz (dms.stempelplatz). */
   lage?: Stempelplatz | null
 }
 
@@ -140,7 +140,7 @@ async function vertretungAnwenden(
   const { rows } = await c.query<{ delegation_id: string; an_benutzer: string }>(
     `select v.delegation_id, v.an_benutzer
        from dokument d,
-            lateral app.vertretung_fuer($2, d.objekt_id, d.ordnungsgruppe_id, $3) v
+            lateral dms.vertretung_fuer($2, d.objekt_id, d.ordnungsgruppe_id, $3) v
       where d.id = $1`,
     [dokumentId, traeger.benutzerId, stufentyp],
   )
@@ -308,7 +308,7 @@ async function vorruecken(
       // (Konzept 19). Hier und nicht in einem Nachtlauf -- ein Beleg, der
       // zwischen "letzter Freigabe" und "Archivierung" liegt, ist noch
       // aenderbar, und niemand weiss, wie lange dieses Fenster ist.
-      await c.query('select app.dokument_archivieren($1)', [dokumentId])
+      await c.query('select dms.dokument_archivieren($1)', [dokumentId])
       return { laufAbgeschlossen: true, neueAufgaben: [] }
     }
     // Ein paralleler Block wartet noch auf seinen anderen Zweig.
@@ -536,7 +536,7 @@ export async function stempeln(
     // Ersatzrechnung ist ein neues Dokument (Konzept 5). Der Status bleibt
     // dabei `abgelehnt` -- der Archiveintrag sagt, dass archiviert wurde.
     await c.query(`update dokument set status = 'abgelehnt' where id = $1`, [lauf.dokument_id])
-    await c.query('select app.dokument_archivieren($1)', [lauf.dokument_id])
+    await c.query('select dms.dokument_archivieren($1)', [lauf.dokument_id])
     return { laufAbgeschlossen: true, neueAufgaben: [] }
   }
 

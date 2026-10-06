@@ -382,14 +382,14 @@ export async function plausibilitaetPruefen(
         `insert into klaerung (dokument_id, grund, kategorie, kommentar, eroeffnet_von,
                                verantwortlich_benutzer, stufe_beim_eintritt, wiedervorlage_am)
          select $1, 'Plausibilitaet', $2, $3,
-                coalesce(d.erfasst_von, app.mein_benutzer()),
+                coalesce(d.erfasst_von, dms.mein_benutzer()),
                 coalesce(
                   (select z.benutzer_id from objekt_zustaendigkeit z
                     where z.objekt_id = d.objekt_id and z.art = 'hauptverantwortlich'
                       and z.gueltig_von <= current_date
                       and (z.gueltig_bis is null or z.gueltig_bis >= current_date)
                     limit 1),
-                  d.erfasst_von, app.mein_benutzer()),
+                  d.erfasst_von, dms.mein_benutzer()),
                 $4, current_date + 7
            from dokument d where d.id = $1`,
         [dokumentId, grund.pruefung, grund.hinweis, lauf.stufe],

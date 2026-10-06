@@ -13,10 +13,8 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { VERBINDUNGSOPTIONEN } from '../src/db'
 import { Client } from 'pg'
-
-const VERBINDUNG =
-  process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:15322/postgres'
 
 const ANNA = '20000000-0000-0000-0000-000000000001'
 const BERND = '20000000-0000-0000-0000-000000000002'
@@ -38,7 +36,7 @@ const STEMPEL_SACHLICH = '60000000-0000-0000-0000-000000000001'
 let client: Client
 
 beforeAll(async () => {
-  client = new Client({ connectionString: VERBINDUNG })
+  client = new Client(VERBINDUNGSOPTIONEN)
   await client.connect()
 })
 
@@ -215,7 +213,7 @@ describe('Rechte', () => {
   async function darf(benutzerId: string, aktion: string, objektId?: string) {
     return alsBenutzer(benutzerId, async (c) => {
       const { rows } = await c.query<{ darf: boolean }>(
-        'select app.darf($1, $2) as darf',
+        'select dms.darf($1, $2) as darf',
         [aktion, objektId ?? null],
       )
       return rows[0].darf
