@@ -85,6 +85,19 @@ await db.start()
 console.log(`Postgres laeuft auf ${URL} (${Math.round((Date.now() - start) / 100) / 10} s)`)
 
 if (frisch) {
+  // Supabase-Schein: auth.uid(), Rollen, storage -- was die RealesOS-
+  // Grundlage und die dms-Startmigration voraussetzen (siehe die SQL-Datei).
+  console.log('Supabase-Schein (auth, storage, Rollen) …')
+  {
+    const client = new pg.Client({ connectionString: URL })
+    await client.connect()
+    try {
+      await client.query(readFileSync('scripts/db-leicht-supabase-schein.sql', 'utf8'))
+    } finally {
+      await client.end()
+    }
+  }
+
   console.log('Migrationen …')
   // Eine Befehlszeile statt Argumentliste: Unter Windows braucht npx die Shell,
   // und Node warnt bei shell: true mit Argumenten -- die URL enthaelt nichts,

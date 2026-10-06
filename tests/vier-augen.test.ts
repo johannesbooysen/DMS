@@ -15,7 +15,8 @@
  * Unterschied zwischen "darf" (Rolle) und "nicht dieselben zwei" (Stufe).
  */
 
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { adminStempelEntziehen, adminStempelZurueck, type Stempelrecht } from './hilfe/admin-stempel'
 import { belegEntfernen } from './hilfe/aufraeumen'
 import { alsBenutzer, poolSchliessen, verbindungspool } from '../src/db'
 import { aufgabeLaden, stempelSetzen } from '../src/app/lib/postfach'
@@ -30,7 +31,14 @@ const OBJEKT_42 = '50000000-0000-0000-0000-000000000042'
 const KREDITOR = '55000000-0000-0000-0000-000000000001'
 const ORDNUNGSGRUPPE_BK = '40000000-0000-0000-0000-000000000001'
 const DEFINITION_AKTIV = '65000000-0000-0000-0000-000000000001'
-const SEED_DEFINITIONEN = [DEFINITION_AKTIV, '65000000-0000-0000-0000-000000000002']
+// Alle aktiven Ablaeufe des Seeds -- Rechnung, Schriftverkehr, Mahnung, Gutschrift.
+// Wer hier einen vergisst, loescht ihn beim Aufraeumen fuer alle folgenden Tests.
+const SEED_DEFINITIONEN = [
+  DEFINITION_AKTIV,
+  '65000000-0000-0000-0000-000000000002',
+  '65000000-0000-0000-0000-000000000003',
+  '65000000-0000-0000-0000-000000000004',
+]
 
 let beleg = ''
 const geliehen: string[] = []
@@ -159,7 +167,15 @@ afterEach(async () => {
   })
 })
 
-afterAll(poolSchliessen)
+let adminRechte: Stempelrecht[] = []
+beforeAll(async () => {
+  adminRechte = await alsEigentuemer((c) => adminStempelEntziehen(c))
+})
+
+afterAll(async () => {
+  await alsEigentuemer((c) => adminStempelZurueck(c, adminRechte))
+  await poolSchliessen()
+})
 
 describe('An der Stufe', () => {
   it('weist dieselbe Person an der naechsten Stufe ab -- und bietet ihr den Knopf nicht an', async () => {

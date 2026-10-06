@@ -78,6 +78,9 @@ export const TAETIGKEITEN = [
       'stapel',
       'stapel_seite',
       'stempel_ereignis',
+      // dms.events: das Ereignisprotokoll aus der RealesOS-Startmigration
+      // (wer hat wann was getan; actor_name als Momentaufnahme).
+      'events',
       // Protokoll der Bestandsuebernahme: Kennung im alten System, Dateiname,
       // wer uebernommen hat -- dieselbe Taetigkeit wie der Beleg selbst.
       'uebernahme_eintrag',

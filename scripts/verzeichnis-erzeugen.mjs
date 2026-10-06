@@ -55,12 +55,17 @@ const WURZEL = fileURLToPath(new URL('..', import.meta.url))
  */
 async function tabellenAusMigrationen() {
   const verzeichnis = join(WURZEL, 'supabase/migrations')
-  const dateien = (await readdir(verzeichnis)).filter((n) => n.endsWith('.sql')).sort()
+  // Die RealesOS-Grundlage (00000000000000_…) ist nicht Teil des DMS: Ihre
+  // Tabellen fuehrt RealesOS im eigenen Verzeichnis (ADR 0010).
+  const dateien = (await readdir(verzeichnis))
+    .filter((n) => n.endsWith('.sql') && !n.startsWith('00000000000000_'))
+    .sort()
   const gefunden = new Set()
   for (const datei of dateien) {
     const inhalt = await readFile(join(verzeichnis, datei), 'utf8')
+    // Mit oder ohne Schema (`dms.events`): gezaehlt wird der Tabellenname.
     for (const treffer of inhalt.matchAll(
-      /^create table (?:if not exists )?([a-z0-9_]+)/gim,
+      /^create table (?:if not exists )?(?:[a-z0-9_]+\.)?([a-z0-9_]+)/gim,
     )) {
       gefunden.add(treffer[1])
     }

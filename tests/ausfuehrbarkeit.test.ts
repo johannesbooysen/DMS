@@ -10,13 +10,21 @@
  * Rechte des Seeds sind fuer die uebrigen Tests die Wahrheit.
  */
 
-import { afterAll, afterEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { adminStempelEntziehen, adminStempelZurueck, type Stempelrecht } from './hilfe/admin-stempel'
 import { poolSchliessen, verbindungspool } from '../src/db'
 import { entwurfAnlegen, entwurfPruefung } from '../src/workflow/konfiguration'
 
 const EVA = '20000000-0000-0000-0000-000000000005'
 const DEFINITION_AKTIV = '65000000-0000-0000-0000-000000000001'
-const SEED_DEFINITIONEN = [DEFINITION_AKTIV, '65000000-0000-0000-0000-000000000002']
+// Alle aktiven Ablaeufe des Seeds -- Rechnung, Schriftverkehr, Mahnung, Gutschrift.
+// Wer hier einen vergisst, loescht ihn beim Aufraeumen fuer alle folgenden Tests.
+const SEED_DEFINITIONEN = [
+  DEFINITION_AKTIV,
+  '65000000-0000-0000-0000-000000000002',
+  '65000000-0000-0000-0000-000000000003',
+  '65000000-0000-0000-0000-000000000004',
+]
 
 interface Sicherung {
   rechte: Array<Record<string, unknown>>
@@ -80,7 +88,17 @@ afterEach(async () => {
   })
 })
 
-afterAll(poolSchliessen)
+// Ohne Admin-Stempel: Die Warnung "genau eine Person" gibt es nur, wenn es
+// an einer Stufe genau eine gibt (tests/hilfe/admin-stempel.ts).
+let adminRechte: Stempelrecht[] = []
+beforeAll(async () => {
+  adminRechte = await alsEigentuemer((c) => adminStempelEntziehen(c))
+})
+
+afterAll(async () => {
+  await alsEigentuemer((c) => adminStempelZurueck(c, adminRechte))
+  await poolSchliessen()
+})
 
 describe('Niemand darf stempeln', () => {
   it('meldet eine Stufe, deren Stempel kein aktiver Benutzer setzen darf', async () => {

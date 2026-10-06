@@ -55,6 +55,11 @@ Auf einen Blick: 83 Tabellen, 203 Policies,
 
 ## Migrationen
 
+### `supabase/migrations/00000000000000_realesos_public_baseline.sql`
+
+=============================================================================
+
+
 ### `supabase/migrations/20260828100000_kern.sql`
 
 Kernschema: Stammdaten, Dokumentenkern, Workflow-Engine
@@ -611,6 +616,18 @@ Tabellen: `paginierung`, `paginierung_zaehler`
 Funktionen: `app.paginiernummer_fest`, `app.stempel_feldwert`, `app.stempeltext`, `app.stempel_layer_setzen`, `app.eingang_abschliessen`, `app.suchtreffer`
 
 Policies: 3
+
+### `supabase/migrations/20261006120000_create_dms_schema.sql`
+
+=============================================================================
+
+
+### `supabase/migrations/20261006130000_schutz_pruefen_dms.sql`
+
+Die Schutzpruefung bewertet nur Tabellen, die dem DMS gehoeren
+
+Funktionen: `app.schutz_pruefen`
+
 
 ## Module
 

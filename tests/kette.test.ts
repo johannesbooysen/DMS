@@ -159,9 +159,10 @@ describe('Vom Eingang bis zur ersten Aufgabe', () => {
     expect(ergebnis.laufGestartet).toBe(true)
     expect(ergebnis.bericht.seiten).toBe(2)
     expect(ergebnis.bericht.weg).toBe('textlayer')
-    // Ohne eingebettetes XML und ohne eingeschaltetes Modell wird nicht
-    // geraten -- der Beleg geht in die manuelle Erfassung.
-    expect(ergebnis.bericht.erkennung?.quelle).toBe('keine')
+    // Ohne eingebettetes XML und ohne eingeschaltetes Modell lesen nur die
+    // Regeln (Muster: Nummer, Datum, IBAN …) -- immer, in Millisekunden;
+    // geraten wird nicht, und was die Regeln nicht finden, traegt ein Mensch nach.
+    expect(ergebnis.bericht.erkennung?.quelle).toBe('regel')
     expect(ergebnis.seiten).toBe(2)
     // Zwei Leseansichten und eine Miniatur.
     expect(ergebnis.derivate).toBe(3)

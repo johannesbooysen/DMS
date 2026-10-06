@@ -7,6 +7,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { adminStempelEntziehen, adminStempelZurueck, type Stempelrecht } from './hilfe/admin-stempel'
 import { Client } from 'pg'
 import {
   bedingungAuswerten,
@@ -35,12 +36,18 @@ const STUFE_SACHLICH = '66000000-0000-0000-0000-000000000001'
 
 let client: Client
 
+let adminRechte: Stempelrecht[] = []
+
 beforeAll(async () => {
   client = new Client({ connectionString: VERBINDUNG })
   await client.connect()
+  // Als Eigentuemer, ausserhalb von alsKonfigurator: Die Warnung "genau eine
+  // Person" gibt es nur ohne den Admin-Stempel (tests/hilfe/admin-stempel.ts).
+  adminRechte = await adminStempelEntziehen(client)
 })
 
 afterAll(async () => {
+  await adminStempelZurueck(client, adminRechte)
   await client.end()
 })
 
