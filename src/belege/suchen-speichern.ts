@@ -13,7 +13,7 @@
 
 import { alsBenutzer } from '../db'
 
-export const SUCHSCHLUESSEL = ['q', 'objekt', 'gruppe', 'belegart', 'ampel', 'von', 'bis'] as const
+export const SUCHSCHLUESSEL = ['q', 'objekt', 'gruppe', 'ablage', 'belegart', 'ampel', 'von', 'bis'] as const
 export type Suchschluessel = (typeof SUCHSCHLUESSEL)[number]
 export type Suchfilter = Partial<Record<Suchschluessel, string>>
 

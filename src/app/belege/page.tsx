@@ -85,6 +85,8 @@ export default async function Belegsuche({
   const filter = {
     objektId: s['objekt'] ?? null,
     ordnungsgruppeId: s['gruppe'] ?? null,
+    // Nur eine Kennung, sonst wird aus einem Tippfehler in der Adresse ein Datenbankfehler.
+    ablageId: /^[0-9a-f-]{36}$/i.test(s['ablage'] ?? '') ? (s['ablage'] ?? null) : null,
     belegart: s['belegart'] ?? null,
     ampel: s['ampel'] ?? null,
     von: s['von'] ?? null,
@@ -120,6 +122,7 @@ export default async function Belegsuche({
         status: '',
         ordnungsgruppe: kopf.ordnungsgruppe === null ? null : { name: kopf.ordnungsgruppe, farbe: null },
         spezialgebiet: null,
+        ablage: kopf.ablageId === null ? null : { id: kopf.ablageId, name: kopf.ablage ?? '' },
         fundstelle: null,
       }
     }
@@ -168,6 +171,21 @@ export default async function Belegsuche({
                 ))}
               </select>
             </label>
+
+            {/* Mehr als eine Ablage: erst dann ist die Wahl eine Frage. */}
+            {uebersicht.ablagen.length > 1 && (
+              <label className="feld">
+                Ablage
+                <select name="ablage" defaultValue={filter.ablageId ?? ''}>
+                  <option value="">alle Ablagen</option>
+                  {uebersicht.ablagen.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <label className="feld">
               Ordnungsgruppe
@@ -339,6 +357,7 @@ export default async function Belegsuche({
                   </h2>
                   <p className="klein leise">
                     {offen.paginiernummer !== null && `Nr. ${offen.paginiernummer} · `}
+                    {offen.ablage !== null && `${offen.ablage.name} · `}
                     {offen.objektnummer !== null && `Objekt ${offen.objektnummer} · `}
                     {offen.ordnungsgruppe !== null && `${offen.ordnungsgruppe.name} · `}
                     {offen.brutto !== null && `${euro.format(offen.brutto)} · `}

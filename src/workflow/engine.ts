@@ -686,6 +686,13 @@ export async function belegartWechseln(
     'update dokument set belegart = $2, belegart_quelle = $3, belegart_begruendung = $4 where id = $1',
     [dokumentId, neu, quelle, begruendung],
   )
+  // Die Ablage folgt der Belegart -- aber nur, solange sie aus dem Eingang
+  // stammt. Hat ein Mensch sie gewaehlt, bleibt sie (Migration 20261006150000).
+  await c.query(
+    `update dokument set ablage_id = dms.ablage_fuer(mandant_id, belegart)
+      where id = $1 and ablage_quelle = 'eingang'`,
+    [dokumentId],
+  )
 
   /*
    * Der Lauf wechselt seine Definition -- ein Beleg hat genau einen Lauf

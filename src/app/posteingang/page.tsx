@@ -22,6 +22,7 @@ import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/da
 import { KreditorVorschlagKarte } from '@/app/lib/kreditor-vorschlag'
 import { nachtragsauswahl } from '@/belege/nachtragen'
 import { rechtelage } from '@/stammdaten'
+import { aktiveAblagen } from '@/stammdaten/ablagen'
 import { vorschlaegeLaden } from '@/stammdaten/kreditor-vorschlag'
 
 /** Wo ein frisch aufgenommener Beleg gerade steht -- in Worten. */
@@ -45,6 +46,7 @@ export default async function Posteingang({
   const { fehler, hinweis } = await searchParams
   const benutzer = await angemeldeterBenutzer()
   const stapel = await offeneStapel(benutzer)
+  const ablagen = await aktiveAblagen(benutzer)
   // Die Rueckmeldung: Was man selbst hereingebracht hat, und wo es steht.
   // Ohne sie verschwindet ein Upload in der Warteschlange, und die Frage
   // "ist er angekommen?" fuehrt in die Belegsuche.
@@ -90,6 +92,25 @@ export default async function Posteingang({
 
       <form action={postAufnehmenAktion} className="karte filterzeile" style={{ marginTop: 0 }}>
         <Ablagezone accept="application/pdf,image/*,message/rfc822" />
+
+        {/*
+          Die Ablage: Vorgabe ist "aus der Belegart" -- die Erkennung legt
+          den Beleg dorthin, wo seine Art hingehoert, und stellt um, wenn
+          sie sich berichtigt. Wer die Ablage waehlt, legt sie fest.
+        */}
+        {ablagen.length > 1 && (
+          <label className="klein">
+            Ablage{' '}
+            <select name="ablage" defaultValue="">
+              <option value="">aus der Belegart</option>
+              {ablagen.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label className="klein">
           <input type="checkbox" name="stapel" value="ja" /> Stapelscan — enthält mehrere Belege

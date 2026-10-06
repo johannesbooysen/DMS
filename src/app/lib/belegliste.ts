@@ -16,12 +16,15 @@ export interface Uebersicht {
   gefiltert: boolean
   objekte: Array<{ id: string; objektnummer: string; bezeichnung: string }>
   gruppen: Array<{ id: string; name: string; farbe: string | null }>
+  /** Die Ablagen, die der Fragende sieht -- aus der RLS auf `ablage`. */
+  ablagen: Array<{ id: string; name: string }>
 }
 
 export function istGefiltert(filter: Belegfilter): boolean {
   return Boolean(
     filter.objektId ||
       filter.ordnungsgruppeId ||
+      filter.ablageId ||
       filter.belegart ||
       filter.ampel ||
       filter.status ||
@@ -50,6 +53,15 @@ export async function uebersichtLaden(
       farbe: string | null
     }>('select id, name, farbe from ordnungsgruppe where aktiv order by sortierung, name')
 
+    // Nur die Ablagen, die der Fragende auch sehen darf: Eine Ablage im
+    // Filter, deren Belege alle unsichtbar sind, waere eine leere Liste ohne
+    // Erklaerung.
+    const { rows: ablagen } = await c.query<{ id: string; name: string }>(
+      `select a.id, a.name from ablage a
+        where a.aktiv and a.id = any ((select dms.meine_ablagen())::uuid[])
+        order by a.sortierung, a.name`,
+    )
+
     if (!gefiltert) {
       return {
         zeilen: await feed(c, { limit: filter.limit ?? 50 }),
@@ -57,6 +69,7 @@ export async function uebersichtLaden(
         gefiltert: false,
         objekte,
         gruppen,
+        ablagen,
       }
     }
 
@@ -66,6 +79,7 @@ export async function uebersichtLaden(
       gefiltert: true,
       objekte,
       gruppen,
+      ablagen,
     }
   })
 }

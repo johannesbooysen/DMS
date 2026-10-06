@@ -230,6 +230,7 @@ export const TAETIGKEITEN = [
  * Personenbezug unbemerkt landet.
  */
 export const OHNE_PERSONENBEZUG = {
+  ablage: 'Stammdatum: Ablagen des Hauses (Name, Kurzcode, Belegarten). Keine Personen.',
   aufbewahrungsfrist: 'Fristen je Belegart, keine Personen.',
   bauteil: 'Technische Bauteile mit Gewaehrleistung; Lieferant ist ein Verweis.',
   belegmerkmal: 'Stammdatum: Merkmalsnamen.',

@@ -25,6 +25,8 @@ const SCHUTZ: Array<[string, string]> = [
   ['uebernahme_eintrag', 'uebernahme_eintrag_unveraenderlich'],
   // Die Zuweisungsereignisse (Eskalation) ebenso.
   ['zuweisung_ereignis', 'zuweisung_ereignis_unveraenderlich'],
+  // Die Korrekturereignisse (manuelle Zuordnung, Ablagewechsel) ebenso.
+  ['korrektur_ereignis', 'korrektur_ereignis_unveraenderlich'],
 ]
 
 export async function belegEntfernen(dokumentId: string): Promise<void> {

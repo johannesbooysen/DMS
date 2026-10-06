@@ -26,6 +26,12 @@ export interface Eingang {
    * der CSV). Die Erkennung aus dem Inhalt stellt sie dann nicht um.
    */
   belegartFest?: boolean
+  /**
+   * Die Ablage, von einem Menschen gewaehlt (Posteingang). Ohne Angabe legt
+   * die Datenbank den Beleg ueber seine Belegart ab (dms.ablage_fuer) und
+   * stellt ihn um, wenn die Erkennung die Belegart berichtigt.
+   */
+  ablageId?: string | null
   eingangskanal: Eingangskanal
   dateiname: string
   mime: string
@@ -70,8 +76,10 @@ export async function dokumentAufnehmen(
   const { rows } = await c.query<{ id: string }>(
     `insert into dokument (mandant_id, objekt_id, belegart, eingangskanal,
                            inhalt_hash, storage_praefix, erfasst_von,
-                           dublette_von, status, belegart_quelle)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                           dublette_von, status, belegart_quelle,
+                           ablage_id, ablage_quelle)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+             $11, case when $11::uuid is null then 'eingang' else 'mensch' end)
      returning id`,
     [
       eingang.mandantId,
@@ -84,6 +92,7 @@ export async function dokumentAufnehmen(
       dublette.originalId ?? null,
       dublette.istDublette ? 'abgelehnt' : 'in_aufbereitung',
       eingang.belegartFest === true ? 'mensch' : 'eingang',
+      eingang.ablageId ?? null,
     ],
   )
   const dokumentId = rows[0].id

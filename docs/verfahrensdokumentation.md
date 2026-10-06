@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-83 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+84 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -290,6 +290,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `kreditor_vorschlag` | [`20260930100000_kreditor_vorschlag.sql`](../supabase/migrations/20260930100000_kreditor_vorschlag.sql) |
 | `paginierung` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 | `paginierung_zaehler` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
+| `dms` | [`20261006150000_ablagen.sql`](../supabase/migrations/20261006150000_ablagen.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -330,6 +331,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `uebernahme_eintrag_unveraenderlich` | `uebernahme_eintrag` | before update or delete | [`20260925100000_uebernahme.sql`](../supabase/migrations/20260925100000_uebernahme.sql) |
 | `kontierung_35a_archiv_schutz` | `kontierung_35a` | before insert or update or delete | [`20260926110000_kontierung_35a_schutz.sql`](../supabase/migrations/20260926110000_kontierung_35a_schutz.sql) |
 | `dokument_paginiernummer_fest` | `dokument` | before update of paginiernummer | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
+| `dokument_ablage_vorgabe` | `dms` | before insert or update of ablage_id | [`20261006150000_ablagen.sql`](../supabase/migrations/20261006150000_ablagen.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -575,6 +577,30 @@ belegt.
 - laesst die Frist verlaengern
 - laesst die Frist nicht verkuerzen
 - ohne Object Lock am Eimer schlaegt die Sperre fehl
+
+### [`tests/ablage.test.ts`](../tests/ablage.test.ts)
+
+- legt einen Beleg ohne Angabe ueber seine Belegart ab
+- nimmt eine gewaehlte Ablage und merkt sich den Menschen
+- faellt fuer eine Belegart ohne Ablage auf den Standard zurueck
+- stellt die Ablage mit der Belegart um -- nur ohne Wahl eines Menschen
+- ein Sichtrecht auf eine Ablage versteckt die anderen -- auch im eigenen Objekt
+- "alle" schlaegt die Einzelwahl derselben Aktion -- es steht nur einmal da
+- einer Rolle mit Sichtrecht laesst sich das ansehen nicht ganz nehmen -- nur einschraenken
+- nur ein Recht, das je Ablage wirkt, laesst sich je Ablage vergeben
+- ohne jedes Sichtrecht aus einer Rolle gelten alle Ablagen -- gemessen am Beleg
+- eine fremde oder deaktivierte Ablage laesst sich an keinem Beleg setzen
+- ein Recht zeigt nie auf die Ablage eines anderen Hauses
+- ein fremder Mandant sieht keine Ablage von Nord
+- Rechte vergeben darf nur, wer Benutzer verwaltet -- gemessen an der Wirkung
+- eine neue Ablage legt an, wer Stammdaten pflegt; Anna nicht
+- weist einen doppelten Kurzcode und eine unbekannte Belegart ab
+- die Standard-Ablage laesst sich nicht deaktivieren
+- wechselt mit Begruendung und hinterlaesst ein Korrekturereignis
+- verlangt eine Begruendung und weist dieselbe Ablage ab
+- in eine Ablage legen darf nur, wer dort bearbeiten darf
+- ein bearbeiten mit Belegartgeltung oeffnet den Wechsel nur fuer diese Belegart
+- ein fremder Mandant findet den Beleg nicht
 
 ### [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts)
 

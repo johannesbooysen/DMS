@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 83 Tabellen, 203 Policies,
-130 Module, 1089 Testfaelle in 69 Dateien,
+Auf einen Blick: 84 Tabellen, 206 Policies,
+132 Module, 1110 Testfaelle in 70 Dateien,
 10 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -634,6 +634,14 @@ Funktionen: `app.schutz_pruefen`
 Umzug in das Schema dms (ADR 0010, Weg B, Schritt 2)
 
 
+### `supabase/migrations/20261006150000_ablagen.sql`
+
+Ablagen: mehrere Bestaende statt einem, mit Rechten je Ablage
+
+Tabellen: `dms`
+
+Policies: 3
+
 ## Module
 
 | Datei | Aufgabe |
@@ -684,6 +692,7 @@ Umzug in das Schema dms (ADR 0010, Weg B, Schritt 2)
 | [`src/archiv/objektakte.ts`](../src/archiv/objektakte.ts) | Objektakte für den Verwalterwechsel |
 | [`src/archiv/objektsperre.ts`](../src/archiv/objektsperre.ts) | Objektsperre — was der Speicher selbst schützt |
 | [`src/auswertung/index.ts`](../src/auswertung/index.ts) | Auswertungen (Konzept §24.11) |
+| [`src/belege/ablage.ts`](../src/belege/ablage.ts) | Einen Beleg in eine andere Ablage legen |
 | [`src/belege/belegweg.ts`](../src/belege/belegweg.ts) | Der Belegweg -- die Kette dieses Belegs, mit dem, was darin geschehen ist |
 | [`src/belege/erklaerung.ts`](../src/belege/erklaerung.ts) | Warum ist dieser Beleg hier? |
 | [`src/belege/liste.ts`](../src/belege/liste.ts) | Interne Belegeinsicht: Akte, Feed, gefilterte Liste, Volltext |
@@ -741,6 +750,7 @@ Umzug in das Schema dms (ADR 0010, Weg B, Schritt 2)
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
+| [`src/stammdaten/ablagen.ts`](../src/stammdaten/ablagen.ts) | Ablagen -- wo ein Beleg liegt und wer ihn sieht (Migration 20261006150000) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
 | [`src/stammdaten/kategorien.ts`](../src/stammdaten/kategorien.ts) | Kategorien und ihre Steuerung |
 | [`src/stammdaten/kreditor-vorschlag.ts`](../src/stammdaten/kreditor-vorschlag.ts) | Kreditorvorschlaege -- vom Rechnungssteller im Beleg zum Stammdatum |
@@ -774,6 +784,7 @@ Umzug in das Schema dms (ADR 0010, Weg B, Schritt 2)
 | Datei | Faelle | Gruppen |
 |---|---|---|
 | [`tests/ablage-s3.test.ts`](../tests/ablage-s3.test.ts) | 3 | Schreiben und Lesen, Object Lock, Wer sperren kann, Einrichtung |
+| [`tests/ablage.test.ts`](../tests/ablage.test.ts) | 21 | Ablage eines Belegs, Sichtbarkeit je Ablage, Ablagen pflegen, Beleg in eine andere Ablage legen |
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |
 | [`tests/archiv.test.ts`](../tests/archiv.test.ts) | 35 | Aufbewahrungsfrist, Archivieren, Nach der Archivierung ist Schluss, Storno statt Korrektur, DSGVO gegen GoBD, Objektakte für den Verwalterwechsel |
 | [`tests/aufbereitung.test.ts`](../tests/aufbereitung.test.ts) | 15 | Seitentext, Textlayer-Erkennung, Vorrendern, Formaterkennung, Aufbereitung |

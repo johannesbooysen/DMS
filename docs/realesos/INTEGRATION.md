@@ -12,6 +12,7 @@
 | 69 DMS-Migrationen `20260828100000` bis `20261002100000` | Das fachliche Schema des DMS (Tabellen, Policies, Funktionen, Trigger) — Liste mit Tabellen in [docs/stand.md](../stand.md); wird für die Einbindung zu **einer** Grundmigration aus dem Zielschema zusammengefasst (Vorschrift § 5.2) | L | Neuaufbau |
 | `20261006130000_schutz_pruefen_dms.sql` | Schutzprüfung nur für DMS-Tabellen; entzieht `dms_app` die Rechte auf den 28 RealesOS-Tabellen | M | Rechte neu vergeben (nicht vorgesehen) |
 | `20261006140000_schema_dms.sql` | Umzug aller DMS-Tabellen und -Funktionen nach `dms` an Ort und Stelle (OIDs bleiben), Funktionstexte neu geschrieben, Schema `app` entfernt | L | nur per Neuaufbau |
+| `20261006150000_ablagen.sql` | Tabelle `dms.ablage` (Lesen Mandant, Schreiben `stammdaten_pflegen`), `dokument.ablage_id` (not null, Trigger-Vorgabe über `dms.ablage_fuer`), `rolle_recht.ablage_id`, `dms.meine_ablagen()`, `dms.darf_in_ablage()`; Policy `dokument_lesen` um die Ablage erweitert | M | Spalten und Funktionen entfernen, Policy aus 20260831210000 wiederherstellen |
 
 ## 3. Tabellen und Löschregeln
 | Tabelle | `tenant_id` | weitere Fremdschlüssel | Begründung |
@@ -37,6 +38,8 @@
 | `VIEW_INBOX` | Posteingang ansehen | ✓ | ✓ |
 | `MANAGE_INBOX` | Eingänge zuordnen, bearbeiten | ✓ | ✓ |
 | `APPROVE_INCOMING_INVOICES` | Rechnungen freigeben | ✓ | — |
+
+Feiner als die drei Schlüssel: Das DMS vergibt Rechte je **Rolle**, wahlweise begrenzt auf eine **Ablage** (`rolle_recht.ablage_id`, Migration 20261006150000). Für die Einbindung werden die drei Schlüssel auf Rollen des DMS abgebildet; die Ablagenrechte bleiben Sache des DMS (E-8, offen).
 
 ## 8. Registry, Routen, Katalog
 - Registry-Eintrag: siehe `CLAUDE.md` § 10.2 — `parentId`: offen (E-1)
@@ -75,6 +78,7 @@
 | E-5 | Schnittstelle Kostenbuchung | offen, siehe S-1 |
 | E-6 | UI-Name und Routenpräfix | offen |
 | E-7 | E-Mail-Eingang: Adresse je Mandant, Mail-Dienst | offen |
+| E-8 | Rechte je Ablage: im DMS (`rolle_recht.ablage_id`) oder als weitere Rechte-Schlüssel in RealesOS | offen; vorläufig im DMS |
 
 ## 14. Abweichungen von CLAUDE.md
 | Abweichung | Begründung | Freigabe |

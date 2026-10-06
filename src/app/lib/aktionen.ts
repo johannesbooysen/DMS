@@ -14,6 +14,7 @@ import { StempelAbgelehnt, stempelSetzen } from '@/app/lib/postfach'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { angabenNachtragen, aufbereitungErneut, NachtragAbgelehnt } from '@/belege/nachtragen'
 import { betragLesen } from '@/extraktion/zahlen'
+import { ablageWechseln, AblagewechselAbgelehnt } from '@/belege/ablage'
 
 export async function stempelnAktion(formular: FormData): Promise<void> {
   const aufgabeId = String(formular.get('aufgabeId') ?? '')
@@ -136,4 +137,31 @@ export async function aufbereitungErneutAktion(formular: FormData): Promise<void
   revalidatePath('/postfach')
   revalidatePath('/arbeitsplatz')
   redirect(`/beleg/${dokumentId}`)
+}
+
+/**
+ * Einen Beleg in eine andere Ablage legen (Migration 20261006150000).
+ *
+ * Zurueck zur Belegansicht -- mit dem Satz, wenn es nicht ging: Die Ablage
+ * gibt es nicht, er liegt schon dort, oder dort darf der Angemeldete nicht
+ * bearbeiten.
+ */
+export async function ablageWechselnAktion(formular: FormData): Promise<void> {
+  const dokumentId = String(formular.get('dokumentId') ?? '')
+  const ziel = `/beleg/${dokumentId}`
+  try {
+    await ablageWechseln(
+      await angemeldeterBenutzer(),
+      dokumentId,
+      String(formular.get('ablageId') ?? ''),
+      String(formular.get('grund') ?? ''),
+    )
+  } catch (fehler) {
+    if (fehler instanceof AblagewechselAbgelehnt) {
+      redirect(`${ziel}?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath(ziel)
+  redirect(ziel)
 }

@@ -42,9 +42,21 @@ export async function postAufnehmenAktion(formular: FormData): Promise<void> {
   const benutzer = await angemeldeterBenutzer()
   const dateien = formular.getAll('datei').filter((d): d is File => d instanceof File && d.size > 0)
   const alsStapel = formular.get('stapel') === 'ja'
+  // Die Ablage: leer heisst "aus der Belegart", sonst die Wahl des Menschen.
+  const ablageRoh = String(formular.get('ablage') ?? '').trim()
+  const ablageId = ablageRoh === '' ? null : ablageRoh
 
   if (dateien.length === 0) {
     redirect('/posteingang?fehler=' + encodeURIComponent('Keine Datei gewählt.'))
+  }
+  // Beim Stapel entstehen die Belege erst beim Uebernehmen, je Beleg mit
+  // seiner Belegart; eine Ablage fuer den ganzen Stapel gibt es nicht. Lieber
+  // sagen als still verwerfen.
+  if (alsStapel && ablageId !== null) {
+    redirect(
+      '/posteingang?fehler=' +
+        encodeURIComponent('Beim Stapelscan entscheidet die Belegart über die Ablage — Ablage auf „aus der Belegart“ lassen.'),
+    )
   }
 
   const mandantId = await meinMandant(benutzer)
@@ -74,6 +86,7 @@ export async function postAufnehmenAktion(formular: FormData): Promise<void> {
           {
             mandantId,
             belegart: 'rechnung',
+            ablageId,
             eingangskanal: 'upload',
             dateiname: datei.name,
             mime: datei.type === '' ? 'application/pdf' : datei.type,

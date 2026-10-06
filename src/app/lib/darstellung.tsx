@@ -61,6 +61,7 @@ const BEREICHE: ReadonlyArray<readonly [string, ReadonlyArray<readonly [string, 
     'Konfiguration',
     [
       ['/konfiguration', 'Abläufe'],
+      ['/stammdaten/ablagen', 'Ablagen'],
       ['/stammdaten/stempel', 'Stempel'],
       ['/stammdaten/pflichtfelder', 'Pflichtfelder'],
       ['/stammdaten/paginierung', 'Paginierung'],

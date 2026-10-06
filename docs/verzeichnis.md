@@ -275,6 +275,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 | Tabelle | Warum ohne |
 |---|---|
+| `ablage` | Stammdatum: Ablagen des Hauses (Name, Kurzcode, Belegarten). Keine Personen. |
 | `aufbewahrungsfrist` | Fristen je Belegart, keine Personen. |
 | `bauteil` | Technische Bauteile mit Gewaehrleistung; Lieferant ist ein Verweis. |
 | `belegmerkmal` | Stammdatum: Merkmalsnamen. |
@@ -308,7 +309,7 @@ neue Tabelle mit Personenbezug unbemerkt landet.
 
 ## Vollständigkeit
 
-Das Schema hat **84 Tabellen**. Jede ist genau einmal
+Das Schema hat **85 Tabellen**. Jede ist genau einmal
 eingeordnet — entweder in einer Tätigkeit oder in der Liste ohne
 Personenbezug. Geprüft beim Erzeugen gegen die `create table`-Anweisungen
 der Migrationen; fehlt eine, bricht `npm run verzeichnis` ab.

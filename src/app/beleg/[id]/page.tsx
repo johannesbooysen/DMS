@@ -27,6 +27,8 @@ import { Rechnungsdaten } from '@/app/lib/rechnungsdaten'
 import { zuordnungErklaeren } from '@/belege/erklaerung'
 import { alsBenutzer } from '@/db'
 import { gewaehrleistungOffen, wartenZumBeleg } from '@/nebenlauf'
+import { aktiveAblagen } from '@/stammdaten/ablagen'
+import { ablageWechselnAktion } from '@/app/lib/aktionen'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,10 +79,10 @@ export default async function Belegansicht({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ suche?: string }>
+  searchParams: Promise<{ suche?: string; fehler?: string }>
 }) {
   const { id } = await params
-  const { suche = '' } = await searchParams
+  const { suche = '', fehler } = await searchParams
   const benutzer = await angemeldeterBenutzer()
 
   const kopf = await belegkopfLaden(benutzer, id)
@@ -97,6 +99,7 @@ export default async function Belegansicht({
     belegwegLaden(benutzer, id),
   ])
   const rechnungsdaten = await rechnungsdatenLaden(benutzer, id)
+  const ablagen = await aktiveAblagen(benutzer)
   // Der Vorschlag bei einer Reparatur: Welche Bauteile standen zum
   // Belegdatum noch unter Gewaehrleistung? (Konzept 10.2)
   const gewaehrleistung =
@@ -121,6 +124,11 @@ export default async function Belegansicht({
      * wollte und die Schaltflaeche nicht fand.
      */
     <Seitenrahmen titel={titel} breit>
+      {fehler !== undefined && (
+        <p role="alert" className="meldung-fehler">
+          {fehler}
+        </p>
+      )}
       <div className="belegansicht">
         {/* Die Seiten als Miniaturen. Dasselbe Bild wie im Stapel, nur
             klein: Es ist ohnehin geladen, eine zweite Datei je Seite waere
@@ -154,6 +162,15 @@ export default async function Belegansicht({
         <aside className="spalte-angaben" aria-label="Angaben zum Beleg">
           <h2>Beleg</h2>
           <dl>
+            {kopf.ablage !== null && (
+              <>
+                <dt>Ablage</dt>
+                <dd>
+                  {kopf.ablage}
+                  {kopf.ablageQuelle === 'mensch' && <span className="leise klein"> · gewählt</span>}
+                </dd>
+              </>
+            )}
             {kopf.objektnummer !== null && (
               <>
                 <dt>Objekt</dt>
@@ -179,6 +196,41 @@ export default async function Belegansicht({
               {seitenzahl} Seite{seitenzahl === 1 ? '' : 'n'}
             </dd>
           </dl>
+
+          {/*
+            In eine andere Ablage legen -- auch nach der Archivierung, die
+            Ablage ist Ablagemerkmal, kein Teil des Belegs. Nur mit einer
+            zweiten Ablage zur Wahl; wer in der Zielablage nicht bearbeiten
+            darf, bekommt den Satz dazu (ablageWechseln).
+          */}
+          {ablagen.length > 1 && (
+            <details className="klein" style={{ marginTop: '0.5rem' }}>
+              <summary>Ablage wechseln</summary>
+              <form action={ablageWechselnAktion}>
+                <input type="hidden" name="dokumentId" value={id} />
+                <label className="entscheidung-feld">
+                  Neue Ablage
+                  <select name="ablageId" defaultValue="" required>
+                    <option value="" disabled>
+                      bitte wählen
+                    </option>
+                    {ablagen
+                      .filter((a) => a.id !== kopf.ablageId)
+                      .map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label className="entscheidung-feld">
+                  Begründung
+                  <input name="grund" required maxLength={200} />
+                </label>
+                <button type="submit">In diese Ablage legen</button>
+              </form>
+            </details>
+          )}
 
           {archiv !== null && (
             <p className="hinweis">

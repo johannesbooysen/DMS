@@ -74,7 +74,7 @@ async function schreiben<T>(
 }
 
 /** Null geänderte Zeilen heißt: Die RLS hat sie ausgeblendet, nicht: erledigt. */
-function mussGewirktHaben(zeilen: number): void {
+export function mussGewirktHaben(zeilen: number): void {
   if (zeilen === 0) {
     throw new NichtErlaubt(
       'Die Änderung hat nichts bewirkt — der Eintrag ist für Sie nicht ' +

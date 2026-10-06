@@ -15,6 +15,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { pflichtfelderSetzen } from '@/stammdaten/pflichtfeld'
+import {
+  ablageAendern,
+  ablageAnlegen,
+  ablagerechteSetzen,
+  ablageStandardSetzen,
+  ablageUmschalten,
+} from '@/stammdaten/ablagen'
 import { paginierungSetzen } from '@/stammdaten/paginierung'
 import { vorschlagUebernehmen, vorschlagVerwerfen, vorschlagZuordnen } from '@/stammdaten/kreditor-vorschlag'
 import { redirect } from 'next/navigation'
@@ -273,6 +280,32 @@ export async function pflichtfelderSetzenAktion(formular: FormData): Promise<voi
   }
   revalidatePath(ziel)
   redirect(`${ziel}?hinweis=${encodeURIComponent('Pflichtfelder gespeichert.')}`)
+}
+
+// Ablagen (Migration 20261006150000). Die Belegarten kommen als mehrere
+// gleichnamige Kontrollkaestchen und werden hier zu einer Liste.
+function mitBelegarten(formular: FormData): FormData {
+  const belegarten = formular.getAll('belegart').filter((b): b is string => typeof b === 'string')
+  formular.set('belegarten', belegarten.join(','))
+  return formular
+}
+export async function ablageAnlegenAktion(f: FormData): Promise<void> {
+  await versuchen(mitBelegarten(f), ablageAnlegen)
+}
+export async function ablageAendernAktion(f: FormData): Promise<void> {
+  await versuchen(mitBelegarten(f), ablageAendern)
+}
+export async function ablageUmschaltenAktion(f: FormData): Promise<void> {
+  await versuchen(f, ablageUmschalten)
+}
+export async function ablageStandardAktion(f: FormData): Promise<void> {
+  await versuchen(f, ablageStandardSetzen)
+}
+/** Die Rechte einer Rolle je Ablage -- als Ganzes, aus Kontrollkaestchen "aktion|ablage". */
+export async function ablagerechteSetzenAktion(formular: FormData): Promise<void> {
+  const rolleId = String(formular.get('rolleId') ?? '')
+  const eintraege = formular.getAll('recht').filter((e): e is string => typeof e === 'string')
+  await versuchen(formular, (benutzerId) => ablagerechteSetzen(benutzerId, rolleId, eintraege))
 }
 
 /** Die Paginierung (Migration 20261002100000): Form der Eingangsnummer, nie der Zaehler. */

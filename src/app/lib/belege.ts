@@ -37,6 +37,10 @@ export interface Belegkopf {
   brutto: number | null
   rechnungsnummer: string | null
   paginiernummer: string | null
+  ablageId: string | null
+  ablage: string | null
+  /** 'eingang' (aus der Belegart) oder 'mensch' (gewaehlt). */
+  ablageQuelle: string | null
 }
 
 export async function belegkopfLaden(
@@ -46,11 +50,13 @@ export async function belegkopfLaden(
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, string | number | null>>(
       `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt, d.paginiernummer,
+              d.ablage_id, ab.name as ablage, d.ablage_quelle,
               d.objekt_id, o.objektnummer, og.name as ordnungsgruppe,
               k.name as kreditor, f.brutto, f.rechnungsnummer,
               sv.korrespondent, sv.betreff
          from dokument d
          left join objekt o on o.id = d.objekt_id
+         left join ablage ab on ab.id = d.ablage_id
          left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
          left join rechnung_fakten f on f.dokument_id = d.id
          left join kreditor k on k.id = f.kreditor_id
@@ -75,6 +81,9 @@ export async function belegkopfLaden(
       brutto: z['brutto'] === null ? null : Number(z['brutto']),
       rechnungsnummer: z['rechnungsnummer'] === null ? null : String(z['rechnungsnummer']),
       paginiernummer: z['paginiernummer'] == null ? null : String(z['paginiernummer']),
+      ablageId: z['ablage_id'] == null ? null : String(z['ablage_id']),
+      ablage: z['ablage'] == null ? null : String(z['ablage']),
+      ablageQuelle: z['ablage_quelle'] == null ? null : String(z['ablage_quelle']),
     }
   })
 }

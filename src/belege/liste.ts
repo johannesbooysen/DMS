@@ -51,6 +51,8 @@ export interface Belegzeile {
   seitenzahl: number | null
   /** Fortlaufende Eingangsnummer, vergeben beim Abschluss des Posteingangs. */
   paginiernummer: string | null
+  /** Wo der Beleg liegt (Migration 20261006150000). */
+  ablage: { id: string; name: string } | null
   /** Nur bei Volltextsuche gefüllt. */
   fundstelle: { seite: number; auszug: string } | null
 }
@@ -58,6 +60,7 @@ export interface Belegzeile {
 export interface Belegfilter {
   objektId?: string | null
   ordnungsgruppeId?: string | null
+  ablageId?: string | null
   belegart?: string | null
   ampel?: string | null
   status?: string | null
@@ -93,6 +96,7 @@ export interface Belegfilter {
 const SPALTEN = `
   d.id, d.belegart, d.eingang_am, d.paginiernummer,
   d.status, d.ampel_gesamt, d.seitenzahl, d.objekt_id,
+  d.ablage_id, ab.name as ablage_name,
   o.objektnummer,
   og.name as og_name, og.farbe as og_farbe,
   sg.name as sg_name, sg.farbe as sg_farbe,
@@ -102,6 +106,7 @@ const SPALTEN = `
 
 const VERBINDUNGEN = `
   left join objekt o on o.id = d.objekt_id
+  left join ablage ab on ab.id = d.ablage_id
   left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
   left join spezialgebiet sg on sg.id = d.spezialgebiet_id
   left join rechnung_fakten f on f.dokument_id = d.id
@@ -139,6 +144,7 @@ function zeile(z: Record<string, unknown>): Belegzeile {
         : { name: String(z['sg_name']), farbe: text(z['sg_farbe']) },
     seitenzahl: z['seitenzahl'] == null ? null : Number(z['seitenzahl']),
     paginiernummer: text(z['paginiernummer']),
+    ablage: z['ablage_id'] == null ? null : { id: String(z['ablage_id']), name: String(z['ablage_name'] ?? '') },
     fundstelle:
       z['treffer_seite'] == null
         ? null
@@ -255,6 +261,7 @@ function bedingungenAus(filter: Belegfilter, p: (wert: unknown) => string): stri
   if (filter.ordnungsgruppeId) {
     bedingungen.push(`d.ordnungsgruppe_id = ${p(filter.ordnungsgruppeId)}`)
   }
+  if (filter.ablageId) bedingungen.push(`d.ablage_id = ${p(filter.ablageId)}`)
   if (filter.belegart) bedingungen.push(`d.belegart = ${p(filter.belegart)}`)
   if (filter.ampel) bedingungen.push(`d.ampel_gesamt = ${p(filter.ampel)}`)
   if (filter.status) bedingungen.push(`d.status = ${p(filter.status)}`)

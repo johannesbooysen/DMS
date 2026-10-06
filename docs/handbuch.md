@@ -236,7 +236,8 @@ Gespräch. Wer sie kennt, kann Tabellennamen lesen.
 | **Mandant** | Verwaltungsunternehmen. Trennt alle Daten voneinander; nichts wird über diese Grenze hinweg sichtbar oder gelernt. |
 | **Objekt** | Liegenschaft. Eine WEG, ein Mietobjekt, ein Sondereigentum. Trägt die Zuständigkeit. |
 | **Einheit** | Wohnung, Gewerbefläche, Stellplatz innerhalb eines Objekts. |
-| **Ordnungsgruppe** | Betriebskosten, Legal, Versicherungsschäden, Technik … Steuert nicht nur die Ablage, sondern auch die Zuständigkeit und den Ablauf. |
+| **Ablage** | Wo ein Beleg liegt und wer ihn sieht: *Lieferantenrechnungen*, *Schriftverkehr* … Erweiterbar unter *Konfiguration → Ablagen*; Rechte lassen sich je Ablage vergeben. |
+| **Ordnungsgruppe** | Betriebskosten, Legal, Versicherungsschäden, Technik … Steuert nicht die Ablage, sondern die Zuständigkeit und den Ablauf. |
 | **Spezialgebiet** | Im Bestand „Fachgebiet". Lenkt einen Beleg an einen Spezialisten, ohne ihm das ganze Objekt zu öffnen. |
 | **Lauf** | Der Weg eines Belegs durch die Stufen. Kennt seine eingefrorene Prozessfassung. |
 | **Blockbaum** | Der Ablauf als geschachtelte Bausteine: nacheinander, gleichzeitig, Verzweigung, Stufe. Bausteine rasten ineinander, statt frei verbunden zu werden. |
@@ -686,6 +687,54 @@ geben](#benutzer-anlegen-heißt-nicht-zugang-geben).
 
 ---
 
+## Ablagen
+
+Wie in Amagno hat das System mehrere **Ablagen**. Eine Ablage sagt, *wo*
+ein Beleg liegt und *wer ihn sieht*; die Belegart sagt, *was* er ist und
+welchen Ablauf er nimmt. Ausgeliefert werden zwei: **Lieferantenrechnungen**
+(Rechnung, Gutschrift, Mahnung) und **Schriftverkehr** (Schriftverkehr,
+Sonstiges). Weitere legen Sie unter *Konfiguration → Ablagen* an — mit Name,
+Kurzcode und den Belegarten, deren Belege beim Eingang von selbst in ihr
+landen. Eine Ablage ist der **Standard** und nimmt alles auf, was sonst
+keine findet. Eine Ablage wird nie gelöscht, nur deaktiviert.
+
+### Wie ein Beleg in seine Ablage kommt
+
+Beim Hochladen steht die Ablage auf *aus der Belegart*: Der Beleg landet
+dort, wo seine Belegart hingehört, und wenn die Erkennung die Belegart
+berichtigt (aus der Rechnung wird ein Schreiben), wandert er mit. Wer beim
+Hochladen eine Ablage **wählt**, legt sie fest — dann stellt die Erkennung
+nichts mehr um. Dasselbe gilt für *Ablage wechseln* in der Belegansicht:
+Das geht jederzeit, auch nach der Archivierung (die Ablage ist ein
+Ablagemerkmal, kein Teil des Belegs), braucht eine Begründung und
+hinterlässt eine Spur. In eine Ablage legen darf, wer dort *bearbeiten*
+darf.
+
+### Rechte je Ablage
+
+Zwei Rechte gelten je Ablage, einstellbar unter *Konfiguration → Ablagen
+→ Rechte je Ablage*: **ansehen** und **bearbeiten**. Dort steht je Rolle
+eine Tabelle: ein Haken bei *alle Ablagen* gilt überall, Haken bei
+einzelnen Ablagen begrenzen das Recht auf diese. Wer eine Ablage nicht
+ansehen darf, sieht ihre Belege nirgends — nicht in der Suche, nicht im
+Postfach, nicht in einer Summe —, auch wenn er für das Objekt zuständig
+ist. Wer in einer Ablage nicht bearbeiten darf, kann keinen Beleg dorthin
+legen. Alle übrigen Rechte einer Rolle (kontieren, stempeln, exportieren,
+Verwaltung) gelten unabhängig von der Ablage. Einer Rolle, die ansehen
+darf, lässt sich das Sichtrecht hier nur einschränken, nicht ganz nehmen —
+Sicht entzieht man, indem man die Rolle entzieht.
+
+Wer über keine Rolle ein Sichtrecht hat (keine Rolle, oder nur eine ohne
+*ansehen*) und seine Belege allein über die Objektzuständigkeit sieht,
+sieht weiter alle Ablagen: Die Ablage schränkt ein, was Rollen öffnen; sie
+nimmt niemandem, was er heute hat.
+
+Die Ablagen pflegt, wer *Stammdaten pflegen* darf; die Rechte je Ablage
+vergibt, wer *Benutzer verwalten* darf — dasselbe Recht wie für jedes
+andere Rollenrecht, weil es dasselbe ist.
+
+---
+
 ## Posteingang
 
 ### Eingangsstempel und Paginiernummer
@@ -956,7 +1005,8 @@ und archivierten.
 
 Die Seite hat drei Spalten: **links** die Filter und die Treffer, **in der
 Mitte** der gewählte Beleg mit allen Seiten und Stempeln, **rechts** sein
-Stand im Ablauf. Ein Klick auf einen Treffer zeigt ihn, die Liste bleibt
+Stand im Ablauf. Unter den Filtern steht die **Ablage**, sobald es mehr als
+eine gibt; die Liste kennt nur die Ablagen, die Sie sehen dürfen. Ein Klick auf einen Treffer zeigt ihn, die Liste bleibt
 stehen; mit **↓** und **↑** (oder j/k) geht es zum nächsten und vorigen
 Treffer. Ohne Wahl ist der erste Treffer offen. *Belegansicht öffnen* über
 dem Beleg führt in die volle Ansicht mit Angaben, Notizen und Ausgabe.

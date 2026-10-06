@@ -21,6 +21,21 @@ insert into mandant (id, name) values
   ('10000000-0000-0000-0000-000000000001', 'Hausverwaltung Nord (Testdaten)'),
   ('10000000-0000-0000-0000-000000000002', 'Hausverwaltung Sued (Testdaten)');
 
+-- Ablagen (Migration 20261006150000): wo ein Beleg liegt und wer ihn sieht.
+-- Vor den Belegen, weil der Trigger jeden Beleg ueber seine Belegart in eine
+-- Ablage legt; ohne aktive Ablage weist er den Beleg ab.
+insert into ablage (id, mandant_id, name, kurzcode, beschreibung, belegarten, ist_standard, sortierung) values
+  ('38000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+   'Lieferantenrechnungen', 'LR', 'Eingangsrechnungen, Gutschriften und Mahnungen der Lieferanten und Dienstleister.',
+   array['rechnung', 'gutschrift', 'mahnung'], true, 10),
+  ('38000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
+   'Schriftverkehr', 'SV', 'Briefe, Schreiben und Sonstiges -- was keine Rechnung ist.',
+   array['schriftverkehr', 'sonstiges'], false, 20),
+  ('38000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000002',
+   'Lieferantenrechnungen', 'LR', null, array['rechnung', 'gutschrift', 'mahnung'], true, 10),
+  ('38000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000002',
+   'Schriftverkehr', 'SV', null, array['schriftverkehr', 'sonstiges'], false, 20);
+
 insert into benutzer (id, mandant_id, name, email) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
    'Anna Ahrens',   'anna@example.invalid'),

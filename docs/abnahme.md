@@ -85,6 +85,7 @@ Stand: 24.09.2026, 1.021 Regeltests und 89 Browsertests grün.
 | Der Ablauf ist eine Liste von Stufen; ein Entwurf wird simuliert, bevor er gilt | `e2e/konfiguration.spec.ts`, `tests/konfiguration.test.ts` |
 | Stammdaten pflegen, Benutzer verwalten und Abläufe konfigurieren sind drei Rechte; Lesen bleibt offen | `e2e/stammdaten.spec.ts`, `tests/stammdaten.test.ts` |
 | Presets ergänzen, nie überschreiben | `e2e/presets.spec.ts`, `tests/presets.test.ts` |
+| Mehrere Ablagen; ein Beleg liegt ab Eingang in einer; wer eine Ablage nicht ansehen darf, sieht ihre Belege nicht — auch nicht im eigenen Objekt | `tests/ablage.test.ts` |
 | Der Notfallzugriff steht über jeder Seite, befristet, ohne Rechteänderung | `e2e/notfall.spec.ts`, `tests/notfall.test.ts` |
 | Die Anmeldung bestätigt nur, wer jemand ist; eine Sitzung ist sofort widerrufbar | `tests/anmeldung.test.ts` |
 | Keine Seite hat schwere Barrierefreiheitsbefunde — hell und dunkel | `e2e/barrierefreiheit.spec.ts` |

@@ -249,6 +249,10 @@ export default async function BenutzerUndRollen({
           Rolle mit null Trägern ist kein Fehler, aber ein Recht, das niemand mehr hat, fällt
           sonst erst auf, wenn es gebraucht wird.
         </p>
+        <p className="leise winzig">
+          Ob ein Recht in <em>allen</em> Ablagen gilt oder nur in bestimmten, steht unter{' '}
+          <Link href="/stammdaten/ablagen">Ablagen</Link>.
+        </p>
       </section>
 
       {darf.benutzer && (
