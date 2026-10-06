@@ -66,7 +66,7 @@
 | # | Frage | Stand |
 |---|---|---|
 | E-1 | Untermodul unter `verwaltung` oder Add-on | offen |
-| E-2 | Lieferanten führend in `persons` oder `business_partners` | offen |
+| E-2 | Lieferanten führend in `persons` oder `business_partners` | **entschieden 06.10.2026: `business_partners`**; IBAN und USt-IdNr. hält das DMS (`kreditor_bankverbindung`) |
 | E-3 | KI-Auslese ja/nein | offen |
 | E-4 | Externe Rollen im Portal | nein (vorläufig) |
 | E-5 | Schnittstelle Kostenbuchung | offen, siehe S-1 |
@@ -76,4 +76,10 @@
 ## 14. Abweichungen von CLAUDE.md
 | Abweichung | Begründung | Freigabe |
 |---|---|---|
-| — | | |
+| Oberfläche in Next.js (Server-Komponenten) statt React-SPA mit RealesOS-Bausteinen; eigener Dienst mit Anmeldung über das Supabase-Token | Übergang (ADR 0010, Weg B): Die Datenbank folgt der Vorschrift, die Oberfläche wird danach Seite für Seite portiert | Eigentümer, 06.10.2026 |
+| Eigener Worker-Prozess (Node) für OCR, Rendern, Extraktion, Barcode, Warteschlange (pg-boss), Mailversand, Objektsperre | Minutenlange CPU-Arbeit passt in keine Edge Function; läuft als eigener Container | Eigentümer, 06.10.2026 |
+| S3-kompatibler Objektspeicher mit Object Lock (Compliance) statt Bucket `dms-files` | GoBD-Unveränderbarkeit der Originale (ADR 0006); Supabase Storage kennt keine Objektsperre | Eigentümer, 06.10.2026 |
+| Pakete: pg-boss, tesseract.js, sharp, zxing-wasm (Worker), embedded-postgres (nur Entwicklung) | nur im Worker beziehungsweise lokal; nichts davon gelangt in die RealesOS-Webanwendung | Eigentümer, 06.10.2026 |
+| Deutsche Bezeichner für Tabellen, Spalten, Funktionen und Code; `mandant_id` statt `tenant_id` (zeigt auf `public.tenants`) | durchgängige Konvention des DMS, Umbenennung ohne fachlichen Gewinn | Eigentümer, 06.10.2026 |
+| Geld als `numeric` statt `BIGINT` in Cent | Summenzwang und Kontierung rechnen in Euro mit zwei Nachkommastellen; Umstellung berührt Hash-Bildung | Eigentümer, 06.10.2026 |
+| Zeilenrechte über `dms.mein_mandant()` / `dms.meine_objekte()` statt `public.get_user_tenant_id((select auth.uid()))` | Der Next-Server verbindet ohne JWT und setzt die Sitzung je Transaktion; `mein_mandant()` schließt `auth.uid()` ein; Objektsichtbarkeit ist feiner als Mandant | Eigentümer, 06.10.2026 |

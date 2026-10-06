@@ -1,6 +1,6 @@
 # ADR 0010: Einbindung in RealesOS — Gegenüberstellung und Wegentscheidung
 
-**Status:** vorgeschlagen, 06.10.2026 — die Entscheidung trifft der Eigentümer beider Anwendungen
+**Status:** angenommen, 06.10.2026 — Weg B, deutsche Bezeichner bleiben, Lieferanten aus `business_partners`
 
 ## Kontext
 
@@ -88,6 +88,54 @@ Was B voraussetzt, bevor eine Zeile geändert wird:
    Lock (statt Bucket, weil GoBD), Pakete, Codesprache.
 3. Antwort auf E-2 (Lieferanten in `persons` oder `business_partners`) und
    E-3 (KI-Auslese), weil beides das Schema prägt.
+
+## Entscheidung (06.10.2026)
+
+Der Eigentümer beider Anwendungen hat entschieden:
+
+1. **Weg B.** Die Datenbank folgt der Vorschrift (Schema `dms`, `tenant_id`
+   auf `public.tenants`, Identität über `auth.uid()`, Stammdaten aus
+   `public` gespiegelt). Oberfläche und Worker bleiben vorerst eigene
+   Dienste; Ausnahmen stehen in [INTEGRATION.md § 14](../realesos/INTEGRATION.md).
+2. **Deutsche Bezeichner bleiben.** Nur das Schema heißt `dms`. Tabellen,
+   Spalten, Funktionen und Code bleiben deutsch — als Abweichung eingetragen.
+   Die Spalte `mandant_id` ist das deutsche `tenant_id` und zeigt auf
+   `public.tenants(id)`.
+3. **Lieferanten kommen aus `public.business_partners`** (E-2). IBAN und
+   USt-IdNr. hat RealesOS dort nicht; sie bleiben im DMS
+   (`kreditor_bankverbindung`, `kreditor.ust_id`), weil der Betrugsschutz
+   darauf steht.
+
+## Umsetzung in fünf Schritten
+
+Die 69 bestehenden Migrationen lassen sich nicht verschieben: 129 Funktionen
+rufen einander als `app.…` auf, und ein `alter schema` ändert Funktionstexte
+nicht. Deshalb wird aus dem heutigen Schema **eine neue Grundmigration**
+erzeugt (pg_dump der Struktur, mechanisch umgeschrieben), und die alten
+Migrationen werden Geschichte. Die Vorschrift will ohnehin neue Zeitstempel.
+
+1. **Grundlage lokal:** Das RealesOS-`public`-Schema als erste Migration
+   (`docs/realesos/realesos_public_baseline.sql`), dazu die Startmigration
+   `create_dms_schema` aus dem Paket. Seed legt `tenants`, `profiles`,
+   `user_roles` an statt `mandant` und `benutzer`.
+2. **Schema `dms`:** alle DMS-Tabellen und alle Funktionen (`app.` → `dms.`),
+   `search_path` der Rolle `dms_app` auf `dms, public`. Im Code ein
+   mechanischer Tausch `app.` → `dms.`.
+3. **Mandant und Benutzer:** `mandant` entfällt, `mandant_id` zeigt auf
+   `public.tenants`; `benutzer` bleibt als DMS-Benutzerdatensatz (Rechte,
+   Stempelrechte, Zuständigkeiten) mit `id = auth.users.id = profiles.id`;
+   `dms.mein_mandant()` liest die Sitzung des Next-Servers oder
+   `public.get_user_tenant_id(auth.uid())`.
+4. **Stammdaten spiegeln:** `objekt` ← `objects`, `einheit` ← `units`,
+   `person` ← `persons`, `kreditor` ← `business_partners`, gleiche
+   Kennungen, über die vorhandene Adapterschicht (`externe_id`, `sync_quelle`,
+   `sync_stand`); ein security-definer-Durchgang im Worker und auf Abruf.
+   Gelöscht wird im Spiegel nie — der Beleg überlebt das Objekt.
+5. **Anmeldung:** Der Next-Server nimmt das Supabase-Token an und legt daraus
+   die serverseitige Sitzung an; Entra bleibt als zweiter Weg.
+
+Jeder Schritt endet mit grüner Testsuite; die Tests laufen gegen die leichte
+Datenbank mit RealesOS-Grundlage.
 
 ## Was dieses ADR nicht entscheidet
 
