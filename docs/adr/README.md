@@ -23,6 +23,7 @@ verweist auf den Nachfolger.
 | [0007](0007-betriebsumgebung.md) | Betriebsumgebung: ein Server, ein Image, zwei Prozesse | angenommen |
 | [0008](0008-stempel-verschieben.md) | Stempel verschieben: Herkunft bleibt das Ereignis, Lage wird frei | angenommen |
 | [0009](0009-stempel-platzieren.md) | Stempel platzieren, bevor er gilt: die Lage steht am Ereignis | angenommen |
+| [0010](0010-realesos-einbindung.md) | Einbindung in RealesOS: Gegenüberstellung der Vorschrift mit dem DMS, drei Wege | vorgeschlagen |
 
 > Dieses Verzeichnis wird von `npm run docs:check` geprüft: Jedes ADR im
 > Ordner muss hier stehen.

@@ -1,0 +1,5 @@
+# In supabase/config.toml des DMS-Repos ergänzen bzw. anpassen.
+# Gibt das Schema `dms` für die REST-API frei. In RealesOS setzt das der Maintainer bei der Integration.
+[api]
+schemas = ["public", "graphql_public", "dms"]
+extra_search_path = ["public", "extensions"]

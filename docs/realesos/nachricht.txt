@@ -1,0 +1,25 @@
+Betreff: DMS-Zusatzmodul – Vorgaben und Übergabepaket für die Einbindung in RealesOS
+
+Hallo,
+
+anbei das Übergabepaket für die Entwicklung des DMS (Rechnungseingang, Posteingang, Schriftverkehr). Ziel ist, dass das DMS später ohne Umbau in RealesOS eingebunden werden kann – als Untermodul oder als Add-on. Diese Entscheidung treffen wir noch; der Code muss für beide Varianten identisch sein.
+
+Inhalt:
+- CLAUDE.md – verbindliche Vorgaben, bitte ins Repo-Root legen. Claude Code liest sie bei jedem Start.
+- INTEGRATION.md – Übergabe-Manifest. Bitte laufend pflegen; was dort nicht steht, übernehmen wir nicht.
+- realesos-snapshot/ – unsere UI-Bausteine, Hooks und Hilfsfunktionen als Kopie. Bitte unverändert lassen; bei der Einbindung ersetzen wir sie durch die Originale.
+- referenz/ – unsere package.json, tsconfig und Vite-Konfiguration zum Abgleich.
+- supabase/baseline/ – unser Datenbankschema für Objekte, Einheiten, Personen usw. (nur Struktur, keine Daten) für Ihre lokale Entwicklungsdatenbank.
+- vorlagen/ – Startmigration für das Schema dms (Ereignisprotokoll, Dateiablage), Rollback und RLS-Test. Geprüft.
+- README.md – Einrichtung in fünf Schritten.
+
+Die wichtigsten Punkte:
+1. Bitte keine Verbindung zu unseren Datenbanken – lokal oder eigenes Supabase-Projekt mit dem Basisschema.
+2. Alle DMS-Tabellen im Schema dms, Mandantentrennung per RLS über tenant_id. Am Schema public bitte nichts ändern; Bedarf dort als Schnittstellenwunsch in INTEGRATION.md.
+3. Frontend mit unserem Stack und unseren Bausteinen (React 18, TanStack Query, React Hook Form + Zod, unser Design-System). Keine zusätzlichen npm-Pakete ohne Rücksprache.
+4. Belege und Schriftverkehr sind aufbewahrungspflichtig – Originale unveränderbar, kein kaskadierendes Löschen.
+5. E-Rechnungen (XRechnung, ZUGFeRD) annehmen; die XML-Datei ist das Original.
+
+Offene Punkte, die wir noch entscheiden, stehen in INTEGRATION.md Abschnitt 13. Bis dahin bitte so bauen, dass beide Antworten möglich bleiben.
+
+Viele Grüße

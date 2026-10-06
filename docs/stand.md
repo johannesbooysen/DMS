@@ -10,7 +10,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 
 Auf einen Blick: 83 Tabellen, 203 Policies,
 130 Module, 1089 Testfaelle in 69 Dateien,
-9 Architekturentscheidungen, 3 markierte offene Stellen.
+10 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
 
@@ -834,6 +834,7 @@ Policies: 3
 | [ADR 0007 — Ein Server, ein Image, zwei Prozesse](adr/0007-betriebsumgebung.md) | unbekannt |
 | [0008 — Stempel verschieben: Herkunft bleibt das Ereignis, Lage wird frei](adr/0008-stempel-verschieben.md) | unbekannt |
 | [ADR 0009: Stempel platzieren, bevor er gilt](adr/0009-stempel-platzieren.md) | unbekannt |
+| [ADR 0010: Einbindung in RealesOS — Gegenüberstellung und Wegentscheidung](adr/0010-realesos-einbindung.md) | unbekannt |
 
 ## Im Quelltext markierte offene Stellen
 
