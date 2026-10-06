@@ -38,6 +38,15 @@ npm run db:migrate           # Migrationen anwenden
 npm run db:reset             # Datenbank neu aufbauen und Seed einspielen
 ```
 
+Die **leichte Entwicklungsdatenbank** -- echtes PostgreSQL 17 ohne Docker, aus dem Paket `embedded-postgres`, Daten in `.pgdata/` (nicht versioniert):
+
+```bash
+npm run db:leicht            # starten; beim ersten Mal anlegen, 69 Migrationen, Seed (4 s)
+npm run db:leicht:reset      # Datenverzeichnis loeschen und frisch aufbauen
+```
+
+**Warum es sie gibt.** Die Supabase-Instanz startet elf Container, die Anwendung braucht einen -- und davor Docker Desktop, das ueber Nacht gern beendet ist; beim Bedienen zweimal in einer Sitzung "Datenbank tot", dabei lief nur Docker nicht. Die leichte Datenbank lauscht auf **demselben Port 15322**, damit `DATABASE_URL` nirgends gesetzt werden muss: `npm run vorschau`, `npm test` und die Skripte finden sie wie bisher. Beide zugleich gehen deshalb nicht; das Skript sagt es. Gleiche Fassung (17), gleiche Migrationen (ueber `supabase migration up --db-url`), gleicher Seed, gleiche Spracheinstellung (`en-US`, Umlaute in `ilike` gefaltet). **Kein SQLite**, auch nicht fuer die Entwicklung: 204 Policies, 129 security-definer-Funktionen und 31 Trigger sind die Anwendung -- eine andere Datenbank pruefte genau das nicht. `npm run e2e` braucht weiter die Supabase-Instanz (es setzt ueber `supabase db reset` zurueck); die Produktion laeuft gehostet.
+
 Objektspeicher fuer die Entwicklung (MinIO im Container). Nur damit greift die Objektsperre; ohne ihn laeuft alles weiter, aber ungeschuetzt:
 
 ```bash

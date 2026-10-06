@@ -35,6 +35,8 @@ Auf einen Blick: 83 Tabellen, 203 Policies,
 | `npm run db:new` | `supabase migration new` |
 | `npm run db:migrate` | `supabase migration up` |
 | `npm run db:reset` | `supabase db reset` |
+| `npm run db:leicht` | `node scripts/db-leicht.mjs` |
+| `npm run db:leicht:reset` | `node scripts/db-leicht.mjs reset` |
 | `npm run speicher:start` | `docker run -d --name dms-minio -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=dmsminio -e MINIO_ROOT_PASSWORD=dmsminio123 quay.io/minio/minio:latest server /data --console-address ":9001"` |
 | `npm run speicher:stop` | `docker rm -f dms-minio` |
 | `npm run objektakte` | `tsx scripts/objektakte.ts` |

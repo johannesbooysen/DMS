@@ -50,6 +50,7 @@ desktop.ini
 
 # Lokale Ablage der Originaldateien (in Produktion S3 mit Object Lock)
 .ablage/
+.pgdata/
 .next/
 
 # Ablage der E2E-Laeufe, Berichte und Spuren
