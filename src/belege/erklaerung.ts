@@ -38,6 +38,10 @@ export interface Erklaerung {
   ablauf: Erklaerungszeile | null
   /** Die offene Stufe und wer sie bearbeiten kann. */
   stufe: (Erklaerungszeile & { personen: string[] }) | null
+  /** Schriftverkehr: der ermittelte Empfaenger und warum (Migration 20261006170000). */
+  empfaenger: Erklaerungszeile | null
+  /** Schriftverkehr: wichtig -- und woran das lag. */
+  wichtig: Erklaerungszeile | null
 }
 
 const QUELLE: Record<string, string> = {
@@ -63,8 +67,12 @@ export async function zuordnungErklaeren(
               s.id as stufe_id, s.bezeichnung as stufe, s.zustaendigkeit_typ,
               s.zustaendigkeit_ref,
               r.name as rolle, g.name as gruppe, sg.name as spezialgebiet,
-              zb.name as zugewiesen
+              zb.name as zugewiesen,
+              d.wichtig, d.wichtig_begruendung, d.empfaenger_begruendung,
+              eb.name as empfaenger_benutzer, eg.name as empfaenger_gruppe
          from dokument d
+         left join benutzer eb on eb.id = d.empfaenger_benutzer_id
+         left join gruppe eg on eg.id = d.empfaenger_gruppe_id
          left join objekt o on o.id = d.objekt_id
          left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
          left join dokument_lauf l on l.dokument_id = d.id
@@ -168,6 +176,29 @@ export async function zuordnungErklaeren(
                     and (sz.benutzer_id = b.id or exists (
                           select 1 from gruppe_mitglied gm
                            where gm.gruppe_id = sz.gruppe_id and gm.benutzer_id = b.id))))
+              -- Ermittelter Empfaenger: Person, sonst Gruppe, sonst Spezialgebiet, sonst Objekt.
+              or (s.zustaendigkeit_typ = 'ermittelt' and (
+                 b.id = d.empfaenger_benutzer_id
+                 or (d.empfaenger_benutzer_id is null and d.empfaenger_gruppe_id is not null and exists (
+                      select 1 from gruppe_mitglied gm
+                       where gm.gruppe_id = d.empfaenger_gruppe_id and gm.benutzer_id = b.id))
+                 or (d.empfaenger_benutzer_id is null and d.empfaenger_gruppe_id is null and (
+                      exists (
+                        select 1 from spezialgebiet_zustaendigkeit sz
+                         where sz.spezialgebiet_id = d.spezialgebiet_id
+                           and (sz.objekt_id is null or sz.objekt_id = d.objekt_id)
+                           and (sz.benutzer_id = b.id or exists (
+                                 select 1 from gruppe_mitglied gm
+                                  where gm.gruppe_id = sz.gruppe_id and gm.benutzer_id = b.id)))
+                      or (not exists (
+                            select 1 from spezialgebiet_zustaendigkeit sz
+                             where sz.spezialgebiet_id = d.spezialgebiet_id
+                               and (sz.objekt_id is null or sz.objekt_id = d.objekt_id))
+                          and exists (
+                            select 1 from objekt_zustaendigkeit oz
+                             where oz.objekt_id = d.objekt_id and oz.benutzer_id = b.id
+                               and oz.gueltig_von <= current_date
+                               and (oz.gueltig_bis is null or oz.gueltig_bis >= current_date)))))))
             )
           order by b.name`,
         [dokumentId, stufeId],
@@ -183,6 +214,11 @@ export async function zuordnungErklaeren(
             : `Zuständig ist das Spezialgebiet „${text(z['spezialgebiet'])}“, abgeleitet aus der Kategorie.`,
         extern: 'Eine externe Stelle prüft.',
         system: 'Das System handelt selbst.',
+        ermittelt:
+          text(z['empfaenger_begruendung']) ??
+          (text(z['spezialgebiet']) !== null
+            ? `Ermittelter Empfänger: niemand im Schreiben genannt, kein Absender hinterlegt — der Spezialist für „${text(z['spezialgebiet'])}“.`
+            : `Ermittelter Empfänger: niemand im Schreiben genannt, kein Absender hinterlegt, kein Spezialgebiet — wer für Objekt ${text(z['objektnummer']) ?? '—'} verantwortlich ist.`),
       }
       const zugewiesen = text(z['zugewiesen'])
       stufe = {
@@ -194,6 +230,17 @@ export async function zuordnungErklaeren(
       }
     }
 
-    return { belegart, objekt, kategorie, ablauf, stufe }
+    const empfaengerName = text(z['empfaenger_benutzer']) ?? (text(z['empfaenger_gruppe']) === null ? null : `Gruppe „${text(z['empfaenger_gruppe'])}“`)
+    const empfaenger: Erklaerungszeile | null =
+      empfaengerName === null
+        ? null
+        : { was: empfaengerName, warum: text(z['empfaenger_begruendung']) ?? 'aus den Verteilregeln.' }
+
+    const wichtig: Erklaerungszeile | null =
+      z['wichtig'] === true
+        ? { was: 'Wichtig — Geschäftsleitung wird informiert', warum: text(z['wichtig_begruendung']) ?? 'ohne aufgezeichneten Grund.' }
+        : null
+
+    return { belegart, objekt, kategorie, ablauf, stufe, empfaenger, wichtig }
   })
 }

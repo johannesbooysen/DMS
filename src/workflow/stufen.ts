@@ -41,6 +41,7 @@ export const STUFENTYP_NAMEN: Record<Stufentyp, string> = {
 
 export const ZUSTAENDIGKEITEN = [
   'objektverantwortlich',
+  'ermittelt',
   'rolle',
   'gruppe',
   'spezialgebiet',
@@ -51,6 +52,7 @@ export type Zustaendigkeit = (typeof ZUSTAENDIGKEITEN)[number]
 
 export const ZUSTAENDIGKEIT_NAMEN: Record<Zustaendigkeit, string> = {
   objektverantwortlich: 'Objektverantwortliche',
+  ermittelt: 'Ermittelter Empfänger (Person › Absender › Thema › Objekt)',
   rolle: 'Rolle',
   gruppe: 'Gruppe',
   spezialgebiet: 'Spezialgebiet',
@@ -71,9 +73,10 @@ export interface Stufeneingabe {
   stempeltypIds: string[]
   /** Nur bei stufentyp = systemaktion: die Eingabe aus dem Formular. */
   systemaktion: { vorlage: string; empfaenger: string; adresse: string | null } | null
-  /** Eskalation: nach so vielen Stunden ueber der Frist an diese Person -- beides oder nichts. */
+  /** Eskalation: nach so vielen Stunden ueber der Frist an diese Person oder Rolle -- Stunden plus eines von beiden. */
   eskalationNachStunden: number | null
   eskalationAn: string | null
+  eskalationAnRolle: string | null
 }
 
 export interface Auswahl {
@@ -183,23 +186,37 @@ async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<Ge
     throw new NichtMoeglich('Die Frist ist eine ganze Zahl von Stunden.')
   }
   /*
-   * Eskalation: Spanne und Person gehoeren zusammen. Die Person wird unter
-   * der RLS nachgeschlagen -- eine Kennung aus einem fremden Haus ist keine.
+   * Eskalation: Spanne und Ziel gehoeren zusammen -- das Ziel ist eine
+   * Person oder eine Rolle (Migration 20261006170000: "an die
+   * Geschaeftsleitung" ist eine Rolle, und eine Person im Urlaub waere genau
+   * die falsche Adresse). Beides wird unter der RLS nachgeschlagen -- eine
+   * Kennung aus einem fremden Haus ist keine.
    */
   let eskalationNachStunden: number | null = null
   let eskalationAn: string | null = null
+  let eskalationAnRolle: string | null = null
   const anRoh = e.eskalationAn === '' ? null : e.eskalationAn
-  if (e.eskalationNachStunden !== null || anRoh !== null) {
-    if (e.eskalationNachStunden === null || anRoh === null) {
-      throw new NichtMoeglich('Eskalation braucht beides: Stunden über der Frist und eine Person.')
+  const rolleRoh = e.eskalationAnRolle === '' ? null : e.eskalationAnRolle
+  if (e.eskalationNachStunden !== null || anRoh !== null || rolleRoh !== null) {
+    if (e.eskalationNachStunden === null || (anRoh === null && rolleRoh === null)) {
+      throw new NichtMoeglich('Eskalation braucht beides: Stunden über der Frist und eine Person oder Rolle.')
+    }
+    if (anRoh !== null && rolleRoh !== null) {
+      throw new NichtMoeglich('Eskalation an eine Person oder an eine Rolle — nicht beides.')
     }
     if (!Number.isInteger(e.eskalationNachStunden) || e.eskalationNachStunden <= 0) {
       throw new NichtMoeglich('Die Eskalation ist eine ganze Zahl von Stunden.')
     }
-    const { rows } = await c.query<{ id: string }>('select id from benutzer where id = $1 and aktiv', [anRoh])
-    if (rows[0] === undefined) throw new NichtMoeglich('Die Person für die Eskalation gibt es nicht.')
+    if (anRoh !== null) {
+      const { rows } = await c.query<{ id: string }>('select id from benutzer where id = $1 and aktiv', [anRoh])
+      if (rows[0] === undefined) throw new NichtMoeglich('Die Person für die Eskalation gibt es nicht.')
+      eskalationAn = rows[0].id
+    } else {
+      const { rows } = await c.query<{ id: string }>('select id from rolle where id = $1 and aktiv', [rolleRoh])
+      if (rows[0] === undefined) throw new NichtMoeglich('Die Rolle für die Eskalation gibt es nicht.')
+      eskalationAnRolle = rows[0].id
+    }
     eskalationNachStunden = e.eskalationNachStunden
-    eskalationAn = rows[0].id
   }
   const stempel = [...new Set(e.stempeltypIds.filter((s) => s !== ''))]
   if (stempel.length > 0) {
@@ -224,6 +241,7 @@ async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<Ge
     systemaktion,
     eskalationNachStunden,
     eskalationAn,
+    eskalationAnRolle,
   }
 }
 
@@ -265,9 +283,9 @@ export async function stufeAnlegen(
     const { rows: stufe } = await c.query<{ id: string }>(
       `insert into prozessstufe (definition_id, reihenfolge, stufentyp, bezeichnung, pflicht,
                                  betrag_von, betrag_bis, zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
-                                 systemaktion, eskalation_nach_stunden, eskalation_an)
+                                 systemaktion, eskalation_nach_stunden, eskalation_an, eskalation_an_rolle)
        values ($1, (select coalesce(max(reihenfolge), 0) + 1 from prozessstufe where definition_id = $1),
-               $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+               $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        returning id`,
       [
         definitionId,
@@ -282,6 +300,7 @@ export async function stufeAnlegen(
         e.systemaktion === null ? null : JSON.stringify(e.systemaktion),
         e.eskalationNachStunden,
         e.eskalationAn,
+        e.eskalationAnRolle,
       ],
     )
     const stufeId = stufe[0]?.id
@@ -313,7 +332,7 @@ export async function stufeAendern(
       `update prozessstufe
           set stufentyp = $3, bezeichnung = $4, pflicht = $5, betrag_von = $6, betrag_bis = $7,
               zustaendigkeit_typ = $8, zustaendigkeit_ref = $9, sla_stunden = $10, systemaktion = $11,
-              eskalation_nach_stunden = $12, eskalation_an = $13
+              eskalation_nach_stunden = $12, eskalation_an = $13, eskalation_an_rolle = $14
         where id = $1 and definition_id = $2`,
       [
         stufeId,
@@ -329,6 +348,7 @@ export async function stufeAendern(
         e.systemaktion === null ? null : JSON.stringify(e.systemaktion),
         e.eskalationNachStunden,
         e.eskalationAn,
+        e.eskalationAnRolle,
       ],
     )
     if (rowCount === 0) throw new NichtMoeglich('Stufe nicht gefunden')

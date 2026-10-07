@@ -1550,6 +1550,15 @@ kbd {
   float: right;
   margin-left: 1rem;
 }
+/* Wichtig-Marke des Schriftverkehrs: Bedeutungsfarbe, deshalb Rot wie die Ampel. */
+.marke--wichtig {
+  background: var(--farbe-rot);
+  color: var(--farbe-marke-text, #fff);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .marke--neu {
   display: inline-block;
   padding: 0.1rem 0.5rem;

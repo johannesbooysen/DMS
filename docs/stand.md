@@ -8,8 +8,8 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Architekturentscheidungen](adr/), das *Wie bediene ich es* im
 [Handbuch](handbuch.md).
 
-Auf einen Blick: 84 Tabellen, 206 Policies,
-132 Module, 1110 Testfaelle in 70 Dateien,
+Auf einen Blick: 85 Tabellen, 208 Policies,
+134 Module, 1126 Testfaelle in 71 Dateien,
 10 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -642,6 +642,14 @@ Tabellen: `dms`
 
 Policies: 3
 
+### `supabase/migrations/20261006170000_schriftverkehr_verteilung.sql`
+
+Schriftverkehr: Wer bekommt ein Schreiben, und wann erfaehrt die
+
+Tabellen: `dms`
+
+Policies: 2
+
 ## Module
 
 | Datei | Aufgabe |
@@ -749,6 +757,7 @@ Policies: 3
 | [`src/pruefung/plausibilitaet.ts`](../src/pruefung/plausibilitaet.ts) | Plausibilitätsprüfungen und die Gesamtampel |
 | [`src/queue.ts`](../src/queue.ts) | Warteschlange |
 | [`src/schriftverkehr/index.ts`](../src/schriftverkehr/index.ts) | Schriftverkehr — die zweite Belegart (Konzept §24.3) |
+| [`src/schriftverkehr/verteilung.ts`](../src/schriftverkehr/verteilung.ts) | Verteilung eines Schriftstuecks: Wer bekommt es, und ist es wichtig? |
 | [`src/sicherung/index.ts`](../src/sicherung/index.ts) | Sicherung und geprobter Restore (Konzept §24.7) |
 | [`src/stammdaten/ablagen.ts`](../src/stammdaten/ablagen.ts) | Ablagen -- wo ein Beleg liegt und wer ihn sieht (Migration 20261006150000) |
 | [`src/stammdaten/index.ts`](../src/stammdaten/index.ts) | Stammdatenpflege |
@@ -758,6 +767,7 @@ Policies: 3
 | [`src/stammdaten/pflichtfeld.ts`](../src/stammdaten/pflichtfeld.ts) | Pflichtfelder je Belegart -- welche Angaben ein Haus unbedingt erfasst |
 | [`src/stammdaten/presets.ts`](../src/stammdaten/presets.ts) | Berechtigungs-Presets je Verwaltungsart (Konzept §24.13) |
 | [`src/stammdaten/quellen.ts`](../src/stammdaten/quellen.ts) | Eingangsquellen und Vorlagen pflegen |
+| [`src/stammdaten/schriftverkehr-regeln.ts`](../src/stammdaten/schriftverkehr-regeln.ts) | Verteilregeln fuer Schriftverkehr -- Stammdaten (Migration 20261006170000) |
 | [`src/stammdaten/stempel.ts`](../src/stammdaten/stempel.ts) | Stempeltypen und ihre Gestaltung -- die Fachschicht des Stempel-Designers |
 | [`src/stapel/barcode.ts`](../src/stapel/barcode.ts) | Barcodes auf einer Seite lesen -- fuer Trennblaetter, die nur einen |
 | [`src/stapel/index.ts`](../src/stapel/index.ts) | Posteingang: Stapel aufnehmen, trennen, übernehmen |
@@ -838,6 +848,7 @@ Policies: 3
 | [`tests/presets.test.ts`](../tests/presets.test.ts) | 10 | Die Presets selbst, Anwenden, Das Recht |
 | [`tests/rechnungsdaten.test.ts`](../tests/rechnungsdaten.test.ts) | 2 | Rechnungsdaten |
 | [`tests/rls.test.ts`](../tests/rls.test.ts) | 24 | Mandantentrennung, Objektzustaendigkeit, Rechte, Spezialgebiet, Stempelereignisse, Klaerung |
+| [`tests/schriftverkehr-verteilung.test.ts`](../tests/schriftverkehr-verteilung.test.ts) | 16 | Empfaenger eines Schreibens, Wichtig und die Geschaeftsleitung, Eskalation an eine Rolle, Regeln pflegen |
 | [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts) | 17 | Die Fakten, Der Freigabe-Hash -- der Fund, Derselbe Weg wie eine Rechnung, Antwortfristen |
 | [`tests/sicherung.test.ts`](../tests/sicherung.test.ts) | 14 | Die Hash-Kette, Die Schutzmechanismen, Die Dateien, Das Manifest |
 | [`tests/stammdaten-quellen.test.ts`](../tests/stammdaten-quellen.test.ts) | 19 | Eingangsquellen einrichten, Vorlagen |
@@ -873,6 +884,6 @@ Policies: 3
 
 | Fundstelle |
 |---|
-| [`src/worker/aufbereitung.ts:439`](../src/worker/aufbereitung.ts) |
-| [`src/workflow/engine.ts:104`](../src/workflow/engine.ts) |
-| [`src/workflow/engine.ts:206`](../src/workflow/engine.ts) |
+| [`src/worker/aufbereitung.ts:458`](../src/worker/aufbereitung.ts) |
+| [`src/workflow/engine.ts:105`](../src/workflow/engine.ts) |
+| [`src/workflow/engine.ts:234`](../src/workflow/engine.ts) |

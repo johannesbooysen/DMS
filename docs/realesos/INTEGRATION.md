@@ -12,6 +12,7 @@
 | 69 DMS-Migrationen `20260828100000` bis `20261002100000` | Das fachliche Schema des DMS (Tabellen, Policies, Funktionen, Trigger) — Liste mit Tabellen in [docs/stand.md](../stand.md); wird für die Einbindung zu **einer** Grundmigration aus dem Zielschema zusammengefasst (Vorschrift § 5.2) | L | Neuaufbau |
 | `20261006130000_schutz_pruefen_dms.sql` | Schutzprüfung nur für DMS-Tabellen; entzieht `dms_app` die Rechte auf den 28 RealesOS-Tabellen | M | Rechte neu vergeben (nicht vorgesehen) |
 | `20261006140000_schema_dms.sql` | Umzug aller DMS-Tabellen und -Funktionen nach `dms` an Ort und Stelle (OIDs bleiben), Funktionstexte neu geschrieben, Schema `app` entfernt | L | nur per Neuaufbau |
+| `20261006170000_schriftverkehr_verteilung.sql` | `benutzer.kuerzel`, `ordnungsgruppe.gl_informieren`, Tabelle `dms.schriftverkehr_regel` (beide Policies, Mandantentreue-Trigger), `dokument.wichtig`/`empfaenger_*`, Zuständigkeit `ermittelt`, `prozessstufe.eskalation_an_rolle`, `dms.eskalation_durchgang()` mit Rolle | M | Spalten und Tabelle entfernen, Funktion aus 20260926130000 wiederherstellen |
 | `20261006150000_ablagen.sql` | Tabelle `dms.ablage` (Lesen Mandant, Schreiben `stammdaten_pflegen`), `dokument.ablage_id` (not null, Trigger-Vorgabe über `dms.ablage_fuer`), `rolle_recht.ablage_id`, `dms.meine_ablagen()`, `dms.darf_in_ablage()`; Policy `dokument_lesen` um die Ablage erweitert | M | Spalten und Funktionen entfernen, Policy aus 20260831210000 wiederherstellen |
 
 ## 3. Tabellen und Löschregeln

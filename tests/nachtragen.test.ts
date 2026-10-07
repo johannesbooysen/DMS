@@ -57,7 +57,10 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await direkt(`delete from pgboss.job where data->>'dokumentId' = $1`, [beleg])
+  // pg-boss legt sein Schema erst beim ersten Start an; direkt nach db:reset
+  // gibt es die Tabelle noch nicht -- dann gibt es auch nichts zu loeschen.
+  const [q] = await direkt<{ da: string | null }>("select to_regclass('pgboss.job')::text as da")
+  if (q?.da !== null) await direkt(`delete from pgboss.job where data->>'dokumentId' = $1`, [beleg])
   await belegEntfernen(beleg)
 })
 

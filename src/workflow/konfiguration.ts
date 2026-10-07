@@ -119,10 +119,10 @@ export async function entwurfAnlegen(benutzerId: string, vorlageId: string): Pro
          insert into prozessstufe (definition_id, reihenfolge, parallelgruppe, stufentyp,
                                    bezeichnung, pflicht, betrag_von, betrag_bis,
                                    zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
-                                   eskalation_nach_stunden, eskalation_an, vier_augen_pflicht)
+                                   eskalation_nach_stunden, eskalation_an, eskalation_an_rolle, vier_augen_pflicht)
          select $2, s.reihenfolge, s.parallelgruppe, s.stufentyp, s.bezeichnung, s.pflicht,
                 s.betrag_von, s.betrag_bis, s.zustaendigkeit_typ, s.zustaendigkeit_ref,
-                s.sla_stunden, s.eskalation_nach_stunden, s.eskalation_an, s.vier_augen_pflicht
+                s.sla_stunden, s.eskalation_nach_stunden, s.eskalation_an, s.eskalation_an_rolle, s.vier_augen_pflicht
            from prozessstufe s
           where s.definition_id = $1
           order by s.reihenfolge

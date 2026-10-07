@@ -50,6 +50,19 @@ export const AMPELFARBEN: Record<string, string> = {
   rot: '#B3271E',
 }
 
+/**
+ * Die Wichtig-Marke eines Schriftstuecks (Migration 20261006170000): Thema
+ * mit GL-Information oder Signalwort. Mit Rolle und Text, nicht nur Farbe.
+ */
+export function Wichtig({ wert }: { wert: boolean | null | undefined }) {
+  if (wert !== true) return null
+  return (
+    <span className="marke marke--wichtig" role="img" aria-label="Wichtig" title="Wichtig — Geschäftsleitung wird informiert">
+      Wichtig
+    </span>
+  )
+}
+
 export function Ampel({ wert }: { wert: string | null }) {
   if (wert === null) return null
   return (

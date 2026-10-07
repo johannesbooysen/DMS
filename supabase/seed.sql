@@ -36,17 +36,19 @@ insert into ablage (id, mandant_id, name, kurzcode, beschreibung, belegarten, is
   ('38000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000002',
    'Schriftverkehr', 'SV', null, array['schriftverkehr', 'sonstiges'], false, 20);
 
-insert into benutzer (id, mandant_id, name, email) values
+-- Mit Kuerzel (Migration 20261006170000): "z. Hd. AA" in einem Schreiben
+-- trifft Anna. Erfundene Namen, erfundene Kuerzel.
+insert into benutzer (id, mandant_id, name, email, kuerzel) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
-   'Anna Ahrens',   'anna@example.invalid'),
+   'Anna Ahrens',   'anna@example.invalid', 'AA'),
   ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
-   'Bernd Bruns',   'bernd@example.invalid'),
+   'Bernd Bruns',   'bernd@example.invalid', 'BB'),
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
-   'Clara Cordes',  'clara@example.invalid'),
+   'Clara Cordes',  'clara@example.invalid', 'CC'),
   ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002',
-   'Doris Dahl',    'doris@example.invalid'),
+   'Doris Dahl',    'doris@example.invalid', 'DD'),
   ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
-   'Eva Ebert',     'eva@example.invalid');
+   'Eva Ebert',     'eva@example.invalid', 'EE');
 
 insert into spezialgebiet (id, mandant_id, name, farbe) values
   ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
@@ -75,6 +77,27 @@ insert into ordnungsgruppe (id, mandant_id, name, kurzcode, sortierung, farbe,
    '30000000-0000-0000-0000-000000000001',
    'Schadensregulierung nach Leitungswasser, Sturm, Feuer; Gutachten und '
    'Sanierungsrechnungen mit Schadensnummer. Keine laufenden Praemien.');
+
+-- Rechtssache (Migration 20261006170000): ein Thema, das die
+-- Geschaeftsleitung sehen will. Ein Schriftstueck dieses Themas ist wichtig
+-- und bekommt im Ablauf die parallele Kenntnisstufe der GL.
+insert into ordnungsgruppe (id, mandant_id, name, kurzcode, sortierung, farbe,
+                            spezialgebiet_id, ki_beschreibung, gl_informieren) values
+  ('40000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000001',
+   'Rechtssache', 'RS', 90, '#7A1F3D', null,
+   'Gerichte, Anwaelte, Mahnbescheide, Klagen, Kuendigungen, Widersprueche.', true);
+
+-- Verteilregeln fuer Schriftverkehr: Signalwoerter setzen das Thema
+-- Rechtssache und die Wichtig-Marke; der Absender "Amtsgericht" geht fest
+-- an Eva (Geschaeftsleitung). Beides Stammdaten, erweiterbar unter
+-- Konfiguration -> Schriftverkehr.
+insert into schriftverkehr_regel (mandant_id, art, muster, ordnungsgruppe_id, wichtig, benutzer_id, sortierung) values
+  ('10000000-0000-0000-0000-000000000001', 'signalwort', 'Klage',         '40000000-0000-0000-0000-000000000009', true, null, 10),
+  ('10000000-0000-0000-0000-000000000001', 'signalwort', 'Mahnbescheid',  '40000000-0000-0000-0000-000000000009', true, null, 20),
+  ('10000000-0000-0000-0000-000000000001', 'signalwort', 'Kündigung',     '40000000-0000-0000-0000-000000000009', true, null, 30),
+  ('10000000-0000-0000-0000-000000000001', 'signalwort', 'Rechtsanwalt',  '40000000-0000-0000-0000-000000000009', true, null, 40),
+  ('10000000-0000-0000-0000-000000000001', 'absender',   'Amtsgericht',   '40000000-0000-0000-0000-000000000009', true,
+   '20000000-0000-0000-0000-000000000005', 50);
 
 insert into konto (id, kontenrahmen_id, kontonummer, bezeichnung,
                    umlagefaehig_default, umlageschluessel_default_id,
@@ -433,15 +456,28 @@ insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_
    'schriftverkehr', 1, 'aktiv', now());
 
 insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
-                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref) values
-  -- Zur Kenntnis: Wer fuer das Objekt zustaendig ist, muss es gesehen haben.
+                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref,
+                          eskalation_nach_stunden, eskalation_an_rolle) values
+  -- Zur Kenntnis: der ermittelte Empfaenger (Person im Schreiben, Absender,
+  -- Thema, sonst Objektverantwortliche -- Migration 20261006170000). Bleibt
+  -- es 48 h ueber der Frist liegen, eskaliert es an die Geschaeftsleitung.
   ('66000000-0000-0000-0000-000000000011', '65000000-0000-0000-0000-000000000002',
-   1, 'sachlich', 'Zur Kenntnis genommen', 'objektverantwortlich', 48, null),
+   1, 'sachlich', 'Zur Kenntnis genommen', 'ermittelt', 48, null,
+   48, '90000000-0000-0000-0000-000000000003'),
   -- Erledigt: beantwortet, abgelegt oder beides. Die Geschaeftsleitung
   -- schliesst ab, weil ein Schriftstueck haeufig eine Zusage nach aussen
   -- nach sich zieht.
   ('66000000-0000-0000-0000-000000000012', '65000000-0000-0000-0000-000000000002',
-   2, 'freigabe', 'Erledigt', 'rolle', 120, '90000000-0000-0000-0000-000000000003');
+   2, 'freigabe', 'Erledigt', 'rolle', 120, '90000000-0000-0000-0000-000000000003',
+   null, null),
+  -- Der wichtige Zweig: dieselbe Kenntnisnahme mit kuerzerer Frist (24 h) --
+  -- und daneben, gleichzeitig, die Kenntnisnahme der Geschaeftsleitung.
+  ('66000000-0000-0000-0000-000000000013', '65000000-0000-0000-0000-000000000002',
+   3, 'sachlich', 'Zur Kenntnis genommen (wichtig)', 'ermittelt', 24, null,
+   24, '90000000-0000-0000-0000-000000000003'),
+  ('66000000-0000-0000-0000-000000000014', '65000000-0000-0000-0000-000000000002',
+   4, 'sachlich', 'Kenntnis Geschaeftsleitung', 'rolle', 24, '90000000-0000-0000-0000-000000000003',
+   null, null);
 
 -- Eigene Stempel, aus demselben Grund wie bei Kontierung und Zahlung: Ein
 -- geliehener "Freigegeben" haette die Bedeutung "Rechnung freigegeben", und
@@ -458,10 +494,19 @@ insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
   ('66000000-0000-0000-0000-000000000011', '60000000-0000-0000-0000-000000000008', 0),
   ('66000000-0000-0000-0000-000000000011', '60000000-0000-0000-0000-000000000002', 1),
   ('66000000-0000-0000-0000-000000000012', '60000000-0000-0000-0000-000000000009', 0),
-  ('66000000-0000-0000-0000-000000000012', '60000000-0000-0000-0000-000000000002', 1);
+  ('66000000-0000-0000-0000-000000000012', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000013', '60000000-0000-0000-0000-000000000008', 0),
+  ('66000000-0000-0000-0000-000000000013', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000014', '60000000-0000-0000-0000-000000000008', 0),
+  ('66000000-0000-0000-0000-000000000014', '60000000-0000-0000-0000-000000000002', 1);
 
+-- "Zur Kenntnis" darf die Objektbearbeitung, die Buchhaltung (als
+-- ermittelter Empfaenger ueber ein Spezialgebiet) und die Geschaeftsleitung
+-- (eigene Kenntnisstufe bei wichtigen Schreiben).
 insert into stempel_recht (stempeltyp_id, rolle_id) values
   ('60000000-0000-0000-0000-000000000008', '90000000-0000-0000-0000-000000000001'),
+  ('60000000-0000-0000-0000-000000000008', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000008', '90000000-0000-0000-0000-000000000003'),
   ('60000000-0000-0000-0000-000000000009', '90000000-0000-0000-0000-000000000003');
 
 -- Aufbewahrung: Handelsbriefe sechs Jahre, nicht zehn (Paragraf 147 AO).
@@ -571,12 +616,31 @@ insert into stempel_recht (stempeltyp_id, rolle_id) values
 -- aus einer Eingangsquelle bekam keinen Lauf und stand in keinem Postfach.
 -- Der Seed-Beleg 70000000-...-0011 hatte seinen Lauf von Hand. Gefunden,
 -- als die Belegart-Erkennung ein Angebot in diesen Ablauf stellen wollte.
-insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, stufe_id) values
-  ('67000000-0000-0000-0000-000000000021', '65000000-0000-0000-0000-000000000002', null, 0, 'nacheinander', null),
+--
+-- Mit Verzweigung (Migration 20261006170000):
+--
+--   nacheinander
+--   ├─ wenn wichtig = true
+--   │  ├─ gleichzeitig: Zur Kenntnis (wichtig, 24 h)  |  Kenntnis Geschaeftsleitung
+--   │  └─ sonst: Zur Kenntnis genommen (48 h)
+--   └─ Erledigt (Geschaeftsleitung)
+--
+-- Die parallele GL-Stufe ist Konfiguration, kein Codepfad: Ein Haus, das
+-- die GL nicht informieren will, nimmt die Verzweigung heraus.
+insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, bedingung, stufe_id) values
+  ('67000000-0000-0000-0000-000000000021', '65000000-0000-0000-0000-000000000002', null, 0, 'nacheinander', null, null),
+  ('67000000-0000-0000-0000-000000000024', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000021', 0, 'verzweigung', '{"feld": "wichtig", "op": "=", "wert": true}'::jsonb, null),
+  ('67000000-0000-0000-0000-000000000025', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000024', 0, 'gleichzeitig', null, null),
+  ('67000000-0000-0000-0000-000000000026', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000025', 0, 'stufe', null, '66000000-0000-0000-0000-000000000013'),
+  ('67000000-0000-0000-0000-000000000027', '65000000-0000-0000-0000-000000000002',
+   '67000000-0000-0000-0000-000000000025', 1, 'stufe', null, '66000000-0000-0000-0000-000000000014'),
   ('67000000-0000-0000-0000-000000000022', '65000000-0000-0000-0000-000000000002',
-   '67000000-0000-0000-0000-000000000021', 0, 'stufe', '66000000-0000-0000-0000-000000000011'),
+   '67000000-0000-0000-0000-000000000024', 1, 'stufe', null, '66000000-0000-0000-0000-000000000011'),
   ('67000000-0000-0000-0000-000000000023', '65000000-0000-0000-0000-000000000002',
-   '67000000-0000-0000-0000-000000000021', 1, 'stufe', '66000000-0000-0000-0000-000000000012');
+   '67000000-0000-0000-0000-000000000021', 1, 'stufe', null, '66000000-0000-0000-0000-000000000012');
 
 -- ---------------------------------------------------------------------------
 -- Admin: ein Benutzer mit allen Rechten, fuer die Einrichtung und zum Testen.

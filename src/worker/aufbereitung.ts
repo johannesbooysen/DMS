@@ -23,7 +23,8 @@ import { istXmlRechnung } from '../extraktion/zugferd'
 import { kategorieVorschlagen, type Kategorievorschlag } from '../lernen/kategorie'
 import { belegartErkennen, type ErkennbareBelegart } from '../lernen/belegart'
 import { objektVorschlagen, type Zuordnungsvorschlag } from '../lernen/zuordnung'
-import { belegartWechseln, type Belegartwechsel } from '../workflow/engine'
+import { belegartWechseln, laufNeuAufsetzen, type Belegartwechsel } from '../workflow/engine'
+import { schriftverkehrVerteilen, type Verteilung } from '../schriftverkehr/verteilung'
 import { plausibilitaetPruefen, type Pruefergebnis } from '../pruefung/plausibilitaet'
 import { hatTextlayer, seitenLesen, seiteRendern, type Seiteninhalt } from '../ingest/pdf'
 import { mailtext } from '../eingang/mail'
@@ -60,6 +61,8 @@ export interface Aufbereitungsergebnis {
   /** Belegart aus dem Inhalt: was erkannt wurde und was daraus geworden ist. */
   belegart?: { vorschlag: ErkennbareBelegart; sicherheit: 'gruen' | 'orange' | 'rot'; ausgang: Belegartwechsel }
   kategorie?: Kategorievorschlag
+  /** Schriftverkehr: Empfaenger und Wichtig-Marke (Migration 20261006170000). */
+  verteilung?: Verteilung
 }
 
 /*
@@ -431,6 +434,22 @@ export async function aufbereiten(
     }
   }
 
+  /*
+   * Schriftverkehr: Wer bekommt es, ist es wichtig? (Migration 20261006170000)
+   *
+   * Nach Belegart, Objekt und Kategorie, weil die Verteilung alle drei liest.
+   * Der Lauf startete beim Eingang mit wichtig = false und ohne Empfaenger;
+   * hat sich daran etwas geaendert, werden seine offenen Aufgaben neu
+   * aufgesetzt -- die Verzweigung "wenn wichtig" und die Stufe "ermittelt"
+   * sehen dann den richtigen Stand. Nur ohne Entscheidung im Lauf.
+   */
+  const { rows: art } = await c.query<{ belegart: string }>('select belegart from dokument where id = $1', [dokumentId])
+  let verteilung: Verteilung | undefined
+  if (art[0]?.belegart === 'schriftverkehr') {
+    verteilung = await schriftverkehrVerteilen(c, dokumentId)
+    if (verteilung.geaendert) await laufNeuAufsetzen(c, dokumentId)
+  }
+
   // Plausibilitaet: der zweite Vertrauenswert. Er beantwortet eine andere
   // Frage als die Extraktion -- nicht wie sicher gelesen wurde, sondern ob
   // das Gelesene fachlich Sinn ergibt (Konzept 14).
@@ -446,7 +465,7 @@ export async function aufbereiten(
   //   * Wirtschaftsjahr offen und Budgetgrenze -- beides braucht Daten, die
   //     es noch nicht gibt (Jahresabschluss, verbrauchtes Budget)
 
-  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung, kategorie, belegart }
+  return { seiten: seiten.length, weg, erkennung, pruefung, zuordnung, kategorie, belegart, verteilung }
 }
 
 /**

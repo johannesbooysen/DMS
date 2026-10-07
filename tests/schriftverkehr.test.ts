@@ -239,10 +239,13 @@ describe('Derselbe Weg wie eine Rechnung', () => {
          join prozessstufe s on s.definition_id = p.id
         where p.belegart = 'schriftverkehr' and p.status = 'aktiv'`,
     )
-    expect(Number(z.anzahl)).toBe(2)
+    // Vier Stufen seit Migration 20261006170000: Kenntnisnahme (gewoehnlich
+    // und wichtig), Kenntnis der Geschaeftsleitung, Erledigt -- ein Lauf
+    // sieht davon zwei oder drei (Verzweigung "wenn wichtig").
+    expect(Number(z.anzahl)).toBe(4)
 
-    // Und sie ist eine andere als die der Rechnung -- zwei Stufen, keine
-    // Kontierung, keine Zahlung.
+    // Und sie ist eine andere als die der Rechnung -- keine Kontierung,
+    // keine Zahlung.
     const [r] = await direkt<{ anzahl: string }>(
       `select count(*) as anzahl from prozessdefinition p
          join prozessstufe s on s.definition_id = p.id

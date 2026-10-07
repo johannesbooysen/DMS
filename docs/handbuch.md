@@ -735,6 +735,66 @@ andere Rollenrecht, weil es dasselbe ist.
 
 ---
 
+## Schriftverkehr: wer bekommt es, und was ist wichtig
+
+Ein Schreiben soll beim richtigen Mitarbeiter landen, und bei wichtigen
+Sachen soll die Geschäftsleitung davon erfahren. Beides stellt das Haus
+ein, nichts davon steht im Programm fest.
+
+### Wer das Schreiben bekommt
+
+Die Kenntnisnahme geht an den **ermittelten Empfänger**, in dieser
+Reihenfolge:
+
+1. **Eine im Schreiben genannte Person** — der volle Name oder das Kürzel
+   („z. Hd. AA“). Kürzel vergeben Sie unter *Konfiguration → Benutzer*,
+   zwei bis fünf Buchstaben, je Haus eindeutig.
+2. **Der Absender** — unter *Konfiguration → Schriftverkehr* kann ein
+   Absender („Amtsgericht“, „Rechtsanwälte“) fest an eine Person oder
+   Gruppe gehen. Geprüft wird der Korrespondent, sonst der Kopf der ersten
+   Seite.
+3. **Das Thema** — der Spezialist des Spezialgebiets, das an der
+   Ordnungsgruppe hängt (wie bisher).
+4. **Das Objekt** — wer für das Objekt verantwortlich ist (wie bisher).
+
+Im Ablauf heißt diese Zuständigkeit *Ermittelter Empfänger*. Unter *Warum
+hier* in der Belegansicht steht, welche Regel gegriffen hat.
+
+### Was wichtig ist
+
+Ein Schreiben ist **wichtig**, wenn
+
+- sein **Thema** die Geschäftsleitung informiert (Haken unter
+  *Konfiguration → Schriftverkehr → Themen*; ausgeliefert: *Rechtssache*),
+  oder
+- ein **Signalwort** im Text steht (*Klage*, *Mahnbescheid*, *Kündigung*,
+  *Rechtsanwalt* — erweiterbar). Ein Signalwort kann zugleich das Thema
+  setzen, etwa *Klage → Rechtssache*; ein von Hand gesetztes Thema stellt
+  es nicht um. Geprüft wird das ganze Wort: „Klagenfurt“ ist keine Klage.
+
+Wichtige Schreiben tragen die rote Marke **Wichtig** im Postfach, in der
+Suche und am Beleg.
+
+### Was dann passiert
+
+Der Ablauf *Schriftverkehr* hat eine Verzweigung **Wenn wichtig**: Dann
+laufen zwei Aufgaben **gleichzeitig** — die Kenntnisnahme beim ermittelten
+Empfänger mit kürzerer Frist (24 statt 48 Stunden) und eine eigene
+Kenntnisnahme der **Geschäftsleitung**. Das Schreiben ist erst erledigt,
+wenn beide gestempelt haben; beides steht im Belegweg. Keine Mail: Die
+Aufgabe steht im Postfach, die Zahl wird rot, die Sammelmail nennt sie.
+
+Bleibt eine Kenntnisnahme über ihre Frist hinaus liegen, **eskaliert** sie
+an die Rolle Geschäftsleitung (48 Stunden nach der Frist, bei wichtigen
+Schreiben 24). Die Aufgabe wandert dann zur Rolle; wer sie vorher hatte,
+steht im Protokoll. Alle Fristen sind Einstellungen an den Stufen des
+Ablaufs, keine Konstanten.
+
+Die Regeln gelten nur für Schriftverkehr. Eine Rechnung hat ihren eigenen
+Weg über Betragsgrenzen und Freigabestufen.
+
+---
+
 ## Posteingang
 
 ### Eingangsstempel und Paginiernummer

@@ -231,6 +231,7 @@ export const TAETIGKEITEN = [
  */
 export const OHNE_PERSONENBEZUG = {
   ablage: 'Stammdatum: Ablagen des Hauses (Name, Kurzcode, Belegarten). Keine Personen.',
+  schriftverkehr_regel: 'Stammdatum: Signalwoerter und Absendermuster mit Thema und Wichtig-Marke; Empfaenger ist ein Verweis auf Mitarbeiter oder Gruppe.',
   aufbewahrungsfrist: 'Fristen je Belegart, keine Personen.',
   bauteil: 'Technische Bauteile mit Gewaehrleistung; Lieferant ist ein Verweis.',
   belegmerkmal: 'Stammdatum: Merkmalsnamen.',

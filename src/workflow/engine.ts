@@ -56,7 +56,7 @@ export interface Stempelergebnis {
 export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<Kontext> {
   const { rows } = await c.query<Record<string, string | number | boolean | null>>(
     `select d.belegart,
-            d.hat_umlagefaehige_zeile,
+            d.hat_umlagefaehige_zeile, d.wichtig,
             f.brutto, f.netto, f.wirtschaftsjahr,
             og.kurzcode        as ordnungsgruppe_kurzcode,
             sg.name            as spezialgebiet_name,
@@ -85,6 +85,7 @@ export async function kontextLaden(c: PoolClient, dokumentId: string): Promise<K
   return {
     belegart: z['belegart'],
     hat_umlagefaehige_zeile: z['hat_umlagefaehige_zeile'],
+    wichtig: z['wichtig'],
     brutto: zahl(z['brutto']),
     netto: zahl(z['netto']),
     wirtschaftsjahr: zahl(z['wirtschaftsjahr']),
@@ -154,6 +155,39 @@ async function vertretungAnwenden(
   }
 }
 
+async function objektverantwortlicher(c: PoolClient, dokumentId: string): Promise<Traeger> {
+  const { rows } = await c.query<{ benutzer_id: string }>(
+    `select z.benutzer_id
+       from dokument d
+       join objekt_zustaendigkeit z on z.objekt_id = d.objekt_id
+      where d.id = $1
+        and z.art = 'hauptverantwortlich'
+        and z.gueltig_von <= current_date
+        and (z.gueltig_bis is null or z.gueltig_bis >= current_date)
+      order by z.gueltig_von desc
+      limit 1`,
+    [dokumentId],
+  )
+  return { ...LEER, benutzerId: rows[0]?.benutzer_id ?? null }
+}
+
+async function spezialgebietTraeger(c: PoolClient, dokumentId: string): Promise<Traeger> {
+  const { rows } = await c.query<{ benutzer_id: string | null; gruppe_id: string | null }>(
+    `select sz.benutzer_id, sz.gruppe_id
+       from dokument d
+       join spezialgebiet_zustaendigkeit sz on sz.spezialgebiet_id = d.spezialgebiet_id
+      where d.id = $1
+        and (sz.objekt_id is null or sz.objekt_id = d.objekt_id)
+      limit 1`,
+    [dokumentId],
+  )
+  return {
+    ...LEER,
+    benutzerId: rows[0]?.benutzer_id ?? null,
+    gruppeId: rows[0]?.gruppe_id ?? null,
+  }
+}
+
 async function zustaendigkeitAufloesen(
   c: PoolClient,
   blatt: Knoten,
@@ -163,19 +197,7 @@ async function zustaendigkeitAufloesen(
   if (stufe === null) return LEER
 
   if (stufe.zustaendigkeitTyp === 'objektverantwortlich') {
-    const { rows } = await c.query<{ benutzer_id: string }>(
-      `select z.benutzer_id
-         from dokument d
-         join objekt_zustaendigkeit z on z.objekt_id = d.objekt_id
-        where d.id = $1
-          and z.art = 'hauptverantwortlich'
-          and z.gueltig_von <= current_date
-          and (z.gueltig_bis is null or z.gueltig_bis >= current_date)
-        order by z.gueltig_von desc
-        limit 1`,
-      [dokumentId],
-    )
-    return { ...LEER, benutzerId: rows[0]?.benutzer_id ?? null }
+    return objektverantwortlicher(c, dokumentId)
   }
 
   if (stufe.zustaendigkeitTyp === 'gruppe') {
@@ -183,20 +205,26 @@ async function zustaendigkeitAufloesen(
   }
 
   if (stufe.zustaendigkeitTyp === 'spezialgebiet') {
-    const { rows } = await c.query<{ benutzer_id: string | null; gruppe_id: string | null }>(
-      `select sz.benutzer_id, sz.gruppe_id
-         from dokument d
-         join spezialgebiet_zustaendigkeit sz on sz.spezialgebiet_id = d.spezialgebiet_id
-        where d.id = $1
-          and (sz.objekt_id is null or sz.objekt_id = d.objekt_id)
-        limit 1`,
+    return spezialgebietTraeger(c, dokumentId)
+  }
+
+  /*
+   * Der ermittelte Empfaenger (Migration 20261006170000): Person im
+   * Schreiben oder Absenderregel, vom Worker an den Beleg geschrieben
+   * (src/schriftverkehr/verteilung.ts) -- sonst Spezialgebiet, sonst
+   * Objektverantwortliche. Die Rangfolge ist die Entscheidung des Hauses;
+   * der Grund steht am Beleg (empfaenger_begruendung).
+   */
+  if (stufe.zustaendigkeitTyp === 'ermittelt') {
+    const { rows } = await c.query<{ b: string | null; g: string | null }>(
+      'select empfaenger_benutzer_id as b, empfaenger_gruppe_id as g from dokument where id = $1',
       [dokumentId],
     )
-    return {
-      ...LEER,
-      benutzerId: rows[0]?.benutzer_id ?? null,
-      gruppeId: rows[0]?.gruppe_id ?? null,
-    }
+    if (rows[0]?.b) return { ...LEER, benutzerId: rows[0].b }
+    if (rows[0]?.g) return { ...LEER, gruppeId: rows[0].g }
+    const spezial = await spezialgebietTraeger(c, dokumentId)
+    if (spezial.benutzerId !== null || spezial.gruppeId !== null) return spezial
+    return objektverantwortlicher(c, dokumentId)
   }
 
   if (stufe.zustaendigkeitTyp === 'rolle') {
@@ -701,32 +729,63 @@ export async function belegartWechseln(
    * neuen entstehen wie beim Start. Ein Bestandsbeleg (Uebernahme) hat
    * keinen Lauf und bekommt durch die Belegart auch keinen.
    */
-  const { rows: laeufe } = await c.query<{ id: string }>(
-    `select id from dokument_lauf where dokument_id = $1 and status in ('laufend','klaerung')`,
+  await laufNeuAufsetzen(c, dokumentId, ablauf[0].id)
+  return 'gewechselt'
+}
+
+/**
+ * Setzt die offenen Aufgaben eines Laufs neu auf -- mit dem Stand, den der
+ * Beleg **jetzt** hat: Verzweigungen werden neu entschieden, Zustaendigkeiten
+ * neu aufgeloest. Gebraucht, wenn sich nach dem Start etwas aendert, das
+ * den Weg bestimmt: die Belegart (belegartWechseln) oder die Verteilung
+ * eines Schriftstuecks (wichtig, Empfaenger -- Migration 20261006170000).
+ *
+ * Nur, solange keine Entscheidung im Lauf liegt: Ein Stempel ist ein
+ * Ereignis in der Kette, und eine Stufe, die jemand schon entschieden hat,
+ * laesst sich nicht nachtraeglich fuer entfallen erklaeren. Die alten
+ * Aufgaben werden `entfallen`, nichts geloescht; der Lauf bleibt derselbe.
+ */
+export async function laufNeuAufsetzen(
+  c: PoolClient,
+  dokumentId: string,
+  definitionId?: string,
+): Promise<'neu' | 'entschieden' | 'kein_lauf'> {
+  const { rows: laeufe } = await c.query<{ id: string; definition_id: string }>(
+    `select id, definition_id from dokument_lauf where dokument_id = $1 and status in ('laufend','klaerung')`,
     [dokumentId],
   )
-  const laufId = laeufe[0]?.id
-  if (laufId === undefined) return 'gewechselt'
+  const lauf = laeufe[0]
+  if (lauf === undefined) return 'kein_lauf'
+
+  const { rows: entschieden } = await c.query<{ n: number }>(
+    'select count(*)::int as n from stempel_ereignis where lauf_id = $1',
+    [lauf.id],
+  )
+  if ((entschieden[0]?.n ?? 0) > 0) return 'entschieden'
+
+  const defId = definitionId ?? lauf.definition_id
+  const wurzel = await baumLaden(c, defId)
+  if (wurzel === null) return 'kein_lauf'
 
   const kontext = await kontextLaden(c, dokumentId)
   const blaetter = einstiegsblaetter(wurzel, kontext)
   const { rows: fassung } = await c.query<{ version: number }>(
     'select version from prozessdefinition where id = $1',
-    [ablauf[0].id],
+    [defId],
   )
 
   await c.query(
     `update aufgabe set status = 'entfallen', erledigt_am = now()
       where lauf_id = $1 and status in ('offen','in_arbeit')`,
-    [laufId],
+    [lauf.id],
   )
   await c.query(
     `update dokument_lauf
         set definition_id = $2, definition_version = $3, aktuelle_stufe_id = $4,
             status = 'laufend', beendet_am = null, freigabe_hash = null, kontierungs_hash = null
       where id = $1`,
-    [laufId, ablauf[0].id, fassung[0]?.version ?? 1, blaetter[0]?.stufe?.id ?? null],
+    [lauf.id, defId, fassung[0]?.version ?? 1, blaetter[0]?.stufe?.id ?? null],
   )
-  await aufgabenAnlegen(c, laufId, dokumentId, wurzel, blaetter, kontext)
-  return 'gewechselt'
+  await aufgabenAnlegen(c, lauf.id, dokumentId, wurzel, blaetter, kontext)
+  return 'neu'
 }

@@ -202,7 +202,7 @@ sie ohnehin findet:
 
 ## 2. Das Datenmodell
 
-84 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
+85 Tabellen. Sie sind der Gegenstand der Aufbewahrung — was
 hier nicht steht, wird auch nicht aufbewahrt.
 
 | Tabelle | Angelegt in |
@@ -291,6 +291,7 @@ hier nicht steht, wird auch nicht aufbewahrt.
 | `paginierung` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 | `paginierung_zaehler` | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 | `dms` | [`20261006150000_ablagen.sql`](../supabase/migrations/20261006150000_ablagen.sql) |
+| `dms` | [`20261006170000_schriftverkehr_verteilung.sql`](../supabase/migrations/20261006170000_schriftverkehr_verteilung.sql) |
 
 ## 3. Unveränderlichkeit: die Trigger
 
@@ -332,6 +333,7 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `kontierung_35a_archiv_schutz` | `kontierung_35a` | before insert or update or delete | [`20260926110000_kontierung_35a_schutz.sql`](../supabase/migrations/20260926110000_kontierung_35a_schutz.sql) |
 | `dokument_paginiernummer_fest` | `dokument` | before update of paginiernummer | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 | `dokument_ablage_vorgabe` | `dms` | before insert or update of ablage_id | [`20261006150000_ablagen.sql`](../supabase/migrations/20261006150000_ablagen.sql) |
+| `schriftverkehr_regel_pruefen` | `dms` | before insert or update | [`20261006170000_schriftverkehr_verteilung.sql`](../supabase/migrations/20261006170000_schriftverkehr_verteilung.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -1596,6 +1598,25 @@ belegt.
 - verhindert das Stempeln im fremden Namen
 - verlangt einen Kommentar
 - verlangt ein Wiedervorlagedatum
+
+### [`tests/schriftverkehr-verteilung.test.ts`](../tests/schriftverkehr-verteilung.test.ts)
+
+- ohne Treffer: der Objektverantwortliche, eine Kenntnisstufe, kein GL-Zweig
+- eine im Schreiben genannte Person schlaegt alles -- per Name
+- … und per Kuerzel, als ganzes Wort
+- eine Absenderregel gibt das Schreiben einer Person -- Person im Schreiben geht vor
+- ohne Korrespondent trifft die Absenderregel den Kopf der ersten Seite
+- das Thema fuehrt zum Spezialisten, wenn niemand genannt ist (Stufe ermittelt)
+- ein Signalwort setzt Thema und Wichtig-Marke und oeffnet den GL-Zweig
+- "Klagenfurt" ist keine Klage -- ganzes Wort
+- ein Thema mit GL-Information macht wichtig, auch ohne Signalwort
+- ein Signalwort stellt ein von Hand gesetztes Thema nicht um
+- nach einer Entscheidung wird der Lauf nicht mehr neu aufgesetzt
+- Angaben nachtragen verteilt sofort -- ein Mensch setzt das Thema Rechtssache
+- eine liegengebliebene Kenntnisnahme wandert zur Geschaeftsleitung -- als Rolle, protokolliert
+- anlegen darf, wer Stammdaten pflegt; ein fremder Mandant sieht nichts
+- weist eine Regel ohne Wirkung, ein Thema eines fremden Hauses und doppelte Muster ab
+- ein Kuerzel ist je Haus eindeutig und hat zwei bis fuenf Buchstaben
 
 ### [`tests/schriftverkehr.test.ts`](../tests/schriftverkehr.test.ts)
 

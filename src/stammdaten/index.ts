@@ -531,6 +531,8 @@ export interface Benutzerzeile {
   id: string
   name: string
   email: string
+  /** Zwei bis fuenf Buchstaben; trifft "z. Hd. AA" in einem Schreiben (Migration 20261006170000). */
+  kuerzel: string | null
   aktiv: boolean
   mandantenweit: boolean
   rollen: string[]
@@ -545,7 +547,7 @@ export async function benutzerLaden(benutzerId: string): Promise<Benutzerzeile[]
       // `benutzer.globaler_objektzugriff` wurde vom Rollenmodell abgelöst
       // (20260830100000) -- er stand in meinem ersten Entwurf noch, und ein
       // Test hat es gefunden.
-      `select b.id, b.name, b.email, b.aktiv,
+      `select b.id, b.name, b.email, b.kuerzel, b.aktiv,
               bool_or(bro.objekt_id is null and bro.rolle_id is not null)
                 as mandantenweit,
               coalesce(array_agg(distinct r.name)
@@ -561,13 +563,14 @@ export async function benutzerLaden(benutzerId: string): Promise<Benutzerzeile[]
               and oz.gueltig_von <= current_date
               and (oz.gueltig_bis is null or oz.gueltig_bis >= current_date)
          left join objekt o on o.id = oz.objekt_id
-        group by b.id, b.name, b.email, b.aktiv
+        group by b.id, b.name, b.email, b.kuerzel, b.aktiv
         order by b.name`,
     )
     return rows.map((z) => ({
       id: String(z['id']),
       name: String(z['name']),
       email: String(z['email']),
+      kuerzel: z['kuerzel'] == null ? null : String(z['kuerzel']),
       aktiv: z['aktiv'] === true,
       mandantenweit: z['mandantenweit'] === true,
       rollen: (z['rollen'] as string[] | null) ?? [],
@@ -579,6 +582,11 @@ export async function benutzerLaden(benutzerId: string): Promise<Benutzerzeile[]
 export async function benutzerAnlegen(benutzerId: string, f: Eingaben): Promise<void> {
   const name = pflicht(f['name'], 'Der Name')
   const email = pflicht(f['email'], 'Die E-Mail-Adresse')
+  const kuerzelRoh = (f['kuerzel'] ?? '').trim()
+  if (kuerzelRoh !== '' && !/^[A-Za-zÄÖÜäöüß]{2,5}$/.test(kuerzelRoh)) {
+    throw new NichtMoeglich('Ein Kürzel hat zwei bis fünf Buchstaben.')
+  }
+  const kuerzel = kuerzelRoh === '' ? null : kuerzelRoh.toUpperCase()
 
   await schreiben(benutzerId, async (c) => {
     /*
@@ -587,8 +595,8 @@ export async function benutzerAnlegen(benutzerId: string, f: Eingaben): Promise<
      * Benutzer (ADR 0004). Ein hier eingetragener Wert waere geraten.
      */
     await c.query(
-      'insert into benutzer (mandant_id, name, email) values (dms.mein_mandant(), $1, $2)',
-      [name, email],
+      'insert into benutzer (mandant_id, name, email, kuerzel) values (dms.mein_mandant(), $1, $2, $3)',
+      [name, email, kuerzel],
     )
   })
 }

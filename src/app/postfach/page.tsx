@@ -19,7 +19,7 @@ import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { alsBenutzer } from '@/db'
 import { wunschLaden } from '@/benachrichtigung'
 import { wunschSpeichernAktion } from '@/app/lib/benachrichtigung-aktionen'
-import { Ampel, belegAnriss, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegAnriss, belegBezeichnung, datum, euro, Seitenrahmen, Wichtig } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +46,7 @@ function Aufgabenliste({ zeilen, leer }: { zeilen: Postfachzeile[]; leer: string
               <Ampel wert={z.ampel} />
             </td>
             <td>
+              <Wichtig wert={z.wichtig} />
               <a href={`/aufgabe/${z.aufgabeId}`}>{belegBezeichnung(z)}</a>
             </td>
             <td>{z.objektnummer ?? '—'}</td>

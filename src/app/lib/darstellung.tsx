@@ -23,7 +23,7 @@ import { zaehlerLaden } from '@/benachrichtigung'
 import { fehlerkorbZaehler } from '@/fehlerkorb'
 import { laufende, type Zugriff } from '@/notfall'
 
-export { AMPELFARBEN, Ampel, Befunde, belegAnriss, belegBezeichnung, datum, euro, seit } from '@/app/lib/anzeige'
+export { AMPELFARBEN, Ampel, Befunde, belegAnriss, belegBezeichnung, datum, euro, seit, Wichtig } from '@/app/lib/anzeige'
 
 /**
  * Die Bereiche der Seitenleiste.
@@ -62,6 +62,7 @@ const BEREICHE: ReadonlyArray<readonly [string, ReadonlyArray<readonly [string, 
     [
       ['/konfiguration', 'Abläufe'],
       ['/stammdaten/ablagen', 'Ablagen'],
+      ['/stammdaten/schriftverkehr', 'Schriftverkehr'],
       ['/stammdaten/stempel', 'Stempel'],
       ['/stammdaten/pflichtfelder', 'Pflichtfelder'],
       ['/stammdaten/paginierung', 'Paginierung'],

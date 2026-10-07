@@ -31,7 +31,8 @@ import { plausibilitaetPruefen } from '../pruefung/plausibilitaet'
 import { aufbereitungEinreihen } from '../queue'
 import { merkmaleImText } from '../lernen/merkmale'
 import { merkmalLernen } from '../lernen/zuordnung'
-import { aufgabenNeuZuweisen, belegartWechseln } from '../workflow/engine'
+import { aufgabenNeuZuweisen, belegartWechseln, laufNeuAufsetzen } from '../workflow/engine'
+import { schriftverkehrVerteilen } from '../schriftverkehr/verteilung'
 
 export class NachtragAbgelehnt extends Error {}
 
@@ -241,14 +242,29 @@ export async function angabenNachtragen(
       beleg.belegart = belegartNeu
     }
 
+    // Ein von Hand gesetztes Thema ist eines: Die Verteilregeln des
+    // Schriftverkehrs stellen es nicht mehr um (kategorie_quelle = mensch).
     const { rowCount } = await c.query(
       `update dokument
           set objekt_id = coalesce($2, objekt_id),
-              ordnungsgruppe_id = coalesce($3, ordnungsgruppe_id)
+              ordnungsgruppe_id = coalesce($3, ordnungsgruppe_id),
+              kategorie_quelle = case when $3::uuid is null then kategorie_quelle else 'mensch' end
         where id = $1`,
       [dokumentId, objektId, ordnungsgruppeId],
     )
     if (rowCount === 0) throw new NachtragAbgelehnt('Der Beleg lässt sich nicht ändern.')
+
+    /*
+     * Schriftverkehr: Thema und Objekt bestimmen Empfaenger und Wichtigkeit
+     * (Migration 20261006170000). Was ein Mensch eintraegt, wird sofort
+     * verteilt -- und der Lauf neu aufgesetzt, solange keine Entscheidung
+     * darin liegt; sonst wartete die GL-Stufe bis zum naechsten Workerlauf,
+     * den es fuer diesen Beleg nicht mehr gibt.
+     */
+    if (beleg.belegart === 'schriftverkehr' && (objektId !== null || ordnungsgruppeId !== null)) {
+      const verteilung = await schriftverkehrVerteilen(c, dokumentId)
+      if (verteilung.geaendert) await laufNeuAufsetzen(c, dokumentId)
+    }
 
     /*
      * Wer ein Objekt von Hand setzt, bestaetigt eine Zuordnung -- und das

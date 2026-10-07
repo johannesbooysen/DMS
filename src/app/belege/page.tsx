@@ -33,7 +33,7 @@ import { belegwegLaden } from '@/belege/belegweg'
 import { uebersichtLaden } from '@/app/lib/belegliste'
 import { Listentasten } from '@/app/lib/listentasten'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, belegBezeichnung, datum, euro, Seitenrahmen, Wichtig } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -123,6 +123,7 @@ export default async function Belegsuche({
         ordnungsgruppe: kopf.ordnungsgruppe === null ? null : { name: kopf.ordnungsgruppe, farbe: null },
         spezialgebiet: null,
         ablage: kopf.ablageId === null ? null : { id: kopf.ablageId, name: kopf.ablage ?? '' },
+        wichtig: kopf.wichtig,
         fundstelle: null,
       }
     }
@@ -308,6 +309,7 @@ export default async function Belegsuche({
                     <Link href={ziele[i] ?? '/belege'} aria-current={i === offenerIndex ? 'page' : undefined}>
                       <span className="trefferliste-titel">
                         <Ampel wert={z.ampel} />
+                        <Wichtig wert={z.wichtig} />
                         <span>{belegBezeichnung(z)}</span>
                         {z.paginiernummer !== null && <span className="leise klein"> · Nr. {z.paginiernummer}</span>}
                       </span>
@@ -353,7 +355,7 @@ export default async function Belegsuche({
               <header className="vorschau-kopf">
                 <div>
                   <h2>
-                    <Ampel wert={offen.ampel} /> {belegBezeichnung(offen)}
+                    <Ampel wert={offen.ampel} /> <Wichtig wert={offen.wichtig} /> {belegBezeichnung(offen)}
                   </h2>
                   <p className="klein leise">
                     {offen.paginiernummer !== null && `Nr. ${offen.paginiernummer} · `}

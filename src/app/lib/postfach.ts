@@ -38,6 +38,8 @@ export interface Postfachzeile {
   uebernommenVon: string | null
   eingangAm: string
   seitenzahl: number | null
+  /** Schriftverkehr: Thema mit GL-Information oder Signalwort (Migration 20261006170000). */
+  wichtig: boolean
   /**
    * Die ersten Woerter der ersten Seite -- damit vier Belege "Ohne
    * Bezeichnung" auseinanderzuhalten sind. Nur ein Anriss, unter der RLS
@@ -53,7 +55,7 @@ const ZEILEN_ABFRAGE = `
          sv.korrespondent, sv.betreff,
          o.objektnummer, og.name as ordnungsgruppe, d.ampel_gesamt,
          a.faellig_am, a.uebernommen_von,
-         d.eingang_am, d.seitenzahl,
+         d.eingang_am, d.seitenzahl, d.wichtig,
          (select left(regexp_replace(s1.text, '\\s+', ' ', 'g'), 70)
             from dokument_seite s1
            where s1.dokument_id = d.id and s1.seite = 1) as textanfang
@@ -90,6 +92,7 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
     uebernommenVon: text(z['uebernommen_von']),
     eingangAm: String(z['eingang_am']),
     seitenzahl: z['seitenzahl'] == null ? null : Number(z['seitenzahl']),
+    wichtig: z['wichtig'] === true,
     textanfang: text(z['textanfang']),
   }
 }

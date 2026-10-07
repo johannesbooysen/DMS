@@ -139,6 +139,17 @@ export function Stufenformular({
             ))}
           </select>
         </label>
+        <label className="feld">
+          oder an Rolle
+          <select name="eskalationAnRolle" defaultValue={stufe?.eskalationAnRolle ?? ''}>
+            <option value="">— keine —</option>
+            {auswahl.rollen.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       {/* Nur fuer die Art "Systemaktion" gelesen; steht trotzdem immer da,

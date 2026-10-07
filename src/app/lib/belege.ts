@@ -41,6 +41,8 @@ export interface Belegkopf {
   ablage: string | null
   /** 'eingang' (aus der Belegart) oder 'mensch' (gewaehlt). */
   ablageQuelle: string | null
+  /** Schriftverkehr: wichtig (Migration 20261006170000). */
+  wichtig: boolean
 }
 
 export async function belegkopfLaden(
@@ -50,7 +52,7 @@ export async function belegkopfLaden(
   return alsBenutzer(benutzerId, async (c) => {
     const { rows } = await c.query<Record<string, string | number | null>>(
       `select d.id, d.belegart, d.seitenzahl, d.eingang_am, d.ampel_gesamt, d.paginiernummer,
-              d.ablage_id, ab.name as ablage, d.ablage_quelle,
+              d.ablage_id, ab.name as ablage, d.ablage_quelle, d.wichtig,
               d.objekt_id, o.objektnummer, og.name as ordnungsgruppe,
               k.name as kreditor, f.brutto, f.rechnungsnummer,
               sv.korrespondent, sv.betreff
@@ -84,6 +86,7 @@ export async function belegkopfLaden(
       ablageId: z['ablage_id'] == null ? null : String(z['ablage_id']),
       ablage: z['ablage'] == null ? null : String(z['ablage']),
       ablageQuelle: z['ablage_quelle'] == null ? null : String(z['ablage_quelle']),
+      wichtig: (z['wichtig'] as unknown) === true,
     }
   })
 }

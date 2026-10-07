@@ -115,8 +115,12 @@ function Baustein({
               stufe.pflicht ? 'Pflicht' : 'freiwillig',
               stufe.vierAugenPflicht && 'Vier Augen',
               stufe.eskalationNachStunden !== null &&
-                stufe.eskalationAn !== null &&
-                `Eskalation nach ${stufe.eskalationNachStunden} h an ${namen.get(stufe.eskalationAn) ?? 'eine Person'}`,
+                (stufe.eskalationAn !== null || stufe.eskalationAnRolle !== null) &&
+                `Eskalation nach ${stufe.eskalationNachStunden} h an ${
+                  stufe.eskalationAn !== null
+                    ? namen.get(stufe.eskalationAn) ?? 'eine Person'
+                    : `Rolle ${namen.get(stufe.eskalationAnRolle ?? '') ?? ''}`
+                }`,
               stufe.systemaktion !== null &&
                 `Vorlage „${stufe.systemaktion.vorlage}“ an ${
                   stufe.systemaktion.empfaenger === 'adresse' ? stufe.systemaktion.adresse : 'Objektverantwortliche'

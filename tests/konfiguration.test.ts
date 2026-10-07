@@ -347,6 +347,7 @@ describe('Stufen als Liste', () => {
     systemaktion: null,
     eskalationNachStunden: null,
     eskalationAn: null,
+    eskalationAnRolle: null,
     ...teil,
   })
 

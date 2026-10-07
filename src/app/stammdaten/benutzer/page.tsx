@@ -25,6 +25,7 @@ import {
 import {
   benutzerAnlegenAktion,
   benutzerUmschaltenAktion,
+  kuerzelSetzenAktion,
   rolleEntziehenAktion,
   rolleZuweisenAktion,
   zustaendigkeitBeendenAktion,
@@ -101,6 +102,7 @@ export default async function BenutzerUndRollen({
             <tr>
               <th style={kopfzelle}>Name</th>
               <th style={kopfzelle}>Kennung</th>
+              <th style={kopfzelle}>Kürzel</th>
               <th style={kopfzelle}>Rollen</th>
               <th style={kopfzelle}>Objekte</th>
               <th style={kopfzelle} />
@@ -119,6 +121,27 @@ export default async function BenutzerUndRollen({
                   )}
                 </td>
                 <td style={zelle}>{b.email}</td>
+                <td style={zelle}>
+                  {/* Das Kuerzel trifft "z. Hd. AA" in einem Schreiben (Konfiguration -> Schriftverkehr). */}
+                  {darf.benutzer ? (
+                    <form action={kuerzelSetzenAktion} className="inline" style={{ display: 'inline-flex', gap: '0.25rem' }}>
+                      <input type="hidden" name="zurueck" value={HIER} />
+                      <input type="hidden" name="id" value={b.id} />
+                      <input
+                        name="kuerzel"
+                        defaultValue={b.kuerzel ?? ''}
+                        maxLength={5}
+                        aria-label={`Kürzel von ${b.name}`}
+                        style={{ width: '3.5rem', fontSize: '0.8rem', textTransform: 'uppercase' }}
+                      />
+                      <button type="submit" className="klein" aria-label={`Kürzel von ${b.name} speichern`}>
+                        ✓
+                      </button>
+                    </form>
+                  ) : (
+                    b.kuerzel ?? <span className="leise">—</span>
+                  )}
+                </td>
                 <td style={zelle}>
                   {b.rollen.length === 0 ? (
                     <span className="rot">keine</span>
@@ -153,6 +176,7 @@ export default async function BenutzerUndRollen({
           <Anlegen aktion={benutzerAnlegenAktion} zurueck={HIER} beschriftung="Benutzer anlegen">
             <Eingabe name="name" label="Name" breite="14rem" pflicht />
             <Eingabe name="email" label="Kennung (E-Mail)" breite="18rem" pflicht typ="email" />
+            <Eingabe name="kuerzel" label="Kürzel (2–5 Buchstaben)" breite="6rem" />
           </Anlegen>
         )}
         <p className="leise winzig">

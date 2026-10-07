@@ -19,7 +19,7 @@ import { aufgabeLaden } from '@/app/lib/postfach'
 import { zahlungsansichtLaden } from '@/app/lib/zahlung-daten'
 import { Zahlung } from '@/app/lib/zahlungsansicht'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
-import { Ampel, Befunde, belegBezeichnung, datum, euro, Seitenrahmen } from '@/app/lib/darstellung'
+import { Ampel, Befunde, belegBezeichnung, datum, euro, Seitenrahmen, Wichtig } from '@/app/lib/darstellung'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +76,7 @@ export default async function Aufgabenansicht({
       )}
 
       <p className="leise">
-        <Ampel wert={zeile.ampel} />{' '}
+        <Ampel wert={zeile.ampel} /> <Wichtig wert={zeile.wichtig} />{' '}
         {[
           // Ueber den gemeinsamen Helfer -- die fuenfte Anzeigestelle. Ein
           // Schriftstueck hat weder Kreditor noch Rechnungsnummer, und

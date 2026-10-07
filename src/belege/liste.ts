@@ -53,6 +53,8 @@ export interface Belegzeile {
   paginiernummer: string | null
   /** Wo der Beleg liegt (Migration 20261006150000). */
   ablage: { id: string; name: string } | null
+  /** Schriftverkehr: wichtig (Migration 20261006170000). */
+  wichtig: boolean
   /** Nur bei Volltextsuche gefüllt. */
   fundstelle: { seite: number; auszug: string } | null
 }
@@ -96,7 +98,7 @@ export interface Belegfilter {
 const SPALTEN = `
   d.id, d.belegart, d.eingang_am, d.paginiernummer,
   d.status, d.ampel_gesamt, d.seitenzahl, d.objekt_id,
-  d.ablage_id, ab.name as ablage_name,
+  d.ablage_id, ab.name as ablage_name, d.wichtig,
   o.objektnummer,
   og.name as og_name, og.farbe as og_farbe,
   sg.name as sg_name, sg.farbe as sg_farbe,
@@ -145,6 +147,7 @@ function zeile(z: Record<string, unknown>): Belegzeile {
     seitenzahl: z['seitenzahl'] == null ? null : Number(z['seitenzahl']),
     paginiernummer: text(z['paginiernummer']),
     ablage: z['ablage_id'] == null ? null : { id: String(z['ablage_id']), name: String(z['ablage_name'] ?? '') },
+    wichtig: z['wichtig'] === true,
     fundstelle:
       z['treffer_seite'] == null
         ? null

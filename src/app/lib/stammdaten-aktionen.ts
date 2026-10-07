@@ -15,6 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { pflichtfelderSetzen } from '@/stammdaten/pflichtfeld'
+import { glInformierenSetzen, kuerzelSetzen, regelAnlegen, regelUmschalten } from '@/stammdaten/schriftverkehr-regeln'
 import {
   ablageAendern,
   ablageAnlegen,
@@ -306,6 +307,21 @@ export async function ablagerechteSetzenAktion(formular: FormData): Promise<void
   const rolleId = String(formular.get('rolleId') ?? '')
   const eintraege = formular.getAll('recht').filter((e): e is string => typeof e === 'string')
   await versuchen(formular, (benutzerId) => ablagerechteSetzen(benutzerId, rolleId, eintraege))
+}
+
+// Schriftverkehr-Verteilung (Migration 20261006170000)
+export async function regelAnlegenAktion(f: FormData): Promise<void> {
+  await versuchen(f, regelAnlegen)
+}
+export async function regelUmschaltenAktion(f: FormData): Promise<void> {
+  await versuchen(f, regelUmschalten)
+}
+export async function glInformierenSetzenAktion(formular: FormData): Promise<void> {
+  const gruppen = formular.getAll('gruppe').filter((g): g is string => typeof g === 'string')
+  await versuchen(formular, (benutzerId) => glInformierenSetzen(benutzerId, gruppen))
+}
+export async function kuerzelSetzenAktion(f: FormData): Promise<void> {
+  await versuchen(f, kuerzelSetzen)
 }
 
 /** Die Paginierung (Migration 20261002100000): Form der Eingangsnummer, nie der Zaehler. */

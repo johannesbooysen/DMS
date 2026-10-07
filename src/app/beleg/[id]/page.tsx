@@ -268,6 +268,8 @@ export default async function Belegansicht({
                     ['Belegart', erklaerung.belegart],
                     ['Objekt', erklaerung.objekt],
                     ['Kategorie', erklaerung.kategorie],
+                    ...(erklaerung.empfaenger === null ? [] : ([['Empfänger', erklaerung.empfaenger]] as const)),
+                    ...(erklaerung.wichtig === null ? [] : ([['Wichtig', erklaerung.wichtig]] as const)),
                     ['Ablauf', erklaerung.ablauf],
                     ['Stufe', erklaerung.stufe],
                   ] as const

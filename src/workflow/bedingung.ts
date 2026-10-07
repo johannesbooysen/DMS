@@ -35,6 +35,8 @@ export const FELDER: Record<string, Feldbeschreibung> = {
   'kreditor.name': { typ: 'text', anzeige: 'Kreditor' },
   zahlungsart: { typ: 'text', anzeige: 'Zahlungsart (ueberweisung|lastschrift)' },
   hat_umlagefaehige_zeile: { typ: 'wahrheitswert', anzeige: 'Umlagefähige Zeile vorhanden' },
+  /** Schriftverkehr: Thema mit GL-Information oder Signalwort (Migration 20261006170000). */
+  wichtig: { typ: 'wahrheitswert', anzeige: 'Wichtig (Geschäftsleitung informieren)' },
 }
 
 export const OPERATOREN = {
