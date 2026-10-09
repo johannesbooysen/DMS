@@ -27,6 +27,8 @@ export interface Postfachzeile {
   stufe: string
   stufentyp: string
   kreditor: string | null
+  /** Kundenrechnung: der Kunde (Person). */
+  kunde: string | null
   korrespondent: string | null
   betreff: string | null
   rechnungsnummer: string | null
@@ -51,7 +53,7 @@ export interface Postfachzeile {
 const ZEILEN_ABFRAGE = `
   select a.id as aufgabe_id, d.id as dokument_id, l.id as lauf_id,
          s.id as stufe_id, s.bezeichnung as stufe, s.stufentyp,
-         k.name as kreditor, f.rechnungsnummer, f.brutto,
+         k.name as kreditor, kp.name as kunde, f.rechnungsnummer, f.brutto,
          sv.korrespondent, sv.betreff,
          o.objektnummer, og.name as ordnungsgruppe, d.ampel_gesamt,
          a.faellig_am, a.uebernommen_von,
@@ -65,6 +67,7 @@ const ZEILEN_ABFRAGE = `
     join prozessstufe s on s.id = a.stufe_id
     left join rechnung_fakten f on f.dokument_id = d.id
     left join kreditor k on k.id = f.kreditor_id
+    left join person kp on kp.id = f.kunde_person_id
     left join schriftverkehr_fakten sv on sv.dokument_id = d.id
     left join objekt o on o.id = d.objekt_id
     left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
@@ -81,6 +84,7 @@ function zeile(z: Record<string, unknown>): Postfachzeile {
     stufe: String(z['stufe']),
     stufentyp: String(z['stufentyp']),
     kreditor: text(z['kreditor']),
+    kunde: text(z['kunde']),
     korrespondent: text(z['korrespondent']),
     betreff: text(z['betreff']),
     rechnungsnummer: text(z['rechnungsnummer']),

@@ -334,6 +334,8 @@ eine Absichtserklärung — hier ist sie eine Sperre.
 | `dokument_paginiernummer_fest` | `dokument` | before update of paginiernummer | [`20261002100000_eingangsstempel_paginierung.sql`](../supabase/migrations/20261002100000_eingangsstempel_paginierung.sql) |
 | `dokument_ablage_vorgabe` | `dms` | before insert or update of ablage_id | [`20261006150000_ablagen.sql`](../supabase/migrations/20261006150000_ablagen.sql) |
 | `schriftverkehr_regel_pruefen` | `dms` | before insert or update | [`20261006170000_schriftverkehr_verteilung.sql`](../supabase/migrations/20261006170000_schriftverkehr_verteilung.sql) |
+| `prozessdefinition_ablage_pruefen` | `dms` | before insert or update of ablage_id | [`20261009100000_ablage_ablauf_kundenrechnung.sql`](../supabase/migrations/20261009100000_ablage_ablauf_kundenrechnung.sql) |
+| `rechnung_fakten_zahlungsziel_faelligkeit` | `dms` | after insert or update of zahlungsziel | [`20261009100000_ablage_ablauf_kundenrechnung.sql`](../supabase/migrations/20261009100000_ablage_ablauf_kundenrechnung.sql) |
 
 ## 4. Zugriffsschutz: die Policies
 
@@ -565,6 +567,18 @@ Für die GoBD genügt es nicht, Kontrollen zu beschreiben — sie müssen wirksa
 sein. Die folgenden Zusicherungen werden bei jedem Testlauf geprüft. Der
 Testname *ist* die Zusicherung; verschwindet sie hier, ist sie nicht mehr
 belegt.
+
+### [`tests/ablage-ablauf.test.ts`](../tests/ablage-ablauf.test.ts)
+
+- eine Lieferantenrechnung nimmt den Hausstandard, eine Kundenrechnung ihren eigenen
+- ein Ablauf der Ablage schlaegt den Hausstandard -- und die Kategorie
+- eine neue Ablage bringt je Belegart einen Entwurf des Hausstandards mit
+- ohne das Recht, Ablaeufe zu konfigurieren, entsteht die Ablage trotzdem -- nur ohne Entwurf
+- beim Ablagewechsel folgt der Lauf -- solange keine Entscheidung darin liegt
+- die Ablage begrenzt die Belegart: Kundenrechnungen werden nicht zur Lieferantenrechnung
+- ablaufWaehlen ist die eine Stelle -- mit Vorgabe fuer eine andere Belegart und Ablage
+- Kunde ist eine Person; ohne Kunden ist die Rechnung nachzutragen
+- laeuft Pruefung → Versandfreigabe → Versendet → Zahlungseingang, faellig am Zahlungsziel
 
 ### [`tests/ablage-s3.test.ts`](../tests/ablage-s3.test.ts)
 

@@ -49,6 +49,8 @@ export interface Nachtrag {
   objektId?: string | null
   ordnungsgruppeId?: string | null
   kreditorId?: string | null
+  /** Kundenrechnung: der Kunde, eine Person aus den Stammdaten (Migration 20261009100000). */
+  kundePersonId?: string | null
   rechnungsnummer?: string | null
   /** YYYY-MM-DD */
   rechnungsdatum?: string | null
@@ -67,6 +69,8 @@ export interface Nachtragsauswahl {
   objekte: Array<{ id: string; objektnummer: string; bezeichnung: string }>
   gruppen: Array<{ id: string; name: string }>
   kreditoren: Array<{ id: string; name: string }>
+  /** Fuer Kundenrechnungen: Mieter und Eigentuemer des Hauses. */
+  personen: Array<{ id: string; name: string; art: string }>
 }
 
 /** Die Listen fuer das Formular -- alles unter der RLS, also nur das eigene Haus. */
@@ -87,6 +91,11 @@ export async function nachtragsauswahl(benutzerId: string): Promise<Nachtragsaus
         "select id, name from kreditor where status = 'aktiv' order by name",
       )
     ).rows,
+    personen: (
+      await c.query<{ id: string; name: string; art: string }>(
+        'select id, name, art from person order by name',
+      )
+    ).rows,
   }))
 }
 
@@ -95,8 +104,11 @@ export function nachtragNoetig(zeile: {
   objektnummer: string | null
   kreditor: string | null
   belegart?: string | null
+  kunde?: string | null
 }): boolean {
   if (zeile.belegart === 'schriftverkehr') return zeile.objektnummer === null
+  // Eine Kundenrechnung hat keinen Kreditor; ihr fehlt der Kunde.
+  if (zeile.belegart === 'kundenrechnung') return zeile.objektnummer === null || (zeile.kunde ?? null) === null
   return zeile.objektnummer === null || zeile.kreditor === null
 }
 
@@ -151,7 +163,7 @@ async function fehlendeVon(c: PoolClient, dokumentId: string, pflicht: readonly 
   return pflicht.filter((name) => stand[name] !== true)
 }
 
-async function vorhanden(c: PoolClient, tabelle: 'objekt' | 'ordnungsgruppe' | 'kreditor', id: string): Promise<boolean> {
+async function vorhanden(c: PoolClient, tabelle: 'objekt' | 'ordnungsgruppe' | 'kreditor' | 'person', id: string): Promise<boolean> {
   // Tabellenname aus einer festen Liste, nicht aus der Eingabe. Unter der
   // RLS: Eine Kennung aus einem fremden Haus gibt es hier nicht.
   const { rows } = await c.query<{ id: string }>(`select id from ${tabelle} where id = $1`, [id])
@@ -220,6 +232,10 @@ export async function angabenNachtragen(
     if (objektId !== null && !(await vorhanden(c, 'objekt', objektId))) {
       throw new NachtragAbgelehnt('Das gewählte Objekt gibt es nicht.')
     }
+    const kundePersonId = leer(n.kundePersonId)
+    if (kundePersonId !== null && !(await vorhanden(c, 'person', kundePersonId))) {
+      throw new NachtragAbgelehnt('Diesen Kunden gibt es nicht.')
+    }
     if (ordnungsgruppeId !== null && !(await vorhanden(c, 'ordnungsgruppe', ordnungsgruppeId))) {
       throw new NachtragAbgelehnt('Die gewählte Ordnungsgruppe gibt es nicht.')
     }
@@ -229,7 +245,7 @@ export async function angabenNachtragen(
 
     const belegartNeu = leer(n.belegart)
     if (belegartNeu !== null && belegartNeu !== beleg.belegart) {
-      if (!['rechnung', 'gutschrift', 'mahnung', 'schriftverkehr', 'sonstiges'].includes(belegartNeu)) {
+      if (!['rechnung', 'gutschrift', 'mahnung', 'kundenrechnung', 'schriftverkehr', 'sonstiges'].includes(belegartNeu)) {
         throw new NachtragAbgelehnt('Diese Belegart gibt es nicht.')
       }
       const ausgang = await belegartWechseln(c, dokumentId, belegartNeu, 'mensch', 'von Hand gewählt')
@@ -308,10 +324,11 @@ export async function angabenNachtragen(
       await c.query(
         `insert into rechnung_fakten (dokument_id, kreditor_id, rechnungsnummer, rechnungsdatum, brutto,
                                       wirtschaftsjahr, netto, steuer, leistung_von, leistung_bis,
-                                      iban_im_beleg, zahlungsziel, skonto_prozent, skonto_bis)
-         values ($1, $2, $3, $4::date, $5, $6, $7, $8, $9::date, $10::date, $11, $12::date, $13, $14::date)
+                                      iban_im_beleg, zahlungsziel, skonto_prozent, skonto_bis, kunde_person_id)
+         values ($1, $2, $3, $4::date, $5, $6, $7, $8, $9::date, $10::date, $11, $12::date, $13, $14::date, $15)
          on conflict (dokument_id) do update set
            kreditor_id     = coalesce(excluded.kreditor_id, rechnung_fakten.kreditor_id),
+           kunde_person_id = coalesce(excluded.kunde_person_id, rechnung_fakten.kunde_person_id),
            rechnungsnummer = coalesce(excluded.rechnungsnummer, rechnung_fakten.rechnungsnummer),
            rechnungsdatum  = coalesce(excluded.rechnungsdatum, rechnung_fakten.rechnungsdatum),
            brutto          = coalesce(excluded.brutto, rechnung_fakten.brutto),
@@ -327,6 +344,7 @@ export async function angabenNachtragen(
         [
           dokumentId, kreditorId, rechnungsnummer, rechnungsdatum, brutto, jahr,
           netto, steuer, leistungVon, leistungBis, ibanImBeleg, zahlungsziel, skontoProzent, skontoBis,
+          kundePersonId,
         ],
       )
 

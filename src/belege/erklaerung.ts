@@ -63,6 +63,7 @@ export async function zuordnungErklaeren(
               og.name as kategorie, d.kategorie_quelle, d.kategorie_begruendung,
               og.prozessdefinition_id as kategorie_ablauf,
               p.id as ablauf_id, p.belegart as ablauf_belegart,
+              p.ablage_id as ablauf_ablage, pab.name as ablauf_ablage_name,
               l.definition_version, p.ordnungsgruppe_id as ablauf_kategorie,
               s.id as stufe_id, s.bezeichnung as stufe, s.zustaendigkeit_typ,
               s.zustaendigkeit_ref,
@@ -77,6 +78,7 @@ export async function zuordnungErklaeren(
          left join ordnungsgruppe og on og.id = d.ordnungsgruppe_id
          left join dokument_lauf l on l.dokument_id = d.id
          left join prozessdefinition p on p.id = l.definition_id
+         left join ablage pab on pab.id = p.ablage_id
          left join aufgabe a on a.lauf_id = l.id and a.status in ('offen','in_arbeit')
          left join prozessstufe s on s.id = a.stufe_id
          left join rolle r on s.zustaendigkeit_typ = 'rolle' and r.id = s.zustaendigkeit_ref
@@ -129,9 +131,13 @@ export async function zuordnungErklaeren(
 
     let ablauf: Erklaerungszeile | null = null
     if (text(z['ablauf_id']) !== null) {
-      const fassung = `${text(z['ablauf_belegart'])}, Fassung ${String(z['definition_version'])}`
+      const fassung = `${text(z['ablauf_belegart'])}, Fassung ${String(z['definition_version'])}${
+        text(z['ablauf_ablage_name']) === null ? '' : ` (Ablage „${text(z['ablauf_ablage_name'])}“)`
+      }`
       let warum: string
-      if (text(z['kategorie_ablauf']) !== null && z['kategorie_ablauf'] === z['ablauf_id']) {
+      if (text(z['ablauf_ablage']) !== null) {
+        warum = `Die Ablage „${text(z['ablauf_ablage_name'])}“ hat einen eigenen Ablauf für diese Belegart — Ablage vor Kategorie.`
+      } else if (text(z['kategorie_ablauf']) !== null && z['kategorie_ablauf'] === z['ablauf_id']) {
         warum = `Die Kategorie „${text(z['kategorie'])}“ benennt diesen Ablauf.`
       } else if (text(z['ablauf_kategorie']) !== null) {
         warum = `Ablauf für die Belegart und die Kategorie „${text(z['kategorie'])}“.`

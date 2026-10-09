@@ -49,6 +49,7 @@ const BELEGARTEN = [
   ['rechnung', 'Rechnung'],
   ['gutschrift', 'Gutschrift'],
   ['mahnung', 'Mahnung'],
+  ['kundenrechnung', 'Kundenrechnung'],
   ['schriftverkehr', 'Schriftverkehr'],
   ['sonstiges', 'Sonstiges'],
 ] as const

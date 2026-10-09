@@ -121,6 +121,19 @@ export function Stufenformular({
         </label>
       </div>
 
+      {/* Faelligkeit aus dem Zahlungsziel: fuer "Zahlungseingang" einer
+          Kundenrechnung -- die Wiedervorlage ist das Zahlungsziel, nicht eine
+          Frist ab Anlage (Migration 20261009100000). */}
+      <div className="filterzeile" style={{ marginBottom: '0.5rem' }}>
+        <label className="feld">
+          Fällig
+          <select name="faelligAus" defaultValue={stufe?.faelligAus ?? 'frist'}>
+            <option value="frist">nach der Frist (Stunden ab Anlage)</option>
+            <option value="zahlungsziel">am Zahlungsziel der Rechnung</option>
+          </select>
+        </label>
+      </div>
+
       {/* Eskalation: Spanne ueber der Frist und die Person, die die Aufgabe
           dann bekommt -- beides oder nichts. Rechte wandern nicht mit. */}
       <div className="filterzeile" style={{ marginBottom: '0.5rem' }}>

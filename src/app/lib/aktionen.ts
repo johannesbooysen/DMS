@@ -93,6 +93,7 @@ export async function angabenNachtragenAktion(formular: FormData): Promise<void>
       objektId: text('objektId'),
       ordnungsgruppeId: text('ordnungsgruppeId'),
       kreditorId: text('kreditorId'),
+      kundePersonId: text('kundePersonId'),
       rechnungsnummer: text('rechnungsnummer'),
       rechnungsdatum: text('rechnungsdatum'),
       brutto,
@@ -149,8 +150,9 @@ export async function aufbereitungErneutAktion(formular: FormData): Promise<void
 export async function ablageWechselnAktion(formular: FormData): Promise<void> {
   const dokumentId = String(formular.get('dokumentId') ?? '')
   const ziel = `/beleg/${dokumentId}`
+  let ergebnis: Awaited<ReturnType<typeof ablageWechseln>>
   try {
-    await ablageWechseln(
+    ergebnis = await ablageWechseln(
       await angemeldeterBenutzer(),
       dokumentId,
       String(formular.get('ablageId') ?? ''),
@@ -163,5 +165,11 @@ export async function ablageWechselnAktion(formular: FormData): Promise<void> {
     throw fehler
   }
   revalidatePath(ziel)
-  redirect(ziel)
+  const hinweis: Record<string, string> = {
+    gewechselt: `In „${ergebnis.nach}“ gelegt — der Beleg läuft jetzt im Ablauf dieser Ablage.`,
+    unveraendert: `In „${ergebnis.nach}“ gelegt — derselbe Ablauf gilt dort weiter.`,
+    entschieden: `In „${ergebnis.nach}“ gelegt — der begonnene Ablauf bleibt, weil der Beleg schon Stempel trägt.`,
+    kein_lauf: `In „${ergebnis.nach}“ gelegt.`,
+  }
+  redirect(`${ziel}?hinweis=${encodeURIComponent(hinweis[ergebnis.ablauf] ?? '')}`)
 }

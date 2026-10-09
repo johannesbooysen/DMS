@@ -25,6 +25,9 @@ export class NichtMoeglich extends Error {}
 export interface Definitionszeile {
   id: string
   belegart: string
+  /** Die Ablage, fuer die der Ablauf gilt -- null = Hausstandard der Belegart. */
+  ablage: string | null
+  ablageId: string | null
   ordnungsgruppe: string | null
   version: number
   status: string
@@ -47,18 +50,22 @@ export async function definitionenLaden(benutzerId: string): Promise<Definitions
     const { rows } = await c.query<Record<string, unknown>>(
       `select p.id, p.belegart, p.version, p.status, p.entwurf_von,
               b.name as entwurf_von_name, og.name as ordnungsgruppe,
+              p.ablage_id, ab.name as ablage,
               (select count(*) from dokument_lauf l
                 where l.definition_id = p.id and l.status in ('laufend','klaerung'))
                 as laufende_belege
          from prozessdefinition p
          left join benutzer b on b.id = p.entwurf_von
          left join ordnungsgruppe og on og.id = p.ordnungsgruppe_id
+         left join ablage ab on ab.id = p.ablage_id
         where p.mandant_id = dms.mein_mandant()
-        order by p.belegart, og.name nulls first, p.version desc`,
+        order by p.belegart, ab.name nulls first, og.name nulls first, p.version desc`,
     )
     return rows.map((z) => ({
       id: String(z['id']),
       belegart: String(z['belegart']),
+      ablage: z['ablage'] == null ? null : String(z['ablage']),
+      ablageId: z['ablage_id'] == null ? null : String(z['ablage_id']),
       ordnungsgruppe: z['ordnungsgruppe'] == null ? null : String(z['ordnungsgruppe']),
       version: Number(z['version']),
       status: String(z['status']),
@@ -79,132 +86,239 @@ export async function definitionenLaden(benutzerId: string): Promise<Definitions
 export async function entwurfAnlegen(benutzerId: string, vorlageId: string): Promise<string> {
   return alsBenutzer(benutzerId, async (c) => {
     await rechtPruefen(c)
+    return entwurfKopieren(c, vorlageId)
+  })
+}
 
-    const { rows: vorhandene } = await c.query<{ id: string; name: string | null }>(
-      `select p.id, b.name
-         from prozessdefinition p
-         join prozessdefinition v
-           on v.mandant_id = p.mandant_id and v.belegart = p.belegart
-          and v.ordnungsgruppe_id is not distinct from p.ordnungsgruppe_id
-         left join benutzer b on b.id = p.entwurf_von
-        where v.id = $1 and p.status = 'entwurf'`,
-      [vorlageId],
-    )
-    if (vorhandene.length > 0) {
-      throw new NichtMoeglich(
-        `Es gibt bereits einen Entwurf${vorhandene[0].name === null ? '' : ` (bei ${vorhandene[0].name})`}`,
-      )
+/**
+ * Einen Entwurf fuer eine Ablage anlegen -- als Kopie des Hausstandards der
+ * Belegart (Migration 20261009100000). Bis zur Aktivierung gilt der
+ * Standard weiter; der Entwurf steht sofort unter Ablaeufe.
+ */
+export async function entwurfFuerAblage(benutzerId: string, ablageId: string, belegart: string): Promise<string> {
+  return alsBenutzer(benutzerId, async (c) => {
+    await rechtPruefen(c)
+    const standard = await hausstandard(c, belegart)
+    if (standard === null) {
+      throw new NichtMoeglich(`Für die Belegart „${belegart}“ gibt es keinen aktiven Hausstandard, der sich kopieren ließe.`)
     }
+    return entwurfKopieren(c, standard, { ablageId })
+  })
+}
 
-    const { rows: neu } = await c.query<{ id: string }>(
-      `insert into prozessdefinition (mandant_id, belegart, ordnungsgruppe_id, version,
-                                      status, erstellt_von, entwurf_von, entwurf_seit)
-       select v.mandant_id, v.belegart, v.ordnungsgruppe_id,
-              (select coalesce(max(p.version), 0) + 1 from prozessdefinition p
-                where p.mandant_id = v.mandant_id and p.belegart = v.belegart
-                  and p.ordnungsgruppe_id is not distinct from v.ordnungsgruppe_id),
-              'entwurf', dms.mein_benutzer(), dms.mein_benutzer(), now()
-         from prozessdefinition v
-        where v.id = $1
-       returning id`,
-      [vorlageId],
+/** Der aktive Hausstandard einer Belegart: ohne Ablage, ohne Kategorie. */
+export async function hausstandard(c: PoolClient, belegart: string): Promise<string | null> {
+  const { rows } = await c.query<{ id: string }>(
+    `select id from prozessdefinition
+      where mandant_id = dms.mein_mandant() and belegart = $1 and status = 'aktiv'
+        and ablage_id is null and ordnungsgruppe_id is null
+      order by version desc limit 1`,
+    [belegart],
+  )
+  return rows[0]?.id ?? null
+}
+
+/**
+ * Legt einen Entwurf als Kopie einer bestehenden Fassung an -- auf der
+ * laufenden Verbindung, damit das Anlegen einer Ablage ihn in derselben
+ * Transaktion mitbringen kann. Rechte prueft der Aufrufer (Policy auf
+ * prozessdefinition bleibt die Grenze).
+ *
+ * Kopiert werden Stufen, Baum und Stempelzuordnung. Die Kennungen sind neu:
+ * Der Entwurf darf die Stufen der laufenden Fassung nicht teilen, sonst
+ * änderte eine Bearbeitung rückwirkend die Belege, die gerade unterwegs sind.
+ *
+ * Mit `ziel.ablageId` wird die Kopie zum Ablauf dieser Ablage (Fassung 1
+ * ihrer Geltung, ohne Kategorie); ohne Ziel bleibt die Geltung der Vorlage.
+ */
+export async function entwurfKopieren(
+  c: PoolClient,
+  vorlageId: string,
+  ziel: { ablageId: string } | null = null,
+): Promise<string> {
+  const { rows: vorhandene } = await c.query<{ id: string; name: string | null }>(
+    `select p.id, b.name
+       from prozessdefinition p
+       join prozessdefinition v
+         on v.mandant_id = p.mandant_id and v.belegart = p.belegart
+        and p.ordnungsgruppe_id is not distinct from case when $2::uuid is null then v.ordnungsgruppe_id else null end
+        and p.ablage_id is not distinct from coalesce($2::uuid, v.ablage_id)
+       left join benutzer b on b.id = p.entwurf_von
+      where v.id = $1 and p.status = 'entwurf'`,
+    [vorlageId, ziel?.ablageId ?? null],
+  )
+  if (vorhandene.length > 0) {
+    throw new NichtMoeglich(
+      `Es gibt bereits einen Entwurf${vorhandene[0].name === null ? '' : ` (bei ${vorhandene[0].name})`}`,
     )
-    const entwurfId = neu[0]?.id
-    if (entwurfId === undefined) throw new NichtMoeglich('Vorlage nicht gefunden')
+  }
 
-    // Stufen kopieren und die alte Kennung mitfuehren, damit Baum und
-    // Stempelzuordnung darauf abgebildet werden koennen.
-    const { rows: stufen } = await c.query<{ alt: string; neu: string }>(
-      `with kopie as (
-         insert into prozessstufe (definition_id, reihenfolge, parallelgruppe, stufentyp,
-                                   bezeichnung, pflicht, betrag_von, betrag_bis,
-                                   zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
-                                   eskalation_nach_stunden, eskalation_an, eskalation_an_rolle, vier_augen_pflicht)
-         select $2, s.reihenfolge, s.parallelgruppe, s.stufentyp, s.bezeichnung, s.pflicht,
-                s.betrag_von, s.betrag_bis, s.zustaendigkeit_typ, s.zustaendigkeit_ref,
-                s.sla_stunden, s.eskalation_nach_stunden, s.eskalation_an, s.eskalation_an_rolle, s.vier_augen_pflicht
-           from prozessstufe s
-          where s.definition_id = $1
-          order by s.reihenfolge
-         returning id, reihenfolge
-       )
-       select alt.id as alt, kopie.id as neu
-         from kopie
-         join prozessstufe alt
-           on alt.definition_id = $1 and alt.reihenfolge = kopie.reihenfolge`,
-      [vorlageId, entwurfId],
-    )
-    const stufenkarte = new Map(stufen.map((s) => [s.alt, s.neu]))
+  const { rows: neu } = await c.query<{ id: string }>(
+    `insert into prozessdefinition (mandant_id, belegart, ordnungsgruppe_id, ablage_id, version,
+                                    status, erstellt_von, entwurf_von, entwurf_seit)
+     select v.mandant_id, v.belegart,
+            case when $2::uuid is null then v.ordnungsgruppe_id else null end,
+            coalesce($2::uuid, v.ablage_id),
+            (select coalesce(max(p.version), 0) + 1 from prozessdefinition p
+              where p.mandant_id = v.mandant_id and p.belegart = v.belegart
+                and p.ordnungsgruppe_id is not distinct from case when $2::uuid is null then v.ordnungsgruppe_id else null end
+                and p.ablage_id is not distinct from coalesce($2::uuid, v.ablage_id)),
+            'entwurf', dms.mein_benutzer(), dms.mein_benutzer(), now()
+       from prozessdefinition v
+      where v.id = $1
+     returning id`,
+    [vorlageId, ziel?.ablageId ?? null],
+  )
+  const entwurfId = neu[0]?.id
+  if (entwurfId === undefined) throw new NichtMoeglich('Vorlage nicht gefunden')
 
-    // Stempelzuordnung mitnehmen
-    for (const [alt, neuId] of stufenkarte) {
-      await c.query(
-        `insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung)
-         select $2, pst.stempeltyp_id, pst.sortierung
-           from prozessstufe_stempeltyp pst where pst.stufe_id = $1`,
-        [alt, neuId],
-      )
-    }
+  // Stufen kopieren und die alte Kennung mitfuehren, damit Baum und
+  // Stempelzuordnung darauf abgebildet werden koennen.
+  const { rows: stufen } = await c.query<{ alt: string; neu: string }>(
+    `with kopie as (
+       insert into prozessstufe (definition_id, reihenfolge, parallelgruppe, stufentyp,
+                                 bezeichnung, pflicht, betrag_von, betrag_bis,
+                                 zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
+                                 eskalation_nach_stunden, eskalation_an, eskalation_an_rolle, vier_augen_pflicht,
+                                 faellig_aus, systemaktion)
+       select $2, s.reihenfolge, s.parallelgruppe, s.stufentyp, s.bezeichnung, s.pflicht,
+              s.betrag_von, s.betrag_bis, s.zustaendigkeit_typ, s.zustaendigkeit_ref,
+              s.sla_stunden, s.eskalation_nach_stunden, s.eskalation_an, s.eskalation_an_rolle, s.vier_augen_pflicht,
+              s.faellig_aus, s.systemaktion
+         from prozessstufe s
+        where s.definition_id = $1
+        order by s.reihenfolge
+       returning id, reihenfolge
+     )
+     select alt.id as alt, kopie.id as neu
+       from kopie
+       join prozessstufe alt
+         on alt.definition_id = $1 and alt.reihenfolge = kopie.reihenfolge`,
+    [vorlageId, entwurfId],
+  )
+  const stufenkarte = new Map(stufen.map((s) => [s.alt, s.neu]))
 
-    // Baum kopieren: erst die Knoten ohne Eltern, dann die Verweise setzen.
-    const { rows: knoten } = await c.query<{
-      id: string
-      eltern_id: string | null
-      reihenfolge: number
-      knotentyp: string
-      bedingung: unknown
-      stufe_id: string | null
-    }>(
-      `select id, eltern_id, reihenfolge, knotentyp, bedingung, stufe_id
-         from prozessknoten where definition_id = $1`,
-      [vorlageId],
-    )
-
-    // Von oben nach unten kopieren: Ein Knoten wird erst eingefuegt, wenn
-    // sein Elternteil schon eine neue Kennung hat.
-    //
-    // Der naheliegende Weg -- alle Knoten zuerst ohne Elternteil anlegen und
-    // die Verweise danach nachtragen -- scheitert an zwei Regeln des Schemas,
-    // und zwar zu Recht: Waehrenddessen haette die Definition mehrere
-    // Wurzeln, und mehrere Geschwister saessen auf derselben Position.
-    const knotenkarte = new Map<string, string>()
-    let offen = [...knoten]
-
-    while (offen.length > 0) {
-      const bereit = offen.filter(
-        (k) => k.eltern_id === null || knotenkarte.has(k.eltern_id),
-      )
-      if (bereit.length === 0) {
-        throw new NichtMoeglich('Der Baum der Vorlage hängt nicht zusammen')
-      }
-
-      for (const k of bereit) {
-        const { rows } = await c.query<{ id: string }>(
-          `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp,
-                                      bedingung, stufe_id)
-           values ($1, $2, $3, $4, $5, $6) returning id`,
-          [
-            entwurfId,
-            k.eltern_id === null ? null : knotenkarte.get(k.eltern_id),
-            k.reihenfolge,
-            k.knotentyp,
-            k.bedingung === null ? null : JSON.stringify(k.bedingung),
-            k.stufe_id === null ? null : (stufenkarte.get(k.stufe_id) ?? null),
-          ],
-        )
-        knotenkarte.set(k.id, rows[0].id)
-      }
-
-      offen = offen.filter((k) => !knotenkarte.has(k.id))
-    }
-
+  // Stempelzuordnung mitnehmen
+  for (const [alt, neuId] of stufenkarte) {
     await c.query(
-      `insert into prozessdefinition_ereignis (definition_id, art, benutzer_id, hinweis)
-       values ($1, 'angelegt', dms.mein_benutzer(), $2)`,
-      [entwurfId, `Kopie von Version ${vorlageId}`],
+      `insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung)
+       select $2, pst.stempeltyp_id, pst.sortierung
+         from prozessstufe_stempeltyp pst where pst.stufe_id = $1`,
+      [alt, neuId],
     )
+  }
 
-    return entwurfId
+  // Baum kopieren: erst die Knoten ohne Eltern, dann die Verweise setzen.
+  const { rows: knoten } = await c.query<{
+    id: string
+    eltern_id: string | null
+    reihenfolge: number
+    knotentyp: string
+    bedingung: unknown
+    stufe_id: string | null
+  }>(
+    `select id, eltern_id, reihenfolge, knotentyp, bedingung, stufe_id
+       from prozessknoten where definition_id = $1`,
+    [vorlageId],
+  )
+
+  // Von oben nach unten kopieren: Ein Knoten wird erst eingefuegt, wenn
+  // sein Elternteil schon eine neue Kennung hat.
+  //
+  // Der naheliegende Weg -- alle Knoten zuerst ohne Elternteil anlegen und
+  // die Verweise danach nachtragen -- scheitert an zwei Regeln des Schemas,
+  // und zwar zu Recht: Waehrenddessen haette die Definition mehrere
+  // Wurzeln, und mehrere Geschwister saessen auf derselben Position.
+  const knotenkarte = new Map<string, string>()
+  let offen = [...knoten]
+
+  while (offen.length > 0) {
+    const bereit = offen.filter(
+      (k) => k.eltern_id === null || knotenkarte.has(k.eltern_id),
+    )
+    if (bereit.length === 0) {
+      throw new NichtMoeglich('Der Baum der Vorlage hängt nicht zusammen')
+    }
+
+    for (const k of bereit) {
+      const { rows } = await c.query<{ id: string }>(
+        `insert into prozessknoten (definition_id, eltern_id, reihenfolge, knotentyp,
+                                    bedingung, stufe_id)
+         values ($1, $2, $3, $4, $5, $6) returning id`,
+        [
+          entwurfId,
+          k.eltern_id === null ? null : knotenkarte.get(k.eltern_id),
+          k.reihenfolge,
+          k.knotentyp,
+          k.bedingung === null ? null : JSON.stringify(k.bedingung),
+          k.stufe_id === null ? null : (stufenkarte.get(k.stufe_id) ?? null),
+        ],
+      )
+      knotenkarte.set(k.id, rows[0].id)
+    }
+
+    offen = offen.filter((k) => !knotenkarte.has(k.id))
+  }
+
+  await c.query(
+    `insert into prozessdefinition_ereignis (definition_id, art, benutzer_id, hinweis)
+     values ($1, 'angelegt', dms.mein_benutzer(), $2)`,
+    [entwurfId, ziel === null ? `Kopie von Version ${vorlageId}` : `Kopie des Hausstandards ${vorlageId} für eine Ablage`],
+  )
+
+  return entwurfId
+}
+
+/** Welcher Ablauf je Ablage und Belegart gilt -- fuer die Ablagenseite. */
+export interface Ablagenablauf {
+  ablageId: string
+  belegart: string
+  /** Der aktive Ablauf der Ablage selbst. */
+  eigener: { id: string; version: number } | null
+  /** Ein Entwurf der Ablage, noch nicht aktiv. */
+  entwurf: { id: string; version: number } | null
+  /** Der Hausstandard der Belegart, der gilt, solange es keinen eigenen gibt. */
+  standard: { id: string; version: number } | null
+}
+
+export async function ablagenablaeufe(benutzerId: string): Promise<Ablagenablauf[]> {
+  return alsBenutzer(benutzerId, async (c) => {
+    const { rows } = await c.query<{
+      ablage_id: string
+      belegart: string
+      eigener_id: string | null
+      eigener_version: number | null
+      entwurf_id: string | null
+      entwurf_version: number | null
+      standard_id: string | null
+      standard_version: number | null
+    }>(
+      `select a.id as ablage_id, b.belegart,
+              e.id as eigener_id, e.version as eigener_version,
+              w.id as entwurf_id, w.version as entwurf_version,
+              s.id as standard_id, s.version as standard_version
+         from ablage a
+         cross join lateral unnest(a.belegarten) as b(belegart)
+         left join lateral (select id, version from prozessdefinition p
+                             where p.ablage_id = a.id and p.belegart = b.belegart and p.status = 'aktiv'
+                             order by version desc limit 1) e on true
+         left join lateral (select id, version from prozessdefinition p
+                             where p.ablage_id = a.id and p.belegart = b.belegart and p.status = 'entwurf'
+                             order by version desc limit 1) w on true
+         left join lateral (select id, version from prozessdefinition p
+                             where p.mandant_id = a.mandant_id and p.belegart = b.belegart
+                               and p.ablage_id is null and p.ordnungsgruppe_id is null and p.status = 'aktiv'
+                             order by version desc limit 1) s on true
+        where a.aktiv
+        order by a.sortierung, b.belegart`,
+    )
+    return rows.map((z) => ({
+      ablageId: z.ablage_id,
+      belegart: z.belegart,
+      eigener: z.eigener_id === null ? null : { id: z.eigener_id, version: Number(z.eigener_version) },
+      entwurf: z.entwurf_id === null ? null : { id: z.entwurf_id, version: Number(z.entwurf_version) },
+      standard: z.standard_id === null ? null : { id: z.standard_id, version: Number(z.standard_version) },
+    }))
   })
 }
 
@@ -393,6 +507,7 @@ export async function entwurfAktivieren(
           and alt.mandant_id = neu.mandant_id
           and alt.belegart = neu.belegart
           and alt.ordnungsgruppe_id is not distinct from neu.ordnungsgruppe_id
+          and alt.ablage_id is not distinct from neu.ablage_id
           and alt.status = 'aktiv'`,
       [definitionId],
     )

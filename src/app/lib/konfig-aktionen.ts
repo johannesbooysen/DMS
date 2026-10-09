@@ -18,6 +18,7 @@ import {
   NichtErlaubt,
   NichtMoeglich,
   stufeVierAugenSetzen,
+  entwurfFuerAblage,
 } from '@/workflow/konfiguration'
 import { stufeAendern, stufeAnlegen, stufeEntfernen, type Stufeneingabe } from '@/workflow/stufen'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
@@ -34,6 +35,23 @@ async function versuchen(ziel: string, aktion: () => Promise<void>): Promise<nev
   }
   revalidatePath(ziel)
   redirect(ziel)
+}
+
+/** Ein eigener Ablauf fuer eine Ablage: Kopie des Hausstandards (Migration 20261009100000). */
+export async function entwurfFuerAblageAktion(formular: FormData): Promise<void> {
+  const ablageId = String(formular.get('ablageId') ?? '')
+  const belegart = String(formular.get('belegart') ?? '')
+  let neu = ''
+  try {
+    neu = await entwurfFuerAblage(await angemeldeterBenutzer(), ablageId, belegart)
+  } catch (fehler) {
+    if (fehler instanceof NichtErlaubt || fehler instanceof NichtMoeglich) {
+      redirect(`/stammdaten/ablagen?fehler=${encodeURIComponent(fehler.message)}`)
+    }
+    throw fehler
+  }
+  revalidatePath('/konfiguration')
+  redirect(`/konfiguration/${neu}`)
 }
 
 export async function entwurfAnlegenAktion(formular: FormData): Promise<void> {
@@ -133,6 +151,7 @@ function stufeneingabe(formular: FormData): Stufeneingabe {
     eskalationNachStunden: zahl('eskalationNachStunden'),
     eskalationAn: String(formular.get('eskalationAn') ?? '') || null,
     eskalationAnRolle: String(formular.get('eskalationAnRolle') ?? '') || null,
+    faelligAus: String(formular.get('faelligAus') ?? 'frist'),
   }
 }
 

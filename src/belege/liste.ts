@@ -38,6 +38,8 @@ export interface Belegzeile {
   status: string
   ampel: string | null
   kreditor: string | null
+  /** Kundenrechnung: der Kunde (Person) statt des Kreditors. */
+  kunde: string | null
   rechnungsnummer: string | null
   brutto: number | null
   /** Zweite Belegart: Wer geschrieben hat und worum es geht. */
@@ -102,7 +104,7 @@ const SPALTEN = `
   o.objektnummer,
   og.name as og_name, og.farbe as og_farbe,
   sg.name as sg_name, sg.farbe as sg_farbe,
-  k.name as kreditor, f.rechnungsnummer, f.brutto,
+  k.name as kreditor, kp.name as kunde, f.rechnungsnummer, f.brutto,
   sv.korrespondent, sv.betreff
 `
 
@@ -113,6 +115,7 @@ const VERBINDUNGEN = `
   left join spezialgebiet sg on sg.id = d.spezialgebiet_id
   left join rechnung_fakten f on f.dokument_id = d.id
   left join kreditor k on k.id = f.kreditor_id
+  left join person kp on kp.id = f.kunde_person_id
   left join schriftverkehr_fakten sv on sv.dokument_id = d.id
 `
 
@@ -132,6 +135,7 @@ function zeile(z: Record<string, unknown>): Belegzeile {
     status: String(z['status']),
     ampel: text(z['ampel_gesamt']),
     kreditor: text(z['kreditor']),
+    kunde: text(z['kunde']),
     rechnungsnummer: text(z['rechnungsnummer']),
     brutto: z['brutto'] == null ? null : Number(z['brutto']),
     objektId: text(z['objekt_id']),

@@ -56,6 +56,9 @@ const DEFINITION_AKTIV = '65000000-0000-0000-0000-000000000001'
 const SEED_DEFINITIONEN = [
   DEFINITION_AKTIV,
   '65000000-0000-0000-0000-000000000002',
+  '65000000-0000-0000-0000-000000000003',
+  '65000000-0000-0000-0000-000000000004',
+  '65000000-0000-0000-0000-000000000005',
 ]
 
 afterEach(async () => {
@@ -74,7 +77,10 @@ afterEach(async () => {
     await c.query(
       `update prozessdefinition
           set status = 'abgeloest', entwurf_von = null, entwurf_seit = null, aktiv_bis = now()
-        where id <> all($1::uuid[]) and status in ('entwurf', 'aktiv')`,
+        where id <> all($1::uuid[]) and status in ('entwurf', 'aktiv')
+          -- Nur Hausstandards: Ablaeufe einer Ablage legt dieser Test nie an,
+          -- aber eine parallel laufende Datei (ablage-ablauf.test) tut es.
+          and ablage_id is null`,
       [SEED_DEFINITIONEN],
     )
     await c.query(

@@ -77,6 +77,8 @@ export interface Stufeneingabe {
   eskalationNachStunden: number | null
   eskalationAn: string | null
   eskalationAnRolle: string | null
+  /** Faelligkeit: nach der Frist oder am Zahlungsziel der Rechnung (Migration 20261009100000). */
+  faelligAus?: string | null
 }
 
 export interface Auswahl {
@@ -228,11 +230,13 @@ async function stufeneingabePruefen(c: PoolClient, e: Stufeneingabe): Promise<Ge
       throw new NichtMoeglich('Mindestens ein gewählter Stempel gehört nicht zu diesem Haus oder ist inaktiv.')
     }
   }
+  const faelligAus = e.faelligAus === 'zahlungsziel' ? 'zahlungsziel' : 'frist'
   return {
     bezeichnung,
     stufentyp: e.stufentyp,
     zustaendigkeitTyp: typ,
     zustaendigkeitRef: ref,
+    faelligAus,
     betragVon,
     betragBis,
     pflicht: e.pflicht,
@@ -283,9 +287,10 @@ export async function stufeAnlegen(
     const { rows: stufe } = await c.query<{ id: string }>(
       `insert into prozessstufe (definition_id, reihenfolge, stufentyp, bezeichnung, pflicht,
                                  betrag_von, betrag_bis, zustaendigkeit_typ, zustaendigkeit_ref, sla_stunden,
-                                 systemaktion, eskalation_nach_stunden, eskalation_an, eskalation_an_rolle)
+                                 systemaktion, eskalation_nach_stunden, eskalation_an, eskalation_an_rolle,
+                                 faellig_aus)
        values ($1, (select coalesce(max(reihenfolge), 0) + 1 from prozessstufe where definition_id = $1),
-               $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        returning id`,
       [
         definitionId,
@@ -301,6 +306,7 @@ export async function stufeAnlegen(
         e.eskalationNachStunden,
         e.eskalationAn,
         e.eskalationAnRolle,
+        e.faelligAus,
       ],
     )
     const stufeId = stufe[0]?.id
@@ -332,7 +338,8 @@ export async function stufeAendern(
       `update prozessstufe
           set stufentyp = $3, bezeichnung = $4, pflicht = $5, betrag_von = $6, betrag_bis = $7,
               zustaendigkeit_typ = $8, zustaendigkeit_ref = $9, sla_stunden = $10, systemaktion = $11,
-              eskalation_nach_stunden = $12, eskalation_an = $13, eskalation_an_rolle = $14
+              eskalation_nach_stunden = $12, eskalation_an = $13, eskalation_an_rolle = $14,
+              faellig_aus = $15
         where id = $1 and definition_id = $2`,
       [
         stufeId,
@@ -349,6 +356,7 @@ export async function stufeAendern(
         e.eskalationNachStunden,
         e.eskalationAn,
         e.eskalationAnRolle,
+        e.faelligAus,
       ],
     )
     if (rowCount === 0) throw new NichtMoeglich('Stufe nicht gefunden')

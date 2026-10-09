@@ -252,11 +252,27 @@ async function aufgabenAnlegen(
 ): Promise<string[]> {
   const angelegt: string[] = []
 
+  // Faelligkeit aus dem Zahlungsziel (Migration 20261009100000): nur holen,
+  // wenn eine Stufe sie braucht; ist es noch unbekannt, gilt die Frist, und
+  // der Trigger rechnung_fakten_zahlungsziel_faelligkeit zieht nach.
+  let zahlungsziel: string | null | undefined
+  const zahlungszielLaden = async (): Promise<string | null> => {
+    if (zahlungsziel === undefined) {
+      const { rows } = await c.query<{ z: string | null }>(
+        "select to_char(zahlungsziel, 'YYYY-MM-DD') as z from rechnung_fakten where dokument_id = $1",
+        [dokumentId],
+      )
+      zahlungsziel = rows[0]?.z ?? null
+    }
+    return zahlungsziel
+  }
+
   for (const blatt of blaetter) {
     const stufe = blatt.stufe
     if (stufe === null) continue
 
     const gilt = stufeGiltFuer(stufe, kontext)
+    const faelligAus = gilt && stufe.faelligAus === 'zahlungsziel' ? await zahlungszielLaden() : null
 
     /*
      * Eine Systemaktion stempelt niemand: Die Aufgabe entsteht gleich als
@@ -288,13 +304,14 @@ async function aufgabenAnlegen(
                             zugewiesen_rolle, wegen_delegation, faellig_am, status,
                             erledigt_am)
        values ($1, $2, $3, $4, $5, $6,
-               case when $7::integer is null then null
-                    else now() + ($7::integer * interval '1 hour') end,
+               coalesce($9::date::timestamptz,
+                        case when $7::integer is null then null
+                             else now() + ($7::integer * interval '1 hour') end),
                $8, case when $8 = 'entfallen' then now() else null end)
        returning id`,
       [laufId, stufe.id, traeger.benutzerId, traeger.gruppeId, traeger.rolleId,
        traeger.delegationId ?? null,
-       gilt ? stufe.slaStunden : null, gilt ? 'offen' : 'entfallen'],
+       gilt ? stufe.slaStunden : null, gilt ? 'offen' : 'entfallen', faelligAus],
     )
     const id = rows[0]?.id
     if (id !== undefined) angelegt.push(id)
@@ -435,6 +452,54 @@ async function standLaden(
  * aktivieren. Ohne aktive Definition entsteht kein Lauf -- das Dokument
  * bleibt liegen, statt in einem undefinierten Zustand zu landen.
  */
+/**
+ * Welcher Ablauf gilt fuer einen Beleg -- **die eine Stelle** dafuer
+ * (Migration 20261009100000). Laufstart, Belegartwechsel und Ablagewechsel
+ * fragen hier; drei Stellen, die denselben Ablauf waehlen, waeren drei
+ * Stellen, die ihn verschieden waehlen.
+ *
+ * Rangfolge, Entscheidung des Hauses:
+ *   1. ein Ablauf der **Ablage** fuer diese Belegart (Ablage vor Kategorie),
+ *      darin eine Kategorie, die ihn benennt oder ihm zugeordnet ist;
+ *   2. sonst der Hausstandard der Belegart -- wieder mit Kategorie davor.
+ * Ein Ablauf einer **fremden** Ablage kommt nie in Frage, auch wenn eine
+ * Kategorie ihn benennt. `vorgabe` erlaubt, fuer eine andere Belegart oder
+ * Ablage zu fragen, bevor der Beleg umgestellt wird.
+ *
+ * Die Kategorie benennt ihren Ablauf (`ordnungsgruppe.prozessdefinition_id`)
+ * -- die einfachste denkbare Steuerung, ein Auswahlfeld statt
+ * ueberlappender Filter (docs/analyse-amagno-bestand.md). Bedingungen
+ * bleiben als Verzweigung **innerhalb** eines Ablaufs.
+ */
+export async function ablaufWaehlen(
+  c: PoolClient,
+  dokumentId: string,
+  vorgabe: { belegart?: string | null; ablageId?: string | null } = {},
+): Promise<{ id: string; version: number } | null> {
+  const { rows } = await c.query<{ id: string; version: number }>(
+    `select p.id, p.version
+       from dokument d
+       left join ordnungsgruppe og
+              on og.id = d.ordnungsgruppe_id
+             and og.mandant_id = d.mandant_id
+       join prozessdefinition p
+         on p.mandant_id = d.mandant_id
+        and p.belegart = coalesce($2, d.belegart)
+        and p.status = 'aktiv'
+        and (p.ablage_id = coalesce($3, d.ablage_id) or p.ablage_id is null)
+        and (p.id = og.prozessdefinition_id
+             or p.ordnungsgruppe_id = d.ordnungsgruppe_id
+             or p.ordnungsgruppe_id is null)
+      where d.id = $1
+      order by (p.ablage_id is not null) desc,
+               coalesce(p.id = og.prozessdefinition_id, false) desc,
+               p.ordnungsgruppe_id nulls last, p.version desc
+      limit 1`,
+    [dokumentId, vorgabe.belegart ?? null, vorgabe.ablageId ?? null],
+  )
+  return rows[0] ?? null
+}
+
 export async function laufStarten(
   c: PoolClient,
   dokumentId: string,
@@ -461,27 +526,8 @@ export async function laufStarten(
    * einen Schriftverkehrsablauf zeigt, waere ein Konfigurationsfehler, und
    * ein Beleg im falschen Ablauf faellt erst drei Stufen spaeter auf.
    */
-  const { rows: def } = await c.query<{ id: string; version: number }>(
-    `select p.id, p.version
-       from dokument d
-       left join ordnungsgruppe og
-              on og.id = d.ordnungsgruppe_id
-             and og.mandant_id = d.mandant_id
-       join prozessdefinition p
-         on p.mandant_id = d.mandant_id
-        and p.belegart = d.belegart
-        and p.status = 'aktiv'
-        and (p.id = og.prozessdefinition_id
-             or p.ordnungsgruppe_id = d.ordnungsgruppe_id
-             or p.ordnungsgruppe_id is null)
-      where d.id = $1
-      order by coalesce(p.id = og.prozessdefinition_id, false) desc,
-               p.ordnungsgruppe_id nulls last, p.version desc
-      limit 1`,
-    [dokumentId],
-  )
-  const definition = def[0]
-  if (definition === undefined) return null
+  const definition = await ablaufWaehlen(c, dokumentId)
+  if (definition === null) return null
 
   const wurzel = await baumLaden(c, definition.id)
   if (wurzel === null) return null
@@ -663,13 +709,40 @@ export async function belegartWechseln(
   quelle: 'erkannt' | 'mensch',
   begruendung: string,
 ): Promise<Belegartwechsel> {
-  const { rows } = await c.query<{ belegart: string; belegart_quelle: string; mandant_id: string }>(
-    'select belegart, belegart_quelle, mandant_id from dokument where id = $1',
+  const { rows } = await c.query<{
+    belegart: string
+    belegart_quelle: string
+    mandant_id: string
+    ablage_id: string
+    ablage_quelle: string
+    ablage_name: string
+    ablage_belegarten: string[]
+  }>(
+    `select d.belegart, d.belegart_quelle, d.mandant_id, d.ablage_id, d.ablage_quelle,
+            a.name as ablage_name, a.belegarten as ablage_belegarten
+       from dokument d join ablage a on a.id = d.ablage_id
+      where d.id = $1`,
     [dokumentId],
   )
   const d = rows[0]
   if (d === undefined) return 'unveraendert'
   if (quelle === 'erkannt' && d.belegart_quelle === 'mensch') return 'unveraendert'
+
+  /*
+   * Die Ablage begrenzt die Belegart (Migration 20261009100000): Hat ein
+   * Mensch den Beleg in "Kundenrechnungen" gelegt, macht die Erkennung aus
+   * ihm keine Lieferantenrechnung -- sie saehe eine Rechnungsnummer und
+   * stellte um, und der Beleg liefe im falschen Ablauf in der richtigen
+   * Ablage. Ein Mensch darf die Belegart trotzdem aendern; dann folgt die
+   * Ablage, wenn sie aus dem Eingang stammt.
+   */
+  if (quelle === 'erkannt' && d.ablage_quelle === 'mensch' && !d.ablage_belegarten.includes(neu)) {
+    await c.query('update dokument set belegart_begruendung = $2 where id = $1', [
+      dokumentId,
+      `${begruendung} — nicht umgestellt, die Ablage „${d.ablage_name}“ kennt diese Belegart nicht`,
+    ])
+    return 'unveraendert'
+  }
 
   if (d.belegart === neu) {
     await c.query('update dokument set belegart_quelle = $2, belegart_begruendung = $3 where id = $1', [
@@ -694,15 +767,20 @@ export async function belegartWechseln(
     return 'entschieden'
   }
 
-  const { rows: ablauf } = await c.query<{ id: string }>(
-    `select id from prozessdefinition where mandant_id = $1 and belegart = $2 and status = 'aktiv' limit 1`,
-    [d.mandant_id, neu],
+  // Wohin der Beleg kommt: Die Ablage folgt der Belegart, solange sie aus
+  // dem Eingang stammt (Migration 20261006150000); eine gewaehlte bleibt.
+  const { rows: ziel } = await c.query<{ ablage_id: string | null }>(
+    `select case when $3 = 'eingang' then dms.ablage_fuer($1, $2) else null end as ablage_id`,
+    [d.mandant_id, neu, d.ablage_quelle],
   )
-  // Ein Ablauf ohne Stufenbaum ist keiner: Gefunden am Schriftverkehr, dessen
-  // Stufen ohne Knoten dastanden -- die Belegart waere umgestellt worden und
-  // der Lauf nicht, und der Beleg haette im falschen Ablauf gestanden.
-  const wurzel = ablauf[0] === undefined ? null : await baumLaden(c, ablauf[0].id)
-  if (ablauf[0] === undefined || wurzel === null) {
+  const zielAblage = ziel[0]?.ablage_id ?? d.ablage_id
+
+  // Der Ablauf der Zielablage fuer die neue Belegart -- dieselbe Wahl wie
+  // beim Laufstart (ablaufWaehlen). Ein Ablauf ohne Stufenbaum ist keiner:
+  // Gefunden am Schriftverkehr, dessen Stufen ohne Knoten dastanden.
+  const ablauf = await ablaufWaehlen(c, dokumentId, { belegart: neu, ablageId: zielAblage })
+  const wurzel = ablauf === null ? null : await baumLaden(c, ablauf.id)
+  if (ablauf === null || wurzel === null) {
     await c.query('update dokument set belegart_begruendung = $2 where id = $1', [
       dokumentId,
       `${begruendung} — nicht umgestellt, für diese Belegart gibt es keinen aktiven Ablauf`,
@@ -711,15 +789,10 @@ export async function belegartWechseln(
   }
 
   await c.query(
-    'update dokument set belegart = $2, belegart_quelle = $3, belegart_begruendung = $4 where id = $1',
-    [dokumentId, neu, quelle, begruendung],
-  )
-  // Die Ablage folgt der Belegart -- aber nur, solange sie aus dem Eingang
-  // stammt. Hat ein Mensch sie gewaehlt, bleibt sie (Migration 20261006150000).
-  await c.query(
-    `update dokument set ablage_id = dms.ablage_fuer(mandant_id, belegart)
-      where id = $1 and ablage_quelle = 'eingang'`,
-    [dokumentId],
+    `update dokument
+        set belegart = $2, belegart_quelle = $3, belegart_begruendung = $4, ablage_id = $5
+      where id = $1`,
+    [dokumentId, neu, quelle, begruendung, zielAblage],
   )
 
   /*
@@ -729,7 +802,7 @@ export async function belegartWechseln(
    * neuen entstehen wie beim Start. Ein Bestandsbeleg (Uebernahme) hat
    * keinen Lauf und bekommt durch die Belegart auch keinen.
    */
-  await laufNeuAufsetzen(c, dokumentId, ablauf[0].id)
+  await laufNeuAufsetzen(c, dokumentId, ablauf.id)
   return 'gewechselt'
 }
 

@@ -93,8 +93,14 @@ const NAMEN: Record<ErkennbareBelegart, string> = {
   schriftverkehr: 'Schriftverkehr',
 }
 
+/** Belegarten, die die Erkennung nicht vergibt, aber die Anzeige kennt. */
+const WEITERE_NAMEN: Record<string, string> = {
+  kundenrechnung: 'Kundenrechnung',
+  sonstiges: 'Sonstiges',
+}
+
 export function belegartName(belegart: string): string {
-  return (NAMEN as Record<string, string>)[belegart] ?? belegart
+  return (NAMEN as Record<string, string>)[belegart] ?? WEITERE_NAMEN[belegart] ?? belegart
 }
 
 export function belegartErkennen(seiten: ReadonlyArray<{ seite: number; text: string }>): Belegartvorschlag {

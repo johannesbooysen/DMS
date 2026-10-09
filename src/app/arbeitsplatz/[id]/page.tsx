@@ -145,7 +145,7 @@ export default async function Aufgabe({
           />
         )}
 
-        {nachtragNoetig({ objektnummer: zeile.objektnummer, kreditor: zeile.kreditor, belegart: kopf?.belegart ?? null }) && (
+        {nachtragNoetig({ objektnummer: zeile.objektnummer, kreditor: zeile.kreditor, kunde: zeile.kunde, belegart: kopf?.belegart ?? null }) && (
           <Nachtragsformular
             dokumentId={zeile.dokumentId}
             aufgabeId={zeile.aufgabeId}

@@ -112,6 +112,7 @@ function Baustein({
               }`,
               stufe.betragVon !== null && `ab ${stufe.betragVon} EUR`,
               stufe.slaStunden !== null && `${stufe.slaStunden} h`,
+              stufe.faelligAus === 'zahlungsziel' && 'fällig am Zahlungsziel',
               stufe.pflicht ? 'Pflicht' : 'freiwillig',
               stufe.vierAugenPflicht && 'Vier Augen',
               stufe.eskalationNachStunden !== null &&

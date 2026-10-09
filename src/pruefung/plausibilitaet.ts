@@ -330,12 +330,16 @@ export async function plausibilitaetPruefen(
   // Verbindung, und eine Verbindung führt genau eine Abfrage zur Zeit. pg
   // stellt sie zwar in eine Schlange, warnt aber davor -- ab pg 9 ist es ein
   // Fehler. Nebenläufig gewonnen wäre hier ohnehin nichts.
+  // Eine Kundenrechnung (Migration 20261009100000) hat keinen Kreditor und
+  // keine Vorsteuer: Rechnungssteller ist das Haus. Die Pruefungen, die
+  // einen Kreditor voraussetzen, haben dort nichts zu finden.
+  const kundenrechnung = beleg.belegart === 'kundenrechnung'
   const moegliche: Array<Befund | null> = [
     await ibanPruefen(c, beleg),
     await dublettePruefen(c, beleg),
     await vertragPruefen(c, beleg),
-    kreditorPruefen(beleg),
-    pflichtangabenPruefen(beleg),
+    kundenrechnung ? null : kreditorPruefen(beleg),
+    kundenrechnung ? null : pflichtangabenPruefen(beleg),
     betragsprobePruefen(beleg),
   ]
 

@@ -29,6 +29,7 @@ function Fassungstabelle({ zeilen, darfAendern }: { zeilen: Definitionszeile[]; 
       <thead>
         <tr style={{ borderBottom: '1px solid var(--farbe-linie-stark)', textAlign: 'left' }}>
           <th>Belegart</th>
+          <th>Ablage</th>
           <th>Ordnungsgruppe</th>
           <th>Fassung</th>
           <th>Zustand</th>
@@ -40,6 +41,7 @@ function Fassungstabelle({ zeilen, darfAendern }: { zeilen: Definitionszeile[]; 
         {zeilen.map((f) => (
           <tr key={f.id} style={{ borderBottom: '1px solid var(--farbe-linie)' }}>
             <td>{f.belegart}</td>
+            <td>{f.ablage ?? <span className="leise">Hausstandard</span>}</td>
             <td>{f.ordnungsgruppe ?? 'alle'}</td>
             <td>
               <a href={`/konfiguration/${f.id}`}>Version {f.version}</a>

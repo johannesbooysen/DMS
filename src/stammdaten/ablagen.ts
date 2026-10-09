@@ -12,9 +12,10 @@
  */
 
 import { alsBenutzer } from '../db'
+import { entwurfKopieren, hausstandard } from '../workflow/konfiguration'
 import { mussGewirktHaben, NichtErlaubt, NichtMoeglich, type Eingaben } from './index'
 
-export const BELEGARTEN = ['rechnung', 'gutschrift', 'mahnung', 'schriftverkehr', 'sonstiges'] as const
+export const BELEGARTEN = ['rechnung', 'gutschrift', 'mahnung', 'kundenrechnung', 'schriftverkehr', 'sonstiges'] as const
 
 /**
  * Rechte, die sich je Ablage vergeben lassen -- genau die, die je Ablage
@@ -111,21 +112,47 @@ export async function ablageAnlegen(benutzerId: string, f: Eingaben): Promise<vo
   const beschreibung = (f['beschreibung'] ?? '').trim()
   const standard = f['standard'] === 'ja'
   return alsBenutzer(benutzerId, async (c) => {
+    let neu: string | undefined
     try {
       if (standard) {
         await c.query('update ablage set ist_standard = false where ist_standard')
       }
-      await c.query(
+      const { rows } = await c.query<{ id: string }>(
         `insert into ablage (mandant_id, name, kurzcode, beschreibung, belegarten, ist_standard,
                              sortierung)
          values (dms.mein_mandant(), $1, $2, $3, $4, $5,
-                 coalesce((select max(sortierung) from ablage), 0) + 10)`,
+                 coalesce((select max(sortierung) from ablage), 0) + 10)
+         returning id`,
         [name, kurzcode, beschreibung === '' ? null : beschreibung, belegarten, standard],
       )
+      neu = rows[0]?.id
     } catch (fehler) {
       schreibfehler(fehler)
     }
+    if (neu !== undefined) await entwuerfeMitbringen(c, neu, belegarten)
   })
+}
+
+/**
+ * Jede Belegart der Ablage bekommt einen Entwurf als Kopie des Hausstandards
+ * (Migration 20261009100000) -- sofort unter Ablaeufe bearbeitbar; bis zur
+ * Aktivierung gilt der Standard. Ohne das Recht, Ablaeufe zu konfigurieren,
+ * entsteht kein Entwurf, und die Ablage entsteht trotzdem: Der Entwurf ist
+ * ein Angebot, kein Bestandteil. Ein Sicherungspunkt je Belegart, weil ein
+ * abgewiesener Insert sonst die ganze Transaktion verdirbt.
+ */
+async function entwuerfeMitbringen(c: import('pg').PoolClient, ablageId: string, belegarten: string[]): Promise<void> {
+  for (const belegart of belegarten) {
+    const standard = await hausstandard(c, belegart)
+    if (standard === null) continue
+    await c.query('savepoint entwurf')
+    try {
+      await entwurfKopieren(c, standard, { ablageId })
+      await c.query('release savepoint entwurf')
+    } catch {
+      await c.query('rollback to savepoint entwurf')
+    }
+  }
 }
 
 /** Belegarten und Beschreibung einer Ablage neu setzen. */
@@ -134,11 +161,15 @@ export async function ablageAendern(benutzerId: string, f: Eingaben): Promise<vo
   const belegarten = belegartenLesen(f['belegarten'])
   const beschreibung = (f['beschreibung'] ?? '').trim()
   return alsBenutzer(benutzerId, async (c) => {
+    const { rows: vorher } = await c.query<{ belegarten: string[] }>('select belegarten from ablage where id = $1', [id])
     const { rowCount } = await c.query(
       'update ablage set belegarten = $2, beschreibung = $3 where id = $1',
       [id, belegarten, beschreibung === '' ? null : beschreibung],
     )
     mussGewirktHaben(rowCount ?? 0)
+    // Eine neu hinzugekommene Belegart bekommt ihren Entwurf wie beim Anlegen.
+    const alt = new Set(vorher[0]?.belegarten ?? [])
+    await entwuerfeMitbringen(c, id, belegarten.filter((b) => !alt.has(b)))
   })
 }
 

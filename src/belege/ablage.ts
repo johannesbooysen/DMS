@@ -12,15 +12,19 @@
  */
 
 import { alsBenutzer } from '../db'
+import { ablaufWaehlen, laufNeuAufsetzen } from '../workflow/engine'
 
 export class AblagewechselAbgelehnt extends Error {}
+
+/** Was mit dem Lauf geschah (Migration 20261009100000). */
+export type Ablaufwechsel = 'gewechselt' | 'unveraendert' | 'entschieden' | 'kein_lauf'
 
 export async function ablageWechseln(
   benutzerId: string,
   dokumentId: string,
   ablageId: string,
   grund: string,
-): Promise<{ von: string; nach: string }> {
+): Promise<{ von: string; nach: string; ablauf: Ablaufwechsel }> {
   const begruendung = grund.trim()
   if (begruendung === '') throw new AblagewechselAbgelehnt('Ein Ablagewechsel braucht eine Begründung.')
   // Kein Formularwert in einem uuid-Vergleich: Ein leeres Feld waere sonst
@@ -57,6 +61,24 @@ export async function ablageWechseln(
        values ($1, 'ablage', $2, $3, dms.mein_benutzer(), 'einmalig')`,
       [dokumentId, `${z.alt} (${z.alt_id})`, `${z.neu} (${ablageId}) — ${begruendung}`],
     )
-    return { von: z.alt, nach: z.neu }
+
+    /*
+     * Der Lauf folgt der Ablage (Migration 20261009100000): Gilt in der neuen
+     * Ablage ein anderer Ablauf, werden die offenen Aufgaben neu aufgesetzt
+     * -- solange keine Entscheidung im Lauf liegt. Traegt der Beleg schon
+     * Stempel, bleibt der begonnene Weg; die Belegansicht sagt das.
+     */
+    let ablauf: Ablaufwechsel = 'unveraendert'
+    const neu = await ablaufWaehlen(c, dokumentId)
+    const { rows: lauf } = await c.query<{ definition_id: string }>(
+      `select definition_id from dokument_lauf where dokument_id = $1 and status in ('laufend','klaerung')`,
+      [dokumentId],
+    )
+    if (lauf[0] === undefined) ablauf = 'kein_lauf'
+    else if (neu !== null && neu.id !== lauf[0].definition_id) {
+      const ergebnis = await laufNeuAufsetzen(c, dokumentId, neu.id)
+      ablauf = ergebnis === 'neu' ? 'gewechselt' : ergebnis === 'entschieden' ? 'entschieden' : 'kein_lauf'
+    }
+    return { von: z.alt, nach: z.neu, ablauf }
   })
 }

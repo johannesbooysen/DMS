@@ -9,7 +9,7 @@ vorhanden ist. Das *Warum* steht in [konzept.md](konzept.md) und den
 [Handbuch](handbuch.md).
 
 Auf einen Blick: 85 Tabellen, 208 Policies,
-134 Module, 1126 Testfaelle in 71 Dateien,
+134 Module, 1135 Testfaelle in 72 Dateien,
 10 Architekturentscheidungen, 3 markierte offene Stellen.
 
 ## Befehle
@@ -650,6 +650,11 @@ Tabellen: `dms`
 
 Policies: 2
 
+### `supabase/migrations/20261009100000_ablage_ablauf_kundenrechnung.sql`
+
+Jede Ablage hat ihren Ablauf -- und Kundenrechnungen als dritte Ablage
+
+
 ## Module
 
 | Datei | Aufgabe |
@@ -793,6 +798,7 @@ Policies: 2
 
 | Datei | Faelle | Gruppen |
 |---|---|---|
+| [`tests/ablage-ablauf.test.ts`](../tests/ablage-ablauf.test.ts) | 9 | Welcher Ablauf gilt, Ablagewechsel und Belegart, Kundenrechnung |
 | [`tests/ablage-s3.test.ts`](../tests/ablage-s3.test.ts) | 3 | Schreiben und Lesen, Object Lock, Wer sperren kann, Einrichtung |
 | [`tests/ablage.test.ts`](../tests/ablage.test.ts) | 21 | Ablage eines Belegs, Sichtbarkeit je Ablage, Ablagen pflegen, Beleg in eine andere Ablage legen |
 | [`tests/anmeldung.test.ts`](../tests/anmeldung.test.ts) | 37 | Sitzung, Eine Sitzung verfaellt, Wer keine Sitzung bekommt, Identitaet und Benutzer, Der Zustand zwischen Hinweg und Rueckweg, Weiterleitungsziel, Anbieterwahl, Entwicklungsanbieter, Protokoll, Sichtbarkeit der Sitzungen |

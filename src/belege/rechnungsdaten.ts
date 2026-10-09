@@ -39,7 +39,7 @@ export interface Rechnungsdaten {
   fehlendePflicht: string[]
 }
 
-const BELEGARTEN_MIT_FAKTEN = new Set(['rechnung', 'gutschrift', 'mahnung'])
+const BELEGARTEN_MIT_FAKTEN = new Set(['rechnung', 'gutschrift', 'mahnung', 'kundenrechnung'])
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 const LABEL = new Map<Feldname, string>(FELDER.map((f) => [f.name, f.label]))
 
@@ -74,6 +74,7 @@ export async function rechnungsdatenAuf(c: PoolClient, dokumentId: string): Prom
   const { rows } = await c.query<Record<string, string | null>>(
     `select d.belegart, d.ampel_extraktion,
             k.name as kreditor_name, k.ust_id as kreditor_ust_id,
+            kp.name as kunde_name,
             f.rechnungsnummer,
             to_char(f.rechnungsdatum, 'YYYY-MM-DD') as rechnungsdatum,
             to_char(f.leistung_von, 'YYYY-MM-DD') as leistung_von,
@@ -86,12 +87,17 @@ export async function rechnungsdatenAuf(c: PoolClient, dokumentId: string): Prom
        from dokument d
        left join rechnung_fakten f on f.dokument_id = d.id
        left join kreditor k on k.id = f.kreditor_id
+       left join person kp on kp.id = f.kunde_person_id
       where d.id = $1`,
     [dokumentId],
   )
   const fakten = rows[0]
   if (fakten === undefined) return null
   const belegart = fakten['belegart'] ?? 'rechnung'
+  // Eine Kundenrechnung hat keinen Rechnungssteller aus den Stammdaten,
+  // sondern einen Kunden; die USt-IdNr. des Kreditors gibt es dort nicht.
+  const kundenrechnung = belegart === 'kundenrechnung'
+  if (kundenrechnung) fakten['kreditor_name'] = fakten['kunde_name'] ?? null
   if (!BELEGARTEN_MIT_FAKTEN.has(belegart)) {
     return { belegart, ampelExtraktion: fakten['ampel_extraktion'], zeilen: [], fehlendePflicht: [] }
   }
@@ -117,7 +123,9 @@ export async function rechnungsdatenAuf(c: PoolClient, dokumentId: string): Prom
   const erkanntJeFeld = new Map(erkannt.map((e) => [e.feldname, e]))
   const pflicht = new Set(await pflichtfelderFuerDokument(c, dokumentId))
 
-  const zeilen: Rechnungsdatum[] = FELDER.map(({ name: feld, label }) => {
+  const felder = kundenrechnung ? FELDER.filter((f) => f.name !== 'kreditor_ust_id') : FELDER
+  const zeilen: Rechnungsdatum[] = felder.map(({ name: feld, label: beschriftung }) => {
+    const label = kundenrechnung && feld === 'kreditor_name' ? 'Kunde (Rechnungsempfänger)' : beschriftung
     const fakt = fakten[feld] ?? null
     const e = erkanntJeFeld.get(feld)
     const erkannterWert = e === undefined ? null : (e.wert_zahl ?? e.wert_datum ?? e.wert_text)

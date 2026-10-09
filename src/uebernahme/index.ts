@@ -28,7 +28,7 @@ import { dokumentAufnehmen } from '../ingest/aufnehmen'
 import { aufbereiten } from '../worker/aufbereitung'
 import { plausibilitaetPruefen } from '../pruefung/plausibilitaet'
 
-export const BELEGARTEN = ['rechnung', 'gutschrift', 'mahnung', 'schriftverkehr', 'sonstiges'] as const
+export const BELEGARTEN = ['rechnung', 'gutschrift', 'mahnung', 'kundenrechnung', 'schriftverkehr', 'sonstiges'] as const
 type Belegart = (typeof BELEGARTEN)[number]
 
 /** Die Zuordnung der Exportspalten zu unseren Feldern -- `uebernahme.json`. */

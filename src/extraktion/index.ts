@@ -166,9 +166,17 @@ export async function extrahierenUndUebernehmen(
 
   // Kreditor ueber die USt-ID oder den Namen zuordnen. Deterministisch und
   // ohne Lernspeicher -- der kommt spaeter (Konzept 15).
+  // Eine Kundenrechnung stellt das Haus selbst aus: Der "Rechnungssteller"
+  // im Text ist das Haus, kein Kreditor -- weder zuordnen noch vorschlagen
+  // (Migration 20261009100000).
+  const { rows: artZeilen } = await c.query<{ belegart: string }>('select belegart from dokument where id = $1', [
+    anfrage.dokumentId,
+  ])
+  const kundenrechnung = artZeilen[0]?.belegart === 'kundenrechnung'
   const { rows: kreditoren } = await c.query<{ id: string }>(
     `select k.id from kreditor k, dokument d
       where d.id = $1 and k.mandant_id = d.mandant_id and k.status = 'aktiv'
+        and d.belegart <> 'kundenrechnung'
         and (($2::text is not null and k.ust_id = $2)
              or ($3::text is not null and lower(k.name) = lower($3)))
       order by (k.ust_id = $2) desc
@@ -178,7 +186,7 @@ export async function extrahierenUndUebernehmen(
 
   // Kein Kreditor, aber ein erkannter Rechnungssteller: vorschlagen, nicht
   // anlegen. Ein Stammdatum legt ein Mensch an (Migration 20260930100000).
-  if (kreditoren[0] === undefined && text('kreditor_name') !== null) {
+  if (!kundenrechnung && kreditoren[0] === undefined && text('kreditor_name') !== null) {
     await c.query('select dms.kreditor_vorschlag_melden($1, $2, $3, $4, $5)', [
       anfrage.dokumentId,
       text('kreditor_name'),

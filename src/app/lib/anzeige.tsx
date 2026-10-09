@@ -160,11 +160,13 @@ export function belegAnriss(z: { seitenzahl: number | null; textanfang: string |
 
 export function belegBezeichnung(z: {
   kreditor?: string | null
+  /** Kundenrechnung: der Empfaenger (Migration 20261009100000). */
+  kunde?: string | null
   rechnungsnummer?: string | null
   korrespondent?: string | null
   betreff?: string | null
 }): string {
-  const wer = z.kreditor ?? z.korrespondent
+  const wer = z.kreditor ?? z.kunde ?? z.korrespondent
   const was = z.rechnungsnummer ?? z.betreff
 
   if (wer === null || wer === undefined) {

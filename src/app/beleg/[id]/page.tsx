@@ -79,10 +79,10 @@ export default async function Belegansicht({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ suche?: string; fehler?: string }>
+  searchParams: Promise<{ suche?: string; fehler?: string; hinweis?: string }>
 }) {
   const { id } = await params
-  const { suche = '', fehler } = await searchParams
+  const { suche = '', fehler, hinweis } = await searchParams
   const benutzer = await angemeldeterBenutzer()
 
   const kopf = await belegkopfLaden(benutzer, id)
@@ -127,6 +127,11 @@ export default async function Belegansicht({
       {fehler !== undefined && (
         <p role="alert" className="meldung-fehler">
           {fehler}
+        </p>
+      )}
+      {hinweis !== undefined && (
+        <p role="status" className="meldung-hinweis">
+          {hinweis}
         </p>
       )}
       <div className="belegansicht">

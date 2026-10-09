@@ -34,6 +34,8 @@ export interface Stufe {
   eskalationAn: string | null
   /** ... oder an diese Rolle (Migration 20261006170000). */
   eskalationAnRolle: string | null
+  /** 'frist' (sla_stunden ab Anlage) oder 'zahlungsziel' (Migration 20261009100000). */
+  faelligAus: 'frist' | 'zahlungsziel'
 }
 
 export interface Knoten {
@@ -66,6 +68,7 @@ interface Zeile {
   eskalation_nach_stunden: number | null
   eskalation_an: string | null
   eskalation_an_rolle: string | null
+  faellig_aus: 'frist' | 'zahlungsziel' | null
 }
 
 export async function baumLaden(c: PoolClient, definitionId: string): Promise<Knoten | null> {
@@ -73,7 +76,8 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
     `select k.id, k.eltern_id, k.reihenfolge, k.knotentyp, k.bedingung, k.stufe_id,
             s.bezeichnung, s.stufentyp, s.pflicht, s.betrag_von, s.betrag_bis,
             s.zustaendigkeit_typ, s.zustaendigkeit_ref, s.sla_stunden, s.vier_augen_pflicht,
-            s.systemaktion, s.eskalation_nach_stunden, s.eskalation_an, s.eskalation_an_rolle
+            s.systemaktion, s.eskalation_nach_stunden, s.eskalation_an, s.eskalation_an_rolle,
+            s.faellig_aus
        from prozessknoten k
        left join prozessstufe s on s.id = k.stufe_id
       where k.definition_id = $1
@@ -106,6 +110,7 @@ export async function baumLaden(c: PoolClient, definitionId: string): Promise<Kn
               eskalationNachStunden: z.eskalation_nach_stunden,
               eskalationAn: z.eskalation_an,
               eskalationAnRolle: z.eskalation_an_rolle,
+              faelligAus: z.faellig_aus ?? 'frist',
             },
       kinder: [],
       eltern: null,

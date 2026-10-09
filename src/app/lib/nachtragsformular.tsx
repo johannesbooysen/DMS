@@ -105,7 +105,9 @@ export function Nachtragsformular({
       <p className="leise klein" style={{ marginTop: 0 }}>
         {ohneObjekt
           ? 'Ohne Objekt hat diese Aufgabe niemanden. Was erkannt wurde, steht schon da; der Rest kommt von Hand.'
-          : 'Ohne Kreditor gibt es keine Freigabe. Was erkannt wurde, steht schon da; der Rest kommt von Hand.'}
+          : belegart === 'kundenrechnung'
+            ? 'Ohne Kunden hat die Rechnung keinen Empfänger. Was erkannt wurde, steht schon da; der Rest kommt von Hand.'
+            : 'Ohne Kreditor gibt es keine Freigabe. Was erkannt wurde, steht schon da; der Rest kommt von Hand.'}
       </p>
       {rechnung && pflicht.length > 0 && (
         <p className="klein" role="status">
@@ -123,6 +125,7 @@ export function Nachtragsformular({
             <option value="rechnung">Rechnung</option>
             <option value="gutschrift">Gutschrift</option>
             <option value="mahnung">Mahnung</option>
+            <option value="kundenrechnung">Kundenrechnung (ausgehend)</option>
             <option value="schriftverkehr">Schriftverkehr (Angebot, Schreiben, Protokoll)</option>
             <option value="sonstiges">Sonstiges</option>
           </select>
@@ -150,8 +153,23 @@ export function Nachtragsformular({
             ))}
           </select>
         </label>
+        {belegart === 'kundenrechnung' && (
+          <label className="entscheidung-feld">
+            Kunde
+            <select name="kundePersonId" defaultValue="">
+              <option value="">— unverändert —</option>
+              {auswahl.personen.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.art})
+                </option>
+              ))}
+            </select>
+            <span className="klein leise"> Mieter oder Eigentümer aus den Stammdaten — der Empfänger der Rechnung.</span>
+          </label>
+        )}
         {rechnung && (
           <>
+            {belegart !== 'kundenrechnung' && (
             <label className="entscheidung-feld">
               Kreditor
               {istPflicht('kreditor_name') && (
@@ -169,6 +187,7 @@ export function Nachtragsformular({
                 ))}
               </select>
             </label>
+            )}
             {vorn.map((e) => (
               <Feld key={e.feld} eintrag={e} pflicht={istPflicht(e.feld)} fehlt={fehlt.includes(e.feld)} />
             ))}

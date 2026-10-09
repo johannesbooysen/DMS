@@ -22,7 +22,9 @@ import {
 import { Seitenrahmen } from '@/app/lib/darstellung'
 import { angemeldeterBenutzer } from '@/app/lib/sitzung'
 import { Anlegen, Eingabe, Fehler, Handlung, kopfzelle, NurLesend, tabelle, zelle } from '@/app/lib/stammdaten-teile'
+import { entwurfFuerAblageAktion } from '@/app/lib/konfig-aktionen'
 import { rechtelage, rollenLaden } from '@/stammdaten'
+import { ablagenablaeufe } from '@/workflow/konfiguration'
 import { ABLAGE_RECHTE, ablagenLaden, ablagerechteLaden, BELEGARTEN, type Ablagerecht } from '@/stammdaten/ablagen'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +35,7 @@ const BELEGART: Record<string, string> = {
   rechnung: 'Rechnung',
   gutschrift: 'Gutschrift',
   mahnung: 'Mahnung',
+  kundenrechnung: 'Kundenrechnung',
   schriftverkehr: 'Schriftverkehr',
   sonstiges: 'Sonstiges',
 }
@@ -66,11 +69,12 @@ export default async function Ablagen({
 }) {
   const ich = await angemeldeterBenutzer()
   const { fehler } = await searchParams
-  const [darf, ablagen, rollen, rechte] = await Promise.all([
+  const [darf, ablagen, rollen, rechte, ablaeufe] = await Promise.all([
     rechtelage(ich),
     ablagenLaden(ich),
     rollenLaden(ich),
     ablagerechteLaden(ich),
+    ablagenablaeufe(ich),
   ])
   const aktive = ablagen.filter((a) => a.aktiv)
 
@@ -87,8 +91,9 @@ export default async function Ablagen({
       {!darf.stammdaten && !darf.benutzer && <NurLesend was="die Ablagen" />}
 
       <p className="einleitung">
-        Eine <strong>Ablage</strong> sagt, wo ein Beleg liegt und wer ihn sieht — wie die Ablagen in
-        Amagno. Die Belegart sagt, <em>was</em> ein Beleg ist und welchen Ablauf er nimmt; jede Ablage
+        Eine <strong>Ablage</strong> sagt, wo ein Beleg liegt, wer ihn sieht — und welchen{' '}
+        <strong>Ablauf</strong> er nimmt: Je Ablage und Belegart kann ein eigener Ablauf gelten; ohne
+        eigenen gilt der Hausstandard der Belegart. Wie die Ablagen in Amagno. Die Belegart sagt, <em>was</em> ein Beleg ist und welchen Ablauf er nimmt; jede Ablage
         nennt die Belegarten, deren Belege beim Eingang von selbst in ihr landen. Eine Ablage ist der{' '}
         <strong>Standard</strong> und nimmt alles auf, was sonst keine findet. Wer beim Hochladen oder
         in der Belegansicht eine Ablage wählt, legt sie fest; die Erkennung stellt dann nichts mehr um.
@@ -102,6 +107,7 @@ export default async function Ablagen({
               <th style={kopfzelle}>Ablage</th>
               <th style={kopfzelle}>Kurzcode</th>
               <th style={kopfzelle}>Belegarten</th>
+              <th style={kopfzelle}>Abläufe</th>
               <th style={kopfzelle}>Belege</th>
               <th style={kopfzelle}>Stand</th>
               {darf.stammdaten && <th style={kopfzelle}>Handlung</th>}
@@ -139,6 +145,43 @@ export default async function Ablagen({
                   ) : (
                     a.belegarten.map((b) => BELEGART[b] ?? b).join(', ')
                   )}
+                </td>
+                <td style={zelle}>
+                  {/*
+                    Je Belegart der Ablage: eigener Ablauf (aktiv), Entwurf oder
+                    Hausstandard. Der Knopf legt eine Kopie des Standards als
+                    Entwurf an -- Konfiguration -> Ablaeufe aktiviert ihn.
+                  */}
+                  {ablaeufe
+                    .filter((l) => l.ablageId === a.id)
+                    .map((l) => (
+                      <div key={l.belegart} className="klein" style={{ whiteSpace: 'nowrap' }}>
+                        <span className="leise">{BELEGART[l.belegart] ?? l.belegart}: </span>
+                        {l.eigener !== null ? (
+                          <Link href={`/konfiguration/${l.eigener.id}`}>eigener Ablauf, Fassung {l.eigener.version}</Link>
+                        ) : l.standard !== null ? (
+                          <Link href={`/konfiguration/${l.standard.id}`}>Hausstandard</Link>
+                        ) : (
+                          <span className="orange">kein Ablauf</span>
+                        )}
+                        {l.entwurf !== null && (
+                          <>
+                            {' · '}
+                            <Link href={`/konfiguration/${l.entwurf.id}`}>Entwurf {l.entwurf.version}</Link>
+                          </>
+                        )}
+                        {l.eigener === null && l.entwurf === null && l.standard !== null && darf.prozess && (
+                          <form action={entwurfFuerAblageAktion} className="inline">
+                            <input type="hidden" name="ablageId" value={a.id} />
+                            <input type="hidden" name="belegart" value={l.belegart} />
+                            {' · '}
+                            <button type="submit" className="knopf-link klein">
+                              eigenen Ablauf anlegen
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    ))}
                 </td>
                 <td style={zelle}>
                   {a.belege === 0 ? (

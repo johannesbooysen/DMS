@@ -300,7 +300,7 @@ describe('Beleg in eine andere Ablage legen', () => {
   it('wechselt mit Begruendung und hinterlaesst ein Korrekturereignis', async () => {
     const id = await belegAnlegen('rechnung')
     const ergebnis = await ablageWechseln(ANNA, id, ABLAGE_SV, 'Ist ein Begleitschreiben')
-    expect(ergebnis).toEqual({ von: 'Lieferantenrechnungen', nach: 'Schriftverkehr' })
+    expect(ergebnis).toMatchObject({ von: 'Lieferantenrechnungen', nach: 'Schriftverkehr' })
     expect(await ablageVon(id)).toEqual({ ablage_id: ABLAGE_SV, ablage_quelle: 'mensch' })
 
     const { rows } = await alsEigentuemer((c) =>

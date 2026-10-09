@@ -77,6 +77,7 @@ const BELEGART = [
   { wert: 'rechnung', text: 'Rechnung' },
   { wert: 'gutschrift', text: 'Gutschrift' },
   { wert: 'mahnung', text: 'Mahnung' },
+  { wert: 'kundenrechnung', text: 'Kundenrechnung' },
   { wert: 'schriftverkehr', text: 'Schriftverkehr' },
   { wert: 'sonstiges', text: 'Sonstiges' },
 ]

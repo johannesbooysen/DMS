@@ -698,6 +698,28 @@ Kurzcode und den Belegarten, deren Belege beim Eingang von selbst in ihr
 landen. Eine Ablage ist der **Standard** und nimmt alles auf, was sonst
 keine findet. Eine Ablage wird nie gelöscht, nur deaktiviert.
 
+### Jede Ablage hat ihren Ablauf
+
+Der Ablauf eines Belegs hängt an **Ablage und Belegart**. Lieferantenrechnungen
+behalten getrennte Abläufe für Rechnung, Gutschrift und Mahnung; eine neue
+Ablage wie *Kundenrechnungen* bekommt eigene. Hat eine Ablage für eine
+Belegart keinen eigenen Ablauf, gilt der **Hausstandard** der Belegart.
+Die Ablage geht vor: Eine Kategorie, die einen Ablauf benennt, verfeinert
+nur innerhalb der Ablage; in einem Ablauf einer fremden Ablage landet ein
+Beleg nie.
+
+Unter *Konfiguration → Ablagen* steht je Ablage und Belegart, welcher
+Ablauf gilt — eigener Ablauf, Entwurf oder Hausstandard — mit dem Weg in
+den Editor. Eine **neue Ablage** bringt je Belegart einen Entwurf als Kopie
+des Hausstandards mit, sofort bearbeitbar; bis er unter *Abläufe* aktiviert
+ist, gilt der Standard. Wer eine Ablage anlegt, aber keine Abläufe
+konfigurieren darf, bekommt die Ablage ohne Entwürfe; *eigenen Ablauf
+anlegen* steht dann dem offen, der das Recht hat.
+
+Wird ein Beleg in eine andere Ablage gelegt, folgt sein Lauf dem Ablauf der
+neuen Ablage — solange er noch keinen Stempel trägt. Trägt er einen, bleibt
+der begonnene Weg, und die Belegansicht sagt das.
+
 ### Wie ein Beleg in seine Ablage kommt
 
 Beim Hochladen steht die Ablage auf *aus der Belegart*: Der Beleg landet
@@ -709,6 +731,33 @@ Das geht jederzeit, auch nach der Archivierung (die Ablage ist ein
 Ablagemerkmal, kein Teil des Belegs), braucht eine Begründung und
 hinterlässt eine Spur. In eine Ablage legen darf, wer dort *bearbeiten*
 darf.
+
+### Kundenrechnungen
+
+Die Ablage **Kundenrechnungen** nimmt Rechnungen des Hauses an Mieter und
+Eigentümer auf — Belegart *Kundenrechnung*, ausgehend. Der **Kunde** ist
+eine Person aus den Stammdaten (Mieter, Eigentümer), kein Kreditor; das
+Formular *Angaben nachtragen* bietet die Personen des Hauses an. Die
+Rechnungsdaten sind dieselben wie bei einer Eingangsrechnung, nur steht
+statt Kreditor der Kunde, und die Vorsteuer-Pflichtangaben werden nicht
+geprüft — das Haus ist selbst der Rechnungssteller.
+
+Der Hausstandard-Ablauf hat vier Stufen: **Sachlich geprüft**
+(Objektverantwortliche), **Versandfreigabe** (Buchhaltung), **Versendet**
+(Stempel durch den Bearbeiter — Versand per Post oder aus dem Mailprogramm)
+und **Zahlungseingang**. Die letzte Stufe ist **fällig am Zahlungsziel**
+der Rechnung, nicht nach einer Frist ab Anlage; wird das Zahlungsziel erst
+später eingetragen, zieht das System die Fälligkeit nach. Dort stempelt die
+Buchhaltung **Bezahlt** — oder **Gemahnt**: Das ist eine Klärung mit
+Kommentar und Wiedervorlage; die Rechnung wartet an derselben Stufe, und der
+nächste Stempel ist wieder *Bezahlt* oder *Gemahnt*. Keine Kontierung als
+Aufwand, keine Zahlungsübergabe, keine automatische Mahnmail und kein
+Bankabgleich — beides wären eigene Schritte.
+
+Weil ein Mensch die Rechnung in *Kundenrechnungen* legt, macht die
+Erkennung aus ihr keine Lieferantenrechnung, auch wenn eine Rechnungsnummer
+im Text steht: **Die Ablage begrenzt die Belegart.** Ändern darf sie nur ein
+Mensch.
 
 ### Rechte je Ablage
 

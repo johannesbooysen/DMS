@@ -31,6 +31,12 @@ insert into ablage (id, mandant_id, name, kurzcode, beschreibung, belegarten, is
   ('38000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001',
    'Schriftverkehr', 'SV', 'Briefe, Schreiben und Sonstiges -- was keine Rechnung ist.',
    array['schriftverkehr', 'sonstiges'], false, 20),
+  -- Kundenrechnungen (Migration 20261009100000): die dritte Ablage, mit
+  -- eigener Belegart und eigenem Ablauf -- Versand und Zahlungseingang statt
+  -- Kontierung und Zahlung.
+  ('38000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001',
+   'Kundenrechnungen', 'KR', 'Rechnungen des Hauses an Mieter und Eigentuemer -- ausgehend.',
+   array['kundenrechnung'], false, 15),
   ('38000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000002',
    'Lieferantenrechnungen', 'LR', null, array['rechnung', 'gutschrift', 'mahnung'], true, 10),
   ('38000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000002',
@@ -641,6 +647,70 @@ insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp,
    '67000000-0000-0000-0000-000000000024', 1, 'stufe', null, '66000000-0000-0000-0000-000000000011'),
   ('67000000-0000-0000-0000-000000000023', '65000000-0000-0000-0000-000000000002',
    '67000000-0000-0000-0000-000000000021', 1, 'stufe', null, '66000000-0000-0000-0000-000000000012');
+
+-- ---------------------------------------------------------------------------
+-- Kundenrechnungen (Migration 20261009100000): eigene Belegart, eigener
+-- Ablauf. Vier Stempel mit eigener Bedeutung -- ein geliehenes "Freigegeben"
+-- hiesse "Eingangsrechnung freigegeben". "Gemahnt" ist eine Klaerung mit
+-- Wiedervorlage: Die Mahnung geht raus, der Beleg wartet an derselben Stufe,
+-- und der naechste Stempel dort ist "Bezahlt" oder noch einmal "Gemahnt".
+-- Kein Loop im Baum noetig, kein zweiter Zustand.
+--
+-- Der Hausstandard (ohne Ablage) gilt fuer die Ablage "Kundenrechnungen",
+-- solange sie keinen eigenen Ablauf hat -- genau wie fuer jede weitere
+-- Ablage, die diese Belegart aufnimmt.
+insert into stempeltyp (id, mandant_id, name, kurzcode, entscheidung, farbe, kommentar_pflicht) values
+  ('60000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000001',
+   'Versandfreigabe', 'KRFREI', 'freigabe', '#3B4A80', false),
+  ('60000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000001',
+   'Versendet', 'VERS', 'freigabe', '#2F6F4E', false),
+  ('60000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000001',
+   'Bezahlt', 'BEZ', 'freigabe', '#2F6F4E', false),
+  ('60000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000001',
+   'Gemahnt', 'MAHN', 'klaerung', '#B3271E', true);
+
+insert into prozessdefinition (id, mandant_id, belegart, version, status, aktiv_ab) values
+  ('65000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001',
+   'kundenrechnung', 1, 'aktiv', now());
+
+insert into prozessstufe (id, definition_id, reihenfolge, stufentyp, bezeichnung,
+                          zustaendigkeit_typ, sla_stunden, zustaendigkeit_ref, faellig_aus) values
+  ('66000000-0000-0000-0000-000000000041', '65000000-0000-0000-0000-000000000005',
+   1, 'sachlich', 'Sachlich geprueft', 'objektverantwortlich', 48, null, 'frist'),
+  ('66000000-0000-0000-0000-000000000042', '65000000-0000-0000-0000-000000000005',
+   2, 'freigabe', 'Versandfreigabe', 'rolle', 48, '90000000-0000-0000-0000-000000000002', 'frist'),
+  ('66000000-0000-0000-0000-000000000043', '65000000-0000-0000-0000-000000000005',
+   3, 'freigabe', 'Versendet', 'rolle', 24, '90000000-0000-0000-0000-000000000002', 'frist'),
+  -- Faellig am Zahlungsziel der Rechnung, nicht nach Stunden: die Wiedervorlage.
+  ('66000000-0000-0000-0000-000000000044', '65000000-0000-0000-0000-000000000005',
+   4, 'freigabe', 'Zahlungseingang', 'rolle', 720, '90000000-0000-0000-0000-000000000002', 'zahlungsziel');
+
+insert into prozessknoten (id, definition_id, eltern_id, reihenfolge, knotentyp, stufe_id) values
+  ('67000000-0000-0000-0000-000000000051', '65000000-0000-0000-0000-000000000005', null, 0, 'nacheinander', null),
+  ('67000000-0000-0000-0000-000000000052', '65000000-0000-0000-0000-000000000005',
+   '67000000-0000-0000-0000-000000000051', 0, 'stufe', '66000000-0000-0000-0000-000000000041'),
+  ('67000000-0000-0000-0000-000000000053', '65000000-0000-0000-0000-000000000005',
+   '67000000-0000-0000-0000-000000000051', 1, 'stufe', '66000000-0000-0000-0000-000000000042'),
+  ('67000000-0000-0000-0000-000000000054', '65000000-0000-0000-0000-000000000005',
+   '67000000-0000-0000-0000-000000000051', 2, 'stufe', '66000000-0000-0000-0000-000000000043'),
+  ('67000000-0000-0000-0000-000000000055', '65000000-0000-0000-0000-000000000005',
+   '67000000-0000-0000-0000-000000000051', 3, 'stufe', '66000000-0000-0000-0000-000000000044');
+
+insert into prozessstufe_stempeltyp (stufe_id, stempeltyp_id, sortierung) values
+  ('66000000-0000-0000-0000-000000000041', '60000000-0000-0000-0000-000000000001', 0),
+  ('66000000-0000-0000-0000-000000000041', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000042', '60000000-0000-0000-0000-000000000010', 0),
+  ('66000000-0000-0000-0000-000000000042', '60000000-0000-0000-0000-000000000002', 1),
+  ('66000000-0000-0000-0000-000000000043', '60000000-0000-0000-0000-000000000011', 0),
+  ('66000000-0000-0000-0000-000000000044', '60000000-0000-0000-0000-000000000012', 0),
+  ('66000000-0000-0000-0000-000000000044', '60000000-0000-0000-0000-000000000013', 1);
+
+-- Die Buchhaltung gibt frei, versendet, bucht den Zahlungseingang und mahnt.
+insert into stempel_recht (stempeltyp_id, rolle_id) values
+  ('60000000-0000-0000-0000-000000000010', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000011', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000012', '90000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000013', '90000000-0000-0000-0000-000000000002');
 
 -- ---------------------------------------------------------------------------
 -- Admin: ein Benutzer mit allen Rechten, fuer die Einrichtung und zum Testen.
