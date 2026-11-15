@@ -1,7 +1,7 @@
 /**
  * Die leichte Entwicklungsdatenbank -- echtes PostgreSQL 17, ohne Docker.
  *
- *   npm run db:leicht          # starten; beim ersten Mal anlegen, migrieren, Seed
+ *   npm run db:leicht          # starten; beim ersten Mal anlegen und Seed, Migrationen bei jedem Start
  *   npm run db:leicht:reset    # Datenverzeichnis loeschen und frisch aufbauen
  *
  * **Warum.** Die lokale Supabase-Instanz startet elf Container, von denen
@@ -22,7 +22,14 @@
  * sagt es, statt still zu scheitern.
  *
  * Migrationen spielt die Supabase-CLI ein (`migration up --db-url`), wie bei
- * jeder anderen Datenbank auch; der Seed laeuft als eine Abfrage ueber `pg`.
+ * jeder anderen Datenbank auch -- **bei jedem Start**, nicht nur beim Anlegen.
+ * Der erste Entwurf migrierte nur die frische Datenbank; nach drei neuen
+ * Migrationen warf jede Seite der Vorschau einen 500 wegen einer fehlenden
+ * Spalte, und `.pgdata/` sah dabei aus wie immer. Die CLI spielt nur ein, was
+ * fehlt (`supabase_migrations.schema_migrations`), ein zweiter Lauf tut nichts.
+ * Der Seed laeuft als eine Abfrage ueber `pg` und nur beim Anlegen: Er ist
+ * nicht idempotent, und die Daten in `.pgdata/` gehoeren dem, der sie
+ * hochgeladen hat.
  * `npm run e2e` braucht weiter die Supabase-Instanz: Es setzt ueber
  * `supabase db reset` zurueck.
  */
@@ -98,24 +105,33 @@ if (frisch) {
     }
   }
 
-  console.log('Migrationen …')
-  // Eine Befehlszeile statt Argumentliste: Unter Windows braucht npx die Shell,
-  // und Node warnt bei shell: true mit Argumenten -- die URL enthaelt nichts,
-  // was eine Shell deutet.
-  const cli = spawnSync(`npx supabase migration up --db-url ${URL}`, {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    shell: true,
-    encoding: 'utf8',
-  })
-  if (cli.status !== 0) {
-    console.error(cli.stdout, cli.stderr)
-    console.error('Migrationen fehlgeschlagen -- die Datenbank bleibt leer. npm run db:leicht:reset versucht es erneut.')
-    await db.stop()
-    process.exit(1)
-  }
-  const angewandt = (cli.stdout.match(/\.sql/g) ?? []).length
-  console.log(`  ${angewandt} Migrationen eingespielt`)
+}
 
+console.log('Migrationen …')
+// Eine Befehlszeile statt Argumentliste: Unter Windows braucht npx die Shell,
+// und Node warnt bei shell: true mit Argumenten -- die URL enthaelt nichts,
+// was eine Shell deutet.
+const cli = spawnSync(`npx supabase migration up --db-url ${URL}`, {
+  stdio: ['ignore', 'pipe', 'pipe'],
+  shell: true,
+  encoding: 'utf8',
+})
+if (cli.status !== 0) {
+  console.error(cli.stdout, cli.stderr)
+  console.error(
+    frisch
+      ? 'Migrationen fehlgeschlagen -- die Datenbank bleibt leer. npm run db:leicht:reset versucht es erneut.'
+      : 'Migrationen fehlgeschlagen -- die Datenbank steht auf dem alten Stand, die Anwendung passt nicht dazu.',
+  )
+  await db.stop()
+  process.exit(1)
+}
+// Die CLI antwortet auf stdout mit {"applied":[…Pfade…]}; die Fortschrittszeilen
+// gehen nach stderr. Gezaehlt wird die Liste, nicht der Fortschritt.
+const angewandt = (cli.stdout.match(/\.sql"/g) ?? []).length
+console.log(angewandt === 0 ? '  auf dem Stand' : `  ${angewandt} Migrationen eingespielt`)
+
+if (frisch) {
   console.log('Seed …')
   const client = new pg.Client({ connectionString: URL })
   await client.connect()
